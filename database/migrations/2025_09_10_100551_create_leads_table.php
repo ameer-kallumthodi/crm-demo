@@ -1,0 +1,47 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('leads', function (Blueprint $table) {
+            $table->id();
+            $table->string("title");
+            $table->enum("gender", ["male", "female", "other"])->nullable();
+            $table->integer("age")->nullable();
+            $table->string("phone")->nullable();
+            $table->string("whatsapp")->nullable();
+            $table->string("email")->nullable();
+            $table->text("qualification")->nullable();
+            $table->unsignedBigInteger("country_id")->nullable();
+            $table->string("interest_status")->nullable();
+            $table->unsignedBigInteger("lead_status_id")->nullable();
+            $table->unsignedBigInteger("lead_source_id")->nullable();
+            $table->text("address")->nullable();
+            $table->unsignedBigInteger("telecaller_id")->nullable();
+            $table->string("place")->nullable();
+            $table->unsignedBigInteger("created_by")->nullable();
+            $table->unsignedBigInteger("updated_by")->nullable();
+            $table->unsignedBigInteger("course_id")->nullable();
+            $table->boolean("by_meta")->default(false);
+            $table->string("meta_lead_id")->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('leads');
+    }
+};

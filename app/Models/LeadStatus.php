@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class LeadStatus extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'title',
+        'description',
+        'color',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
+
+    public function leads()
+    {
+        return $this->hasMany(Lead::class);
+    }
+
+    public function leadActivities()
+    {
+        return $this->hasMany(LeadActivity::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+}
