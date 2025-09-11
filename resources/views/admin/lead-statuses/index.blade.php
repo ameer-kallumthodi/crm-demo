@@ -80,16 +80,7 @@
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    // Initialize DataTable
-    $('.datatable').DataTable({
-        responsive: true,
-        pageLength: 25,
-        order: [[0, 'desc']],
-        columnDefs: [
-            { orderable: false, targets: -1 }
-        ]
-    });
-});
+// DataTable is now initialized globally in footer-scripts.blade.php
+// No need for duplicate initialization here
 </script>
 @endpush

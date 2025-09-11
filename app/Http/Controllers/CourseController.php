@@ -11,7 +11,7 @@ class CourseController extends Controller
     public function index()
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $courses = Course::all();
@@ -56,34 +56,6 @@ class CourseController extends Controller
         return response()->json($course);
     }
 
-    public function update(Request $request, Course $course)
-    {
-        if (!RoleHelper::is_admin_or_super_admin()) {
-            return response()->json(['error' => 'Access denied.'], 403);
-        }
-
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'duration' => 'nullable|string|max:255',
-            'fees' => 'nullable|numeric|min:0',
-            'is_active' => 'boolean',
-        ]);
-
-        $course->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'duration' => $request->duration,
-            'fees' => $request->fees,
-            'is_active' => $request->has('is_active'),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Course updated successfully.',
-            'data' => $course
-        ]);
-    }
 
     public function destroy(Course $course)
     {
@@ -109,7 +81,7 @@ class CourseController extends Controller
     public function ajax_add()
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         return view('admin.courses.add');
@@ -118,7 +90,7 @@ class CourseController extends Controller
     public function submit(Request $request)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $request->validate([
@@ -143,7 +115,7 @@ class CourseController extends Controller
     public function ajax_edit($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $edit_data = Course::findOrFail($id);
@@ -153,7 +125,7 @@ class CourseController extends Controller
     public function update(Request $request, $id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $request->validate([
@@ -179,7 +151,7 @@ class CourseController extends Controller
     public function delete($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $course = Course::findOrFail($id);

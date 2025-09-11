@@ -86,7 +86,7 @@
                                     <div class="col-4">
                                         <select class="form-select @error('code') is-invalid @enderror" name="code" required>
                                             <option value="">Select Code</option>
-                                            @foreach($countryCode as $code => $country)
+                                            @foreach($country_codes as $code => $country)
                                                 <option value="{{ $code }}" {{ old('code') == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
                                             @endforeach
                                         </select>
@@ -111,7 +111,7 @@
                                     <div class="col-4">
                                         <select class="form-select" name="whatsapp_code">
                                             <option value="">Select Code</option>
-                                            @foreach($countryCode as $code => $country)
+                                            @foreach($country_codes as $code => $country)
                                                 <option value="{{ $code }}" {{ old('whatsapp_code') == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
                                             @endforeach
                                         </select>

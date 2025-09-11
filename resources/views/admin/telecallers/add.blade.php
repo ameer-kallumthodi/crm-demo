@@ -5,28 +5,33 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="name">Name <span class="text-danger">*</span></label>
-                    <input type="text" name="name" class="form-control" id="name" placeholder="Enter Name" required>
+                    <input type="text" name="name" class="form-control" id="name" placeholder="Enter Name" value="{{ old('name') }}" required>
                 </div>
             </div>
 
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="email">Email <span class="text-danger">*</span></label>
-                    <input type="email" name="email" class="form-control" id="email" placeholder="Enter Email" required>
+                    <input type="email" name="email" class="form-control" id="email" placeholder="Enter Email" value="{{ old('email') }}" required>
                 </div>
             </div>
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="mb-3">
-                        <label class="form-label" for="phone">Phone</label>
-                        <input type="text" name="phone" class="form-control" id="phone" placeholder="Enter Phone">
+                        <label class="form-label" for="code">Country Code</label>
+                        <select class="form-select" id="code" name="code">
+                            <option value="">Select Country</option>
+                            @foreach($country_codes as $code => $country)
+                                <option value="{{ $code }}" {{ old('code') == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <div class="mb-3">
-                        <label class="form-label" for="code">Code</label>
-                        <input type="text" name="code" class="form-control" id="code" placeholder="Enter Code">
+                        <label class="form-label" for="phone">Phone</label>
+                        <input type="text" name="phone" class="form-control" id="phone" placeholder="Enter Phone" value="{{ old('phone') }}">
                     </div>
                 </div>
             </div>
@@ -38,25 +43,13 @@
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label" for="role_id">Role <span class="text-danger">*</span></label>
-                    <select class="form-select" id="role_id" name="role_id" required>
-                        <option value="">Select Role</option>
-                        @foreach($roles as $role)
-                            <option value="{{ $role->id }}">{{ $role->title }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="team_id">Team</label>
                     <select class="form-select" id="team_id" name="team_id">
                         <option value="">Select Team</option>
                         @foreach($teams as $team)
-                            <option value="{{ $team->id }}">{{ $team->name }}</option>
+                            <option value="{{ $team->id }}" {{ old('team_id') == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
                         @endforeach
                     </select>
                 </div>

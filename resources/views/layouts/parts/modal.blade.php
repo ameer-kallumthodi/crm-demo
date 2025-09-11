@@ -177,24 +177,32 @@
 
     function delete_modal(
         delete_url,
-        message = 'Are you Sure ?',
-        message_description = 'Are you Sure You want to Delete this?',
-        button_text = 'Yes, Delete It!'
+        message = 'Are you sure?',
+        message_description = 'You won\'t be able to revert this action!',
+        button_text = 'Yes, delete it!'
     ) {
         Swal.fire({
-            html: '<div class="mt-3">' +
-                '<lord-icon src="https://cdn.lordicon.com/usownftb.json" trigger="loop" delay="2000" colors="primary:#121331,secondary:#c71f16" style="width:150px;height:150px"></lord-icon>' +
-                '<div class="mt-4 pt-2 fs-15 mx-5">' +
-                '<h4>' + message + '</h4>' +
-                '<p class="text-muted mx-4 mb-0"> ' + message_description + '</p>' +
-                '</div>' +
-                '</div>',
+            title: message,
+            text: message_description,
+            icon: 'warning',
             showCancelButton: true,
-            confirmButtonClass: 'btn btn-primary w-xs me-2 mb-1',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
             confirmButtonText: button_text,
-            cancelButtonClass: 'btn btn-danger w-xs mb-1',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true,
+            focusCancel: true,
+            customClass: {
+                popup: 'swal2-popup-custom',
+                title: 'swal2-title-custom',
+                content: 'swal2-content-custom',
+                confirmButton: 'swal2-confirm-custom',
+                cancelButton: 'swal2-cancel-custom'
+            },
             buttonsStyling: false,
             showCloseButton: true,
+            allowOutsideClick: false,
+            allowEscapeKey: true,
             preConfirm: () => {
                 window.location.href = delete_url;
             }

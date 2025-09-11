@@ -30,6 +30,7 @@
     
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    @include('layouts.parts.header-includes')
     
     @stack('styles')
 </head>
@@ -50,7 +51,9 @@
     <!-- [ Main Content ] end -->
 
     @include('layouts.parts.modal')
+    @include('layouts.parts.footer-includes')
     @include('layouts.parts.footer')
+    @include('layouts.parts.footer-scripts')
 
     <!-- Required Js -->
     <script src="{{ asset('assets/mantis/js/plugins/popper.min.js') }}"></script>
@@ -64,3 +67,4 @@
 </body>
 <!-- [Body] end -->
 </html>
+

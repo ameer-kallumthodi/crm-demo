@@ -18,16 +18,21 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label" for="code">Country Code</label>
+                        <select class="form-select" id="code" name="code">
+                            <option value="">Select Country</option>
+                            @foreach($country_codes as $code => $country)
+                                <option value="{{ $code }}" {{ $edit_data->code == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-8">
                     <div class="mb-3">
                         <label class="form-label" for="phone">Phone</label>
                         <input type="text" name="phone" class="form-control" id="phone" value="{{ $edit_data->phone }}" placeholder="Enter Phone">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label" for="code">Code</label>
-                        <input type="text" name="code" class="form-control" id="code" value="{{ $edit_data->code }}" placeholder="Enter Code">
                     </div>
                 </div>
             </div>
@@ -40,19 +45,7 @@
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label" for="role_id">Role <span class="text-danger">*</span></label>
-                    <select class="form-select" id="role_id" name="role_id" required>
-                        <option value="">Select Role</option>
-                        @foreach($roles as $role)
-                            <option value="{{ $role->id }}" {{ $edit_data->role_id == $role->id ? 'selected' : '' }}>{{ $role->title }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="team_id">Team</label>
                     <select class="form-select" id="team_id" name="team_id">

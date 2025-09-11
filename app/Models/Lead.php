@@ -18,6 +18,7 @@ class Lead extends Model
         'phone',
         'code',
         'whatsapp',
+        'whatsapp_code',
         'email',
         'qualification',
         'country_id',

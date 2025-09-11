@@ -11,7 +11,7 @@ class LeadSourceController extends Controller
     public function index()
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $leadSources = LeadSource::all();
@@ -105,7 +105,7 @@ class LeadSourceController extends Controller
     public function ajax_add()
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         return view('admin.lead-sources.add');
@@ -114,7 +114,7 @@ class LeadSourceController extends Controller
     public function submit(Request $request)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $request->validate([
@@ -135,7 +135,7 @@ class LeadSourceController extends Controller
     public function ajax_edit($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $edit_data = LeadSource::findOrFail($id);
@@ -145,7 +145,7 @@ class LeadSourceController extends Controller
     public function update(Request $request, $id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $request->validate([
@@ -167,14 +167,14 @@ class LeadSourceController extends Controller
     public function delete($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $leadSource = LeadSource::findOrFail($id);
         
         // Check if lead source has leads
         if ($leadSource->leads()->count() > 0) {
-            return redirect()->route('admin.lead-sources.index')->with('message_error', 'Cannot delete lead source. It has assigned leads.');
+            return redirect()->route('admin.lead-sources.index')->with('message_danger', 'Cannot delete lead source. It has assigned leads.');
         }
 
         $leadSource->delete();

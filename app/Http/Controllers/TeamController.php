@@ -13,7 +13,7 @@ class TeamController extends Controller
     public function index()
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $teams = Team::with(['teamLead', 'users'])->get();
@@ -55,29 +55,6 @@ class TeamController extends Controller
         return response()->json($team->load('teamLead', 'users'));
     }
 
-    public function update(Request $request, Team $team)
-    {
-        if (!RoleHelper::is_admin_or_super_admin()) {
-            return response()->json(['error' => 'Access denied.'], 403);
-        }
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        $team->update([
-            'name' => $request->name,
-            'description' => $request->description,
-            'updated_by' => AuthHelper::getCurrentUserId(),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Team updated successfully.',
-            'data' => $team->load('teamLead')
-        ]);
-    }
 
     public function destroy(Team $team)
     {
@@ -103,7 +80,7 @@ class TeamController extends Controller
     public function ajax_add()
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         return view('admin.teams.add');
@@ -112,7 +89,7 @@ class TeamController extends Controller
     public function submit(Request $request)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $request->validate([
@@ -132,7 +109,7 @@ class TeamController extends Controller
     public function ajax_edit($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $edit_data = Team::findOrFail($id);
@@ -142,7 +119,7 @@ class TeamController extends Controller
     public function update(Request $request, $id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $request->validate([
@@ -163,7 +140,7 @@ class TeamController extends Controller
     public function delete($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $team = Team::findOrFail($id);

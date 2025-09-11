@@ -65,8 +65,7 @@
                                         <i class="ti ti-edit"></i> Edit
                                     </a>
                                     <a href="javascript:void(0);" class="btn btn-info btn-sm shadow-sm px-3"
-                                        onclick="show_small_modal('{{ route('admin.telecallers.change-password', $telecaller->id) }}', 'Change Password')
-                                        title="Change Password">
+                                        onclick="show_small_modal('{{ route('admin.telecallers.change-password', $telecaller->id) }}', 'Change Password')" title="Change Password">
                                         <i class="ti ti-key"></i> Password
                                     </a>
                                     <a href="javascript:void(0);" class="btn btn-danger btn-sm shadow-sm px-3"
@@ -89,16 +88,7 @@
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    // Initialize DataTable
-    $('.datatable').DataTable({
-        responsive: true,
-        pageLength: 25,
-        order: [[0, 'desc']],
-        columnDefs: [
-            { orderable: false, targets: -1 }
-        ]
-    });
-});
+// DataTable is now initialized globally in footer-scripts.blade.php
+// No need for duplicate initialization here
 </script>
 @endpush

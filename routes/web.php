@@ -32,6 +32,8 @@ Route::middleware('custom.auth')->group(function () {
     
     // Leads
     Route::resource('leads', LeadController::class);
+    Route::get('/leads-add', [LeadController::class, 'ajax_add'])->name('leads.add');
+    Route::post('/leads-submit', [LeadController::class, 'submit'])->name('leads.submit');
     Route::get('/leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::post('/leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status.post');
     Route::get('/leads/bulk-reassign', [LeadController::class, 'bulkReassign'])->name('leads.bulk-reassign');

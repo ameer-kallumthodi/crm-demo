@@ -60,3 +60,13 @@ if (!function_exists('is_logged_in')) {
         return \App\Helpers\RoleHelper::is_logged_in();
     }
 }
+
+if (!function_exists('get_country_code')) {
+    /**
+     * Get country codes array
+     */
+    function get_country_code()
+    {
+        return \App\Helpers\CountriesHelper::get_country_code();
+    }
+}

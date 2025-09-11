@@ -11,7 +11,7 @@ class SettingsController extends Controller
     public function index()
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $settings = Setting::orderBy('group')->orderBy('key')->get();

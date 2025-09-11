@@ -15,7 +15,7 @@ class TelecallerController extends Controller
     public function index()
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $telecallers = User::where('role_id', 3)->with(['role', 'team'])->get();
@@ -35,21 +35,17 @@ class TelecallerController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
-            'code' => 'nullable|string|max:50',
+            'code' => 'nullable|string|max:10',
             'password' => 'required|string|min:8',
-            'role_id' => 'required|exists:user_roles,id',
             'team_id' => 'nullable|exists:teams,id',
         ]);
 
-        $telecaller = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'code' => $request->code,
-            'password' => Hash::make($request->password),
-            'role_id' => $request->role_id,
-            'team_id' => $request->team_id,
-        ]);
+        // Filter only the fields we need
+        $data = $request->only(['name', 'email', 'phone', 'code', 'password', 'team_id']);
+        $data['password'] = Hash::make($data['password']);
+        $data['role_id'] = 3; // Static role for Telecaller
+
+        $telecaller = User::create($data);
 
         return response()->json([
             'success' => true,
@@ -67,43 +63,6 @@ class TelecallerController extends Controller
         return response()->json($telecaller->load('role', 'team'));
     }
 
-    public function update(Request $request, User $telecaller)
-    {
-        if (!RoleHelper::is_admin_or_super_admin()) {
-            return response()->json(['error' => 'Access denied.'], 403);
-        }
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $telecaller->id,
-            'phone' => 'nullable|string|max:20',
-            'code' => 'nullable|string|max:50',
-            'password' => 'nullable|string|min:8',
-            'role_id' => 'required|exists:user_roles,id',
-            'team_id' => 'nullable|exists:teams,id',
-        ]);
-
-        $updateData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'code' => $request->code,
-            'role_id' => $request->role_id,
-            'team_id' => $request->team_id,
-        ];
-
-        if ($request->filled('password')) {
-            $updateData['password'] = Hash::make($request->password);
-        }
-
-        $telecaller->update($updateData);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Telecaller updated successfully.',
-            'data' => $telecaller->load('role', 'team')
-        ]);
-    }
 
     public function destroy(User $telecaller)
     {
@@ -126,52 +85,37 @@ class TelecallerController extends Controller
         ]);
     }
 
-    public function changePassword(Request $request, User $telecaller)
-    {
-        if (!RoleHelper::is_admin_or_super_admin()) {
-            return response()->json(['error' => 'Access denied.'], 403);
-        }
-
-        $request->validate([
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        $telecaller->update([
-            'password' => Hash::make($request->password),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Password changed successfully.'
-        ]);
-    }
 
     public function ajax_add()
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $roles = UserRole::all();
         $teams = Team::all();
-        return view('admin.telecallers.add', compact('roles', 'teams'));
+        $country_codes = get_country_code();
+        return view('admin.telecallers.add', compact('teams', 'country_codes'));
     }
 
     public function submit(Request $request)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $request->validate([
+        $validator = \Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
-            'code' => 'nullable|string|max:50',
-            'password' => 'required|string|min:8',
-            'role_id' => 'required|exists:user_roles,id',
+            'code' => 'nullable|string|max:10',
+            'password' => 'required|string|min:6',
             'team_id' => 'nullable|exists:teams,id',
         ]);
+
+        if ($validator->fails()) {
+            $firstError = $validator->errors()->first();
+            return redirect()->back()->with('message_danger', $firstError)->withInput();
+        }
 
         User::create([
             'name' => $request->name,
@@ -179,7 +123,7 @@ class TelecallerController extends Controller
             'phone' => $request->phone,
             'code' => $request->code,
             'password' => Hash::make($request->password),
-            'role_id' => $request->role_id,
+            'role_id' => 3, // Static role for Telecaller
             'team_id' => $request->team_id,
         ]);
 
@@ -189,40 +133,39 @@ class TelecallerController extends Controller
     public function ajax_edit($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $edit_data = User::findOrFail($id);
-        $roles = UserRole::all();
         $teams = Team::all();
-        return view('admin.telecallers.edit', compact('edit_data', 'roles', 'teams'));
+        $country_codes = get_country_code();
+        return view('admin.telecallers.edit', compact('edit_data', 'teams', 'country_codes'));
     }
 
     public function update(Request $request, $id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $request->validate([
+        $validator = \Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
             'phone' => 'nullable|string|max:20',
-            'code' => 'nullable|string|max:50',
+            'code' => 'nullable|string|max:10',
             'password' => 'nullable|string|min:8',
-            'role_id' => 'required|exists:user_roles,id',
             'team_id' => 'nullable|exists:teams,id',
         ]);
 
+        if ($validator->fails()) {
+            $firstError = $validator->errors()->first();
+            return redirect()->back()->with('message_danger', $firstError)->withInput();
+        }
+
         $telecaller = User::findOrFail($id);
-        $updateData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'code' => $request->code,
-            'role_id' => $request->role_id,
-            'team_id' => $request->team_id,
-        ];
+        
+        // Filter only the fields we need
+        $updateData = $request->only(['name', 'email', 'phone', 'code', 'team_id']);
 
         if ($request->filled('password')) {
             $updateData['password'] = Hash::make($request->password);
@@ -236,14 +179,14 @@ class TelecallerController extends Controller
     public function delete($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $telecaller = User::findOrFail($id);
         
         // Check if telecaller has leads
         if ($telecaller->leads()->count() > 0) {
-            return redirect()->route('admin.telecallers.index')->with('message_error', 'Cannot delete telecaller. They have assigned leads.');
+            return redirect()->route('admin.telecallers.index')->with('message_danger', 'Cannot delete telecaller. They have assigned leads.');
         }
 
         $telecaller->delete();
@@ -253,7 +196,7 @@ class TelecallerController extends Controller
     public function changePassword(Request $request, $id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $edit_data = User::findOrFail($id);
@@ -263,12 +206,17 @@ class TelecallerController extends Controller
     public function updatePassword(Request $request, $id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $request->validate([
+        $validator = \Validator::make($request->all(), [
             'password' => 'required|string|min:8|confirmed',
         ]);
+
+        if ($validator->fails()) {
+            $firstError = $validator->errors()->first();
+            return redirect()->back()->with('message_danger', $firstError)->withInput();
+        }
 
         $telecaller = User::findOrFail($id);
         $telecaller->update([

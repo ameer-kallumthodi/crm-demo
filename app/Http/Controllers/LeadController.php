@@ -68,7 +68,7 @@ class LeadController extends Controller
         $courseName = $courses->pluck('title', 'id')->toArray();
         $telecallerList = $telecallers->pluck('name', 'id')->toArray();
 
-        return view('leads.index', compact(
+        return view('admin.leads.index', compact(
             'leads', 'leadStatuses', 'leadSources', 'countries', 'courses', 'telecallers',
             'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList',
             'fromDate', 'toDate'
@@ -83,11 +83,61 @@ class LeadController extends Controller
         $countries = Country::where('is_active', true)->get();
         $courses = Course::where('is_active', true)->get();
         $teams = Team::all();
-        $countryCode = $this->getCountryCode();
+        $country_codes = get_country_code();
 
-        return view('leads.create', compact(
-            'telecallers', 'leadStatuses', 'leadSources', 'countries', 'courses', 'teams', 'countryCode'
+        return view('admin.leads.create', compact(
+            'telecallers', 'leadStatuses', 'leadSources', 'countries', 'courses', 'teams', 'country_codes'
         ));
+    }
+
+    public function ajax_add()
+    {
+        $telecallers = User::where('role_id', 3)->get();
+        $leadStatuses = LeadStatus::where('is_active', true)->get();
+        $leadSources = LeadSource::where('is_active', true)->get();
+        $countries = Country::where('is_active', true)->get();
+        $courses = Course::where('is_active', true)->get();
+        $teams = Team::all();
+        $country_codes = get_country_code();
+
+        return view('admin.leads.add', compact(
+            'telecallers', 'leadStatuses', 'leadSources', 'countries', 'courses', 'teams', 'country_codes'
+        ));
+    }
+
+    public function submit(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'code' => 'nullable|string|max:10',
+            'whatsapp_code' => 'nullable|string|max:10',
+            'whatsapp' => 'nullable|string|max:20',
+            'gender' => 'nullable|in:male,female,other',
+            'age' => 'nullable|integer|min:1|max:999',
+            'place' => 'nullable|string|max:255',
+            'qualification' => 'nullable|string|max:255',
+            'interest_status' => 'nullable|in:1,2,3',
+            'lead_status_id' => 'required|exists:lead_statuses,id',
+            'lead_source_id' => 'required|exists:lead_sources,id',
+            'country_id' => 'required|exists:countries,id',
+            'course_id' => 'nullable|exists:courses,id',
+            'team_id' => 'nullable|exists:teams,id',
+            'telecaller_id' => 'nullable|exists:users,id',
+            'address' => 'nullable|string|max:500',
+            'followup_date' => 'nullable|date',
+            'remarks' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            $firstError = $validator->errors()->first();
+            return redirect()->back()->with('message_danger', $firstError)->withInput();
+        }
+
+        $lead = Lead::create($request->all());
+
+        return redirect()->route('leads.index')->with('message_success', 'Lead created successfully!');
     }
 
     public function store(Request $request)
@@ -96,17 +146,28 @@ class LeadController extends Controller
             'title' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
+            'code' => 'nullable|string|max:10',
+            'whatsapp_code' => 'nullable|string|max:10',
+            'whatsapp' => 'nullable|string|max:20',
+            'gender' => 'nullable|in:male,female,other',
+            'age' => 'nullable|integer|min:1|max:999',
+            'place' => 'nullable|string|max:255',
+            'qualification' => 'nullable|string|max:255',
+            'interest_status' => 'nullable|in:1,2,3',
             'country_id' => 'required|exists:countries,id',
             'lead_status_id' => 'required|exists:lead_statuses,id',
             'lead_source_id' => 'required|exists:lead_sources,id',
             'team_id' => 'nullable|exists:teams,id',
             'telecaller_id' => 'nullable|exists:users,id',
             'course_id' => 'nullable|exists:courses,id',
+            'address' => 'nullable|string|max:500',
+            'followup_date' => 'nullable|date',
+            'remarks' => 'nullable|string|max:1000',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
-                ->withErrors($validator)
+                ->with('message_danger', $validator->errors()->first())
                 ->withInput();
         }
 
@@ -157,7 +218,7 @@ class LeadController extends Controller
         $courseName = Course::pluck('title', 'id')->toArray();
         $telecallerList = User::where('role_id', 6)->pluck('name', 'id')->toArray();
 
-        return view('leads.show', compact(
+        return view('admin.leads.show', compact(
             'lead', 'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList'
         ));
     }
@@ -169,10 +230,10 @@ class LeadController extends Controller
         $leadSources = LeadSource::all();
         $countries = Country::all();
         $courses = Course::all();
-        $countryCode = $this->getCountryCode();
+        $country_codes = get_country_code();
 
-        return view('leads.edit', compact(
-            'lead', 'telecallers', 'leadStatuses', 'leadSources', 'countries', 'courses', 'countryCode'
+        return view('admin.leads.edit', compact(
+            'lead', 'telecallers', 'leadStatuses', 'leadSources', 'countries', 'courses', 'country_codes'
         ));
     }
 
@@ -182,8 +243,23 @@ class LeadController extends Controller
             'title' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
+            'code' => 'nullable|string|max:10',
+            'whatsapp_code' => 'nullable|string|max:10',
+            'whatsapp' => 'nullable|string|max:20',
+            'gender' => 'nullable|in:male,female,other',
+            'age' => 'nullable|integer|min:1|max:999',
+            'place' => 'nullable|string|max:255',
+            'qualification' => 'nullable|string|max:255',
+            'interest_status' => 'nullable|in:1,2,3',
             'lead_status_id' => 'required|exists:lead_statuses,id',
             'lead_source_id' => 'required|exists:lead_sources,id',
+            'country_id' => 'required|exists:countries,id',
+            'course_id' => 'nullable|exists:courses,id',
+            'team_id' => 'nullable|exists:teams,id',
+            'telecaller_id' => 'nullable|exists:users,id',
+            'address' => 'nullable|string|max:500',
+            'followup_date' => 'nullable|date',
+            'remarks' => 'nullable|string|max:1000',
         ]);
 
         if ($validator->fails()) {
@@ -281,6 +357,19 @@ class LeadController extends Controller
 
     public function bulkUpload(Request $request)
     {
+        // Handle GET request - return the bulk upload form
+        if ($request->isMethod('get')) {
+            $leadStatuses = LeadStatus::where('is_active', true)->get();
+            $leadSources = LeadSource::where('is_active', true)->get();
+            $courses = Course::where('is_active', true)->get();
+            $telecallers = User::where('role_id', 3)->get();
+            
+            return view('admin.leads.bulk-upload', compact(
+                'leadStatuses', 'leadSources', 'courses', 'telecallers'
+            ));
+        }
+
+        // Handle POST request - process the bulk upload
         // Set execution time limit for bulk operations
         set_time_limit(config('timeout.max_execution_time', 300));
         ini_set('memory_limit', config('timeout.memory_limit', '256M'));
@@ -352,54 +441,6 @@ class LeadController extends Controller
         }
     }
 
-    private function getCountryCode()
-    {
-        return [
-            '+1' => 'United States',
-            '+44' => 'United Kingdom',
-            '+91' => 'India',
-            '+86' => 'China',
-            '+81' => 'Japan',
-            '+49' => 'Germany',
-            '+33' => 'France',
-            '+39' => 'Italy',
-            '+34' => 'Spain',
-            '+61' => 'Australia',
-            '+55' => 'Brazil',
-            '+7' => 'Russia',
-            '+82' => 'South Korea',
-            '+31' => 'Netherlands',
-            '+46' => 'Sweden',
-            '+47' => 'Norway',
-            '+45' => 'Denmark',
-            '+358' => 'Finland',
-            '+41' => 'Switzerland',
-            '+43' => 'Austria',
-            '+32' => 'Belgium',
-            '+351' => 'Portugal',
-            '+30' => 'Greece',
-            '+48' => 'Poland',
-            '+420' => 'Czech Republic',
-            '+36' => 'Hungary',
-            '+40' => 'Romania',
-            '+359' => 'Bulgaria',
-            '+385' => 'Croatia',
-            '+386' => 'Slovenia',
-            '+421' => 'Slovakia',
-            '+370' => 'Lithuania',
-            '+371' => 'Latvia',
-            '+372' => 'Estonia',
-            '+353' => 'Ireland',
-            '+354' => 'Iceland',
-            '+357' => 'Cyprus',
-            '+356' => 'Malta',
-            '+352' => 'Luxembourg',
-            '+377' => 'Monaco',
-            '+378' => 'San Marino',
-            '+376' => 'Andorra',
-            '+423' => 'Liechtenstein',
-        ];
-    }
 
     public function getTelecallersByTeam(Request $request)
     {

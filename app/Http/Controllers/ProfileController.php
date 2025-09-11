@@ -25,7 +25,7 @@ class ProfileController extends Controller
                 ->with('message', 'Please login to view your profile.');
         }
 
-        return view('profile.index', compact('user'));
+        return view('admin.profile.index', compact('user'));
     }
 
     /**
@@ -40,7 +40,7 @@ class ProfileController extends Controller
                 ->with('message', 'Please login to edit your profile.');
         }
 
-        return view('profile.edit', compact('user'));
+        return view('admin.profile.edit', compact('user'));
     }
 
     /**

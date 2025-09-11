@@ -11,7 +11,7 @@ class UserRoleController extends Controller
     public function index()
     {
         if (!RoleHelper::is_super_admin()) {
-            return redirect()->route('dashboard')->with('error', 'Access denied.');
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $userRoles = UserRole::orderBy('title')->get();
