@@ -31,6 +31,7 @@ class Lead extends Model
         'place',
         'created_by',
         'updated_by',
+        'deleted_by',
         'course_id',
         'by_meta',
         'meta_lead_id',
@@ -89,6 +90,11 @@ class Lead extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
+    }
+
     public function leadActivities()
     {
         return $this->hasMany(LeadActivity::class, 'lead_id');
@@ -121,12 +127,12 @@ class Lead extends Model
 
     public function scopeNotConverted($query)
     {
-        return $query->where('is_converted', false);
+        return $query->where('is_converted', 0);
     }
 
     public function scopeNotDropped($query)
     {
-        return $query->where('lead_status_id', '!=', 7);
+        return $query->where('is_converted', '!=', 1);
     }
 
     // Accessors
@@ -191,5 +197,16 @@ class Lead extends Model
             'created_by' => AuthHelper::getCurrentUserId(),
             'updated_by' => AuthHelper::getCurrentUserId()
         ]);
+    }
+
+    /**
+     * Override the delete method to set deleted_by
+     */
+    public function delete()
+    {
+        $this->deleted_by = AuthHelper::getCurrentUserId();
+        $this->save();
+        
+        return parent::delete();
     }
 }

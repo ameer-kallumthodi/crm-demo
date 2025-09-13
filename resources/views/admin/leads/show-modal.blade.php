@@ -10,7 +10,7 @@
                         <span class="text-white fw-bold" style="font-size: 2rem;">{{ strtoupper(substr($lead->title, 0, 1)) }}</span>
                     </div>
                     <h4 class="mb-1">{{ $lead->title }}</h4>
-                    <p class="text-muted mb-0">{{ $lead->phone }}</p>
+                    <p class="text-muted mb-0">{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</p>
                 </div>
 
                 <!-- Lead Info Cards -->
@@ -41,7 +41,7 @@
                             <div class="col-12">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <span class="fw-bold">Status:</span>
-                                    <span class="badge bg-{{ $lead->leadStatus && $lead->leadStatus->id == 4 ? 'success' : ($lead->leadStatus && $lead->leadStatus->id == 7 ? 'danger' : 'warning') }} px-3 py-2">
+                                    <span class="badge {{ \App\Helpers\StatusHelper::getLeadStatusBadgeClass($lead->leadStatus ? $lead->leadStatus->id : 0) }} px-3 py-2">
                                         {{ $lead->leadStatus ? $lead->leadStatus->title : 'N/A' }}
                                     </span>
                                 </div>

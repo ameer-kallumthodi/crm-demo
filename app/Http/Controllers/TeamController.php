@@ -89,6 +89,9 @@ class TeamController extends Controller
     public function submit(Request $request)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Access denied.'], 403);
+            }
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -97,11 +100,19 @@ class TeamController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        Team::create([
+        $team = Team::create([
             'name' => $request->name,
             'description' => $request->description,
             'created_by' => AuthHelper::getCurrentUserId(),
         ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Team created successfully!',
+                'data' => $team
+            ]);
+        }
 
         return redirect()->route('admin.teams.index')->with('message_success', 'Team created successfully!');
     }
@@ -119,6 +130,9 @@ class TeamController extends Controller
     public function update(Request $request, $id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Access denied.'], 403);
+            }
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -133,6 +147,14 @@ class TeamController extends Controller
             'description' => $request->description,
             'updated_by' => AuthHelper::getCurrentUserId(),
         ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Team updated successfully!',
+                'data' => $team
+            ]);
+        }
 
         return redirect()->route('admin.teams.index')->with('message_success', 'Team updated successfully!');
     }

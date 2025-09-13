@@ -12,17 +12,17 @@ class SettingController extends Controller
 {
     public function index()
     {
+        // Get all settings in one query to reduce database calls
+        $settings = Setting::whereIn('key', [
+            'site_name', 'site_description', 'site_logo', 'site_favicon', 'bg_image'
+        ])->pluck('value', 'key');
+
         $siteSettings = [
-            'site_name' => Setting::get('site_name', 'Base CRM'),
-            'site_description' => Setting::get('site_description', 'CRM Management System'),
-            'site_logo' => Setting::get('site_logo', 'storage/logo.png'),
-            'site_favicon' => Setting::get('site_favicon', 'storage/favicon.ico'),
-            'sidebar_color' => Setting::get('sidebar_color', '#1e293b'),
-            'topbar_color' => Setting::get('topbar_color', '#ffffff'),
-            'bg_image' => Setting::get('bg_image', 'assets/mantis/images/auth-bg.jpg'),
-            'login_primary_color' => Setting::get('login_primary_color', '#667eea'),
-            'login_secondary_color' => Setting::get('login_secondary_color', '#764ba2'),
-            'login_form_style' => Setting::get('login_form_style', 'modern'),
+            'site_name' => $settings->get('site_name', 'Base CRM'),
+            'site_description' => $settings->get('site_description', 'CRM Management System'),
+            'site_logo' => $settings->get('site_logo', 'storage/logo.png'),
+            'site_favicon' => $settings->get('site_favicon', 'storage/favicon.ico'),
+            'bg_image' => $settings->get('bg_image', 'assets/mantis/images/auth-bg.jpg'),
         ];
         
         return view('admin.settings.index', compact('siteSettings'));
@@ -143,40 +143,6 @@ class SettingController extends Controller
         }
     }
 
-    public function updateColors(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'sidebar_color' => 'required|string|max:7',
-            'topbar_color' => 'required|string|max:7',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Please correct the errors below.',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        try {
-            // Update sidebar color
-            Setting::set('sidebar_color', $request->sidebar_color, 'color', 'Sidebar background color', 'theme');
-            
-            // Update topbar color
-            Setting::set('topbar_color', $request->topbar_color, 'color', 'Topbar background color', 'theme');
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Colors updated successfully!'
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while updating colors. Please try again.'
-            ], 500);
-        }
-    }
 
     public function updateBackgroundImage(Request $request)
     {
@@ -218,42 +184,28 @@ class SettingController extends Controller
         }
     }
 
-    public function updateLoginCustomization(Request $request)
+    public function removeBackgroundImage(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'login_primary_color' => 'required|string|max:7',
-            'login_secondary_color' => 'required|string|max:7',
-            'login_form_style' => 'required|string|in:modern,classic,minimal',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Please correct the errors below.',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
-            // Update login primary color
-            Setting::set('login_primary_color', $request->login_primary_color, 'color', 'Primary color for login form', 'theme');
+            // Delete the current background image file if it exists
+            if (Storage::disk('public')->exists('auth-bg.jpg')) {
+                Storage::disk('public')->delete('auth-bg.jpg');
+            }
             
-            // Update login secondary color
-            Setting::set('login_secondary_color', $request->login_secondary_color, 'color', 'Secondary color for login form', 'theme');
-            
-            // Update login form style
-            Setting::set('login_form_style', $request->login_form_style, 'text', 'Login form style', 'theme');
+            // Update settings table to use default background
+            Setting::set('bg_image', 'assets/mantis/images/auth-bg.jpg', 'file', 'Login page background image', 'site');
 
             return response()->json([
                 'success' => true,
-                'message' => 'Login customization updated successfully!'
+                'message' => 'Background image removed successfully!'
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while updating login customization. Please try again.'
+                'message' => 'An error occurred while removing the background image. Please try again.'
             ], 500);
         }
     }
+
 }

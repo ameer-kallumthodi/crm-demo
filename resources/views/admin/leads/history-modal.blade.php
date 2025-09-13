@@ -43,7 +43,7 @@
                                         <div class="card bg-light">
                                             <div class="card-body p-2">
                                                 <small class="text-muted d-block">Lead Status</small>
-                                                <span class="badge bg-{{ $lead->leadStatus->id == 4 ? 'success' : ($lead->leadStatus->id == 7 ? 'danger' : 'warning') }}">
+                                                <span class="badge {{ \App\Helpers\StatusHelper::getLeadStatusBadgeClass($lead->leadStatus->id) }}">
                                                     {{ $lead->leadStatus->title }}
                                                 </span>
                                             </div>

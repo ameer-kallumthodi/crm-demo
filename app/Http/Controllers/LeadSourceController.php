@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LeadSource;
 use Illuminate\Http\Request;
 use App\Helpers\RoleHelper;
+use Illuminate\Support\Facades\DB;
 
 class LeadSourceController extends Controller
 {
@@ -28,14 +29,12 @@ class LeadSourceController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
-            'sort_order' => 'integer|min:0',
         ]);
 
         $leadSource = LeadSource::create([
             'title' => $request->title,
             'description' => $request->description,
-            'is_active' => $request->has('is_active'),
-            'sort_order' => $request->sort_order ?? 0,
+            'is_active' => $request->boolean('is_active'),
         ]);
 
         return response()->json([
@@ -57,28 +56,33 @@ class LeadSourceController extends Controller
     public function update(Request $request, LeadSource $leadSource)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return response()->json(['error' => 'Access denied.'], 403);
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Access denied.'], 403);
+            }
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
-
+        
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
-            'sort_order' => 'integer|min:0',
         ]);
 
         $leadSource->update([
             'title' => $request->title,
             'description' => $request->description,
-            'is_active' => $request->has('is_active'),
-            'sort_order' => $request->sort_order ?? 0,
+            'is_active' => $request->boolean('is_active'),
         ]);
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Lead Source updated successfully.',
+                'data' => $leadSource
+            ]);
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Lead Source updated successfully.',
-            'data' => $leadSource
-        ]);
+        return redirect()->route('admin.lead-sources.index')->with('message_success', 'Lead Source updated successfully!');
     }
 
     public function destroy(LeadSource $leadSource)
@@ -114,6 +118,9 @@ class LeadSourceController extends Controller
     public function submit(Request $request)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Access denied.'], 403);
+            }
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -123,11 +130,19 @@ class LeadSourceController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        LeadSource::create([
+        $leadSource = LeadSource::create([
             'title' => $request->title,
             'description' => $request->description,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->boolean('is_active'),
         ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Lead Source created successfully!',
+                'data' => $leadSource
+            ]);
+        }
 
         return redirect()->route('admin.lead-sources.index')->with('message_success', 'Lead Source created successfully!');
     }

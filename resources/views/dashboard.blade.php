@@ -127,10 +127,10 @@
                             @forelse($recentLeads ?? [] as $lead)
                             <tr>
                                 <td><a href="#" class="text-muted">{{ $lead->title }}</a></td>
-                                <td>{{ $lead->phone }}</td>
+                                <td>{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</td>
                                 <td>
                                     <span class="d-flex align-items-center gap-2">
-                                        <i class="fas fa-circle text-{{ $lead->leadStatus->id == 4 ? 'success' : ($lead->leadStatus->id == 7 ? 'danger' : 'warning') }} f-10 m-r-5"></i>
+                                        <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus->id) }} f-10 m-r-5"></i>
                                         {{ $lead->leadStatus->title }}
                                     </span>
                                 </td>
@@ -169,6 +169,35 @@
     </div>
 
     <div class="col-md-12 col-xl-8">
+        <h5 class="mb-3">Lead Status Overview</h5>
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-2 f-w-400 text-muted">Lead Status Distribution</h6>
+                <div class="row">
+                    @forelse($leadStatuses ?? [] as $status)
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="avtar avtar-s rounded-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($status->id) }} bg-light-{{ \App\Helpers\StatusHelper::getLeadStatusColor($status->id) }}">
+                                    <i class="ti ti-circle f-18"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">{{ $status->title }}</h6>
+                                <p class="mb-0 text-muted">{{ $status->leads_count ?? 0 }} leads</p>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="col-12 text-center text-muted">
+                        <p class="mb-0">No lead status data available</p>
+                    </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12 col-xl-4">
         <h5 class="mb-3">Lead Sources</h5>
         <div class="card">
             <div class="card-body">

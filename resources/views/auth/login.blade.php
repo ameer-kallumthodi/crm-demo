@@ -27,6 +27,16 @@
     <!-- [Template CSS Files] -->
     <link rel="stylesheet" href="{{ asset('assets/mantis/css/style.css') }}" id="main-style-link">
     <link rel="stylesheet" href="{{ asset('assets/mantis/css/style-preset.css') }}">
+    
+    <!-- Default Theme -->
+    <style>
+        .login-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        .auth-main {
+            background-color: #ffffff;
+        }
+    </style>
 </head>
 <!-- [Head] end -->
 <!-- [Body] Start -->

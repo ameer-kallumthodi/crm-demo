@@ -44,19 +44,19 @@
             <div class="card-body">
                 <form method="GET" action="{{ route('leads.index') }}" id="dateFilterForm">
                     <div class="row align-items-end">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
-                            <input type="date" class="form-control" id="date_from" name="date_from" 
+                            <input type="date" class="form-control" name="date_from" 
                                    value="{{ request('date_from', \Carbon\Carbon::now()->subDays(7)->format('Y-m-d')) }}">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="date_to" class="form-label">To Date</label>
-                            <input type="date" class="form-control" id="date_to" name="date_to" 
+                            <input type="date" class="form-control" name="date_to" 
                                    value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
                         </div>
                         <div class="col-md-2">
                             <label for="lead_status_id" class="form-label">Status</label>
-                            <select class="form-select" id="lead_status_id" name="lead_status_id">
+                            <select class="form-select" name="lead_status_id">
                                 <option value="">All Statuses</option>
                                 @foreach($leadStatuses as $status)
                                     <option value="{{ $status->id }}" {{ request('lead_status_id') == $status->id ? 'selected' : '' }}>
@@ -67,7 +67,7 @@
                         </div>
                         <div class="col-md-2">
                             <label for="lead_source_id" class="form-label">Source</label>
-                            <select class="form-select" id="lead_source_id" name="lead_source_id">
+                            <select class="form-select" name="lead_source_id">
                                 <option value="">All Sources</option>
                                 @foreach($leadSources as $source)
                                     <option value="{{ $source->id }}" {{ request('lead_source_id') == $source->id ? 'selected' : '' }}>
@@ -77,6 +77,28 @@
                             </select>
                         </div>
                         <div class="col-md-2">
+                            <label for="course_id" class="form-label">Course</label>
+                            <select class="form-select" name="course_id">
+                                <option value="">All Courses</option>
+                                @foreach($courses as $course)
+                                    <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
+                                        {{ $course->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="telecaller_id" class="form-label">Telecaller</label>
+                            <select class="form-select" id="telecaller_id_filter" name="telecaller_id">
+                                <option value="">All Telecallers</option>
+                                @foreach($telecallers as $telecaller)
+                                    <option value="{{ $telecaller->id }}" {{ request('telecaller_id') == $telecaller->id ? 'selected' : '' }}>
+                                        {{ $telecaller->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 mt-3">
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="ti ti-filter"></i> Filter
@@ -101,7 +123,7 @@
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">All Leads</h5>
-                    <div>
+                    <div class="d-flex gap-2">
                         <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
                             onclick="show_ajax_modal('{{ route('leads.add') }}', 'Add New Lead')">
                             <i class="ti ti-plus"></i> Add Lead
@@ -109,6 +131,14 @@
                         <a href="javascript:void(0);" class="btn btn-outline-primary btn-sm px-3"
                             onclick="show_ajax_modal('{{ route('leads.bulk-upload.test') }}', 'Bulk Upload Leads')">
                             <i class="ti ti-upload"></i> Bulk Upload
+                        </a>
+                        <a href="javascript:void(0);" class="btn btn-outline-success btn-sm px-3"
+                            onclick="show_large_modal('{{ route('admin.leads.bulk-reassign') }}', 'Bulk Reassign Leads')">
+                            <i class="ti ti-users"></i> Bulk Reassign
+                        </a>
+                        <a href="javascript:void(0);" class="btn btn-outline-danger btn-sm px-3"
+                            onclick="show_ajax_modal('{{ route('admin.leads.bulk-delete') }}', 'Bulk Delete Leads')">
+                            <i class="ti ti-trash"></i> Bulk Delete
                         </a>
                     </div>
                 </div>
@@ -120,41 +150,24 @@
                         <thead>
                             <tr>
                                 <th>#</th>
+                                <th>Actions</th>
                                 <th>Name</th>
                                 <th>Phone</th>
                                 <th>Email</th>
                                 <th>Status</th>
                                 <th>Source</th>
+                                <th>Course</th>
                                 <th>Telecaller</th>
-                                <th>Created</th>
-                                <th>Actions</th>
+                                <th>Place</th>
+                                <th>Remarks</th>
+                                <th>Date</th>
+                                <th>Time</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($leads as $index => $lead)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avtar avtar-s rounded-circle bg-light-primary me-2 d-flex align-items-center justify-content-center">
-                                            <span class="f-16 fw-bold text-primary">{{ strtoupper(substr($lead->title, 0, 1)) }}</span>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-0">{{ $lead->title }}</h6>
-                                            <small class="text-muted">{{ $lead->place }}</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>{{ $lead->phone }}</td>
-                                <td>{{ $lead->email ?? 'N/A' }}</td>
-                                <td>
-                                    <span class="badge bg-light-{{ $lead->leadStatus->id == 4 ? 'success' : ($lead->leadStatus->id == 7 ? 'danger' : 'warning') }} text-{{ $lead->leadStatus->id == 4 ? 'success' : ($lead->leadStatus->id == 7 ? 'danger' : 'warning') }}">
-                                        {{ $lead->leadStatus->title }}
-                                    </span>
-                                </td>
-                                <td>{{ $lead->leadSource->title ?? '-' }}</td>
-                                <td>{{ $lead->telecaller->name ?? 'Unassigned' }}</td>
-                                <td>{{ $lead->created_at->format('M d, Y') }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary"
@@ -169,16 +182,46 @@
                                             onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')">
                                             <i class="ti ti-arrow-up"></i>
                                         </a>
+                                        @if(!$lead->is_converted)
+                                        <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning"
+                                            onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')">
+                                            <i class="ti ti-refresh"></i>
+                                        </a>
+                                        @endif
                                         <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
                                             onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}', 'Delete Lead', 'Are you sure you want to delete this lead? This action cannot be undone.')">
                                             <i class="ti ti-trash"></i>
                                         </a>
                                     </div>
                                 </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avtar avtar-s rounded-circle bg-light-primary me-2 d-flex align-items-center justify-content-center">
+                                            <span class="f-16 fw-bold text-primary">{{ strtoupper(substr($lead->title, 0, 1)) }}</span>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ $lead->title }}</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</td>
+                                <td>{{ $lead->email ?? '-' }}</td>
+                                <td>
+                                    <span class="badge {{ \App\Helpers\StatusHelper::getLeadStatusColorClass($lead->leadStatus->id) }}">
+                                        {{ $lead->leadStatus->title }}
+                                    </span>
+                                </td>
+                                <td>{{ $lead->leadSource->title ?? '-' }}</td>
+                                <td>{{ $lead->course->title ?? '-' }}</td>
+                                <td>{{ $lead->telecaller->name ?? 'Unassigned' }}</td>
+                                <td>{{ $lead->place ?? '-' }}</td>
+                                <td>{{ $lead->remarks ? Str::limit($lead->remarks, 30) : '-' }}</td>
+                                <td>{{ $lead->created_at->format('M d, Y') }}</td>
+                                <td>{{ $lead->created_at->format('H:i A') }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="8" class="text-center py-4">
+                                <td colspan="13" class="text-center py-4">
                                     <div class="text-muted">
                                         <i class="ti ti-inbox f-48 mb-3 d-block"></i>
                                         No leads found
@@ -208,6 +251,7 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+
     // Only initialize if not already initialized
     if (!$.fn.DataTable.isDataTable('#leadsTable')) {
         // Initialize DataTable

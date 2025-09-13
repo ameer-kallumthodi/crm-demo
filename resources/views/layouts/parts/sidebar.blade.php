@@ -62,6 +62,18 @@
                 @endif
                 @endif
                 
+                {{-- Academic Assistants Section --}}
+                @if(has_permission('admin/academic-assistants/index'))
+                <li class="pc-item {{ request()->routeIs('admin.academic-assistants.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.academic-assistants.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-user-plus"></i>
+                        </span>
+                        <span class="pc-mtext">Academic Assistants</span>
+                    </a>
+                </li>
+                @endif
+                
                 {{-- Lead Management Section --}}
                 @if(has_permission('admin/lead-statuses/index') || has_permission('admin/lead-sources/index'))
                 <li class="pc-item pc-caption">
@@ -101,6 +113,18 @@
                             <i class="ti ti-chart-pie"></i>
                         </span>
                         <span class="pc-mtext">Lead Reports</span>
+                    </a>
+                </li>
+                @endif
+                
+                {{-- Converted Leads Section --}}
+                @if(has_permission('admin/converted-leads/index'))
+                <li class="pc-item {{ request()->routeIs('admin.converted-leads.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.converted-leads.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-user-check"></i>
+                        </span>
+                        <span class="pc-mtext">Converted Leads</span>
                     </a>
                 </li>
                 @endif

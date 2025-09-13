@@ -70,6 +70,23 @@ class RoleHelper
     }
 
     /**
+     * Check if current user is Team Lead
+     */
+    public static function is_team_lead()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        return $user->is_team_lead == 1;
+    }
+
+    /**
      * Check if current user has admin or super admin role
      */
     public static function is_admin_or_super_admin()

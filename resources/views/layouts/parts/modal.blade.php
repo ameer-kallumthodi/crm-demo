@@ -71,10 +71,16 @@
         $('#small-modal-title').html(header);
     }
 
-    function show_ajax_modal(url, header) {
+    function show_ajax_modal(url, header, leadId = null) {
         // SHOWING AJAX PRELOADER IMAGE
         $('#ajax-modal-content').html('<div style="padding:40px; text-align:center;"><img src="{{ asset("assets/loader.gif") }}" width="150" height="150" alt="Loading..."></div>');
         $('#ajax-modal-title').html('Loading...');
+        
+        // Store lead ID in modal data attribute if provided
+        if (leadId) {
+            $('#ajax_modal').attr('data-lead-id', leadId);
+        }
+        
         // LOADING THE AJAX MODAL
         $('#ajax_modal').modal({
             backdrop: 'static',

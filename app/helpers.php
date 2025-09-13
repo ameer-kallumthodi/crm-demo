@@ -70,3 +70,13 @@ if (!function_exists('get_country_code')) {
         return \App\Helpers\CountriesHelper::get_country_code();
     }
 }
+
+if (!function_exists('get_phone_code')) {
+    /**
+     * Parse phone number to extract country code and phone number
+     */
+    function get_phone_code($phone_number)
+    {
+        return \App\Helpers\PhoneNumberHelper::get_phone_code($phone_number);
+    }
+}

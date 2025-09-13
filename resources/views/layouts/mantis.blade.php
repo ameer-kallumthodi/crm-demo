@@ -33,6 +33,16 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     @include('layouts.parts.header-includes')
     
+    <!-- Default Theme -->
+    <style>
+        .pc-sidebar {
+            background-color: #ffffff !important;
+        }
+        .pc-header {
+            background-color: #ffffff !important;
+        }
+    </style>
+    
     @stack('styles')
 </head>
 <!-- [Head] end -->

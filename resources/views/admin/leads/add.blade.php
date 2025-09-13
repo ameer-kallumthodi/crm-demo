@@ -4,8 +4,28 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="mb-3">
-                    <label class="form-label" for="title">Name <span class="text-danger">*</span></label>
-                    <input type="text" name="title" class="form-control" id="title" placeholder="Enter Name" value="{{ old('title') }}" required>
+                    <label class="form-label" for="title">Name</label>
+                    <input type="text" name="title" class="form-control" id="title" placeholder="Enter Name" value="{{ old('title') }}">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label" for="code">Country Code</label>
+                        <select class="form-select" id="code" name="code">
+                            <option value="">Select Country</option>
+                            @foreach($country_codes as $code => $country)
+                                <option value="{{ $code }}" {{ old('code') == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label class="form-label" for="phone">Phone <span class="text-danger">*</span></label>
+                        <input type="number" name="phone" class="form-control" id="phone" placeholder="Enter Phone" value="{{ old('phone') }}" required maxlength="15" />
+                    </div>
                 </div>
             </div>
 
@@ -14,7 +34,7 @@
                     <label class="form-label" for="gender">Gender</label>
                     <div class="d-flex gap-3">
                         <div class="form-check">
-                            <input type="radio" class="form-check-input" name="gender" id="gender-male" value="male" {{ old('gender', 'male') == 'male' ? 'checked' : '' }}>
+                            <input type="radio" class="form-check-input" name="gender" id="gender-male" value="male" {{ old('gender') == 'male' ? 'checked' : '' }}>
                             <label class="form-check-label" for="gender-male">Male</label>
                         </div>
                         <div class="form-check">
@@ -36,26 +56,6 @@
                 <div class="mb-3">
                     <label class="form-label" for="place">Place</label>
                     <input type="text" class="form-control" id="place" name="place" placeholder="Enter Place" value="{{ old('place') }}" />
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        <label class="form-label" for="code">Country Code</label>
-                        <select class="form-select" id="code" name="code">
-                            <option value="">Select Country</option>
-                            @foreach($country_codes as $code => $country)
-                                <option value="{{ $code }}" {{ old('code') == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-8">
-                    <div class="mb-3">
-                        <label class="form-label" for="phone">Phone <span class="text-danger">*</span></label>
-                        <input type="number" name="phone" class="form-control" id="phone" placeholder="Enter Phone" value="{{ old('phone') }}" required maxlength="15" />
-                    </div>
                 </div>
             </div>
 
@@ -107,11 +107,10 @@
 
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="lead_status_id">Lead Status <span class="text-danger">*</span></label>
-                    <select class="form-select" name="lead_status_id" id="lead_status_id" required>
-                        <option value="">Select Lead Status</option>
+                    <label class="form-label" for="lead_status_id">Lead Status</label>
+                    <select class="form-select" name="lead_status_id" id="lead_status_id">
                         @foreach($leadStatuses as $status)
-                            <option value="{{ $status->id }}" {{ old('lead_status_id') == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
+                            <option value="{{ $status->id }}" {{ old('lead_status_id', 1) == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -119,8 +118,8 @@
 
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="lead_source_id">Lead Source <span class="text-danger">*</span></label>
-                    <select class="form-select" name="lead_source_id" id="lead_source_id" required>
+                    <label class="form-label" for="lead_source_id">Lead Source</label>
+                    <select class="form-select" name="lead_source_id" id="lead_source_id">
                         <option value="">Select Source</option>
                         @foreach($leadSources as $source)
                             <option value="{{ $source->id }}" {{ old('lead_source_id') == $source->id ? 'selected' : '' }}>{{ $source->title }}</option>
@@ -131,11 +130,11 @@
 
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="country_id">Country <span class="text-danger">*</span></label>
-                    <select class="form-select" name="country_id" id="country_id" required>
+                    <label class="form-label" for="country_id">Country</label>
+                    <select class="form-select" name="country_id" id="country_id">
                         <option value="">Select Country</option>
                         @foreach($countries as $country)
-                            <option value="{{ $country->id }}" {{ old('country_id') == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
+                            <option value="{{ $country->id }}" {{ old('country_id') == $country->id ? 'selected' : '' }}>{{ $country->title }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -164,6 +163,15 @@
                     </select>
                 </div>
             </div>
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label" for="telecaller_id">Telecaller</label>
+                    <select class="form-select" name="telecaller_id" id="telecaller_id">
+                        <option value="">Select Telecaller</option>
+                    </select>
+                </div>
+            </div>
 
             <div class="col-md-12">
                 <div class="mb-3">
@@ -174,17 +182,15 @@
 
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="telecaller_id">Academic Counselor</label>
-                    <select class="form-select" name="telecaller_id" id="telecaller_id">
-                        <option value="">Select Team First</option>
-                    </select>
+                    <label class="form-label" for="add_date">Date</label>
+                    <input type="date" class="form-control" id="add_date" name="add_date" value="" />
                 </div>
             </div>
 
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="followup_date">Follow Up Date</label>
-                    <input type="date" class="form-control" id="followup_date" name="followup_date" value="{{ old('followup_date') }}" />
+                    <label class="form-label" for="add_time">Add Time</label>
+                    <input type="time" class="form-control" id="add_time" name="add_time" value="" />
                 </div>
             </div>
 
@@ -217,7 +223,7 @@ $(document).ready(function() {
                 type: 'GET',
                 data: { team_id: teamId },
                 success: function(response) {
-                    telecallerSelect.html('<option value="">Select Academic Counselor</option>');
+                    telecallerSelect.html('<option value="">Select Telecaller</option>');
                     
                     if (response.telecallers && response.telecallers.length > 0) {
                         $.each(response.telecallers, function(index, telecaller) {

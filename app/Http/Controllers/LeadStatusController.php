@@ -66,6 +66,9 @@ class LeadStatusController extends Controller
     public function submit(Request $request)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Access denied.'], 403);
+            }
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -75,11 +78,19 @@ class LeadStatusController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        LeadStatus::create([
+        $leadStatus = LeadStatus::create([
             'title' => $request->title,
             'description' => $request->description,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->boolean('is_active'),
         ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Lead Status created successfully!',
+                'data' => $leadStatus
+            ]);
+        }
 
         return redirect()->route('admin.lead-statuses.index')->with('message_success', 'Lead Status created successfully!');
     }
@@ -97,6 +108,9 @@ class LeadStatusController extends Controller
     public function update(Request $request, $id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Access denied.'], 403);
+            }
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -110,8 +124,16 @@ class LeadStatusController extends Controller
         $leadStatus->update([
             'title' => $request->title,
             'description' => $request->description,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->boolean('is_active'),
         ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Lead Status updated successfully!',
+                'data' => $leadStatus
+            ]);
+        }
 
         return redirect()->route('admin.lead-statuses.index')->with('message_success', 'Lead Status updated successfully!');
     }

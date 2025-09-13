@@ -13,6 +13,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TelecallerController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ConvertedLeadController;
 
 // Public routes
 Route::get('/', [AuthController::class, 'index'])->name('login');
@@ -39,8 +40,6 @@ Route::middleware('custom.auth')->group(function () {
     Route::get('/leads/bulk-upload-form', [LeadController::class, 'bulkUploadView'])->name('leads.bulk-upload.test');
     Route::get('/leads/bulk-upload-template', [LeadController::class, 'downloadTemplate'])->name('leads.bulk-upload.template');
     Route::post('/leads/bulk-upload', [LeadController::class, 'bulkUploadSubmit'])->name('leads.bulk-upload.submit');
-    Route::get('/leads/bulk-reassign', [LeadController::class, 'bulkReassign'])->name('leads.bulk-reassign');
-    Route::post('/leads/bulk-reassign', [LeadController::class, 'bulkReassign'])->name('leads.bulk-reassign.post');
     Route::get('leads/{lead}', [LeadController::class, 'show'])->name('leads.show');
     Route::get('leads/{lead}/ajax-show', [LeadController::class, 'ajax_show'])->name('leads.ajax-show');
     Route::get('leads/{lead}/edit', [LeadController::class, 'edit'])->name('leads.edit');
@@ -50,11 +49,9 @@ Route::middleware('custom.auth')->group(function () {
     Route::post('leads/{lead}/status-update', [LeadController::class, 'status_update_submit'])->name('leads.status-update-submit');
     Route::put('leads/{lead}', [LeadController::class, 'update'])->name('leads.update');
     Route::delete('leads/{lead}', [LeadController::class, 'destroy'])->name('leads.destroy');
-    Route::get('/leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
-    Route::post('/leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status.post');
-    Route::get('/leads/{lead}/status-change', [LeadController::class, 'statusChange'])->name('leads.status-change');
-    Route::post('/leads/{lead}/status-change', [LeadController::class, 'statusChange'])->name('leads.status-change.post');
     Route::get('/leads/{lead}/history', [LeadController::class, 'history'])->name('leads.history');
+    Route::get('/leads/{lead}/convert', [LeadController::class, 'convert'])->name('leads.convert');
+    Route::post('/leads/{lead}/convert', [LeadController::class, 'convertSubmit'])->name('leads.convert.submit');
     
     // API routes for AJAX calls
     Route::prefix('api')->group(function () {
@@ -75,7 +72,7 @@ Route::middleware('custom.auth')->group(function () {
             Route::get('/lead-sources-add', [LeadSourceController::class, 'ajax_add'])->name('lead-sources.add');
             Route::get('/lead-sources-edit/{id}', [LeadSourceController::class, 'ajax_edit'])->name('lead-sources.edit');
             Route::post('/lead-sources-submit', [LeadSourceController::class, 'submit'])->name('lead-sources.submit');
-            Route::put('/lead-sources-update/{id}', [LeadSourceController::class, 'update'])->name('lead-sources.update');
+            Route::put('/lead-sources-update/{leadSource}', [LeadSourceController::class, 'update'])->name('lead-sources.update');
             Route::get('/lead-sources-delete/{id}', [LeadSourceController::class, 'delete'])->name('lead-sources.delete');
             
             Route::resource('countries', CountryController::class);
@@ -119,9 +116,8 @@ Route::middleware('custom.auth')->group(function () {
             Route::post('/settings/update-logo', [App\Http\Controllers\SettingController::class, 'updateLogo'])->name('website.settings.update-logo');
             Route::post('/settings/update-favicon', [App\Http\Controllers\SettingController::class, 'updateFavicon'])->name('website.settings.update-favicon');
             Route::post('/settings/update-site-settings', [App\Http\Controllers\SettingController::class, 'updateSiteSettings'])->name('website.settings.update-site-settings');
-            Route::post('/settings/update-colors', [App\Http\Controllers\SettingController::class, 'updateColors'])->name('website.settings.update-colors');
             Route::post('/settings/update-bg-image', [App\Http\Controllers\SettingController::class, 'updateBackgroundImage'])->name('website.settings.update-bg-image');
-            Route::post('/settings/update-login-customization', [App\Http\Controllers\SettingController::class, 'updateLoginCustomization'])->name('website.settings.update-login-customization');
+            Route::post('/settings/remove-bg-image', [App\Http\Controllers\SettingController::class, 'removeBackgroundImage'])->name('website.settings.remove-bg-image');
             
             // Reports routes
             Route::get('/reports/leads', [App\Http\Controllers\LeadReportController::class, 'index'])->name('reports.leads');
@@ -152,5 +148,24 @@ Route::middleware('custom.auth')->group(function () {
             Route::delete('/admins-destroy/{id}', [App\Http\Controllers\AdminController::class, 'destroy'])->name('admins.destroy');
             Route::get('/admins-change-password/{id}', [App\Http\Controllers\AdminController::class, 'changePassword'])->name('admins.change-password');
             Route::post('/admins-update-password/{id}', [App\Http\Controllers\AdminController::class, 'updatePassword'])->name('admins.update-password');
+            
+            // Bulk Operations Routes
+            Route::get('/leads/bulk-reassign', [App\Http\Controllers\LeadController::class, 'ajaxBulkReassign'])->name('leads.bulk-reassign');
+            Route::post('/leads/bulk-reassign', [App\Http\Controllers\LeadController::class, 'bulkReassign'])->name('leads.bulk-reassign.submit');
+            Route::get('/leads/bulk-delete', [App\Http\Controllers\LeadController::class, 'ajaxBulkDelete'])->name('leads.bulk-delete');
+            Route::post('/leads/bulk-delete', [App\Http\Controllers\LeadController::class, 'bulkDelete'])->name('leads.bulk-delete.submit');
+            Route::get('/leads/bulk-convert', [App\Http\Controllers\LeadController::class, 'ajaxBulkConvert'])->name('leads.bulk-convert');
+            Route::post('/leads/bulk-convert', [App\Http\Controllers\LeadController::class, 'bulkConvert'])->name('leads.bulk-convert.submit');
+            
+            // AJAX routes for bulk operations
+            Route::post('/leads/get-leads-by-source', [App\Http\Controllers\LeadController::class, 'getLeadsBySource'])->name('leads.get-by-source');
+            Route::post('/leads/get-leads-by-source-reassign', [App\Http\Controllers\LeadController::class, 'getLeadsBySourceReassign'])->name('leads.get-by-source-reassign');
+            
+            // Converted Leads Routes
+            Route::get('/converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'index'])->name('converted-leads.index');
+            Route::get('/converted-leads/view/{id}', [App\Http\Controllers\ConvertedLeadController::class, 'show'])->name('converted-leads.show');
+            
+            // Academic Assistants Routes
+            Route::resource('academic-assistants', App\Http\Controllers\AcademicAssistantController::class);
         });
 });

@@ -20,6 +20,7 @@ class Team extends Model
         'team_lead_id',
         'created_by',
         'updated_by',
+        'deleted_by',
     ];
 
     /**
@@ -36,5 +37,31 @@ class Team extends Model
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    /**
+     * Override the delete method to set deleted_by
+     */
+    public function delete()
+    {
+        $this->deleted_by = \App\Helpers\AuthHelper::getCurrentUserId();
+        $this->save();
+        
+        return parent::delete();
     }
 }

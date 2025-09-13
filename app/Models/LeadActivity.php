@@ -19,6 +19,7 @@ class LeadActivity extends Model
         'remarks',
         'created_by',
         'updated_by',
+        'deleted_by',
     ];
 
     protected $casts = [
@@ -61,5 +62,21 @@ class LeadActivity extends Model
     public function scopeRecent($query, $limit = 10)
     {
         return $query->orderBy('created_at', 'desc')->limit($limit);
+    }
+
+    public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    /**
+     * Override the delete method to set deleted_by
+     */
+    public function delete()
+    {
+        $this->deleted_by = \App\Helpers\AuthHelper::getCurrentUserId();
+        $this->save();
+        
+        return parent::delete();
     }
 }

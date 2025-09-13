@@ -56,13 +56,14 @@
                 <div class="mb-3">
                     <label class="form-label" for="team_id">Team <span class="text-danger">*</span></label>
                     <select class="form-select" name="team_id" id="team_id" required>
-                        <option value="">Select Team</option>
+                        <option value="all">All Teams</option>
                         @foreach($teams as $team)
                             <option value="{{ $team->id }}">{{ $team->name }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
+
 
             <div class="col-md-12">
                 <div class="mb-3">
@@ -78,7 +79,7 @@
             <div class="col-md-12" id="telecaller-selection">
                 <div class="mb-3">
                     <label class="form-label" for="telecallers">Assign to Telecallers <span class="text-danger">*</span></label>
-                    <select class="form-select" name="telecallers[]" id="telecallers" multiple>
+                    <select class="form-select" name="telecallers[]" id="telecaller" multiple>
                         @foreach($telecallers as $telecaller)
                             <option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>
                         @endforeach
@@ -90,9 +91,23 @@
             <div class="col-md-12">
                 <div class="alert alert-info">
                     <h6>Excel Format Guide:</h6>
-                    <p class="mb-2"><strong>Required columns:</strong> Name, Phone, Remarks</p>
+                    <p class="mb-2"><strong>Required columns:</strong> Name, Phone, Place, Remarks</p>
+                    <p class="mb-2"><strong>Column order:</strong></p>
+                    <ul class="mb-2">
+                        <li><strong>Column A:</strong> Name (Required)</li>
+                        <li><strong>Column B:</strong> Phone (Required) - Use international format with country code</li>
+                        <li><strong>Column C:</strong> Place (Optional)</li>
+                        <li><strong>Column D:</strong> Remarks (Optional)</li>
+                    </ul>
+                    <p class="mb-2"><strong>Phone Format:</strong> Use international format with country code:</p>
+                    <ul class="mb-2">
+                        <li><code>+91 9876543210</code> (India)</li>
+                        <li><code>+1 5551234567</code> (US/Canada)</li>
+                        <li><code>+44 7700123456</code> (UK)</li>
+                        <li><code>+86 13800138000</code> (China)</li>
+                    </ul>
                     <p class="mb-2"><strong>Template:</strong> Click "Download Template" above to get the correct Excel format with sample data.</p>
-                    <p class="mb-0"><strong>Note:</strong> Duplicate phone numbers will be automatically skipped. Remarks field is optional.</p>
+                    <p class="mb-0"><strong>Note:</strong> Duplicate phone numbers (same code + phone) will be automatically skipped. Place and Remarks fields are optional.</p>
                 </div>
             </div>
         </div>
@@ -109,9 +124,24 @@ $(document).ready(function() {
     // Handle team selection to load telecallers
     $('#team_id').on('change', function() {
         const teamId = $(this).val();
-        const telecallerSelect = $('#telecallers');
+        const telecallerSelect = $('#telecaller');
         
-        if (teamId) {
+        if (teamId === 'all') {
+            // Load all telecallers from all teams
+            $.get('{{ route("leads.telecallers-by-team") }}', { team_id: 'all' })
+                .done(function(data) {
+                    telecallerSelect.empty();
+                    $.each(data.telecallers, function(index, telecaller) {
+                        telecallerSelect.append(
+                            $('<option></option>').val(telecaller.id).text(telecaller.name + ' (' + telecaller.team_name + ')')
+                        );
+                    });
+                })
+                .fail(function() {
+                    console.error('Failed to load telecallers');
+                });
+        } else if (teamId) {
+            // Load telecallers from specific team
             $.get('{{ route("leads.telecallers-by-team") }}', { team_id: teamId })
                 .done(function(data) {
                     telecallerSelect.empty();
@@ -133,13 +163,37 @@ $(document).ready(function() {
     $('#assign_to_all').on('change', function() {
         const isChecked = $(this).is(':checked');
         const telecallerSelection = $('#telecaller-selection');
+        const teamId = $('#team_id').val();
         
         if (isChecked) {
             telecallerSelection.hide();
-            $('#telecallers').prop('required', false);
+            $('#telecaller').prop('required', false);
+            
+            // Show message about team requirement
+            if (!teamId) {
+                toast_warning('Please select a team first to assign leads to all telecallers in that team.');
+            }
         } else {
             telecallerSelection.show();
-            $('#telecallers').prop('required', true);
+            $('#telecaller').prop('required', true);
+        }
+    });
+    
+    // Handle team selection change when assign to all is checked
+    $('#team_id').on('change', function() {
+        const teamId = $(this).val();
+        const assignToAll = $('#assign_to_all').is(':checked');
+        
+        if (assignToAll && teamId) {
+            // Load telecallers for the team to show how many will be assigned
+            $.get('{{ route("leads.telecallers-by-team") }}', { team_id: teamId })
+                .done(function(data) {
+                    if (data.telecallers.length > 0) {
+                        toast_success(`Will assign leads to ${data.telecallers.length} telecaller(s) in the selected team.`);
+                    } else {
+                        toast_warning('No telecallers found in the selected team. Please select a different team.');
+                    }
+                });
         }
     });
 
@@ -177,6 +231,22 @@ $(document).ready(function() {
                 errorDiv.text('File size must be less than 2MB. Current file size: ' + fileSize.toFixed(2) + 'MB').show();
                 return false;
             }
+        }
+        
+        // Check team selection
+        const teamId = $('#team_id').val();
+        if (!teamId) {
+            toast_error('Please select a team.');
+            return false;
+        }
+        
+        // Check telecaller assignment
+        const assignToAll = $('#assign_to_all').is(':checked');
+        const selectedTelecallers = $('#telecaller').val();
+        
+        if (!assignToAll && (!selectedTelecallers || selectedTelecallers.length === 0)) {
+            toast_error('Please select at least one telecaller or choose "Assign to all telecallers in team".');
+            return false;
         }
         
         const submitBtn = $(this).find('button[type="submit"]');

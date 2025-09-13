@@ -248,8 +248,21 @@ class DashboardController extends Controller
      */
     private function getLeadStatusesWithCount()
     {
-        $query = Lead::statusWithCount();
-        return $this->applyRoleBasedFilter($query);
+        // Get leads with their status counts, filtered by user role
+        $leadsQuery = Lead::query();
+        $filteredLeads = $this->applyRoleBasedFilter($leadsQuery)->get();
+        
+        // Group by lead status and count
+        $statusCounts = $filteredLeads->groupBy('lead_status_id')->map(function ($leads) {
+            return $leads->count();
+        });
+        
+        // Get status details with counts
+        $leadStatuses = LeadStatus::withCount(['leads' => function ($query) {
+            $this->applyRoleBasedFilter($query);
+        }])->get();
+        
+        return $leadStatuses;
     }
 
     /**

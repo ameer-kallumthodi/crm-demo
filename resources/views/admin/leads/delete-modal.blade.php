@@ -9,7 +9,7 @@
         <div class="card-body">
             <h6 class="card-title">Lead Details:</h6>
             <p class="mb-1"><strong>Name:</strong> {{ $lead->title }}</p>
-            <p class="mb-1"><strong>Phone:</strong> {{ $lead->phone }}</p>
+            <p class="mb-1"><strong>Phone:</strong> {{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</p>
             @if($lead->email)
                 <p class="mb-1"><strong>Email:</strong> {{ $lead->email }}</p>
             @endif

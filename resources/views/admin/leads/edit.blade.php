@@ -36,11 +36,36 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="form-group mb-3">
-                                <label for="title" class="form-label">Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" placeholder="Enter name" value="{{ old('title', $lead->title) }}" required />
+                                <label for="title" class="form-label">Name</label>
+                                <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" placeholder="Enter name" value="{{ old('title', $lead->title) }}" />
                                 @error('title')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <div class="form-group mb-3">
+                                <label for="phone" class="form-label">Phone <span class="text-danger">*</span></label>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <select class="form-select @error('code') is-invalid @enderror" name="code">
+                                            <option value="">Select Code</option>
+                                            @foreach($country_codes as $code => $country)
+                                                <option value="{{ $code }}" {{ old('code', $lead->code) == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('code')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="number" name="phone" id="phone" class="form-control @error('phone') is-invalid @enderror" placeholder="Enter phone no" value="{{ old('phone', $lead->phone) }}" required maxlength="15" />
+                                        @error('phone')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -70,38 +95,13 @@
                             </div>
                         </div>
                         
-                        <div class="col-lg-6">
+                        <div class="col-lg-12">
                             <div class="form-group mb-3">
                                 <label for="place" class="form-label">Place</label>
                                 <input type="text" class="form-control @error('place') is-invalid @enderror" placeholder="Enter Place" id="place" name="place" value="{{ old('place', $lead->place) }}" />
                                 @error('place')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                            </div>
-                        </div>
-                        
-                        <div class="col-lg-6">
-                            <div class="form-group mb-3">
-                                <label for="phone" class="form-label">Phone <span class="text-danger">*</span></label>
-                                <div class="row">
-                                    <div class="col-4">
-                                        <select class="form-select @error('code') is-invalid @enderror" name="code" required>
-                                            <option value="">Select Code</option>
-                                            @foreach($country_codes as $code => $country)
-                                                <option value="{{ $code }}" {{ old('code', $lead->code) == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('code')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-8">
-                                        <input type="number" name="phone" id="phone" class="form-control @error('phone') is-invalid @enderror" placeholder="Enter phone no" value="{{ old('phone', $lead->phone) }}" required maxlength="15" />
-                                        @error('phone')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         
@@ -164,11 +164,10 @@
                         
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
-                                <label for="lead_status_id" class="form-label">Lead status <span class="text-danger">*</span></label>
-                                <select class="form-select @error('lead_status_id') is-invalid @enderror" name="lead_status_id" id="lead_status_id" required>
-                                    <option value="">Select Lead Status</option>
+                                <label for="lead_status_id" class="form-label">Lead status</label>
+                                <select class="form-select @error('lead_status_id') is-invalid @enderror" name="lead_status_id" id="lead_status_id">
                                     @foreach($leadStatuses as $status)
-                                        <option value="{{ $status->id }}" {{ old('lead_status_id', $lead->lead_status_id) == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
+                                        <option value="{{ $status->id }}" {{ old('lead_status_id', $lead->lead_status_id, 1) == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
                                     @endforeach
                                 </select>
                                 @error('lead_status_id')
@@ -179,8 +178,8 @@
                         
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
-                                <label for="lead_source_id" class="form-label">Lead Source <span class="text-danger">*</span></label>
-                                <select class="form-select @error('lead_source_id') is-invalid @enderror" name="lead_source_id" id="lead_source_id" required>
+                                <label for="lead_source_id" class="form-label">Lead Source</label>
+                                <select class="form-select @error('lead_source_id') is-invalid @enderror" name="lead_source_id" id="lead_source_id">
                                     <option value="">Select Source</option>
                                     @foreach($leadSources as $source)
                                         <option value="{{ $source->id }}" {{ old('lead_source_id', $lead->lead_source_id) == $source->id ? 'selected' : '' }}>{{ $source->title }}</option>
@@ -194,8 +193,8 @@
                         
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
-                                <label for="country_id" class="form-label">Country <span class="text-danger">*</span></label>
-                                <select class="form-select @error('country_id') is-invalid @enderror" name="country_id" id="country_id" required>
+                                <label for="country_id" class="form-label">Country</label>
+                                <select class="form-select @error('country_id') is-invalid @enderror" name="country_id" id="country_id">
                                     <option value="">Select Country</option>
                                     @foreach($countries as $country)
                                         <option value="{{ $country->id }}" {{ old('country_id', $lead->country_id) == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
@@ -249,7 +248,7 @@
                         
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
-                                <label for="telecaller_id" class="form-label">Academic Counselor</label>
+                                <label for="telecaller_id" class="form-label">Telecaller</label>
                                 <select class="form-select @error('telecaller_id') is-invalid @enderror" name="telecaller_id" id="telecaller_id">
                                     <option value="">Select Team First</option>
                                     @if($lead->telecaller_id)
@@ -267,6 +266,26 @@
                                 <label for="followup_date" class="form-label">Follow Up Date</label>
                                 <input type="date" class="form-control @error('followup_date') is-invalid @enderror" id="followup_date" name="followup_date" value="{{ old('followup_date', $lead->followup_date) }}" />
                                 @error('followup_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <div class="form-group mb-3">
+                                <label for="add_date" class="form-label">Add Date</label>
+                                <input type="date" class="form-control @error('add_date') is-invalid @enderror" id="add_date" name="add_date" value="{{ old('add_date', $lead->add_date ?? date('Y-m-d')) }}" />
+                                @error('add_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <div class="form-group mb-3">
+                                <label for="add_time" class="form-label">Add Time</label>
+                                <input type="time" class="form-control @error('add_time') is-invalid @enderror" id="add_time" name="add_time" value="{{ old('add_time', $lead->add_time ?? date('H:i')) }}" />
+                                @error('add_time')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -318,7 +337,7 @@ $(document).ready(function() {
                 type: 'GET',
                 data: { team_id: teamId },
                 success: function(response) {
-                    telecallerSelect.html('<option value="">Select Academic Counselor</option>');
+                    telecallerSelect.html('<option value="">Select Telecaller</option>');
                     
                     if (response.telecallers && response.telecallers.length > 0) {
                         $.each(response.telecallers, function(index, telecaller) {

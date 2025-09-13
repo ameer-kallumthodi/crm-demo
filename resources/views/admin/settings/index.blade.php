@@ -69,45 +69,6 @@
                     </div>
                 </div>
 
-                <!-- Theme Settings -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card border">
-                            <div class="card-header">
-                                <h6 class="mb-0">Theme Colors</h6>
-                            </div>
-                            <div class="card-body">
-                                <form id="colorForm">
-                                    @csrf
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="sidebar_color" class="form-label">Sidebar Color</label>
-                                                <input type="color" class="form-control form-control-color" id="sidebar_color" name="sidebar_color" 
-                                                       value="{{ $siteSettings['sidebar_color'] }}" title="Choose sidebar color">
-                                                <div class="form-text">Choose the background color for the sidebar</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="topbar_color" class="form-label">Topbar Color</label>
-                                                <input type="color" class="form-control form-control-color" id="topbar_color" name="topbar_color" 
-                                                       value="{{ $siteSettings['topbar_color'] }}" title="Choose topbar color">
-                                                <div class="form-text">Choose the background color for the topbar</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <button type="submit" class="btn btn-primary" id="updateColorsBtn">
-                                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                            Update Colors
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="row">
                     <!-- Logo Settings -->
@@ -188,9 +149,14 @@
                                         <div class="form-text">Supported formats: JPEG, PNG, JPG, GIF, SVG. Max size: 2MB. Recommended: 1920x1080px</div>
                                         <div id="bg_image_error" class="text-danger mt-1" style="display: none;"></div>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="ti ti-upload"></i> Update Background Image
-                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="ti ti-upload"></i> Update Background Image
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" id="removeBgImageBtn">
+                                            <i class="ti ti-trash"></i> Remove Background Image
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
@@ -355,61 +321,6 @@ $(document).ready(function() {
         });
     });
 
-    // Handle color form submission
-    $('#colorForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = $(this).serialize();
-        const submitBtn = $(this).find('button[type="submit"]');
-        const originalText = submitBtn.html();
-        
-        // Show loading state
-        submitBtn.html('<i class="ti ti-loader-2 spin"></i> Updating...');
-        submitBtn.prop('disabled', true);
-        
-        $.ajax({
-            url: '{{ route("admin.website.settings.update-colors") }}',
-            type: 'POST',
-            data: formData,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    toast_success(response.message);
-                    // Apply colors immediately
-                    applyThemeColors();
-                } else {
-                    toast_danger(response.message);
-                }
-            },
-            error: function(xhr) {
-                const response = xhr.responseJSON;
-                if (response && response.message) {
-                    toast_danger(response.message);
-                } else {
-                    toast_danger('An error occurred while updating colors.');
-                }
-            },
-            complete: function() {
-                // Reset button state
-                submitBtn.html(originalText);
-                submitBtn.prop('disabled', false);
-            }
-        });
-    });
-
-    // Function to apply theme colors
-    function applyThemeColors() {
-        const sidebarColor = $('#sidebar_color').val();
-        const topbarColor = $('#topbar_color').val();
-        
-        // Apply sidebar color
-        $('.pc-sidebar').css('background-color', sidebarColor);
-        
-        // Apply topbar color
-        $('.pc-header').css('background-color', topbarColor);
-    }
 
     // Handle site settings form submission
     $('#siteSettingsForm').on('submit', function(e) {
@@ -501,6 +412,48 @@ $(document).ready(function() {
 
     // Apply colors on page load
     applyThemeColors();
+
+    // Handle remove background image
+    $('#removeBgImageBtn').on('click', function() {
+        if (confirm('Are you sure you want to remove the background image? This will reset it to the default image.')) {
+            const removeBtn = $(this);
+            const originalText = removeBtn.html();
+            
+            // Show loading state
+            removeBtn.html('<i class="ti ti-loader-2 spin"></i> Removing...');
+            removeBtn.prop('disabled', true);
+            
+            $.ajax({
+                url: '{{ route("admin.website.settings.remove-bg-image") }}',
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        toast_success(response.message);
+                        // Update the preview image to default
+                        $('#current-bg-image').attr('src', '{{ asset("assets/mantis/images/auth-bg.jpg") }}');
+                    } else {
+                        toast_danger(response.message);
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    if (response && response.message) {
+                        toast_danger(response.message);
+                    } else {
+                        toast_danger('An error occurred while removing the background image.');
+                    }
+                },
+                complete: function() {
+                    // Reset button state
+                    removeBtn.html(originalText);
+                    removeBtn.prop('disabled', false);
+                }
+            });
+        }
+    });
 });
 </script>
 
