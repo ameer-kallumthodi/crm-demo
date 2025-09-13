@@ -26,18 +26,20 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Lead Status List</h5>
-                <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
-                    onclick="show_small_modal('{{ route('admin.lead-statuses.add') }}', 'Add Lead Status')">
-                    <i class="ti ti-plus"></i> Add New
-                </a>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Lead Status List</h5>
+                    <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
+                        onclick="show_small_modal('{{ route('admin.lead-statuses.add') }}', 'Add Lead Status')">
+                        <i class="ti ti-plus"></i> Add New
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped datatable">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>#</th>
                                 <th>Title</th>
                                 <th>Description</th>
                                 <th>Status</th>
@@ -45,9 +47,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($leadStatuses as $status)
+                            @foreach($leadStatuses as $index => $status)
                             <tr>
-                                <td>{{ $status->id }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $status->title }}</td>
                                 <td>{{ $status->description ?? '-' }}</td>
                                 <td>

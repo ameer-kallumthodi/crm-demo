@@ -1,16 +1,9 @@
 <!-- JAVASCRIPT -->
-<script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
-<script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
-<script src="{{ asset('assets/libs/feather-icons/feather.min.js') }}"></script>
-<script src="{{ asset('assets/js/pages/plugins/lord-icon-2.1.0.js') }}"></script>
-<script src="{{ asset('assets/js/plugins.js') }}"></script>
+<!-- Bootstrap JS is already loaded in main layout -->
+<!-- Simplebar JS is already loaded in main layout -->
+<!-- Feather Icons JS is already loaded in main layout -->
 
-<!-- App js -->
-<script src="{{ asset('assets/js/app.js') }}"></script>
-
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<!-- jQuery is already loaded in main layout -->
 
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

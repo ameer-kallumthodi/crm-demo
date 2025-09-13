@@ -24,39 +24,50 @@
 <!-- [ Main Content ] start -->
 <div class="row">
     <!-- [ sample-page ] start -->
-    <div class="col-md-6 col-xl-3">
+    <div class="col-md-6 col-lg-4 col-xl-2">
         <div class="card">
             <div class="card-body">
                 <h6 class="mb-2 f-w-400 text-muted">Total Leads</h6>
-                <h4 class="mb-3">{{ $totalLeads ?? 0 }} <span class="badge bg-light-primary border border-primary"><i class="ti ti-trending-up"></i> 59.3%</span></h4>
-                <p class="mb-0 text-muted text-sm">You made an extra <span class="text-primary">35,000</span> this year</p>
+                <h4 class="mb-3">{{ $totalLeads ?? 0 }} <span class="badge bg-light-primary border border-primary"><i class="ti ti-trending-up"></i> {{ $weeklyStats['totalLeads'] ?? 0 }}</span></h4>
+                <p class="mb-0 text-muted text-sm">This week: <span class="text-primary">{{ $weeklyStats['totalLeads'] ?? 0 }}</span> leads</p>
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
+    @if(\App\Helpers\RoleHelper::is_super_admin())
+    <div class="col-md-6 col-lg-4 col-xl-2">
         <div class="card">
             <div class="card-body">
-                <h6 class="mb-2 f-w-400 text-muted">Total Users</h6>
-                <h4 class="mb-3">{{ $totalUsers ?? 0 }} <span class="badge bg-light-success border border-success"><i class="ti ti-trending-up"></i> 70.5%</span></h4>
-                <p class="mb-0 text-muted text-sm">You made an extra <span class="text-success">8,900</span> this year</p>
+                <h6 class="mb-2 f-w-400 text-muted">Total Admins</h6>
+                <h4 class="mb-3">{{ $totalAdmins ?? 0 }} <span class="badge bg-light-success border border-success"><i class="ti ti-shield-check"></i> Active</span></h4>
+                <p class="mb-0 text-muted text-sm">Administrative users with <span class="text-success">full access</span></p>
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
+    @endif
+    <div class="col-md-6 col-lg-4 col-xl-2">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-2 f-w-400 text-muted">Total Telecallers</h6>
+                <h4 class="mb-3">{{ $totalTelecallers ?? 0 }} <span class="badge bg-light-info border border-info"><i class="ti ti-phone"></i> Active</span></h4>
+                <p class="mb-0 text-muted text-sm">Sales team members with <span class="text-info">lead access</span></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4 col-xl-3">
         <div class="card">
             <div class="card-body">
                 <h6 class="mb-2 f-w-400 text-muted">Converted</h6>
-                <h4 class="mb-3">{{ $leadStatuses->where('id', 4)->first()->count ?? 0 }} <span class="badge bg-light-warning border border-warning"><i class="ti ti-trending-down"></i> 27.4%</span></h4>
-                <p class="mb-0 text-muted text-sm">You made an extra <span class="text-warning">1,943</span> this year</p>
+                <h4 class="mb-3">{{ $weeklyStats['convertedLeads'] ?? 0 }} <span class="badge bg-light-warning border border-warning"><i class="ti ti-trending-up"></i> {{ $conversionRate ?? 0 }}%</span></h4>
+                <p class="mb-0 text-muted text-sm">Conversion rate: <span class="text-warning">{{ $conversionRate ?? 0 }}%</span></p>
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
+    <div class="col-md-6 col-lg-4 col-xl-3">
         <div class="card">
             <div class="card-body">
                 <h6 class="mb-2 f-w-400 text-muted">Active Leads</h6>
-                <h4 class="mb-3">{{ $leadStatuses->where('id', '!=', 7)->sum('count') ?? 0 }} <span class="badge bg-light-danger border border-danger"><i class="ti ti-trending-down"></i> 27.4%</span></h4>
-                <p class="mb-0 text-muted text-sm">You made an extra <span class="text-danger">20,395</span> this year</p>
+                <h4 class="mb-3">{{ $totalLeads - ($weeklyStats['convertedLeads'] ?? 0) }} <span class="badge bg-light-danger border border-danger"><i class="ti ti-trending-up"></i> Active</span></h4>
+                <p class="mb-0 text-muted text-sm">Active leads: <span class="text-danger">{{ $totalLeads - ($weeklyStats['convertedLeads'] ?? 0) }}</span></p>
             </div>
         </div>
     </div>
@@ -91,7 +102,7 @@
         <div class="card">
             <div class="card-body">
                 <h6 class="mb-2 f-w-400 text-muted">This Week Statistics</h6>
-                <h3 class="mb-3">{{ $leadStatuses->where('id', 4)->first()->count ?? 0 }}</h3>
+                <h3 class="mb-3">{{ $weeklyStats['convertedLeads'] ?? 0 }}</h3>
                 <div id="income-overview-chart"></div>
             </div>
         </div>
@@ -142,13 +153,13 @@
         <div class="card">
             <div class="list-group list-group-flush">
                 <a href="#" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
-                    Lead Conversion Rate<span class="h5 mb-0">+45.14%</span>
+                    Lead Conversion Rate<span class="h5 mb-0">{{ $conversionRate ?? 0 }}%</span>
                 </a>
                 <a href="#" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
-                    Response Time<span class="h5 mb-0">2.5 hrs</span>
+                    This Week Leads<span class="h5 mb-0">{{ $weeklyStats['totalLeads'] ?? 0 }}</span>
                 </a>
                 <a href="#" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
-                    Follow-up Rate<span class="h5 mb-0">High</span>
+                    This Week Converted<span class="h5 mb-0">{{ $weeklyStats['convertedLeads'] ?? 0 }}</span>
                 </a>
             </div>
             <div class="card-body px-2">
@@ -170,59 +181,32 @@
     <div class="col-md-12 col-xl-4">
         <h5 class="mb-3">Recent Activity</h5>
         <div class="card">
-            <div class="list-group list-group-flush">
-                <a href="#" class="list-group-item list-group-item-action">
-                    <div class="d-flex">
-                        <div class="flex-shrink-0">
-                            <div class="avtar avtar-s rounded-circle text-success bg-light-success">
-                                <i class="ti ti-user-plus f-18"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-1">New Lead Added</h6>
-                            <p class="mb-0 text-muted">Today, 2:00 AM</p>
-                        </div>
-                        <div class="flex-shrink-0 text-end">
-                            <h6 class="mb-1">+ 1</h6>
-                            <p class="mb-0 text-muted">100%</p>
+        <div class="list-group list-group-flush">
+            @forelse($recentActivities ?? [] as $activity)
+            <a href="#" class="list-group-item list-group-item-action">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <div class="avtar avtar-s rounded-circle text-{{ $activity['color'] }} bg-light-{{ $activity['color'] }}">
+                            <i class="{{ $activity['icon'] }} f-18"></i>
                         </div>
                     </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action">
-                    <div class="d-flex">
-                        <div class="flex-shrink-0">
-                            <div class="avtar avtar-s rounded-circle text-primary bg-light-primary">
-                                <i class="ti ti-check f-18"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-1">Lead Converted</h6>
-                            <p class="mb-0 text-muted">5 August, 1:45 PM</p>
-                        </div>
-                        <div class="flex-shrink-0 text-end">
-                            <h6 class="mb-1">+ 1</h6>
-                            <p class="mb-0 text-muted">100%</p>
-                        </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1">{{ $activity['title'] }}</h6>
+                        <p class="mb-0 text-muted">{{ $activity['description'] }}</p>
+                        <small class="text-muted">{{ $activity['time']->diffForHumans() }}</small>
                     </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action">
-                    <div class="d-flex">
-                        <div class="flex-shrink-0">
-                            <div class="avtar avtar-s rounded-circle text-warning bg-light-warning">
-                                <i class="ti ti-clock f-18"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-1">Follow-up Scheduled</h6>
-                            <p class="mb-0 text-muted">7 hours ago</p>
-                        </div>
-                        <div class="flex-shrink-0 text-end">
-                            <h6 class="mb-1">+ 3</h6>
-                            <p class="mb-0 text-muted">75%</p>
-                        </div>
+                    <div class="flex-shrink-0 text-end">
+                        <h6 class="mb-1">+ 1</h6>
+                        <p class="mb-0 text-muted">{{ $activity['time']->format('M d') }}</p>
                     </div>
-                </a>
+                </div>
+            </a>
+            @empty
+            <div class="list-group-item text-center text-muted">
+                <p class="mb-0">No recent activities</p>
             </div>
+            @endforelse
+        </div>
         </div>
     </div>
 </div>
@@ -230,6 +214,119 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('assets/mantis/js/plugins/apexcharts.min.js') }}"></script>
-<script src="{{ asset('assets/mantis/js/pages/dashboard-default.js') }}"></script>
+<script>
+// Chart data from backend
+const monthlyData = @json($monthlyLeads ?? []);
+const leadSourcesData = @json($leadSourcesData ?? []);
+const conversionRate = {{ $conversionRate ?? 0 }};
+
+// Monthly leads chart
+if (monthlyData.months && monthlyData.leadCounts) {
+    const monthlyChart = new ApexCharts(document.querySelector("#visitor-chart"), {
+        series: [{
+            name: 'Total Leads',
+            data: monthlyData.leadCounts
+        }, {
+            name: 'Converted Leads',
+            data: monthlyData.convertedCounts
+        }],
+        chart: {
+            type: 'area',
+            height: 350,
+            toolbar: {
+                show: false
+            }
+        },
+        colors: ['#7366ff', '#f73164'],
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 2
+        },
+        xaxis: {
+            categories: monthlyData.months
+        },
+        yaxis: {
+            title: {
+                text: 'Number of Leads'
+            }
+        },
+        legend: {
+            position: 'top'
+        },
+        grid: {
+            borderColor: '#f1f1f1'
+        }
+    });
+    monthlyChart.render();
+}
+
+// Lead sources pie chart
+if (leadSourcesData.length > 0) {
+    const leadSourcesChart = new ApexCharts(document.querySelector("#sales-report-chart"), {
+        series: leadSourcesData.map(item => item.value),
+        chart: {
+            type: 'pie',
+            height: 300
+        },
+        labels: leadSourcesData.map(item => item.name),
+        colors: ['#7366ff', '#f73164', '#51d28c', '#ffa726', '#ef5350'],
+        legend: {
+            position: 'bottom'
+        }
+    });
+    leadSourcesChart.render();
+}
+
+// Conversion rate chart
+const conversionChart = new ApexCharts(document.querySelector("#income-overview-chart"), {
+    series: [conversionRate],
+    chart: {
+        type: 'radialBar',
+        height: 200
+    },
+    plotOptions: {
+        radialBar: {
+            startAngle: -90,
+            endAngle: 90,
+            dataLabels: {
+                name: {
+                    show: false
+                },
+                value: {
+                    fontSize: '16px',
+                    show: true,
+                    formatter: function (val) {
+                        return val + '%';
+                    }
+                }
+            }
+        }
+    },
+    colors: ['#51d28c']
+});
+conversionChart.render();
+
+// Analytics report chart
+const analyticsChart = new ApexCharts(document.querySelector("#analytics-report-chart"), {
+    series: [{
+        name: 'Conversion Rate',
+        data: [conversionRate]
+    }],
+    chart: {
+        type: 'bar',
+        height: 200
+    },
+    colors: ['#7366ff'],
+    xaxis: {
+        categories: ['Conversion Rate']
+    },
+    yaxis: {
+        max: 100
+    }
+});
+analyticsChart.render();
+</script>
 @endpush

@@ -27,18 +27,20 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Telecaller List</h5>
-                <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
-                    onclick="show_small_modal('{{ route('admin.telecallers.add') }}', 'Add Telecaller')">
-                    <i class="ti ti-plus"></i> Add New
-                </a>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Telecaller List</h5>
+                    <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
+                        onclick="show_small_modal('{{ route('admin.telecallers.add') }}', 'Add Telecaller')">
+                        <i class="ti ti-plus"></i> Add New
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped datatable">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>#</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
@@ -48,10 +50,19 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($telecallers as $telecaller)
+                            @foreach($telecallers as $index => $telecaller)
                             <tr>
-                                <td>{{ $telecaller->id }}</td>
-                                <td>{{ $telecaller->name }}</td>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span>{{ $telecaller->name }}</span>
+                                        @if($telecaller->is_team_lead)
+                                            <span class="badge bg-warning ms-2">
+                                                <i class="ti ti-crown me-1"></i>Team Lead
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td>{{ $telecaller->email }}</td>
                                 <td>{{ $telecaller->phone ?? '-' }}</td>
                                 <td>{{ $telecaller->team ? $telecaller->team->name : '-' }}</td>

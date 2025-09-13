@@ -2,17 +2,18 @@
 <html lang="en">
 <!-- [Head] start -->
 <head>
-    <title>{{ config('app.name', 'Base CRM') }} - @yield('title', 'Dashboard')</title>
+    <title>{{ \App\Models\Setting::get('site_name', config('app.name', 'Base CRM')) }} - @yield('title', 'Dashboard')</title>
     <!-- [Meta] -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="description" content="Base CRM Management System">
+    <meta name="description" content="{{ \App\Models\Setting::get('site_description', 'CRM Management System') }}">
     <meta name="keywords" content="CRM, Management, Dashboard, Admin">
     <meta name="author" content="Base CRM">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- [Favicon] icon -->
-    <link rel="icon" href="{{ asset('assets/mantis/images/favicon.svg') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('storage/favicon.ico') }}" type="image/x-icon" onerror="this.href='{{ asset('assets/mantis/images/favicon.svg') }}'">
     
     <!-- [Google Font] Family -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" id="main-font-link">

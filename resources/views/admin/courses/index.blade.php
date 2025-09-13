@@ -27,34 +27,30 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Course List</h5>
-                <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
-                    onclick="show_small_modal('{{ route('admin.courses.add') }}', 'Add Course')">
-                    <i class="ti ti-plus"></i> Add New
-                </a>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Course List</h5>
+                    <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
+                        onclick="show_small_modal('{{ route('admin.courses.add') }}', 'Add Course')">
+                        <i class="ti ti-plus"></i> Add New
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped datatable">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>#</th>
                                 <th>Title</th>
-                                <th>Description</th>
-                                <th>Duration</th>
-                                <th>Fees</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($courses as $course)
+                            @foreach($courses as $index => $course)
                             <tr>
-                                <td>{{ $course->id }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $course->title }}</td>
-                                <td>{{ $course->description ?? '-' }}</td>
-                                <td>{{ $course->duration ?? '-' }}</td>
-                                <td>{{ $course->fees ? '$' . number_format($course->fees, 2) : '-' }}</td>
                                 <td>
                                     <span class="badge {{ $course->is_active ? 'bg-success' : 'bg-danger' }}">
                                         {{ $course->is_active ? 'Active' : 'Inactive' }}
@@ -84,18 +80,3 @@
 
 @endsection
 
-@push('scripts')
-<script>
-$(document).ready(function() {
-    // Initialize DataTable
-    $('.datatable').DataTable({
-        responsive: true,
-        pageLength: 25,
-        order: [[0, 'desc']],
-        columnDefs: [
-            { orderable: false, targets: -1 }
-        ]
-    });
-});
-</script>
-@endpush

@@ -39,6 +39,9 @@ class PermissionHelper
             'admin/teams/index',
             'admin/telecallers/index',
             'admin/settings/index',
+            'admin/website/settings',
+            'admin/admins/index',
+            'admin/reports/leads',
         ];
         return in_array($permission, $permissions);
     }
@@ -59,6 +62,7 @@ class PermissionHelper
             'admin/teams/index',
             'admin/telecallers/index',
             'admin/settings/index',
+            'admin/reports/leads',
         ];
         return in_array($permission, $permissions);
     }

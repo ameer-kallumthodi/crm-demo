@@ -26,18 +26,20 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Lead Source List</h5>
-                <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
-                    onclick="show_small_modal('{{ route('admin.lead-sources.add') }}', 'Add Lead Source')">
-                    <i class="ti ti-plus"></i> Add New
-                </a>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Lead Source List</h5>
+                    <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
+                        onclick="show_small_modal('{{ route('admin.lead-sources.add') }}', 'Add Lead Source')">
+                        <i class="ti ti-plus"></i> Add New
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped datatable">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>#</th>
                                 <th>Title</th>
                                 <th>Description</th>
                                 <th>Status</th>
@@ -45,10 +47,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($leadSources as $source)
+                            @foreach($leadSources as $index => $source)
                             <tr>
-                                <td>{{ $source->id }}</td>
-                                <td>{{ $source->title }}</td>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>
+                                    <i class="ti ti-tag me-2 text-primary"></i>
+                                    {{ $source->title }}
+                                </td>
                                 <td>{{ $source->description ?? '-' }}</td>
                                 <td>
                                     <span class="badge {{ $source->is_active ? 'bg-success' : 'bg-danger' }}">
@@ -77,19 +82,3 @@
 </div>
 <!-- [ Main Content ] end -->
 @endsection
-
-@push('scripts')
-<script>
-$(document).ready(function() {
-    // Initialize DataTable
-    $('.datatable').DataTable({
-        responsive: true,
-        pageLength: 25,
-        order: [[0, 'desc']],
-        columnDefs: [
-            { orderable: false, targets: -1 }
-        ]
-    });
-});
-</script>
-@endpush

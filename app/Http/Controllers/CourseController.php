@@ -26,18 +26,12 @@ class CourseController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'duration' => 'nullable|string|max:255',
-            'fees' => 'nullable|numeric|min:0',
             'is_active' => 'boolean',
         ]);
 
         $course = Course::create([
             'title' => $request->title,
-            'description' => $request->description,
-            'duration' => $request->duration,
-            'fees' => $request->fees,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->input('is_active', 0) == 1,
         ]);
 
         return response()->json([
@@ -93,23 +87,54 @@ class CourseController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'duration' => 'nullable|string|max:255',
-            'fees' => 'nullable|numeric|min:0',
-            'is_active' => 'boolean',
-        ]);
+        try {
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'is_active' => 'boolean',
+            ]);
 
-        Course::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'duration' => $request->duration,
-            'fees' => $request->fees,
-            'is_active' => $request->has('is_active'),
-        ]);
+            $course = Course::create([
+                'title' => $request->title,
+                'is_active' => $request->input('is_active', 0) == 1,
+            ]);
 
-        return redirect()->route('admin.courses.index')->with('message_success', 'Course created successfully!');
+            // For AJAX requests, return JSON response
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Course created successfully!',
+                    'data' => $course
+                ]);
+            }
+
+            return redirect()->route('admin.courses.index')->with('message_success', 'Course created successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // For AJAX requests, return JSON response
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please correct the errors below.',
+                    'errors' => $e->validator->errors()
+                ], 422);
+            }
+            
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput()
+                ->with('message_danger', 'Please correct the errors below.');
+        } catch (\Exception $e) {
+            // For AJAX requests, return JSON response
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while creating the course. Please try again.'
+                ], 500);
+            }
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('message_danger', 'An error occurred while creating the course. Please try again.');
+        }
     }
 
     public function ajax_edit($id)
@@ -128,24 +153,64 @@ class CourseController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'duration' => 'nullable|string|max:255',
-            'fees' => 'nullable|numeric|min:0',
-            'is_active' => 'boolean',
-        ]);
+        try {
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'is_active' => 'boolean',
+            ]);
 
-        $course = Course::findOrFail($id);
-        $course->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'duration' => $request->duration,
-            'fees' => $request->fees,
-            'is_active' => $request->has('is_active'),
-        ]);
+            $course = Course::findOrFail($id);
+            $course->update([
+                'title' => $request->title,
+                'is_active' => $request->input('is_active', 0) == 1,
+            ]);
 
-        return redirect()->route('admin.courses.index')->with('message_success', 'Course updated successfully!');
+            // For AJAX requests, return JSON response
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Course updated successfully!',
+                    'data' => $course
+                ]);
+            }
+
+            return redirect()->route('admin.courses.index')->with('message_success', 'Course updated successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // For AJAX requests, return JSON response
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please correct the errors below.',
+                    'errors' => $e->validator->errors()
+                ], 422);
+            }
+            
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput()
+                ->with('message_danger', 'Please correct the errors below.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Course not found.'
+                ], 404);
+            }
+            
+            return redirect()->route('admin.courses.index')->with('message_danger', 'Course not found.');
+        } catch (\Exception $e) {
+            // For AJAX requests, return JSON response
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while updating the course. Please try again.'
+                ], 500);
+            }
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('message_danger', 'An error occurred while updating the course. Please try again.');
+        }
     }
 
     public function delete($id)
@@ -154,14 +219,20 @@ class CourseController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $course = Course::findOrFail($id);
-        
-        // Check if course has leads
-        if ($course->leads()->count() > 0) {
-            return redirect()->route('admin.courses.index')->with('message_error', 'Cannot delete course. It has assigned leads.');
-        }
+        try {
+            $course = Course::findOrFail($id);
+            
+            // Check if course has leads
+            if ($course->leads()->count() > 0) {
+                return redirect()->route('admin.courses.index')->with('message_danger', 'Cannot delete course. It has assigned leads.');
+            }
 
-        $course->delete();
-        return redirect()->route('admin.courses.index')->with('message_success', 'Course deleted successfully!');
+            $course->delete();
+            return redirect()->route('admin.courses.index')->with('message_success', 'Course deleted successfully!');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('admin.courses.index')->with('message_danger', 'Course not found.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.courses.index')->with('message_danger', 'An error occurred while deleting the course. Please try again.');
+        }
     }
 }

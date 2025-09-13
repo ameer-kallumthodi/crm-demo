@@ -34,7 +34,7 @@ $(document).ready(function() {
         $('.datatable').DataTable({
             responsive: true,
             pageLength: 25,
-            order: [[0, 'desc']],
+            order: [[0, 'asc']],
             language: {
                 search: "_INPUT_",
                 searchPlaceholder: "Search...",

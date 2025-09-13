@@ -56,6 +56,17 @@
                     </select>
                 </div>
             </div>
+
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_team_lead" id="is_team_lead" value="1" {{ $edit_data->is_team_lead ? 'checked' : '' }}>
+                        <label class="form-check-label" for="is_team_lead">
+                            <i class="ti ti-crown me-1"></i>Is Team Lead
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <button type="submit" class="btn btn-success float-end">Update</button>

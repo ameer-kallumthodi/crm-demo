@@ -21,9 +21,7 @@
 <!-- Bootstrap Notify -->
 <script src="{{ asset('assets/js/plugin/bootstrap-notify/bootstrap-notify.min.js') }}"></script>
 
-<!-- jQuery Vector Map -->
-<script src="{{ asset('assets/js/plugin/jsvectormap/jsvectormap.min.js') }}"></script>
-<script src="{{ asset('assets/js/plugin/jsvectormap/map.js') }}"></script>
+<!-- jQuery Vector Map - removed as not used in current layout -->
 
 <!-- Sweet Alert -->
 <script src="{{ asset('assets/js/plugin/sweetalert/sweetalert.min.js') }}"></script>
@@ -31,9 +29,6 @@
 <!-- Kaiadmin JS -->
 <script src="{{ asset('assets/js/kaiadmin.min.js') }}"></script>
 
-<!-- Kaiadmin DEMO methods, don't include it in your project! -->
-<script src="{{ asset('assets/js/setting-demo.js') }}"></script>
-<script src="{{ asset('assets/js/demo.js') }}"></script>
 
 <!-- Include Toastify -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
@@ -42,7 +37,7 @@
 <script>
     $(document).ready(function() {
         // Initialize any custom functionality here
-        console.log('KaiAdmin template loaded successfully');
+        console.log('CRM Dashboard loaded successfully');
         
         // Initialize DataTables with reinitialization check
         if ($.fn.DataTable) {
@@ -51,7 +46,7 @@
                     $(this).DataTable({
                         responsive: true,
                         pageLength: 25,
-                        order: [[0, 'desc']],
+                        order: [[0, 'asc']],
                         columnDefs: [
                             { orderable: false, targets: -1 }
                         ],
@@ -76,8 +71,22 @@
             $('body').toggleClass('sidebar-collapse');
         });
         
-        // Initialize dropdowns
+        // Initialize Bootstrap dropdowns
         $('.dropdown-toggle').dropdown();
+        
+        // Initialize Bootstrap dropdowns with proper event handling
+        $('[data-bs-toggle="dropdown"]').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).next('.dropdown-menu').toggle();
+        });
+        
+        // Close dropdowns when clicking outside
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.dropdown').length) {
+                $('.dropdown-menu').hide();
+            }
+        });
         
         // Initialize search functionality
         $('.btn-search').click(function(e) {
@@ -88,23 +97,29 @@
                 // Add search functionality here
             }
         });
+        
+        // Initialize tooltips
+        $('[data-bs-toggle="tooltip"]').tooltip();
+        
+        // Initialize popovers
+        $('[data-bs-toggle="popover"]').popover();
     });
 
     // Show toast messages from session
     @if(session()->has('message_success'))
-        toast_success("{{ session('message_success') }}");
+        toast_success(`{!! session('message_success') !!}`);
     @endif
 
     @if(session()->has('message_warning'))
-        toast_warning("{{ session('message_warning') }}");
+        toast_warning(`{!! session('message_warning') !!}`);
     @endif
 
     @if(session()->has('message_danger'))
-        toast_error("{{ session('message_danger') }}");
+        toast_error(`{!! session('message_danger') !!}`);
     @endif
 
     @if(session()->has('message_primary'))
-        toast_primary("{{ session('message_primary') }}");
+        toast_primary(`{!! session('message_primary') !!}`);
     @endif
 
     // Toast Success

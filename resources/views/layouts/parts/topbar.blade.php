@@ -20,18 +20,18 @@
                         <i class="ti ti-search"></i>
                     </a>
                     <div class="dropdown-menu pc-h-dropdown drp-search">
-                        <form class="px-3">
+                        <form class="px-3" action="{{ route('leads.index') }}" method="GET">
                             <div class="form-group mb-0 d-flex align-items-center">
                                 <i data-feather="search"></i>
-                                <input type="search" class="form-control border-0 shadow-none" placeholder="Search here. . .">
+                                <input type="search" name="search_key" class="form-control border-0 shadow-none" placeholder="Search leads by name, phone, email..." value="{{ request('search_key') }}">
                             </div>
                         </form>
                     </div>
                 </li>
                 <li class="pc-h-item d-none d-md-inline-flex">
-                    <form class="header-search">
+                    <form class="header-search" action="{{ route('leads.index') }}" method="GET">
                         <i data-feather="search" class="icon-search"></i>
-                        <input type="search" class="form-control" placeholder="Search here. . .">
+                        <input type="search" name="search_key" class="form-control" placeholder="Search leads by name, phone, email..." value="{{ request('search_key') }}">
                     </form>
                 </li>
             </ul>

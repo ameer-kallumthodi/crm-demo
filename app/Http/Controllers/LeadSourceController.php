@@ -142,27 +142,6 @@ class LeadSourceController extends Controller
         return view('admin.lead-sources.edit', compact('edit_data'));
     }
 
-    public function update(Request $request, $id)
-    {
-        if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
-        }
-
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
-
-        $leadSource = LeadSource::findOrFail($id);
-        $leadSource->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'is_active' => $request->has('is_active'),
-        ]);
-
-        return redirect()->route('admin.lead-sources.index')->with('message_success', 'Lead Source updated successfully!');
-    }
 
     public function delete($id)
     {

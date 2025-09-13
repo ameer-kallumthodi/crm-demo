@@ -55,7 +55,7 @@ class AuthController extends Controller
             ]);
 
             return redirect()->route('dashboard')
-                ->with('success', "Welcome back! <b>{$user->name}</b>");
+                ->with('message_success', "Welcome back! <b>{$user->name}</b>");
         } else {
             return back()->withErrors(['error' => $loginResult['message']]);
         }

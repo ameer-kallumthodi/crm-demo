@@ -86,7 +86,7 @@ class TelecallerController extends Controller
     }
 
 
-    public function ajax_add()
+    public function ajax_add(Request $request)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
@@ -94,7 +94,9 @@ class TelecallerController extends Controller
 
         $teams = Team::all();
         $country_codes = get_country_code();
-        return view('admin.telecallers.add', compact('teams', 'country_codes'));
+        $selectedTeamId = $request->get('team_id'); // Get team_id from query parameter
+        
+        return view('admin.telecallers.add', compact('teams', 'country_codes', 'selectedTeamId'));
     }
 
     public function submit(Request $request)
@@ -110,6 +112,7 @@ class TelecallerController extends Controller
             'code' => 'nullable|string|max:10',
             'password' => 'required|string|min:6',
             'team_id' => 'nullable|exists:teams,id',
+            'is_team_lead' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -117,7 +120,7 @@ class TelecallerController extends Controller
             return redirect()->back()->with('message_danger', $firstError)->withInput();
         }
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
@@ -125,7 +128,20 @@ class TelecallerController extends Controller
             'password' => Hash::make($request->password),
             'role_id' => 3, // Static role for Telecaller
             'team_id' => $request->team_id,
+            'is_team_lead' => $request->has('is_team_lead') ? 1 : 0,
         ]);
+
+        // If user is marked as team lead and has a team, set them as team lead
+        if ($request->has('is_team_lead') && $request->team_id) {
+            // First, remove any existing team lead from this team
+            $existingTeamLead = Team::where('id', $request->team_id)->first();
+            if ($existingTeamLead && $existingTeamLead->team_lead_id) {
+                User::where('id', $existingTeamLead->team_lead_id)->update(['is_team_lead' => 0]);
+            }
+            
+            // Set the new team lead
+            Team::where('id', $request->team_id)->update(['team_lead_id' => $user->id]);
+        }
 
         return redirect()->route('admin.telecallers.index')->with('message_success', 'Telecaller created successfully!');
     }
@@ -155,6 +171,7 @@ class TelecallerController extends Controller
             'code' => 'nullable|string|max:10',
             'password' => 'nullable|string|min:8',
             'team_id' => 'nullable|exists:teams,id',
+            'is_team_lead' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -166,12 +183,28 @@ class TelecallerController extends Controller
         
         // Filter only the fields we need
         $updateData = $request->only(['name', 'email', 'phone', 'code', 'team_id']);
+        $updateData['is_team_lead'] = $request->has('is_team_lead') ? 1 : 0;
 
         if ($request->filled('password')) {
             $updateData['password'] = Hash::make($request->password);
         }
 
         $telecaller->update($updateData);
+
+        // Handle team lead assignment
+        if ($request->has('is_team_lead') && $request->team_id) {
+            // First, remove any existing team lead from this team
+            $existingTeamLead = Team::where('id', $request->team_id)->first();
+            if ($existingTeamLead && $existingTeamLead->team_lead_id && $existingTeamLead->team_lead_id != $telecaller->id) {
+                User::where('id', $existingTeamLead->team_lead_id)->update(['is_team_lead' => 0]);
+            }
+            
+            // Set this user as team lead for the team
+            Team::where('id', $request->team_id)->update(['team_lead_id' => $telecaller->id]);
+        } elseif (!$request->has('is_team_lead')) {
+            // If user is no longer team lead, remove them as team lead from any team
+            Team::where('team_lead_id', $telecaller->id)->update(['team_lead_id' => null]);
+        }
 
         return redirect()->route('admin.telecallers.index')->with('message_success', 'Telecaller updated successfully!');
     }

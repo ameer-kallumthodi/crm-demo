@@ -153,4 +153,94 @@ class TeamController extends Controller
         $team->delete();
         return redirect()->route('admin.teams.index')->with('message_success', 'Team deleted successfully!');
     }
+
+    /**
+     * Show team members in AJAX modal
+     */
+    public function members($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin()) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $team = Team::with(['teamLead', 'users' => function($query) {
+            $query->where('role_id', 3); // Only telecallers
+        }])->findOrFail($id);
+
+        // Get all team members including the team lead
+        $allTeamMembers = collect();
+        
+        // Add team lead if exists
+        if ($team->teamLead) {
+            $allTeamMembers->push($team->teamLead);
+        }
+        
+        // Add regular team members
+        $allTeamMembers = $allTeamMembers->merge($team->users);
+        
+        // Remove duplicates (in case team lead is also in users)
+        $allTeamMembers = $allTeamMembers->unique('id');
+
+        // Get available telecallers (not assigned to any team)
+        $availableTelecallers = User::where('role_id', 3)
+            ->whereNull('team_id')
+            ->whereNull('deleted_at')
+            ->get();
+
+        return view('admin.teams.members', compact('team', 'allTeamMembers', 'availableTelecallers'));
+    }
+
+    /**
+     * Remove team member
+     */
+    public function removeMember(Request $request)
+    {
+        if (!RoleHelper::is_admin_or_super_admin()) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+        $user->update(['team_id' => null]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Team member removed successfully!'
+        ]);
+    }
+
+    /**
+     * Add team member
+     */
+    public function addMember(Request $request)
+    {
+        if (!RoleHelper::is_admin_or_super_admin()) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'team_id' => 'required|exists:teams,id',
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+        
+        // Check if user is already assigned to a team
+        if ($user->team_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User is already assigned to a team!'
+            ]);
+        }
+
+        $user->update(['team_id' => $request->team_id]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Team member added successfully!'
+        ]);
+    }
 }

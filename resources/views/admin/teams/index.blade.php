@@ -27,31 +27,38 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Team List</h5>
-                <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
-                    onclick="show_small_modal('{{ route('admin.teams.add') }}', 'Add Team')">
-                    <i class="ti ti-plus"></i> Add New
-                </a>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Team List</h5>
+                    <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
+                        onclick="show_small_modal('{{ route('admin.teams.add') }}', 'Add Team')">
+                        <i class="ti ti-plus"></i> Add New
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped datatable">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>#</th>
                                 <th>Name</th>
                                 <th>Description</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($teams as $team)
+                            @foreach($teams as $index => $team)
                             <tr>
-                                <td>{{ $team->id }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $team->name }}</td>
                                 <td>{{ $team->description ?? '-' }}</td>
                                 <td>
-                                    <a href="javascript:void(0);" class="btn btn-warning btn-sm shadow-sm px-3"
+                                    <a href="javascript:void(0);" class="btn btn-info btn-sm shadow-sm px-3 me-1"
+                                        onclick="show_ajax_modal('{{ route('admin.teams.members', $team->id) }}', 'Team Members - {{ $team->name }}')"
+                                        title="View Members">
+                                        <i class="ti ti-users"></i> Members
+                                    </a>
+                                    <a href="javascript:void(0);" class="btn btn-warning btn-sm shadow-sm px-3 me-1"
                                         onclick="show_small_modal('{{ route('admin.teams.edit', $team->id) }}', 'Edit Team')"
                                         title="Edit">
                                         <i class="ti ti-edit"></i> Edit
@@ -74,18 +81,3 @@
 
 @endsection
 
-@push('scripts')
-<script>
-$(document).ready(function() {
-    // Initialize DataTable
-    $('.datatable').DataTable({
-        responsive: true,
-        pageLength: 25,
-        order: [[0, 'desc']],
-        columnDefs: [
-            { orderable: false, targets: -1 }
-        ]
-    });
-});
-</script>
-@endpush

@@ -27,18 +27,20 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Country List</h5>
-                <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
-                    onclick="show_small_modal('{{ route('admin.countries.add') }}', 'Add Country')">
-                    <i class="ti ti-plus"></i> Add New
-                </a>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Country List</h5>
+                    <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
+                        onclick="show_small_modal('{{ route('admin.countries.add') }}', 'Add Country')">
+                        <i class="ti ti-plus"></i> Add New
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped datatable">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>#</th>
                                 <th>Name</th>
                                 <th>Code</th>
                                 <th>Phone Code</th>
@@ -47,9 +49,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($countries as $country)
+                            @foreach($countries as $index => $country)
                             <tr>
-                                <td>{{ $country->id }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $country->title }}</td>
                                 <td>{{ $country->code }}</td>
                                 <td>{{ $country->phone_code }}</td>
@@ -82,18 +84,3 @@
 
 @endsection
 
-@push('scripts')
-<script>
-$(document).ready(function() {
-    // Initialize DataTable
-    $('.datatable').DataTable({
-        responsive: true,
-        pageLength: 25,
-        order: [[0, 'desc']],
-        columnDefs: [
-            { orderable: false, targets: -1 }
-        ]
-    });
-});
-</script>
-@endpush

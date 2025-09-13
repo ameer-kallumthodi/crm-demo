@@ -21,6 +21,79 @@
 </div>
 <!-- [ breadcrumb ] end -->
 
+@if(request('search_key'))
+<!-- [ Search Results Indicator ] start -->
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+    <div class="d-flex align-items-center">
+        <i class="ti ti-search me-2"></i>
+        <div class="flex-grow-1">
+            <strong>Search Results:</strong> Showing leads matching "{{ request('search_key') }}"
+        </div>
+        <a href="{{ route('leads.index') }}" class="btn btn-sm btn-outline-info">
+            <i class="ti ti-x"></i> Clear Search
+        </a>
+    </div>
+</div>
+<!-- [ Search Results Indicator ] end -->
+@endif
+
+<!-- [ Date Filter ] start -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" action="{{ route('leads.index') }}" id="dateFilterForm">
+                    <div class="row align-items-end">
+                        <div class="col-md-3">
+                            <label for="date_from" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" 
+                                   value="{{ request('date_from', \Carbon\Carbon::now()->subDays(7)->format('Y-m-d')) }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_to" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" 
+                                   value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="lead_status_id" class="form-label">Status</label>
+                            <select class="form-select" id="lead_status_id" name="lead_status_id">
+                                <option value="">All Statuses</option>
+                                @foreach($leadStatuses as $status)
+                                    <option value="{{ $status->id }}" {{ request('lead_status_id') == $status->id ? 'selected' : '' }}>
+                                        {{ $status->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="lead_source_id" class="form-label">Source</label>
+                            <select class="form-select" id="lead_source_id" name="lead_source_id">
+                                <option value="">All Sources</option>
+                                @foreach($leadSources as $source)
+                                    <option value="{{ $source->id }}" {{ request('lead_source_id') == $source->id ? 'selected' : '' }}>
+                                        {{ $source->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="ti ti-filter"></i> Filter
+                                </button>
+                                <a href="{{ route('leads.index') }}" class="btn btn-outline-secondary">
+                                    <i class="ti ti-x"></i> Clear
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Date Filter ] end -->
+
 <!-- [ Main Content ] start -->
 <div class="row">
     <div class="col-12">
@@ -30,48 +103,23 @@
                     <h5 class="mb-0">All Leads</h5>
                     <div>
                         <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
-                            onclick="show_small_modal('{{ route('leads.add') }}', 'Add New Lead')">
+                            onclick="show_ajax_modal('{{ route('leads.add') }}', 'Add New Lead')">
                             <i class="ti ti-plus"></i> Add Lead
                         </a>
                         <a href="javascript:void(0);" class="btn btn-outline-primary btn-sm px-3"
-                            onclick="show_small_modal('{{ route('leads.bulk-upload') }}', 'Bulk Upload Leads')">
+                            onclick="show_ajax_modal('{{ route('leads.bulk-upload.test') }}', 'Bulk Upload Leads')">
                             <i class="ti ti-upload"></i> Bulk Upload
                         </a>
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                <!-- Filters -->
-                <div class="row mb-3">
-                    <div class="col-md-3">
-                        <select class="form-select" id="statusFilter">
-                            <option value="">All Status</option>
-                            @foreach($leadStatuses as $status)
-                                <option value="{{ $status->id }}">{{ $status->title }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="sourceFilter">
-                            <option value="">All Sources</option>
-                            @foreach($leadSources as $source)
-                                <option value="{{ $source->id }}">{{ $source->title }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <input type="text" class="form-control" id="searchInput" placeholder="Search leads...">
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-secondary" onclick="clearFilters()">Clear Filters</button>
-                    </div>
-                </div>
-
                 <!-- Table -->
                 <div class="table-responsive">
                     <table class="table table-hover" id="leadsTable">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Name</th>
                                 <th>Phone</th>
                                 <th>Email</th>
@@ -83,12 +131,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($leads as $lead)
+                            @forelse($leads as $index => $lead)
                             <tr>
+                                <td>{{ $index + 1 }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="avtar avtar-s rounded-circle bg-light-primary me-2">
-                                            <i class="ti ti-user f-16"></i>
+                                        <div class="avtar avtar-s rounded-circle bg-light-primary me-2 d-flex align-items-center justify-content-center">
+                                            <span class="f-16 fw-bold text-primary">{{ strtoupper(substr($lead->title, 0, 1)) }}</span>
                                         </div>
                                         <div>
                                             <h6 class="mb-0">{{ $lead->title }}</h6>
@@ -103,20 +152,27 @@
                                         {{ $lead->leadStatus->title }}
                                     </span>
                                 </td>
-                                <td>{{ $lead->leadSource->title ?? 'N/A' }}</td>
+                                <td>{{ $lead->leadSource->title ?? '-' }}</td>
                                 <td>{{ $lead->telecaller->name ?? 'Unassigned' }}</td>
                                 <td>{{ $lead->created_at->format('M d, Y') }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('leads.show', $lead->id) }}" class="btn btn-sm btn-outline-primary">
+                                        <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary"
+                                            onclick="show_large_modal('{{ route('leads.ajax-show', $lead->id) }}', 'View Lead')">
                                             <i class="ti ti-eye"></i>
                                         </a>
-                                        <a href="{{ route('leads.edit', $lead->id) }}" class="btn btn-sm btn-outline-secondary">
+                                        <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
+                                            onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')">
                                             <i class="ti ti-edit"></i>
                                         </a>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLead({{ $lead->id }})">
+                                        <a href="javascript:void(0);" class="btn btn-sm btn-outline-success"
+                                            onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')">
+                                            <i class="ti ti-arrow-up"></i>
+                                        </a>
+                                        <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
+                                            onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}', 'Delete Lead', 'Are you sure you want to delete this lead? This action cannot be undone.')">
                                             <i class="ti ti-trash"></i>
-                                        </button>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -151,12 +207,51 @@
 
 @push('scripts')
 <script>
-function clearFilters() {
-    document.getElementById('statusFilter').value = '';
-    document.getElementById('sourceFilter').value = '';
-    document.getElementById('searchInput').value = '';
-    window.location.reload();
-}
+$(document).ready(function() {
+    // Only initialize if not already initialized
+    if (!$.fn.DataTable.isDataTable('#leadsTable')) {
+        // Initialize DataTable
+        var table = $('#leadsTable').DataTable({
+        "processing": true,
+        "serverSide": false,
+        "responsive": true,
+        "pageLength": 25,
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "order": [[7, "desc"]], // Sort by created date descending
+        "columnDefs": [
+            { "orderable": false, "targets": [0, 8] }, // Disable sorting on serial number and actions columns
+            { "searchable": false, "targets": [0, 8] } // Disable searching on serial number and actions columns
+        ],
+        "language": {
+            "processing": "Loading leads...",
+            "emptyTable": "No leads found",
+            "zeroRecords": "No matching leads found"
+        }
+        });
+
+
+        // Remove the old search input functionality since DataTable handles it
+        $('#searchInput').remove();
+    }
+
+    // Handle global search form submission
+    $('.header-search form, .drp-search form').on('submit', function(e) {
+        e.preventDefault();
+        const searchValue = $(this).find('input[name="search_key"]').val().trim();
+        if (searchValue) {
+            window.location.href = '{{ route("leads.index") }}?search_key=' + encodeURIComponent(searchValue);
+        } else {
+            window.location.href = '{{ route("leads.index") }}';
+        }
+    });
+
+    // Handle search input enter key
+    $('.header-search input, .drp-search input').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            $(this).closest('form').submit();
+        }
+    });
+});
 
 function deleteLead(id) {
     if (confirm('Are you sure you want to delete this lead?')) {
@@ -180,18 +275,5 @@ function deleteLead(id) {
         form.submit();
     }
 }
-
-// Search functionality
-document.getElementById('searchInput').addEventListener('input', function() {
-    const searchTerm = this.value.toLowerCase();
-    const tableRows = document.querySelectorAll('#leadsTable tbody tr');
-    
-    tableRows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(searchTerm) ? '' : 'none';
-    });
-});
-
-
 </script>
 @endpush
