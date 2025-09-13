@@ -27,14 +27,24 @@
 </div>
 <!-- [ breadcrumb ] end -->
 
-<!-- [ Date Filter ] start -->
-<div class="row mb-3">
+<!-- [ Printable Report Content ] start -->
+<div class="printable-report">
+    <div class="header text-center mb-4" style="display: none;">
+        <h1>Lead Source Report</h1>
+        <p>Report Period: {{ \Carbon\Carbon::parse($fromDate)->format('M d, Y') }} to {{ \Carbon\Carbon::parse($toDate)->format('M d, Y') }}</p>
+        <p>Generated on: {{ now()->format('M d, Y H:i:s') }}</p>
+    </div>
+</div>
+<!-- [ Printable Report Content ] end -->
+
+<!-- [ Filter Form ] start -->
+<div class="row mb-3 no-print">
     <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <form method="GET" action="{{ route('admin.reports.lead-source') }}" id="reportFilterForm">
                     <div class="row align-items-end">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from" 
                                    value="{{ $fromDate }}">
@@ -55,30 +65,21 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <div class="d-flex gap-2">
+                        <div class="col-md-6">
+                            <div class="d-flex gap-2 flex-wrap align-items-end">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="ti ti-filter"></i> Generate Report
                                 </button>
                                 <a href="{{ route('admin.reports.lead-source') }}" class="btn btn-outline-secondary">
                                     <i class="ti ti-refresh"></i> Reset
                                 </a>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="d-flex gap-2">
-                                <div class="dropdown">
-                                    <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                        <i class="ti ti-download"></i> Export
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="{{ route('admin.reports.lead-source.excel', request()->query()) }}">
-                                            <i class="ti ti-file-excel me-2"></i>Export to Excel
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="{{ route('admin.reports.lead-source.pdf', request()->query()) }}">
-                                            <i class="ti ti-file-pdf me-2"></i>Export to PDF
-                                        </a></li>
-                                    </ul>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ route('admin.reports.lead-source.excel', request()->query()) }}" class="btn btn-success">
+                                        <i class="ti ti-file-excel"></i> Excel
+                                    </a>
+                                    <a href="{{ route('admin.reports.lead-source.pdf', request()->query()) }}" class="btn btn-danger">
+                                        <i class="ti ti-file-pdf"></i> PDF
+                                    </a>
                                 </div>
                                 <button type="button" class="btn btn-info" onclick="printReport()">
                                     <i class="ti ti-printer"></i> Print
@@ -91,9 +92,10 @@
         </div>
     </div>
 </div>
-<!-- [ Date Filter ] end -->
+<!-- [ Filter Form ] end -->
 
 <!-- [ Report Summary ] start -->
+<div class="printable-report">
 <div class="row mb-4">
     <div class="col-12">
         <div class="card">
@@ -299,17 +301,84 @@
     </div>
 </div>
 <!-- [ Leads Data ] end -->
+</div>
+<!-- [ Printable Report Content ] end -->
+
 @endsection
+
+@push('styles')
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .printable-report, .printable-report * {
+        visibility: visible;
+    }
+    .printable-report {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .btn {
+        display: none !important;
+    }
+    .breadcrumb {
+        display: none !important;
+    }
+    .page-header {
+        display: none !important;
+    }
+}
+</style>
+@endpush
 
 @push('scripts')
 <script>
-function exportReport() {
-    // Export functionality
-    window.print();
-}
-
 function printReport() {
-    window.print();
+    // Create a printable version of the report
+    const printContent = document.querySelector('.printable-report');
+    if (printContent) {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Lead Source Report - Print</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+                    .header h1 { margin: 0; color: #333; font-size: 24px; }
+                    .header p { margin: 5px 0; color: #666; }
+                    .summary { margin-bottom: 30px; }
+                    .summary h3 { color: #333; margin-bottom: 15px; }
+                    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+                    .summary-item { text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 5px; }
+                    .summary-item h4 { margin: 0; font-size: 18px; color: #333; }
+                    .summary-item p { margin: 5px 0 0 0; color: #666; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background-color: #f2f2f2; font-weight: bold; }
+                    .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 10px; }
+                </style>
+            </head>
+            <body>
+                ${printContent.innerHTML}
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    } else {
+        window.print();
+    }
 }
 </script>
 @endpush

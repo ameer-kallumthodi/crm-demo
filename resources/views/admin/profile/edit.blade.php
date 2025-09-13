@@ -196,8 +196,9 @@
                         <img src="{{ asset('assets/mantis/images/user/avatar-2.jpg') }}" alt="user-image" class="rounded-circle">
                     </div>
                     <p class="text-muted mb-3">Upload a new profile picture</p>
-                    <input type="file" class="form-control" accept="image/*">
+                    <input type="file" class="form-control" id="profile_picture" accept="image/*">
                     <small class="text-muted">JPG, PNG or GIF. Max size 2MB.</small>
+                    <div id="profile_picture_error" class="text-danger mt-1" style="display: none;"></div>
                 </div>
             </div>
         </div>
@@ -205,3 +206,28 @@
 </div>
 <!-- [ Main Content ] end -->
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // File size validation for profile picture
+    $('#profile_picture').on('change', function() {
+        const file = this.files[0];
+        const errorDiv = $('#profile_picture_error');
+        
+        if (file) {
+            const fileSize = file.size / 1024 / 1024; // Convert to MB
+            if (fileSize > 2) {
+                errorDiv.text('File size must be less than 2MB. Current file size: ' + fileSize.toFixed(2) + 'MB').show();
+                this.value = '';
+                return false;
+            } else {
+                errorDiv.hide();
+            }
+        } else {
+            errorDiv.hide();
+        }
+    });
+});
+</script>
+@endpush

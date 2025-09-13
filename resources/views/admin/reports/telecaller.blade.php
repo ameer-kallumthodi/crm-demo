@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'Team Report')
+@section('title', 'Telecaller Report')
 
 @section('content')
 <!-- [ breadcrumb ] start -->
@@ -9,12 +9,12 @@
         <div class="row align-items-center">
             <div class="col-md-8">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Team Report</h5>
+                    <h5 class="m-b-10">Telecaller Report</h5>
                 </div>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.reports.leads') }}">Reports</a></li>
-                    <li class="breadcrumb-item">Team</li>
+                    <li class="breadcrumb-item">Telecaller Report</li>
                 </ul>
             </div>
             <div class="col-md-4 text-end">
@@ -30,7 +30,7 @@
 <!-- [ Printable Report Content ] start -->
 <div class="printable-report">
     <div class="header text-center mb-4" style="display: none;">
-        <h1>Team Report</h1>
+        <h1>Telecaller Report</h1>
         <p>Report Period: {{ \Carbon\Carbon::parse($fromDate)->format('M d, Y') }} to {{ \Carbon\Carbon::parse($toDate)->format('M d, Y') }}</p>
         <p>Generated on: {{ now()->format('M d, Y H:i:s') }}</p>
     </div>
@@ -42,7 +42,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.reports.team') }}" id="reportFilterForm">
+                <form method="GET" action="{{ route('admin.reports.telecaller') }}" id="reportFilterForm">
                     <div class="row align-items-end">
                         <div class="col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
@@ -55,12 +55,12 @@
                                    value="{{ $toDate }}">
                         </div>
                         <div class="col-md-2">
-                            <label for="team_id" class="form-label">Team</label>
-                            <select class="form-select" id="team_id" name="team_id">
-                                <option value="">All Teams</option>
-                                @foreach($teams as $team)
-                                    <option value="{{ $team->id }}" {{ $teamId == $team->id ? 'selected' : '' }}>
-                                        {{ $team->name }}
+                            <label for="telecaller_id" class="form-label">Select Telecaller</label>
+                            <select class="form-select" id="telecaller_id" name="telecaller_id">
+                                <option value="">All Telecallers</option>
+                                @foreach($telecallers as $telecaller)
+                                    <option value="{{ $telecaller->id }}" {{ $telecallerId == $telecaller->id ? 'selected' : '' }}>
+                                        {{ $telecaller->name }} {{ $telecaller->phone ? '(' . $telecaller->phone . ')' : '' }}
                                     </option>
                                 @endforeach
                             </select>
@@ -70,14 +70,14 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="ti ti-filter"></i> Generate Report
                                 </button>
-                                <a href="{{ route('admin.reports.team') }}" class="btn btn-outline-secondary">
+                                <a href="{{ route('admin.reports.telecaller') }}" class="btn btn-outline-secondary">
                                     <i class="ti ti-refresh"></i> Reset
                                 </a>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('admin.reports.team.excel', request()->query()) }}" class="btn btn-success">
+                                    <a href="{{ route('admin.reports.telecaller.excel', request()->query()) }}" class="btn btn-success">
                                         <i class="ti ti-file-excel"></i> Excel
                                     </a>
-                                    <a href="{{ route('admin.reports.team.pdf', request()->query()) }}" class="btn btn-danger">
+                                    <a href="{{ route('admin.reports.telecaller.pdf', request()->query()) }}" class="btn btn-danger">
                                         <i class="ti ti-file-pdf"></i> PDF
                                     </a>
                                 </div>
@@ -100,32 +100,32 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Team Performance Summary</h5>
+                <h5 class="mb-0">Report Summary</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h3 class="text-primary">{{ $reports['team']->sum('count') }}</h3>
+                            <h3 class="text-primary">{{ $reports['telecaller']->sum('count') ?? 0 }}</h3>
                             <p class="text-muted mb-0">Total Leads</p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h3 class="text-info">{{ $reports['team']->count() }}</h3>
-                            <p class="text-muted mb-0">Active Teams</p>
+                            <h3 class="text-success">{{ $reports['telecaller']->count() ?? 0 }}</h3>
+                            <p class="text-muted mb-0">Active Telecallers</p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h3 class="text-success">{{ $reports['team']->max('count') ?? '-' }}</h3>
-                            <p class="text-muted mb-0">Highest Team</p>
+                            <h3 class="text-info">{{ $reports['telecaller']->avg('count') ? round($reports['telecaller']->avg('count'), 1) : 0 }}</h3>
+                            <p class="text-muted mb-0">Avg Leads per Telecaller</p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h3 class="text-warning">{{ $reports['team']->avg('count') ? round($reports['team']->avg('count'), 1) : '-' }}</h3>
-                            <p class="text-muted mb-0">Average per Team</p>
+                            <h3 class="text-warning">{{ $reports['telecaller']->max('count') ?? 0 }}</h3>
+                            <p class="text-muted mb-0">Highest Leads</p>
                         </div>
                     </div>
                 </div>
@@ -135,71 +135,52 @@
 </div>
 <!-- [ Report Summary ] end -->
 
-<!-- [ Team Report ] start -->
-<div class="row">
+<!-- [ Telecaller Performance Report ] start -->
+<div class="row mb-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="ti ti-users me-2"></i>Team Performance Report
+                    <i class="ti ti-phone me-2"></i>Telecaller Performance Report
                 </h5>
             </div>
             <div class="card-body">
-                @if($reports['team']->count() > 0)
+                @if($reports['telecaller']->count() > 0)
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
+                                    <th>#</th>
+                                    <th>Telecaller</th>
                                     <th>Team</th>
-                                    <th class="text-end">Count</th>
+                                    <th class="text-end">Leads</th>
                                     <th class="text-end">Percentage</th>
-                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($reports['team'] as $team)
+                                @foreach($reports['telecaller'] as $index => $telecaller)
                                     @php
-                                        $total = $reports['team']->sum('count');
-                                        $percentage = $total > 0 ? round(($team->count / $total) * 100, 1) : 0;
+                                        $total = $reports['telecaller']->sum('count');
+                                        $percentage = $total > 0 ? round(($telecaller->count / $total) * 100, 1) : 0;
                                     @endphp
                                     <tr>
+                                        <td>{{ $index + 1 }}</td>
                                         <td>
-                                            <div>
-                                                <i class="ti ti-users me-2 text-success"></i>
-                                                <strong>{{ $team->title }}</strong>
-                                                @if(isset($team->telecallers) && $team->telecallers->count() > 0)
-                                                    <div class="mt-2">
-                                                        <small class="text-muted">Telecallers:</small>
-                                                        <div class="mt-1">
-                                                            @foreach($team->telecallers as $telecaller)
-                                                                <span class="badge bg-light-primary me-1 mb-1">
-                                                                    <i class="ti ti-phone me-1"></i>
-                                                                    {{ $telecaller->name }} ({{ $telecaller->lead_count }})
-                                                                </span>
-                                                            @endforeach
-                                                        </div>
-                                                    </div>
-                                                @else
-                                                    <div class="mt-2">
-                                                        <small class="text-muted">No telecallers assigned</small>
-                                                    </div>
-                                                @endif
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                                    <i class="ti ti-phone"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0 fw-semibold">{{ $telecaller->name }}</h6>
+                                                    <small class="text-muted">Phone: {{ $telecaller->phone ?? 'N/A' }}</small>
+                                                </div>
                                             </div>
                                         </td>
-                                        <td class="text-end fw-bold">{{ $team->count }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ $telecaller->team_name ?? 'No Team' }}</span>
+                                        </td>
+                                        <td class="text-end fw-bold">{{ $telecaller->count }}</td>
                                         <td class="text-end">{{ $percentage }}%</td>
-                                        <td class="text-end">
-                                            <div class="btn-group" role="group">
-                                                <a href="{{ route('leads.index', ['team_id' => $team->id, 'date_from' => $fromDate, 'date_to' => $toDate]) }}" 
-                                                   class="btn btn-sm btn-outline-primary">
-                                                    <i class="ti ti-eye"></i> View Leads
-                                                </a>
-                                                <a href="{{ route('admin.reports.telecaller', ['date_from' => $fromDate, 'date_to' => $toDate, 'team_id' => $team->id]) }}" 
-                                                   class="btn btn-sm btn-outline-info">
-                                                    <i class="ti ti-phone"></i> Telecallers
-                                                </a>
-                                            </div>
-                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -207,7 +188,7 @@
                     </div>
                 @else
                     <div class="text-center text-muted py-4">
-                        <i class="ti ti-users f-48 mb-3"></i>
+                        <i class="ti ti-phone f-48 mb-3"></i>
                         <p>No data available for the selected date range</p>
                     </div>
                 @endif
@@ -215,10 +196,10 @@
         </div>
     </div>
 </div>
-<!-- [ Team Report ] end -->
+<!-- [ Telecaller Performance Report ] end -->
 
 <!-- [ Monthly Trend ] start -->
-<div class="row mt-4">
+<div class="row mb-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
@@ -233,18 +214,30 @@
                             <thead>
                                 <tr>
                                     <th>Month</th>
-                                    <th class="text-end">Total Leads</th>
-                                    <th class="text-end">Converted</th>
-                                    <th class="text-end">Conversion Rate</th>
+                                    <th class="text-end">Leads</th>
+                                    <th class="text-end">Growth</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($reports['monthly'] as $month)
+                                @foreach($reports['monthly'] as $index => $month)
+                                    @php
+                                        $previousMonth = $reports['monthly']->get($index - 1);
+                                        $growth = $previousMonth && isset($previousMonth->count) && $previousMonth->count > 0 
+                                            ? round((($month->count - $previousMonth->count) / $previousMonth->count) * 100, 1)
+                                            : 0;
+                                    @endphp
                                     <tr>
                                         <td>{{ $month->month }}</td>
-                                        <td class="text-end fw-bold">{{ $month->total_leads > 0 ? $month->total_leads : '-' }}</td>
-                                        <td class="text-end text-success">{{ $month->converted > 0 ? $month->converted : '-' }}</td>
-                                        <td class="text-end">{{ $month->total_leads > 0 ? $month->conversion_rate . '%' : '0%' }}</td>
+                                        <td class="text-end fw-bold">{{ $month->count }}</td>
+                                        <td class="text-end">
+                                            @if($growth > 0)
+                                                <span class="text-success">+{{ $growth }}%</span>
+                                            @elseif($growth < 0)
+                                                <span class="text-danger">{{ $growth }}%</span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -263,12 +256,13 @@
 <!-- [ Monthly Trend ] end -->
 
 <!-- [ Leads Data ] start -->
-<div class="row mt-4">
+@if($telecallerId)
+<div class="row">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="ti ti-users me-2"></i>Leads Data
+                    <i class="ti ti-list me-2"></i>Leads Data - {{ $telecallers->where('id', $telecallerId)->first()->name ?? 'Selected Telecaller' }}
                 </h5>
             </div>
             <div class="card-body">
@@ -283,27 +277,22 @@
                                     <th>Email</th>
                                     <th>Status</th>
                                     <th>Source</th>
-                                    <th>Telecaller</th>
-                                    <th>Created</th>
+                                    <th>Date</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($leads as $lead)
+                                @foreach($leads as $index => $lead)
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $leads->firstItem() + $index }}</td>
                                         <td>{{ $lead->title }}</td>
                                         <td>{{ $lead->phone }}</td>
-                                        <td>{{ $lead->email ?? '-' }}</td>
+                                        <td>{{ $lead->email }}</td>
                                         <td>
                                             <span class="badge" style="background-color: {{ $lead->leadStatus->color ?? '#6c757d' }}; color: white;">
-                                                {{ $lead->leadStatus->title ?? 'Unknown' }}
+                                                {{ $lead->leadStatus->title ?? 'N/A' }}
                                             </span>
                                         </td>
-                                        <td>
-                                            <i class="ti ti-tag me-1"></i>
-                                            {{ $lead->leadSource->title ?? 'Unknown' }}
-                                        </td>
-                                        <td>{{ $lead->telecaller->name ?? '-' }}</td>
+                                        <td>{{ $lead->leadSource->title ?? 'N/A' }}</td>
                                         <td>{{ $lead->created_at->format('M d, Y') }}</td>
                                     </tr>
                                 @endforeach
@@ -312,19 +301,32 @@
                     </div>
                     
                     <!-- Pagination -->
-                    <div class="d-flex justify-content-center mt-3">
-                        {{ $leads->links() }}
+                    <div class="d-flex justify-content-center">
+                        {{ $leads->appends(request()->query())->links() }}
                     </div>
                 @else
                     <div class="text-center text-muted py-4">
-                        <i class="ti ti-users f-48 mb-3"></i>
-                        <p>No leads found for the selected date range</p>
+                        <i class="ti ti-list f-48 mb-3"></i>
+                        <p>No leads found for the selected telecaller</p>
                     </div>
                 @endif
             </div>
         </div>
     </div>
 </div>
+@else
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="ti ti-user-search f-48 text-muted mb-3"></i>
+                <h5 class="text-muted">Select a Telecaller</h5>
+                <p class="text-muted">Please select a telecaller from the dropdown above to view detailed leads data.</p>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 <!-- [ Leads Data ] end -->
 </div>
 <!-- [ Printable Report Content ] end -->
@@ -376,7 +378,7 @@ function printReport() {
         printWindow.document.write(`
             <html>
             <head>
-                <title>Team Report - Print</title>
+                <title>Telecaller Report - Print</title>
                 <style>
                     body { font-family: Arial, sans-serif; margin: 20px; }
                     .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }

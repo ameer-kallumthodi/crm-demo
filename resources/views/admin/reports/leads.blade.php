@@ -51,9 +51,14 @@
                         </div>
                         <div class="col-md-3">
                             <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-success" onclick="exportReport()">
-                                    <i class="ti ti-download"></i> Export
-                                </button>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ route('admin.reports.main.excel', request()->query()) }}" class="btn btn-success">
+                                        <i class="ti ti-file-excel"></i> Excel
+                                    </a>
+                                    <a href="{{ route('admin.reports.main.pdf', request()->query()) }}" class="btn btn-danger">
+                                        <i class="ti ti-file-pdf"></i> PDF
+                                    </a>
+                                </div>
                                 <button type="button" class="btn btn-info" onclick="printReport()">
                                     <i class="ti ti-printer"></i> Print
                                 </button>
@@ -67,7 +72,18 @@
 </div>
 <!-- [ Date Filter ] end -->
 
+<!-- [ Printable Report Content ] start -->
+<div class="printable-report">
+    <div class="header text-center mb-4" style="display: none;">
+        <h1>Main Reports</h1>
+        <p>Report Period: {{ \Carbon\Carbon::parse($fromDate)->format('M d, Y') }} to {{ \Carbon\Carbon::parse($toDate)->format('M d, Y') }}</p>
+        <p>Generated on: {{ now()->format('M d, Y H:i:s') }}</p>
+    </div>
+</div>
+<!-- [ Printable Report Content ] end -->
+
 <!-- [ Reports Summary ] start -->
+<div class="printable-report">
 <div class="row mb-4">
     <div class="col-12">
         <div class="card">
@@ -263,19 +279,144 @@
         </div>
     </div>
 
+    <!-- Telecaller Report -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="ti ti-phone me-2"></i>Telecaller Report
+                </h5>
+                <a href="{{ route('admin.reports.telecaller', ['date_from' => $fromDate, 'date_to' => $toDate]) }}" 
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="ti ti-eye"></i> Detailed Report
+                </a>
+            </div>
+            <div class="card-body">
+                @if($reports['telecaller']->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Telecaller</th>
+                                    <th class="text-end">Count</th>
+                                    <th class="text-end">Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($reports['telecaller'] as $telecaller)
+                                    @php
+                                        $total = $reports['telecaller']->sum('count');
+                                        $percentage = $total > 0 ? round(($telecaller->count / $total) * 100, 1) : 0;
+                                    @endphp
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                                    <i class="ti ti-phone"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0 fw-semibold">{{ $telecaller->name }}</h6>
+                                                    <small class="text-muted">{{ $telecaller->team_name ?? 'No Team' }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-end fw-bold">{{ $telecaller->count }}</td>
+                                        <td class="text-end">{{ $percentage }}%</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-center text-muted py-4">
+                        <i class="ti ti-phone f-48 mb-3"></i>
+                        <p>No data available for the selected date range</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
 </div>
 <!-- [ Reports Content ] end -->
+</div>
+<!-- [ Printable Report Content ] end -->
+
 @endsection
+
+@push('styles')
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .printable-report, .printable-report * {
+        visibility: visible;
+    }
+    .printable-report {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .btn {
+        display: none !important;
+    }
+    .breadcrumb {
+        display: none !important;
+    }
+    .page-header {
+        display: none !important;
+    }
+}
+</style>
+@endpush
 
 @push('scripts')
 <script>
-function exportReport() {
-    // Add export functionality here
-    alert('Export functionality will be implemented');
-}
-
 function printReport() {
-    window.print();
+    // Create a printable version of the report
+    const printContent = document.querySelector('.printable-report');
+    if (printContent) {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Main Reports - Print</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+                    .header h1 { margin: 0; color: #333; font-size: 24px; }
+                    .header p { margin: 5px 0; color: #666; }
+                    .summary { margin-bottom: 30px; }
+                    .summary h3 { color: #333; margin-bottom: 15px; }
+                    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+                    .summary-item { text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 5px; }
+                    .summary-item h4 { margin: 0; font-size: 18px; color: #333; }
+                    .summary-item p { margin: 5px 0 0 0; color: #666; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background-color: #f2f2f2; font-weight: bold; }
+                    .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 10px; }
+                </style>
+            </head>
+            <body>
+                ${printContent.innerHTML}
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    } else {
+        window.print();
+    }
 }
 </script>
 @endpush

@@ -62,6 +62,38 @@ return new class extends Migration
                 'group' => 'theme',
                 'is_public' => true,
             ],
+            [
+                'key' => 'bg_image',
+                'value' => 'assets/mantis/images/auth-bg.jpg',
+                'type' => 'file',
+                'description' => 'Login page background image',
+                'group' => 'site',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'login_primary_color',
+                'value' => '#667eea',
+                'type' => 'color',
+                'description' => 'Primary color for login form',
+                'group' => 'theme',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'login_secondary_color',
+                'value' => '#764ba2',
+                'type' => 'color',
+                'description' => 'Secondary color for login form',
+                'group' => 'theme',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'login_form_style',
+                'value' => 'modern',
+                'type' => 'text',
+                'description' => 'Login form style (modern, classic, minimal)',
+                'group' => 'theme',
+                'is_public' => true,
+            ],
         ];
 
         foreach ($settings as $setting) {
@@ -80,6 +112,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::table('settings')->whereIn('key', ['site_name', 'site_description', 'site_logo', 'site_favicon'])->delete();
+        DB::table('settings')->whereIn('key', ['site_name', 'site_description', 'site_logo', 'site_favicon', 'bg_image', 'login_primary_color', 'login_secondary_color', 'login_form_style'])->delete();
     }
 };

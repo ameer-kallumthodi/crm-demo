@@ -128,6 +128,7 @@
                                         <label for="logo" class="form-label">Upload New Logo</label>
                                         <input type="file" class="form-control" id="logo" name="logo" accept="image/*" required>
                                         <div class="form-text">Supported formats: JPEG, PNG, JPG, GIF, SVG. Max size: 2MB</div>
+                                        <div id="logo_error" class="text-danger mt-1" style="display: none;"></div>
                             </div>
                                     <button type="submit" class="btn btn-primary">
                                         <i class="ti ti-upload"></i> Update Logo
@@ -154,7 +155,8 @@
                             <div class="mb-3">
                                         <label for="favicon" class="form-label">Upload New Favicon</label>
                                         <input type="file" class="form-control" id="favicon" name="favicon" accept="image/*,.ico" required>
-                                        <div class="form-text">Supported formats: ICO, PNG, JPG, JPEG. Max size: 1MB</div>
+                                        <div class="form-text">Supported formats: ICO, PNG, JPG, JPEG. Max size: 2MB</div>
+                                        <div id="favicon_error" class="text-danger mt-1" style="display: none;"></div>
                             </div>
                                     <button type="submit" class="btn btn-primary">
                                         <i class="ti ti-upload"></i> Update Favicon
@@ -164,6 +166,36 @@
                         </div>
                         </div>
                     </div>
+
+                <!-- Background Image Settings -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card border">
+                            <div class="card-header">
+                                <h6 class="mb-0">Login Page Background Image</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-3">
+                                    <img id="current-bg-image" src="{{ asset($siteSettings['bg_image']) }}" alt="Current Background Image" 
+                                         class="img-fluid rounded" style="max-height: 200px; max-width: 400px; border: 1px solid #dee2e6;"
+                                         onerror="this.src='{{ asset('assets/mantis/images/auth-bg.jpg') }}'">
+                                </div>
+                                <form id="bgImageForm" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label for="bg_image" class="form-label">Upload New Background Image</label>
+                                        <input type="file" class="form-control" id="bg_image" name="bg_image" accept="image/*" required>
+                                        <div class="form-text">Supported formats: JPEG, PNG, JPG, GIF, SVG. Max size: 2MB. Recommended: 1920x1080px</div>
+                                        <div id="bg_image_error" class="text-danger mt-1" style="display: none;"></div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ti ti-upload"></i> Update Background Image
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -174,6 +206,63 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // File size validation for logo
+    $('#logo').on('change', function() {
+        const file = this.files[0];
+        const errorDiv = $('#logo_error');
+        
+        if (file) {
+            const fileSize = file.size / 1024 / 1024; // Convert to MB
+            if (fileSize > 2) {
+                errorDiv.text('File size must be less than 2MB. Current file size: ' + fileSize.toFixed(2) + 'MB').show();
+                this.value = '';
+                return false;
+            } else {
+                errorDiv.hide();
+            }
+        } else {
+            errorDiv.hide();
+        }
+    });
+
+    // File size validation for favicon
+    $('#favicon').on('change', function() {
+        const file = this.files[0];
+        const errorDiv = $('#favicon_error');
+        
+        if (file) {
+            const fileSize = file.size / 1024 / 1024; // Convert to MB
+            if (fileSize > 2) {
+                errorDiv.text('File size must be less than 2MB. Current file size: ' + fileSize.toFixed(2) + 'MB').show();
+                this.value = '';
+                return false;
+            } else {
+                errorDiv.hide();
+            }
+        } else {
+            errorDiv.hide();
+        }
+    });
+
+    // File size validation for background image
+    $('#bg_image').on('change', function() {
+        const file = this.files[0];
+        const errorDiv = $('#bg_image_error');
+        
+        if (file) {
+            const fileSize = file.size / 1024 / 1024; // Convert to MB
+            if (fileSize > 2) {
+                errorDiv.text('File size must be less than 2MB. Current file size: ' + fileSize.toFixed(2) + 'MB').show();
+                this.value = '';
+                return false;
+            } else {
+                errorDiv.hide();
+            }
+        } else {
+            errorDiv.hide();
+        }
+    });
+
     // Handle logo form submission
     $('#logoForm').on('submit', function(e) {
         e.preventDefault();
@@ -354,6 +443,52 @@ $(document).ready(function() {
                     toast_danger(response.message);
                 } else {
                     toast_danger('An error occurred while updating site settings.');
+                }
+            },
+            complete: function() {
+                // Reset button state
+                submitBtn.html(originalText);
+                submitBtn.prop('disabled', false);
+            }
+        });
+    });
+
+    // Handle background image form submission
+    $('#bgImageForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        
+        // Show loading state
+        submitBtn.html('<i class="ti ti-loader-2 spin"></i> Uploading...');
+        submitBtn.prop('disabled', true);
+        
+        $.ajax({
+            url: '{{ route("admin.website.settings.update-bg-image") }}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Update the preview image
+                    $('#current-bg-image').attr('src', response.bg_image_url + '?t=' + new Date().getTime());
+                    toast_success(response.message);
+                } else {
+                    toast_danger(response.message);
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON;
+                if (response && response.message) {
+                    toast_danger(response.message);
+                } else {
+                    toast_danger('An error occurred while updating the background image.');
                 }
             },
             complete: function() {

@@ -57,7 +57,7 @@
 <script type="text/javascript">
     function show_small_modal(url, header) {
         // SHOWING AJAX PRELOADER IMAGE
-        $('#small-modal-content').html('<div style="padding:40px; text-align:center;"><img src="https://i.stack.imgur.com/FhHRx.gif"></div>');
+        $('#small-modal-content').html('<div style="padding:40px; text-align:center;"><img src="{{ asset("assets/loader.gif") }}" width="150" height="150" alt="Loading..."></div>');
         $('#small-modal-title').html('Loading...');
         // LOADING THE AJAX MODAL
         $('#small_modal').modal({
@@ -73,7 +73,7 @@
 
     function show_ajax_modal(url, header) {
         // SHOWING AJAX PRELOADER IMAGE
-        $('#ajax-modal-content').html('<div style="padding:40px; text-align:center;"><img src="https://i.stack.imgur.com/FhHRx.gif"></div>');
+        $('#ajax-modal-content').html('<div style="padding:40px; text-align:center;"><img src="{{ asset("assets/loader.gif") }}" width="150" height="150" alt="Loading..."></div>');
         $('#ajax-modal-title').html('Loading...');
         // LOADING THE AJAX MODAL
         $('#ajax_modal').modal({
@@ -87,7 +87,7 @@
 
     function show_large_modal(url, header) {
         // SHOWING AJAX PRELOADER IMAGE
-        $('#large-modal-content').html('<div style="padding:40px; text-align:center;"><img src="https://i.stack.imgur.com/FhHRx.gif"></div>');
+        $('#large-modal-content').html('<div style="padding:40px; text-align:center;"><img src="{{ asset("assets/loader.gif") }}" width="150" height="150" alt="Loading..."></div>');
         $('#large-modal-title').html('Loading...');
         // LOADING THE AJAX MODAL
         $('#large_modal').modal({
@@ -103,7 +103,7 @@
 
     function show_full_modal(url, header) {
         // SHOWING AJAX PRELOADER IMAGE
-        $('#full-modal-content').html('<div style="padding:40px; text-align:center;"><img src="https://i.stack.imgur.com/FhHRx.gif"></div>');
+        $('#full-modal-content').html('<div style="padding:40px; text-align:center;"><img src="{{ asset("assets/loader.gif") }}" width="150" height="150" alt="Loading..."></div>');
         $('#full-modal-title').html('Loading...');
         // LOADING THE AJAX MODAL
         $('#full_modal').modal({

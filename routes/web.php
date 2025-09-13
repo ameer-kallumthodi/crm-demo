@@ -37,6 +37,7 @@ Route::middleware('custom.auth')->group(function () {
     Route::get('/leads-add', [LeadController::class, 'ajax_add'])->name('leads.add');
     Route::post('/leads-submit', [LeadController::class, 'submit'])->name('leads.submit');
     Route::get('/leads/bulk-upload-form', [LeadController::class, 'bulkUploadView'])->name('leads.bulk-upload.test');
+    Route::get('/leads/bulk-upload-template', [LeadController::class, 'downloadTemplate'])->name('leads.bulk-upload.template');
     Route::post('/leads/bulk-upload', [LeadController::class, 'bulkUploadSubmit'])->name('leads.bulk-upload.submit');
     Route::get('/leads/bulk-reassign', [LeadController::class, 'bulkReassign'])->name('leads.bulk-reassign');
     Route::post('/leads/bulk-reassign', [LeadController::class, 'bulkReassign'])->name('leads.bulk-reassign.post');
@@ -119,12 +120,15 @@ Route::middleware('custom.auth')->group(function () {
             Route::post('/settings/update-favicon', [App\Http\Controllers\SettingController::class, 'updateFavicon'])->name('website.settings.update-favicon');
             Route::post('/settings/update-site-settings', [App\Http\Controllers\SettingController::class, 'updateSiteSettings'])->name('website.settings.update-site-settings');
             Route::post('/settings/update-colors', [App\Http\Controllers\SettingController::class, 'updateColors'])->name('website.settings.update-colors');
+            Route::post('/settings/update-bg-image', [App\Http\Controllers\SettingController::class, 'updateBackgroundImage'])->name('website.settings.update-bg-image');
+            Route::post('/settings/update-login-customization', [App\Http\Controllers\SettingController::class, 'updateLoginCustomization'])->name('website.settings.update-login-customization');
             
             // Reports routes
             Route::get('/reports/leads', [App\Http\Controllers\LeadReportController::class, 'index'])->name('reports.leads');
             Route::get('/reports/lead-status', [App\Http\Controllers\LeadReportController::class, 'leadStatusReport'])->name('reports.lead-status');
             Route::get('/reports/lead-source', [App\Http\Controllers\LeadReportController::class, 'leadSourceReport'])->name('reports.lead-source');
             Route::get('/reports/team', [App\Http\Controllers\LeadReportController::class, 'teamReport'])->name('reports.team');
+            Route::get('/reports/telecaller', [App\Http\Controllers\LeadReportController::class, 'telecallerReport'])->name('reports.telecaller');
             
             // Export routes
             Route::get('/reports/lead-status/export/excel', [App\Http\Controllers\LeadReportController::class, 'exportLeadStatusExcel'])->name('reports.lead-status.excel');
@@ -133,6 +137,10 @@ Route::middleware('custom.auth')->group(function () {
             Route::get('/reports/lead-source/export/pdf', [App\Http\Controllers\LeadReportController::class, 'exportLeadSourcePdf'])->name('reports.lead-source.pdf');
             Route::get('/reports/team/export/excel', [App\Http\Controllers\LeadReportController::class, 'exportTeamExcel'])->name('reports.team.excel');
             Route::get('/reports/team/export/pdf', [App\Http\Controllers\LeadReportController::class, 'exportTeamPdf'])->name('reports.team.pdf');
+            Route::get('/reports/telecaller/export/excel', [App\Http\Controllers\LeadReportController::class, 'exportTelecallerExcel'])->name('reports.telecaller.excel');
+            Route::get('/reports/telecaller/export/pdf', [App\Http\Controllers\LeadReportController::class, 'exportTelecallerPdf'])->name('reports.telecaller.pdf');
+            Route::get('/reports/export/excel', [App\Http\Controllers\LeadReportController::class, 'exportMainReportsExcel'])->name('reports.main.excel');
+            Route::get('/reports/export/pdf', [App\Http\Controllers\LeadReportController::class, 'exportMainReportsPdf'])->name('reports.main.pdf');
             
             // Admin Management routes
             Route::get('/admins', [App\Http\Controllers\AdminController::class, 'index'])->name('admins.index');

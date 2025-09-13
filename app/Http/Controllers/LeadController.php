@@ -525,6 +525,23 @@ class LeadController extends Controller
         ));
     }
 
+    public function downloadTemplate()
+    {
+        $filePath = storage_path('app/public/lead-sample.xlsx');
+        
+        if (!file_exists($filePath)) {
+            return response()->json(['error' => 'Template file not found'], 404);
+        }
+        
+        $currentDateTime = now()->format('Y-m-d_H-i-s');
+        $filename = "Lead_Bulk_Upload_{$currentDateTime}.xlsx";
+        
+        return response()->download($filePath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ]);
+    }
+
     public function bulkUploadSubmit(Request $request)
     {
 
@@ -534,7 +551,7 @@ class LeadController extends Controller
         ini_set('memory_limit', config('timeout.memory_limit', '256M'));
 
         $validator = Validator::make($request->all(), [
-            'excel_file' => 'required|file|mimes:xlsx,xls|max:10240',
+            'excel_file' => 'required|file|mimes:xlsx,xls|max:2048',
             'lead_source_id' => 'required|exists:lead_sources,id',
             'lead_status_id' => 'required|exists:lead_statuses,id',
             'course_id' => 'required|exists:courses,id',

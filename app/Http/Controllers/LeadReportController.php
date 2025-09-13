@@ -36,6 +36,7 @@ class LeadReportController extends Controller
             'lead_status' => $this->getLeadStatusReport($fromDate, $toDate),
             'lead_source' => $this->getLeadSourceReport($fromDate, $toDate),
             'team' => $this->getTeamReport($fromDate, $toDate),
+            'telecaller' => $this->getTelecallerReport($fromDate, $toDate),
         ];
         
         return view('admin.reports.leads', compact(
@@ -128,6 +129,43 @@ class LeadReportController extends Controller
         return view('admin.reports.team', compact('reports', 'leads', 'fromDate', 'toDate', 'teams', 'teamId'));
     }
 
+    public function telecallerReport(Request $request)
+    {
+        $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
+        $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
+        $telecallerId = $request->get('telecaller_id');
+        $teamId = $request->get('team_id');
+        
+        // Get filter options
+        $telecallersQuery = User::where('role_id', 3)->select('id', 'name', 'phone');
+        if ($teamId) {
+            $telecallersQuery->where('team_id', $teamId);
+        }
+        $telecallers = $telecallersQuery->get();
+        
+        // Get reports data
+        $reports = [
+            'telecaller' => $this->getTelecallerReport($fromDate, $toDate, $teamId),
+            'monthly' => $this->getMonthlyReport($fromDate, $toDate),
+        ];
+        
+        // Get leads data for the detailed view with optional telecaller filter
+        $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name', 'team:id,name'])
+            ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
+            
+        if ($telecallerId) {
+            $leadsQuery->where('telecaller_id', $telecallerId);
+        }
+        
+        if ($teamId) {
+            $leadsQuery->where('team_id', $teamId);
+        }
+        
+        $leads = $leadsQuery->orderBy('created_at', 'desc')->paginate(20);
+        
+        return view('admin.reports.telecaller', compact('reports', 'leads', 'fromDate', 'toDate', 'telecallers', 'telecallerId', 'teamId'));
+    }
+
     private function getLeadStatusReport($fromDate, $toDate)
     {
         return Lead::select('lead_statuses.title', 'lead_statuses.color')
@@ -152,30 +190,76 @@ class LeadReportController extends Controller
 
     private function getTeamReport($fromDate, $toDate)
     {
-        $teams = Lead::select('teams.id', 'teams.name as title')
-            ->selectRaw('COUNT(leads.id) as count')
-            ->join('teams', 'leads.team_id', '=', 'teams.id')
-            ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59'])
-            ->groupBy('teams.id', 'teams.name')
-            ->orderBy('count', 'desc')
-            ->get();
-
-        // Add telecaller data for each team
-        foreach ($teams as $team) {
+        // Get all teams first
+        $allTeams = Team::select('id', 'name as title')->get();
+        
+        $teams = collect();
+        
+        foreach ($allTeams as $team) {
+            // Get lead count for this team
+            $leadCount = Lead::where('team_id', $team->id)
+                ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59'])
+                ->count();
+            
+            // Get telecaller data for this team
             $telecallers = Lead::select('users.id', 'users.name')
                 ->selectRaw('COUNT(leads.id) as lead_count')
                 ->join('users', 'leads.telecaller_id', '=', 'users.id')
                 ->where('leads.team_id', $team->id)
                 ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59'])
-                ->where('users.role_id', 6) // Telecaller role
+                ->where('users.role_id', 3) // Telecaller role
                 ->groupBy('users.id', 'users.name')
                 ->orderBy('lead_count', 'desc')
                 ->get();
-
+            
+            $team->count = $leadCount;
             $team->telecallers = $telecallers;
+            
+            $teams->push($team);
         }
+        
+        // Sort by lead count descending
+        return $teams->sortByDesc('count')->values();
+    }
 
-        return $teams;
+    private function getTelecallerReport($fromDate, $toDate, $teamId = null)
+    {
+        // First, get all telecallers (users with role_id = 3)
+        $telecallersQuery = User::where('role_id', 3)
+            ->select('id', 'name', 'phone', 'team_id');
+            
+        if ($teamId) {
+            $telecallersQuery->where('team_id', $teamId);
+        }
+        
+        $allTelecallers = $telecallersQuery->get();
+        
+        $telecallers = collect();
+        
+        foreach ($allTelecallers as $telecaller) {
+            // Get lead count for this telecaller in the date range
+            $leadCount = Lead::where('telecaller_id', $telecaller->id)
+                ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59'])
+                ->count();
+            
+            // Get team name for this telecaller
+            $team = Team::where('id', $telecaller->team_id)->first();
+            $teamName = $team ? $team->name : null;
+            
+            // Create telecaller object with count
+            $telecallerData = (object) [
+                'id' => $telecaller->id,
+                'name' => $telecaller->name,
+                'phone' => $telecaller->phone,
+                'team_name' => $teamName,
+                'count' => $leadCount
+            ];
+            
+            $telecallers->push($telecallerData);
+        }
+        
+        // Sort by lead count descending and return
+        return $telecallers->sortByDesc('count')->values();
     }
 
     private function getCountryReport($fromDate, $toDate)
@@ -200,17 +284,6 @@ class LeadReportController extends Controller
             ->get();
     }
 
-    private function getTelecallerReport($fromDate, $toDate)
-    {
-        return Lead::select('users.name')
-            ->selectRaw('COUNT(leads.id) as count')
-            ->join('users', 'leads.telecaller_id', '=', 'users.id')
-            ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59'])
-            ->where('users.role_id', 6) // Telecaller role
-            ->groupBy('users.id', 'users.name')
-            ->orderBy('count', 'desc')
-            ->get();
-    }
 
     private function getMonthlyReport($fromDate, $toDate)
     {
@@ -239,6 +312,7 @@ class LeadReportController extends Controller
             
             $months[] = (object) [
                 'month' => $monthName,
+                'count' => $totalLeads,
                 'total_leads' => $totalLeads,
                 'converted' => $convertedLeads,
                 'conversion_rate' => $conversionRate
@@ -283,10 +357,19 @@ class LeadReportController extends Controller
         
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
         
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\LeadStatusReportExport($leads, $fromDate, $toDate),
-            'lead_status_report_' . $fromDate . '_to_' . $toDate . '.xlsx'
-        );
+        $export = new \App\Exports\LeadStatusReportExport($leads, $fromDate, $toDate);
+        $spreadsheet = $export->export();
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        $filename = 'lead_status_report_' . $fromDate . '_to_' . $toDate . '.xlsx';
+        
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ]);
     }
 
     /**
@@ -340,10 +423,19 @@ class LeadReportController extends Controller
         
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
         
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\LeadSourceReportExport($leads, $fromDate, $toDate),
-            'lead_source_report_' . $fromDate . '_to_' . $toDate . '.xlsx'
-        );
+        $export = new \App\Exports\LeadSourceReportExport($leads, $fromDate, $toDate);
+        $spreadsheet = $export->export();
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        $filename = 'lead_source_report_' . $fromDate . '_to_' . $toDate . '.xlsx';
+        
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ]);
     }
 
     /**
@@ -397,10 +489,19 @@ class LeadReportController extends Controller
         
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
         
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\TeamReportExport($leads, $fromDate, $toDate),
-            'team_report_' . $fromDate . '_to_' . $toDate . '.xlsx'
-        );
+        $export = new \App\Exports\TeamReportExport($leads, $fromDate, $toDate);
+        $spreadsheet = $export->export();
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        $filename = 'team_report_' . $fromDate . '_to_' . $toDate . '.xlsx';
+        
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ]);
     }
 
     /**
@@ -433,5 +534,149 @@ class LeadReportController extends Controller
         $pdf->setPaper('A4', 'landscape');
         
         return $pdf->download('team_report_' . $fromDate . '_to_' . $toDate . '.pdf');
+    }
+
+    /**
+     * Export Telecaller Report to Excel
+     */
+    public function exportTelecallerExcel(Request $request)
+    {
+        $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
+        $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
+        $telecallerId = $request->get('telecaller_id');
+        $teamId = $request->get('team_id');
+        
+        // Get telecaller report data
+        $reports = [
+            'telecaller' => $this->getTelecallerReport($fromDate, $toDate, $teamId),
+        ];
+        
+        // Get leads data for the detailed view with optional telecaller filter
+        $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name'])
+            ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
+            
+        if ($telecallerId) {
+            $leadsQuery->where('telecaller_id', $telecallerId);
+        }
+        
+        if ($teamId) {
+            $leadsQuery->where('team_id', $teamId);
+        }
+        
+        $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
+        
+        $export = new \App\Exports\TelecallerReportExport($reports, $fromDate, $toDate);
+        $spreadsheet = $export->export();
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        $filename = 'telecaller_report_' . $fromDate . '_to_' . $toDate . '.xlsx';
+        
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ]);
+    }
+
+    /**
+     * Export Telecaller Report to PDF
+     */
+    public function exportTelecallerPdf(Request $request)
+    {
+        $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
+        $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
+        $telecallerId = $request->get('telecaller_id');
+        $teamId = $request->get('team_id');
+        
+        // Get telecaller report data
+        $reports = [
+            'telecaller' => $this->getTelecallerReport($fromDate, $toDate, $teamId),
+        ];
+        
+        // Get leads data for the detailed view with optional telecaller filter
+        $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name'])
+            ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
+            
+        if ($telecallerId) {
+            $leadsQuery->where('telecaller_id', $telecallerId);
+        }
+        
+        if ($teamId) {
+            $leadsQuery->where('team_id', $teamId);
+        }
+        
+        $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.exports.telecaller-pdf', [
+            'reports' => $reports,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'reportType' => 'Telecaller Report',
+            'generatedAt' => now()->format('Y-m-d H:i:s')
+        ]);
+        
+        $pdf->setPaper('A4', 'landscape');
+        return $pdf->download('telecaller_report_' . $fromDate . '_to_' . $toDate . '.pdf');
+    }
+
+    /**
+     * Export Main Reports to Excel
+     */
+    public function exportMainReportsExcel(Request $request)
+    {
+        $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
+        $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
+        
+        // Get reports data
+        $reports = [
+            'lead_status' => $this->getLeadStatusReport($fromDate, $toDate),
+            'lead_source' => $this->getLeadSourceReport($fromDate, $toDate),
+            'team' => $this->getTeamReport($fromDate, $toDate),
+            'telecaller' => $this->getTelecallerReport($fromDate, $toDate),
+        ];
+        
+        $export = new \App\Exports\MainReportsExport($reports, $fromDate, $toDate);
+        $spreadsheet = $export->export();
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        $filename = 'main_reports_' . $fromDate . '_to_' . $toDate . '.xlsx';
+        
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ]);
+    }
+
+    /**
+     * Export Main Reports to PDF
+     */
+    public function exportMainReportsPdf(Request $request)
+    {
+        $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
+        $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
+        
+        // Get reports data
+        $reports = [
+            'lead_status' => $this->getLeadStatusReport($fromDate, $toDate),
+            'lead_source' => $this->getLeadSourceReport($fromDate, $toDate),
+            'team' => $this->getTeamReport($fromDate, $toDate),
+            'telecaller' => $this->getTelecallerReport($fromDate, $toDate),
+        ];
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.exports.main-reports-pdf', [
+            'reports' => $reports,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'reportType' => 'Main Reports',
+            'generatedAt' => now()->format('Y-m-d H:i:s')
+        ]);
+        
+        $pdf->setPaper('A4', 'landscape');
+        return $pdf->download('main_reports_' . $fromDate . '_to_' . $toDate . '.pdf');
     }
 }

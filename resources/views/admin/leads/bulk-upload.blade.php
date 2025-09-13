@@ -5,8 +5,14 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="excel_file">Select Excel File <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".xlsx,.xls" required />
-                    <small class="text-muted">Supported formats: .xlsx, .xls (Max size: 10MB)</small>
+                    <div class="input-group">
+                        <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".xlsx,.xls" required />
+                        <a href="{{ route('leads.bulk-upload.template') }}" class="btn btn-outline-info" type="button">
+                            <i class="ti ti-download"></i> Download Template
+                        </a>
+                    </div>
+                    <small class="text-muted">Supported formats: .xlsx, .xls (Max size: 2MB)</small>
+                    <div id="excel_file_error" class="text-danger mt-1" style="display: none;"></div>
                 </div>
             </div>
 
@@ -85,6 +91,7 @@
                 <div class="alert alert-info">
                     <h6>Excel Format Guide:</h6>
                     <p class="mb-2"><strong>Required columns:</strong> Name, Phone, Remarks</p>
+                    <p class="mb-2"><strong>Template:</strong> Click "Download Template" above to get the correct Excel format with sample data.</p>
                     <p class="mb-0"><strong>Note:</strong> Duplicate phone numbers will be automatically skipped. Remarks field is optional.</p>
                 </div>
             </div>
@@ -136,9 +143,41 @@ $(document).ready(function() {
         }
     });
 
+    // File size validation
+    $('#excel_file').on('change', function() {
+        const file = this.files[0];
+        const errorDiv = $('#excel_file_error');
+        
+        if (file) {
+            const fileSize = file.size / 1024 / 1024; // Convert to MB
+            if (fileSize > 2) {
+                errorDiv.text('File size must be less than 2MB. Current file size: ' + fileSize.toFixed(2) + 'MB').show();
+                this.value = '';
+                return false;
+            } else {
+                errorDiv.hide();
+            }
+        } else {
+            errorDiv.hide();
+        }
+    });
+
     // Form submission with loading state
     $('#bulkUploadForm').on('submit', function(e) {
         e.preventDefault();
+        
+        // Check file size before submission
+        const fileInput = $('#excel_file')[0];
+        const errorDiv = $('#excel_file_error');
+        
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const fileSize = file.size / 1024 / 1024; // Convert to MB
+            if (fileSize > 2) {
+                errorDiv.text('File size must be less than 2MB. Current file size: ' + fileSize.toFixed(2) + 'MB').show();
+                return false;
+            }
+        }
         
         const submitBtn = $(this).find('button[type="submit"]');
         const originalText = submitBtn.html();

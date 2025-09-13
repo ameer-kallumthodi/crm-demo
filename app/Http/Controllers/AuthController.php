@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use App\Models\User;
 use App\Models\UserRole;
+use App\Models\Setting;
 
 class AuthController extends Controller
 {
@@ -19,7 +20,19 @@ class AuthController extends Controller
             return redirect()->route('dashboard');
         }
         
-        return view('auth.login');
+        // Get site settings for dynamic logo and site name
+        $siteSettings = [
+            'site_name' => Setting::get('site_name', config('app.name', 'Base CRM')),
+            'site_description' => Setting::get('site_description', 'CRM Management System'),
+            'site_logo' => Setting::get('site_logo', 'assets/mantis/images/logo-dark.svg'),
+            'site_favicon' => Setting::get('site_favicon', 'assets/mantis/images/favicon.svg'),
+            'bg_image' => Setting::get('bg_image', 'assets/mantis/images/auth-bg.jpg'),
+            'login_primary_color' => Setting::get('login_primary_color', '#667eea'),
+            'login_secondary_color' => Setting::get('login_secondary_color', '#764ba2'),
+            'login_form_style' => Setting::get('login_form_style', 'modern'),
+        ];
+        
+        return view('auth.login', compact('siteSettings'));
     }
 
     /**

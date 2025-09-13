@@ -43,6 +43,8 @@
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Description</th>
+                                <th>Team Lead</th>
+                                <th>Members</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -50,8 +52,42 @@
                             @foreach($teams as $index => $team)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ $team->name }}</td>
-                                <td>{{ $team->description ?? '-' }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                            <i class="ti ti-users"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-semibold">{{ $team->name }}</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ $team->description ?? 'No description' }}</span>
+                                </td>
+                                <td>
+                                    @if($team->teamLead)
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                                <i class="ti ti-crown"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-semibold">{{ $team->teamLead->name }}</h6>
+                                                <small class="text-muted">{{ $team->teamLead->email }}</small>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="badge bg-light text-muted">
+                                            <i class="ti ti-user-x me-1"></i>No Team Lead
+                                        </span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-info text-white me-2">{{ $team->users->count() }}</span>
+                                        <span class="text-muted">members</span>
+                                    </div>
+                                </td>
                                 <td>
                                     <a href="javascript:void(0);" class="btn btn-info btn-sm shadow-sm px-3 me-1"
                                         onclick="show_ajax_modal('{{ route('admin.teams.members', $team->id) }}', 'Team Members - {{ $team->name }}')"
