@@ -1,6 +1,6 @@
 # Basic CRM - Laravel 12
 
-This is the Laravel 12 version of the Basic CRM system, migrated from CodeIgniter 4. A comprehensive Customer Relationship Management system designed for educational institutions and lead management.
+This is the Laravel 12 version of the Skillage CRM system, migrated from CodeIgniter 4.
 
 ## Features
 
@@ -32,17 +32,10 @@ This is the Laravel 12 version of the Basic CRM system, migrated from CodeIgnite
 
 2. **Git setup** (if you want to contribute):
    ```bash
-   # Add your remote repository
-   git remote add origin https://github.com/ameer-kallumthodi/crm-demo.git
-   
-   # Set upstream branch
-   git branch --set-upstream-to=origin/main main
-   
-   # Pull latest changes
-   git pull origin main
+   cd D:\trogon-projects\skillage_crm\skillage_crm_laravel
    ```
 
-3. **Install dependencies**:
+2. **Install dependencies**:
    ```bash
    composer install
    ```
@@ -55,11 +48,9 @@ This is the Laravel 12 version of the Basic CRM system, migrated from CodeIgnite
 
 5. **Database configuration**:
    - Update `.env` file with your database credentials
-   - Database name: `crm_demo`
-   - Username: `root` (or your MySQL username)
-   - Password: `password` (or your MySQL password)
-   - Host: `localhost`
-   - Port: `3306`
+   - Database name: `crm_laravel`
+   - Username: `trogon_skillage_crm`
+   - Password: `r%puaEc!jcLk`
 
 6. **Run migrations and seeders**:
    ```bash
