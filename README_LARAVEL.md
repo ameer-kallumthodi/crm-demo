@@ -1,6 +1,6 @@
-# Skillage CRM - Laravel 12
+# Basic CRM - Laravel 12
 
-This is the Laravel 12 version of the Skillage CRM system, migrated from CodeIgniter 4.
+This is the Laravel 12 version of the Baic CRM system, migrated from CodeIgniter 4.
 
 ## Features
 
@@ -15,7 +15,7 @@ This is the Laravel 12 version of the Skillage CRM system, migrated from CodeIgn
 
 1. **Clone the repository** (if not already done):
    ```bash
-   cd D:\trogon-projects\skillage_crm\skillage_crm_laravel
+   cd D:\trogon-projects\Baic_crm\Baic_crm_laravel
    ```
 
 2. **Install dependencies**:
@@ -32,7 +32,7 @@ This is the Laravel 12 version of the Skillage CRM system, migrated from CodeIgn
 4. **Database configuration**:
    - Update `.env` file with your database credentials
    - Database name: `crm_laravel`
-   - Username: `trogon_skillage_crm`
+   - Username: `crm_laravel`
    - Password: `r%puaEc!jcLk`
 
 5. **Run migrations and seeders**:
@@ -47,7 +47,7 @@ This is the Laravel 12 version of the Skillage CRM system, migrated from CodeIgn
 
 ## Default Login Credentials
 
-- **Email**: admin@skillagecrm.com
+- **Email**: superadmin@crm.com
 - **Password**: password
 
 ## Project Structure
