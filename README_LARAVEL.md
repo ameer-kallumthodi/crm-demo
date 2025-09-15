@@ -1,9 +1,10 @@
-# Skillage CRM - Laravel 12
+# Basic CRM - Laravel 12
 
-This is the Laravel 12 version of the Skillage CRM system, migrated from CodeIgniter 4.
+This is the Laravel 12 version of the Basic CRM system, migrated from CodeIgniter 4. A comprehensive Customer Relationship Management system designed for educational institutions and lead management.
 
 ## Features
 
+### Core Features
 - **User Management**: Complete user authentication and role-based access control
 - **Lead Management**: Full CRUD operations for leads with filtering and search
 - **Dashboard**: Comprehensive dashboard with statistics and analytics
@@ -11,43 +12,72 @@ This is the Laravel 12 version of the Skillage CRM system, migrated from CodeIgn
 - **Lead Status & Sources**: Configurable lead statuses and sources
 - **Country & Course Management**: Support for multiple countries and courses
 
+### Advanced Features
+- **Notification System**: Real-time notifications with auto-mark as read functionality
+- **Call Log Integration**: Voxbay integration for call logging and management
+- **Bulk Operations**: Bulk lead operations (reassign, delete, convert)
+- **Reporting System**: Comprehensive reports with Excel and PDF export
+- **Role-Based Access**: Granular permissions for different user roles
+- **Responsive Design**: Mobile-friendly interface with modern UI/UX
+- **Data Export**: Export leads and reports in multiple formats
+- **Search & Filtering**: Advanced search and filtering capabilities
+
 ## Installation
 
-1. **Clone the repository** (if not already done):
+1. **Clone the repository**:
    ```bash
-   cd D:\trogon-projects\skillage_crm\skillage_crm_laravel
+   git clone https://github.com/ameer-kallumthodi/crm-demo.git
+   cd crm-demo
    ```
 
-2. **Install dependencies**:
+2. **Git setup** (if you want to contribute):
+   ```bash
+   # Add your remote repository
+   git remote add origin https://github.com/ameer-kallumthodi/crm-demo.git
+   
+   # Set upstream branch
+   git branch --set-upstream-to=origin/main main
+   
+   # Pull latest changes
+   git pull origin main
+   ```
+
+3. **Install dependencies**:
    ```bash
    composer install
    ```
 
-3. **Environment setup**:
+4. **Environment setup**:
    ```bash
    cp .env.example .env
    php artisan key:generate
    ```
 
-4. **Database configuration**:
+5. **Database configuration**:
    - Update `.env` file with your database credentials
-   - Database name: `crm_laravel`
-   - Username: `trogon_skillage_crm`
-   - Password: `r%puaEc!jcLk`
+   - Database name: `crm_demo`
+   - Username: `root` (or your MySQL username)
+   - Password: `password` (or your MySQL password)
+   - Host: `localhost`
+   - Port: `3306`
 
-5. **Run migrations and seeders**:
+6. **Run migrations and seeders**:
    ```bash
    php artisan migrate --seed
    ```
 
-6. **Start the development server**:
+7. **Start the development server**:
    ```bash
    php artisan serve
    ```
 
+8. **Access the application**:
+   - Open your browser and go to `http://localhost:8000`
+   - Use the default credentials to login
+
 ## Default Login Credentials
 
-- **Email**: admin@skillagecrm.com
+- **Email**: superadmin@crm.com
 - **Password**: password
 
 ## Project Structure
@@ -61,19 +91,37 @@ This is the Laravel 12 version of the Skillage CRM system, migrated from CodeIgn
 - `LeadSource` - Lead source definitions
 - `Country` - Country management
 - `Course` - Course management
+- `Notification` - Notification system
+- `NotificationRead` - Notification read tracking
+- `VoxbayCallLog` - Call log management
+- `ConvertedLead` - Converted leads tracking
 
 ### Controllers
 - `AuthController` - Authentication (login/logout)
 - `DashboardController` - Dashboard with statistics
 - `LeadController` - Lead CRUD operations
+- `NotificationController` - Notification management
+- `VoxbayController` - Call integration
+- `VoxbayCallLogController` - Call log management
+- `LeadReportController` - Reporting system
+- `TeamController` - Team management
+- `TelecallerController` - Telecaller management
 
 ### Views
 - `auth/login.blade.php` - Login page
 - `dashboard.blade.php` - Main dashboard
 - `leads/` - Lead management views
+- `admin/notifications/` - Notification management
+- `notifications/` - User notification views
+- `admin/reports/` - Reporting views
+- `layouts/` - Layout templates with topbar notifications
 
 ### Helpers
 - `AuthHelper` - Authentication helper functions
+- `RoleHelper` - Role management helper
+- `PermissionHelper` - Permission management
+- `StatusHelper` - Status management
+- `PhoneNumberHelper` - Phone number formatting
 
 ## Database Schema
 
@@ -86,6 +134,11 @@ The database includes the following main tables:
 - `lead_sources` - Lead source definitions
 - `countries` - Country information
 - `courses` - Course information
+- `notifications` - Notification system
+- `notification_reads` - Notification read tracking
+- `voxbay_call_logs` - Call log management
+- `converted_leads` - Converted leads tracking
+- `settings` - System settings
 
 ## Key Features Migrated from CI4
 
