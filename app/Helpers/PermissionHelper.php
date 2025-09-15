@@ -29,23 +29,10 @@ class PermissionHelper
     public static function has_permission_super_admin($permission = '')
     {
         $permissions = [
-            'dashboard/index',
-            'leads/index',
-            'profile/index',
-            'admin/lead-statuses/index',
-            'admin/lead-sources/index',
-            'admin/countries/index',
-            'admin/courses/index',
-            'admin/teams/index',
-            'admin/telecallers/index',
-            'admin/settings/index',
-            'admin/website/settings',
-            'admin/admins/index',
-            'admin/reports/leads',
-            'admin/converted-leads/index',
         ];
-        return in_array($permission, $permissions);
+        return !in_array($permission, $permissions);
     }
+
 
     /**
      * Admin permissions
@@ -53,20 +40,10 @@ class PermissionHelper
     public static function has_permission_admin($permission = '')
     {
         $permissions = [
-            'dashboard/index',
-            'leads/index',
-            'profile/index',
-            'admin/lead-statuses/index',
-            'admin/lead-sources/index',
-            'admin/countries/index',
-            'admin/courses/index',
-            'admin/teams/index',
-            'admin/telecallers/index',
             'admin/settings/index',
-            'admin/reports/leads',
-            'admin/converted-leads/index',
+            'admin/website/settings',
         ];
-        return in_array($permission, $permissions);
+        return !in_array($permission, $permissions);
     }
 
     /**
@@ -78,10 +55,12 @@ class PermissionHelper
             'dashboard/index',
             'leads/index',
             'profile/index',
+            'admin/reports/leads',
             'admin/converted-leads/index',
         ];
         return in_array($permission, $permissions);
     }
+
 
     /**
      * Get app permissions for a specific role

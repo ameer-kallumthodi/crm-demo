@@ -91,29 +91,29 @@
                 <h5 class="mb-0">Report Summary</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <h3 class="text-primary">{{ $reports['lead_status']->sum('count') }}</h3>
-                            <p class="text-muted mb-0">Total Leads</p>
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="text-center p-3 border rounded">
+                            <h3 class="text-primary mb-2">{{ $reports['lead_status']->sum('count') }}</h3>
+                            <p class="text-muted mb-0 fw-medium">Total Leads</p>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <h3 class="text-success">{{ $reports['lead_status']->where('title', 'Converted')->first()->count ?? 0 }}</h3>
-                            <p class="text-muted mb-0">Converted</p>
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="text-center p-3 border rounded">
+                            <h3 class="text-success mb-2">{{ $reports['lead_status']->where('title', 'Converted')->first()->count ?? 0 }}</h3>
+                            <p class="text-muted mb-0 fw-medium">Converted</p>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <h3 class="text-info">{{ $reports['lead_source']->count() }}</h3>
-                            <p class="text-muted mb-0">Lead Sources</p>
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="text-center p-3 border rounded">
+                            <h3 class="text-info mb-2">{{ $reports['lead_source']->count() }}</h3>
+                            <p class="text-muted mb-0 fw-medium">Lead Sources</p>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <h3 class="text-warning">{{ $reports['team']->count() }}</h3>
-                            <p class="text-muted mb-0">Active Teams</p>
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="text-center p-3 border rounded">
+                            <h3 class="text-warning mb-2">{{ $reports['team']->count() }}</h3>
+                            <p class="text-muted mb-0 fw-medium">Active Teams</p>
                         </div>
                     </div>
                 </div>
@@ -140,7 +140,7 @@
             <div class="card-body">
                 @if($reports['lead_status']->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table id="leadStatusTable" class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>Status</th>
@@ -192,7 +192,7 @@
             <div class="card-body">
                 @if($reports['lead_source']->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table id="leadSourceTable" class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>Source</th>
@@ -235,15 +235,17 @@
                 <h5 class="mb-0">
                     <i class="ti ti-users me-2"></i>Team Report
                 </h5>
-                <a href="{{ route('admin.reports.team', ['date_from' => $fromDate, 'date_to' => $toDate]) }}" 
-                   class="btn btn-sm btn-outline-primary">
-                    <i class="ti ti-eye"></i> Detailed Report
-                </a>
+                @if($isTeamLead || !$isTelecaller)
+                    <a href="{{ route('admin.reports.team', ['date_from' => $fromDate, 'date_to' => $toDate]) }}" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="ti ti-eye"></i> Detailed Report
+                    </a>
+                @endif
             </div>
             <div class="card-body">
                 @if($reports['team']->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table id="teamTable" class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>Team</th>
@@ -286,15 +288,17 @@
                 <h5 class="mb-0">
                     <i class="ti ti-phone me-2"></i>Telecaller Report
                 </h5>
-                <a href="{{ route('admin.reports.telecaller', ['date_from' => $fromDate, 'date_to' => $toDate]) }}" 
-                   class="btn btn-sm btn-outline-primary">
-                    <i class="ti ti-eye"></i> Detailed Report
-                </a>
+                @if($isTeamLead || !$isTelecaller)
+                    <a href="{{ route('admin.reports.telecaller', ['date_from' => $fromDate, 'date_to' => $toDate]) }}" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="ti ti-eye"></i> Detailed Report
+                    </a>
+                @endif
             </div>
             <div class="card-body">
                 @if($reports['telecaller']->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table id="telecallerTable" class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>Telecaller</th>
@@ -381,6 +385,96 @@
 
 @push('scripts')
 <script>
+$(document).ready(function() {
+    // Initialize DataTable for Lead Status
+    if ($.fn.DataTable.isDataTable('#leadStatusTable')) {
+        $('#leadStatusTable').DataTable().destroy();
+    }
+    $('#leadStatusTable').DataTable({
+        responsive: true,
+        pageLength: 5,
+        lengthMenu: [[5, 10, 25, -1], [5, 10, 25, "All"]],
+        order: [[1, 'desc']], // Sort by count descending
+        language: {
+            search: "Search statuses:",
+            lengthMenu: "Show _MENU_ statuses per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ statuses",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        }
+    });
+
+    // Initialize DataTable for Lead Source
+    if ($.fn.DataTable.isDataTable('#leadSourceTable')) {
+        $('#leadSourceTable').DataTable().destroy();
+    }
+    $('#leadSourceTable').DataTable({
+        responsive: true,
+        pageLength: 5,
+        lengthMenu: [[5, 10, 25, -1], [5, 10, 25, "All"]],
+        order: [[1, 'desc']], // Sort by count descending
+        language: {
+            search: "Search sources:",
+            lengthMenu: "Show _MENU_ sources per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ sources",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        }
+    });
+
+    // Initialize DataTable for Team
+    if ($.fn.DataTable.isDataTable('#teamTable')) {
+        $('#teamTable').DataTable().destroy();
+    }
+    $('#teamTable').DataTable({
+        responsive: true,
+        pageLength: 5,
+        lengthMenu: [[5, 10, 25, -1], [5, 10, 25, "All"]],
+        order: [[1, 'desc']], // Sort by count descending
+        language: {
+            search: "Search teams:",
+            lengthMenu: "Show _MENU_ teams per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ teams",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        }
+    });
+
+    // Initialize DataTable for Telecaller
+    if ($.fn.DataTable.isDataTable('#telecallerTable')) {
+        $('#telecallerTable').DataTable().destroy();
+    }
+    $('#telecallerTable').DataTable({
+        responsive: true,
+        pageLength: 5,
+        lengthMenu: [[5, 10, 25, -1], [5, 10, 25, "All"]],
+        order: [[1, 'desc']], // Sort by count descending
+        language: {
+            search: "Search telecallers:",
+            lengthMenu: "Show _MENU_ telecallers per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ telecallers",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        }
+    });
+});
+
 function printReport() {
     // Create a printable version of the report
     const printContent = document.querySelector('.printable-report');

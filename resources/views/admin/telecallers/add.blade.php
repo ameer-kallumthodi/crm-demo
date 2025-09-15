@@ -34,6 +34,7 @@
                         <input type="text" name="phone" class="form-control" id="phone" placeholder="Enter Phone" value="{{ old('phone') }}">
                     </div>
                 </div>
+                
             </div>
 
             <div class="col-md-12">
@@ -55,6 +56,15 @@
                 </div>
             </div>
 
+            <div class="col-md-12">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="form-label" for="ext_no">Extension Number</label>
+                        <input type="text" name="ext_no" class="form-control" id="ext_no" placeholder="Enter Extension Number" value="{{ old('ext_no') }}">
+                        <small class="form-text text-muted">Extension number for Voxbay calling system</small>
+                    </div>
+                </div>
+            </div>
             <div class="col-md-12">
                 <div class="mb-3">
                     <div class="form-check">

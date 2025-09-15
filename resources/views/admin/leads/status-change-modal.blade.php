@@ -77,7 +77,7 @@ $(document).ready(function() {
         submitBtn.html('<i class="ti ti-loader-2"></i> Updating...');
         
         $.ajax({
-            url: '{{ route("leads.status-change.post", $lead->id) }}',
+            url: '{{ route("leads.status-change", $lead->id) }}',
             method: 'POST',
             data: $(this).serialize(),
             success: function(response) {

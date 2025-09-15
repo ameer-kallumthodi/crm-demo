@@ -14,6 +14,9 @@ use App\Http\Controllers\TelecallerController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ConvertedLeadController;
+use App\Http\Controllers\VoxbayController;
+use App\Http\Controllers\VoxbayCallLogController;
+use App\Http\Controllers\NotificationController;
 
 // Public routes
 Route::get('/', [AuthController::class, 'index'])->name('login');
@@ -52,11 +55,21 @@ Route::middleware('custom.auth')->group(function () {
     Route::get('/leads/{lead}/history', [LeadController::class, 'history'])->name('leads.history');
     Route::get('/leads/{lead}/convert', [LeadController::class, 'convert'])->name('leads.convert');
     Route::post('/leads/{lead}/convert', [LeadController::class, 'convertSubmit'])->name('leads.convert.submit');
+    Route::get('leads/{lead}/call-logs', [VoxbayCallLogController::class, 'list'])->name('leads.call-logs');
     
     // API routes for AJAX calls
     Route::prefix('api')->group(function () {
         Route::get('/leads/phone', [LeadController::class, 'getByPhone']);
         Route::get('/leads/telecallers-by-team', [LeadController::class, 'getTelecallersByTeam'])->name('leads.telecallers-by-team');
+        
+        // Voxbay API routes
+        Route::post('/voxbay/outgoing-call', [VoxbayController::class, 'outgoingCall'])->name('voxbay.outgoing-call');
+        Route::get('/voxbay/telecaller/{id}/extension', [VoxbayController::class, 'getTelecallerExtension'])->name('voxbay.telecaller.extension');
+        Route::get('/voxbay/test-connection', [VoxbayController::class, 'testConnection'])->name('voxbay.test-connection');
+        
+        // Call logs API routes
+        Route::get('/call-logs', [VoxbayCallLogController::class, 'ajaxList'])->name('call-logs.ajax-list');
+        Route::get('/call-logs/statistics', [VoxbayCallLogController::class, 'statistics'])->name('call-logs.statistics');
     });
     
         // Admin routes
@@ -74,6 +87,7 @@ Route::middleware('custom.auth')->group(function () {
             Route::post('/lead-sources-submit', [LeadSourceController::class, 'submit'])->name('lead-sources.submit');
             Route::put('/lead-sources-update/{leadSource}', [LeadSourceController::class, 'update'])->name('lead-sources.update');
             Route::get('/lead-sources-delete/{id}', [LeadSourceController::class, 'delete'])->name('lead-sources.delete');
+            
             
             Route::resource('countries', CountryController::class);
             Route::get('/countries-add', [CountryController::class, 'ajax_add'])->name('countries.add');
@@ -107,6 +121,26 @@ Route::middleware('custom.auth')->group(function () {
             Route::get('/telecallers-delete/{id}', [TelecallerController::class, 'delete'])->name('telecallers.delete');
             Route::get('/telecallers-change-password/{id}', [TelecallerController::class, 'changePassword'])->name('telecallers.change-password');
             Route::post('/telecallers-update-password/{id}', [TelecallerController::class, 'updatePassword'])->name('telecallers.update-password');
+            
+            // Admission Counsellor routes (role_id = 4)
+            Route::resource('admission-counsellors', App\Http\Controllers\AdmissionCounsellorController::class);
+            Route::get('/admission-counsellors-add', [App\Http\Controllers\AdmissionCounsellorController::class, 'ajax_add'])->name('admission-counsellors.add');
+            Route::get('/admission-counsellors-edit/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'ajax_edit'])->name('admission-counsellors.edit');
+            Route::post('/admission-counsellors-submit', [App\Http\Controllers\AdmissionCounsellorController::class, 'submit'])->name('admission-counsellors.submit');
+            Route::put('/admission-counsellors-update/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'update'])->name('admission-counsellors.update');
+            Route::get('/admission-counsellors-delete/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'delete'])->name('admission-counsellors.delete');
+            Route::get('/admission-counsellors-change-password/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'changePassword'])->name('admission-counsellors.change-password');
+            Route::post('/admission-counsellors-update-password/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'updatePassword'])->name('admission-counsellors.update-password');
+            
+            // Academic Assistant routes (role_id = 5)
+            Route::resource('academic-assistants', App\Http\Controllers\AcademicAssistantController::class);
+            Route::get('/academic-assistants-add', [App\Http\Controllers\AcademicAssistantController::class, 'ajax_add'])->name('academic-assistants.add');
+            Route::get('/academic-assistants-edit/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'ajax_edit'])->name('academic-assistants.edit');
+            Route::post('/academic-assistants-submit', [App\Http\Controllers\AcademicAssistantController::class, 'submit'])->name('academic-assistants.submit');
+            Route::put('/academic-assistants-update/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'update'])->name('academic-assistants.update');
+            Route::get('/academic-assistants-delete/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'delete'])->name('academic-assistants.delete');
+            Route::get('/academic-assistants-change-password/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'changePassword'])->name('academic-assistants.change-password');
+            Route::post('/academic-assistants-update-password/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'updatePassword'])->name('academic-assistants.update-password');
             
             Route::resource('user-roles', UserRoleController::class);
             Route::resource('settings', SettingsController::class);
@@ -165,7 +199,19 @@ Route::middleware('custom.auth')->group(function () {
             Route::get('/converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'index'])->name('converted-leads.index');
             Route::get('/converted-leads/view/{id}', [App\Http\Controllers\ConvertedLeadController::class, 'show'])->name('converted-leads.show');
             
-            // Academic Assistants Routes
-            Route::resource('academic-assistants', App\Http\Controllers\AcademicAssistantController::class);
+            // Call Logs Routes
+            Route::get('/call-logs', [VoxbayCallLogController::class, 'index'])->name('call-logs.index');
+            Route::get('/call-logs/{callLog}', [VoxbayCallLogController::class, 'show'])->name('call-logs.show');
+            Route::delete('/call-logs/{callLog}', [VoxbayCallLogController::class, 'destroy'])->name('call-logs.destroy');
+            
+            // Notifications Routes (Admin only)
+            Route::resource('notifications', NotificationController::class);
+            Route::get('/notifications/{notification}/show', [NotificationController::class, 'show'])->name('notifications.show');
+            
         });
+        
+        // Notification routes for all users
+        Route::get('/notifications', [NotificationController::class, 'viewAll'])->name('notifications.view-all');
+        Route::get('/api/notifications', [NotificationController::class, 'getUserNotifications'])->name('notifications.api');
+        Route::post('/notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
 });

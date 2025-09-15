@@ -39,50 +39,39 @@
         <!-- [Mobile Media Block end] -->
         <div class="ms-auto">
             <ul class="list-unstyled">
+                @if(!\App\Helpers\RoleHelper::is_admin_or_super_admin())
                 <li class="dropdown pc-h-item">
-                    <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                        <i class="ti ti-mail"></i>
+                    <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false" id="notificationDropdown">
+                        <i class="ti ti-bell"></i>
+                        <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
                     </a>
                     <div class="dropdown-menu dropdown-notification dropdown-menu-end pc-h-dropdown">
                         <div class="dropdown-header d-flex align-items-center justify-content-between">
-                            <h5 class="m-0">Message</h5>
-                            <a href="#!" class="pc-head-link bg-transparent"><i class="ti ti-x text-danger"></i></a>
+                            <h5 class="m-0">Notifications</h5>
+                            <a href="#!" class="pc-head-link bg-transparent" onclick="event.preventDefault(); document.getElementById('notificationDropdown').click();"><i class="ti ti-x text-danger"></i></a>
                         </div>
                         <div class="dropdown-divider"></div>
-                        <div class="dropdown-header px-0 text-wrap header-notification-scroll position-relative" style="max-height: calc(100vh - 215px)">
-                            <div class="list-group list-group-flush w-100">
-                                <a class="list-group-item list-group-item-action">
-                                    <div class="d-flex">
-                                        <div class="flex-shrink-0">
-                                            <img src="{{ asset('assets/mantis/images/user/avatar-2.jpg') }}" alt="user-image" class="user-avtar">
-                                        </div>
-                                        <div class="flex-grow-1 ms-1">
-                                            <span class="float-end text-muted">3:00 AM</span>
-                                            <p class="text-body mb-1">New lead added</p>
-                                            <span class="text-muted">2 min ago</span>
-                                        </div>
+                        <div class="dropdown-header px-0 text-wrap position-relative" style="max-height: 400px; overflow-y: auto;">
+                            <div class="list-group list-group-flush w-100" id="notificationList">
+                                <div class="text-center py-3" id="notificationLoading">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Loading...</span>
                                     </div>
-                                </a>
-                                <a class="list-group-item list-group-item-action">
-                                    <div class="d-flex">
-                                        <div class="flex-shrink-0">
-                                            <img src="{{ asset('assets/mantis/images/user/avatar-1.jpg') }}" alt="user-image" class="user-avtar">
-                                        </div>
-                                        <div class="flex-grow-1 ms-1">
-                                            <span class="float-end text-muted">6:00 PM</span>
-                                            <p class="text-body mb-1">Lead converted</p>
-                                            <span class="text-muted">5 August</span>
-                                        </div>
-                                    </div>
-                                </a>
+                                    <p class="text-muted mt-2">Loading notifications...</p>
+                                </div>
+                                <div class="text-center py-3" id="notificationEmpty" style="display: none;">
+                                    <i class="ti ti-bell-off text-muted" style="font-size: 2rem;"></i>
+                                    <p class="text-muted mt-2">No notifications</p>
+                                </div>
                             </div>
                         </div>
                         <div class="dropdown-divider"></div>
                         <div class="text-center py-2">
-                            <a href="#!" class="link-primary">View all</a>
+                            <a href="{{ route('notifications.view-all') }}" class="link-primary">View all notifications</a>
                         </div>
                     </div>
                 </li>
+                @endif
                 <li class="dropdown pc-h-item header-user-profile">
                     <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
                         <img src="{{ asset('assets/mantis/images/user/avatar-2.jpg') }}" alt="user-image" class="user-avtar">
@@ -96,7 +85,15 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <h6 class="mb-1">{{ \App\Helpers\AuthHelper::getUserName() ?? 'User' }}</h6>
-                                    <span>{{ \App\Helpers\AuthHelper::getRoleTitle() ?? 'User' }}</span>
+                                    <span>
+                                        {{ \App\Helpers\AuthHelper::getRoleTitle() ?? 'User' }}
+                                        @if(\App\Helpers\AuthHelper::isTeamLead())
+                                            <span class="badge bg-info">Team Lead</span>
+                                        @endif
+                                        @if(\App\Helpers\AuthHelper::isTelecaller() && !\App\Helpers\AuthHelper::isTeamLead())
+                                            <span class="badge bg-info">Telecaller</span>
+                                        @endif
+                                    </span>
                                 </div>
                                 <a href="#" class="pc-head-link bg-transparent" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     <i class="ti ti-power text-danger"></i>

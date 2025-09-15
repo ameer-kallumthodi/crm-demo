@@ -75,9 +75,16 @@ class AuthHelper
     /**
      * Check if user is admin
      */
-    public static function isAdmin()
+    public static function isSuperAdmin()
     {
         return self::getRoleId() == 1;
+    }
+    /**
+     * Check if user is admin
+     */
+    public static function isAdmin()
+    {
+        return self::getRoleId() == 2;
     }
 
     /**
@@ -85,23 +92,7 @@ class AuthHelper
      */
     public static function isTelecaller()
     {
-        return self::getRoleId() == 6;
-    }
-
-    /**
-     * Check if user is accountant
-     */
-    public static function isAccountant()
-    {
-        return self::getRoleId() == 10;
-    }
-
-    /**
-     * Check if user is administrator
-     */
-    public static function isAdministrator()
-    {
-        return self::getRoleId() == 11;
+        return self::getRoleId() == 3;
     }
 
     /**
@@ -114,7 +105,7 @@ class AuthHelper
         }
 
         $users = \App\Models\User::where('team_id', $teamId)
-            ->where('role_id', 6)
+            ->where('role_id', 3)
             ->whereNull('deleted_at')
             ->pluck('id')
             ->toArray();

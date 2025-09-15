@@ -229,16 +229,21 @@ class DashboardController extends Controller
         $weekStart = now()->startOfWeek();
         $weekEnd = now()->endOfWeek();
         
-        $totalLeadsQuery = Lead::whereBetween('created_at', [$weekStart, $weekEnd]);
-        $convertedLeadsQuery = Lead::whereBetween('created_at', [$weekStart, $weekEnd])
-            ->where('is_converted', true);
-        
+        // Get total leads (all time)
+        $totalLeadsQuery = Lead::query();
         $totalLeads = $this->applyRoleBasedFilter($totalLeadsQuery)->count();
-        $convertedLeads = $this->applyRoleBasedFilter($convertedLeadsQuery)->count();
+        
+        // Get total converted leads (all time) from converted_leads table
+        $convertedLeadsQuery = \App\Models\ConvertedLead::query();
+        $convertedLeads = $this->applyRoleBasedFilterToConvertedLeads($convertedLeadsQuery)->count();
+        
+        // Get weekly leads for weekly stats
+        $weeklyLeadsQuery = Lead::whereBetween('created_at', [$weekStart, $weekEnd]);
+        $weeklyLeads = $this->applyRoleBasedFilter($weeklyLeadsQuery)->count();
         
         return [
-            'totalLeads' => $totalLeads,
-            'convertedLeads' => $convertedLeads,
+            'totalLeads' => $weeklyLeads, // Weekly leads for the weekly stat
+            'convertedLeads' => $convertedLeads, // Total converted leads (all time)
             'conversionRate' => $totalLeads > 0 ? round(($convertedLeads / $totalLeads) * 100, 2) : 0,
         ];
     }
@@ -248,15 +253,6 @@ class DashboardController extends Controller
      */
     private function getLeadStatusesWithCount()
     {
-        // Get leads with their status counts, filtered by user role
-        $leadsQuery = Lead::query();
-        $filteredLeads = $this->applyRoleBasedFilter($leadsQuery)->get();
-        
-        // Group by lead status and count
-        $statusCounts = $filteredLeads->groupBy('lead_status_id')->map(function ($leads) {
-            return $leads->count();
-        });
-        
         // Get status details with counts
         $leadStatuses = LeadStatus::withCount(['leads' => function ($query) {
             $this->applyRoleBasedFilter($query);
@@ -293,23 +289,58 @@ class DashboardController extends Controller
     {
         $currentUser = \App\Helpers\AuthHelper::getCurrentUser();
         
-        if ($currentUser) {
-            if (\App\Helpers\AuthHelper::isTelecaller()) {
-                // Telecaller: Can only see their own leads
+        // If no user is logged in, return all leads (for admin view)
+        if (!$currentUser) {
+            return $query;
+        }
+        
+        if (\App\Helpers\AuthHelper::isTeamLead()) {
+            // Team Lead: Can see their own leads + their team members' leads
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = \App\Helpers\AuthHelper::getTeamMemberIds($teamId);
+                // Include current user's ID in the team member IDs
+                $teamMemberIds[] = \App\Helpers\AuthHelper::getCurrentUserId();
+                $query->whereIn('telecaller_id', $teamMemberIds);
+            } else {
+                // If no team assigned, only show their own leads
                 $query->where('telecaller_id', \App\Helpers\AuthHelper::getCurrentUserId());
-            } elseif (\App\Helpers\AuthHelper::isTeamLead()) {
-                // Team Lead: Can see their own leads + their team members' leads
-                $teamId = $currentUser->team_id;
-                if ($teamId) {
-                    $teamMemberIds = \App\Helpers\AuthHelper::getTeamMemberIds($teamId);
-                    // Include current user's ID in the team member IDs
-                    $teamMemberIds[] = \App\Helpers\AuthHelper::getCurrentUserId();
-                    $query->whereIn('telecaller_id', $teamMemberIds);
-                } else {
-                    // If no team assigned, only show their own leads
-                    $query->where('telecaller_id', \App\Helpers\AuthHelper::getCurrentUserId());
-                }
             }
+        } elseif (\App\Helpers\AuthHelper::isTelecaller()) {
+            // Telecaller: Can only see their own leads
+            $query->where('telecaller_id', \App\Helpers\AuthHelper::getCurrentUserId());
+        }
+        
+        return $query;
+    }
+
+    /**
+     * Apply role-based filtering to converted leads queries
+     */
+    private function applyRoleBasedFilterToConvertedLeads($query)
+    {
+        $currentUser = \App\Helpers\AuthHelper::getCurrentUser();
+        
+        // If no user is logged in, return all converted leads (for admin view)
+        if (!$currentUser) {
+            return $query;
+        }
+        
+        if (\App\Helpers\AuthHelper::isTeamLead()) {
+            // Team Lead: Can see converted leads they created + their team members' converted leads
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = \App\Helpers\AuthHelper::getTeamMemberIds($teamId);
+                // Include current user's ID in the team member IDs
+                $teamMemberIds[] = \App\Helpers\AuthHelper::getCurrentUserId();
+                $query->whereIn('created_by', $teamMemberIds);
+            } else {
+                // If no team assigned, only show their own converted leads
+                $query->where('created_by', \App\Helpers\AuthHelper::getCurrentUserId());
+            }
+        } elseif (\App\Helpers\AuthHelper::isTelecaller()) {
+            // Telecaller: Can only see converted leads they created
+            $query->where('created_by', \App\Helpers\AuthHelper::getCurrentUserId());
         }
         
         return $query;

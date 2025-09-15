@@ -34,9 +34,21 @@
                     </a>
                 </li>
                 @endif
+
+                {{-- Converted Leads Section --}}
+                @if(has_permission('admin/converted-leads/index'))
+                <li class="pc-item {{ request()->routeIs('admin.converted-leads.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.converted-leads.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-user-check"></i>
+                        </span>
+                        <span class="pc-mtext">Converted Leads</span>
+                    </a>
+                </li>
+                @endif
                 
                 {{-- User Management Section --}}
-                @if(has_permission('admin/telecallers/index') || has_permission('admin/admins/index'))
+                @if(has_permission('admin/telecallers/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index'))
                 <li class="pc-item pc-caption">
                     <label>User Management</label>
                 </li>
@@ -47,6 +59,26 @@
                             <i class="ti ti-phone"></i>
                         </span>
                         <span class="pc-mtext">Telecallers</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/admission-counsellors/index'))
+                <li class="pc-item {{ request()->routeIs('admin.admission-counsellors.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.admission-counsellors.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-user-plus"></i>
+                        </span>
+                        <span class="pc-mtext">Admission Counsellors</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/academic-assistants/index'))
+                <li class="pc-item {{ request()->routeIs('admin.academic-assistants.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.academic-assistants.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-user-check"></i>
+                        </span>
+                        <span class="pc-mtext">Academic Assistants</span>
                     </a>
                 </li>
                 @endif
@@ -62,17 +94,6 @@
                 @endif
                 @endif
                 
-                {{-- Academic Assistants Section --}}
-                @if(has_permission('admin/academic-assistants/index'))
-                <li class="pc-item {{ request()->routeIs('admin.academic-assistants.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.academic-assistants.index') }}" class="pc-link">
-                        <span class="pc-micon">
-                            <i class="ti ti-user-plus"></i>
-                        </span>
-                        <span class="pc-mtext">Academic Assistants</span>
-                    </a>
-                </li>
-                @endif
                 
                 {{-- Lead Management Section --}}
                 @if(has_permission('admin/lead-statuses/index') || has_permission('admin/lead-sources/index'))
@@ -117,14 +138,32 @@
                 </li>
                 @endif
                 
-                {{-- Converted Leads Section --}}
-                @if(has_permission('admin/converted-leads/index'))
-                <li class="pc-item {{ request()->routeIs('admin.converted-leads.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.converted-leads.index') }}" class="pc-link">
+                {{-- Notifications Section --}}
+                @if(has_permission('admin/notifications/index'))
+                <li class="pc-item pc-caption">
+                    <label>Notifications</label>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.notifications.index') }}" class="pc-link">
                         <span class="pc-micon">
-                            <i class="ti ti-user-check"></i>
+                            <i class="ti ti-bell"></i>
                         </span>
-                        <span class="pc-mtext">Converted Leads</span>
+                        <span class="pc-mtext">Manage Notifications</span>
+                    </a>
+                </li>
+                @endif
+                
+                {{-- Call Management Section --}}
+                @if(has_permission('admin/call-logs/index'))
+                <li class="pc-item pc-caption">
+                    <label>Call Management</label>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.call-logs.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.call-logs.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-phone"></i>
+                        </span>
+                        <span class="pc-mtext">Call Logs</span>
                     </a>
                 </li>
                 @endif

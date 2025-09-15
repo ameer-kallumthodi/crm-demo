@@ -19,11 +19,19 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Create a default admin user
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@crm.com',
-            'password' => bcrypt('password'),
-            'role_id' => 1, // Admin role
-        ]);
+        User::create(
+            [
+                'name' => 'Super Admin User',
+                'email' => 'superadmin@crm.com',
+                'password' => bcrypt('password'),
+                'role_id' => 1, // Admin role
+            ],
+            [
+                'name' => 'Admin User',
+                'email' => 'admin@crm.com',
+                'password' => bcrypt('password'),
+                'role_id' => 1, // Admin role
+            ],
+        );
     }
 }

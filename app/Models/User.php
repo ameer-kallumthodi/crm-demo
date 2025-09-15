@@ -21,6 +21,7 @@ class User extends Authenticatable
         'email',
         'phone',
         'code',
+        'ext_no',
         'password',
         'role_id',
         'otp',
@@ -29,6 +30,7 @@ class User extends Authenticatable
         'is_team_manager',
         'current_role',
         'team_id',
+        'is_active',
     ];
 
     /**
@@ -54,6 +56,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_team_lead' => 'boolean',
             'is_team_manager' => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 

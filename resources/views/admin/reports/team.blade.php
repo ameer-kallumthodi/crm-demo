@@ -103,29 +103,29 @@
                 <h5 class="mb-0">Team Performance Summary</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <h3 class="text-primary">{{ $reports['team']->sum('count') }}</h3>
-                            <p class="text-muted mb-0">Total Leads</p>
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="text-center p-3 border rounded">
+                            <h3 class="text-primary mb-2">{{ $reports['team']->sum('count') }}</h3>
+                            <p class="text-muted mb-0 fw-medium">Total Leads</p>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <h3 class="text-info">{{ $reports['team']->count() }}</h3>
-                            <p class="text-muted mb-0">Active Teams</p>
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="text-center p-3 border rounded">
+                            <h3 class="text-info mb-2">{{ $reports['team']->count() }}</h3>
+                            <p class="text-muted mb-0 fw-medium">Active Teams</p>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <h3 class="text-success">{{ $reports['team']->max('count') ?? '-' }}</h3>
-                            <p class="text-muted mb-0">Highest Team</p>
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="text-center p-3 border rounded">
+                            <h3 class="text-success mb-2">{{ $reports['team']->max('count') ?? '-' }}</h3>
+                            <p class="text-muted mb-0 fw-medium">Highest Team</p>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <h3 class="text-warning">{{ $reports['team']->avg('count') ? round($reports['team']->avg('count'), 1) : '-' }}</h3>
-                            <p class="text-muted mb-0">Average per Team</p>
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="text-center p-3 border rounded">
+                            <h3 class="text-warning mb-2">{{ $reports['team']->avg('count') ? round($reports['team']->avg('count'), 1) : '-' }}</h3>
+                            <p class="text-muted mb-0 fw-medium">Average per Team</p>
                         </div>
                     </div>
                 </div>
@@ -147,7 +147,7 @@
             <div class="card-body">
                 @if($reports['team']->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table id="teamReportTable" class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>Team</th>
@@ -229,7 +229,7 @@
             <div class="card-body">
                 @if($reports['monthly']->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table id="monthlyTrendTable" class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>Month</th>
@@ -274,7 +274,7 @@
             <div class="card-body">
                 @if($leads->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table id="leadsDataTable" class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -309,11 +309,6 @@
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    <div class="d-flex justify-content-center mt-3">
-                        {{ $leads->links() }}
                     </div>
                 @else
                     <div class="text-center text-muted py-4">
@@ -368,6 +363,80 @@
 
 @push('scripts')
 <script>
+$(document).ready(function() {
+    // Initialize DataTable for Team Report
+    if ($.fn.DataTable.isDataTable('#teamReportTable')) {
+        $('#teamReportTable').DataTable().destroy();
+    }
+    $('#teamReportTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        order: [[1, 'desc']], // Sort by count descending
+        columnDefs: [
+            { orderable: false, targets: [3] } // Disable sorting on Actions column
+        ],
+        language: {
+            search: "Search teams:",
+            lengthMenu: "Show _MENU_ teams per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ teams",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        }
+    });
+
+    // Initialize DataTable for Monthly Trend
+    if ($.fn.DataTable.isDataTable('#monthlyTrendTable')) {
+        $('#monthlyTrendTable').DataTable().destroy();
+    }
+    $('#monthlyTrendTable').DataTable({
+        responsive: true,
+        pageLength: 12,
+        lengthMenu: [[6, 12, 24, -1], [6, 12, 24, "All"]],
+        order: [[0, 'asc']], // Sort by month ascending
+        language: {
+            search: "Search months:",
+            lengthMenu: "Show _MENU_ months per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ months",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        }
+    });
+
+    // Initialize DataTable for Leads Data
+    if ($.fn.DataTable.isDataTable('#leadsDataTable')) {
+        $('#leadsDataTable').DataTable().destroy();
+    }
+    $('#leadsDataTable').DataTable({
+        responsive: true,
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        order: [[7, 'desc']], // Sort by created date descending
+        columnDefs: [
+            { orderable: false, targets: [0] } // Disable sorting on # column
+        ],
+        language: {
+            search: "Search leads:",
+            lengthMenu: "Show _MENU_ leads per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ leads",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        }
+    });
+});
+
 function printReport() {
     // Create a printable version of the report
     const printContent = document.querySelector('.printable-report');

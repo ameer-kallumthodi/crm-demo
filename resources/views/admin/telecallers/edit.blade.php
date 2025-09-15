@@ -58,6 +58,15 @@
             </div>
 
             <div class="col-md-12">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="form-label" for="ext_no">Extension Number</label>
+                        <input type="text" name="ext_no" class="form-control" id="ext_no" value="{{ $edit_data->ext_no }}" placeholder="Enter Extension Number">
+                        <small class="form-text text-muted">Extension number for Voxbay calling system</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
                 <div class="mb-3">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="is_team_lead" id="is_team_lead" value="1" {{ $edit_data->is_team_lead ? 'checked' : '' }}>

@@ -7,7 +7,7 @@
 <div class="page-header">
     <div class="page-block">
         <div class="row align-items-center">
-            <div class="col-md-12">
+            <div class="col-md-8">
                 <div class="page-header-title">
                     <h5 class="m-b-10">Converted Lead Details</h5>
                 </div>
@@ -16,6 +16,11 @@
                     <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
                     <li class="breadcrumb-item">View</li>
                 </ul>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-secondary">
+                    <i class="ti ti-arrow-left"></i> Back to List
+                </a>
             </div>
         </div>
     </div>
@@ -123,16 +128,104 @@
                     </div>
                 </div>
 
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-secondary">
-                            <i class="ti ti-arrow-left"></i> Back to List
-                        </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lead Activities History -->
+    <div class="col-12 mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Lead Activities History</h5>
+            </div>
+            <div class="card-body">
+                @if($leadActivities->count() > 0)
+                    <div class="timeline">
+                        @foreach($leadActivities as $activity)
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <div class="avtar avtar-s rounded-circle bg-light-{{ $activity->activity_type === 'converted' ? 'success' : 'primary' }}">
+                                    <i class="ti ti-{{ $activity->activity_type === 'converted' ? 'check' : 'activity' }} f-16"></i>
+                                </div>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ ucfirst(str_replace('_', ' ', $activity->activity_type)) }}</h6>
+                                        <p class="mb-1 text-muted">{{ $activity->description }}</p>
+                                        @if($activity->remarks)
+                                            <p class="mb-1"><small class="text-info">{{ $activity->remarks }}</small></p>
+                                        @endif
+                                        @if($activity->leadStatus)
+                                            <span class="badge bg-light-{{ \App\Helpers\StatusHelper::getLeadStatusColor($activity->leadStatus->id) }}">
+                                                {{ $activity->leadStatus->title }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted">{{ $activity->created_at->format('M d, Y h:i A') }}</small>
+                                        @if($activity->createdBy)
+                                            <p class="mb-0"><small class="text-muted">by {{ $activity->createdBy->name }}</small></p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
                     </div>
-                </div>
+                @else
+                    <div class="text-center text-muted py-4">
+                        <i class="ti ti-activity f-48 mb-3"></i>
+                        <h6>No Activities Found</h6>
+                        <p class="mb-0">No activities have been recorded for this lead.</p>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
 </div>
 <!-- [ Main Content ] end -->
 @endsection
+
+@push('styles')
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 0;
+    z-index: 1;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #7366ff;
+    margin-left: 10px;
+}
+
+.timeline-item:last-child .timeline::before {
+    display: none;
+}
+</style>
+@endpush

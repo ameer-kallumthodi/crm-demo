@@ -18,12 +18,29 @@ class ConvertedLeadController extends Controller
         $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy']);
 
         // Apply role-based filtering
-        if (RoleHelper::is_team_lead() && !RoleHelper::is_admin()) {
-            $teamId = \App\Models\User::where('id', AuthHelper::getCurrentUserId())->value('team_id');
-            $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-            $query->whereIn('created_by', $teamMemberIds);
-        } elseif (RoleHelper::is_telecaller()) {
-            $query->where('created_by', AuthHelper::getCurrentUserId());
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            // Check team lead first (highest priority)
+            if (RoleHelper::is_team_lead()) {
+                // Team Lead: Can see converted leads from their team
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereIn('created_by', $teamMemberIds);
+                } else {
+                    // If no team assigned, only show their own leads
+                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Admission Counsellor: Can see ALL converted leads
+                // No additional filtering needed - show all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                // Academic Assistant: Can only see converted leads assigned to them
+                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+            } elseif (RoleHelper::is_telecaller()) {
+                // Telecaller: Can only see converted leads they created
+                $query->where('created_by', AuthHelper::getCurrentUserId());
+            }
         }
 
         // Apply filters
@@ -69,6 +86,50 @@ class ConvertedLeadController extends Controller
             'createdBy'
         ])->findOrFail($id);
 
-        return view('admin.converted-leads.show', compact('convertedLead'));
+        // Apply role-based access control
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            // Check team lead first (highest priority)
+            if (RoleHelper::is_team_lead()) {
+                // Team Lead: Can see converted leads from their team
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    if (!in_array($convertedLead->created_by, $teamMemberIds)) {
+                        return redirect()->route('admin.converted-leads.index')
+                            ->with('message_danger', 'Access denied. You can only view converted leads from your team.');
+                    }
+                } else {
+                    // If no team assigned, only show their own leads
+                    if ($convertedLead->created_by != AuthHelper::getCurrentUserId()) {
+                        return redirect()->route('admin.converted-leads.index')
+                            ->with('message_danger', 'Access denied. You can only view converted leads you created.');
+                    }
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Admission Counsellor: Can see ALL converted leads
+                // No additional filtering needed
+            } elseif (RoleHelper::is_academic_assistant()) {
+                // Academic Assistant: Can only see converted leads assigned to them
+                if ($convertedLead->academic_assistant_id != AuthHelper::getCurrentUserId()) {
+                    return redirect()->route('admin.converted-leads.index')
+                        ->with('message_danger', 'Access denied. You can only view converted leads assigned to you.');
+                }
+            } elseif (RoleHelper::is_telecaller()) {
+                // Telecaller: Can only see converted leads they created
+                if ($convertedLead->created_by != AuthHelper::getCurrentUserId()) {
+                    return redirect()->route('admin.converted-leads.index')
+                        ->with('message_danger', 'Access denied. You can only view converted leads you created.');
+                }
+            }
+        }
+
+        // Get lead activities for this converted lead
+        $leadActivities = \App\Models\LeadActivity::where('lead_id', $convertedLead->lead_id)
+            ->with(['leadStatus', 'createdBy'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.converted-leads.show', compact('convertedLead', 'leadActivities'));
     }
 }

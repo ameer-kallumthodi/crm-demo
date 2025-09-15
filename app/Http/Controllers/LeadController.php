@@ -65,22 +65,24 @@ class LeadController extends Controller
         
         // Role-based lead filtering
         if ($currentUser) {
-            if (AuthHelper::isTelecaller()) {
-                // Telecaller: Can only see their own leads
-                $query->where('telecaller_id', AuthHelper::getCurrentUserId());
-            } elseif (AuthHelper::isTeamLead()) {
+            
+             if (AuthHelper::isTeamLead() == 1) {
+                
                 // Team Lead: Can see their own leads + their team members' leads
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
                     // Include current user's ID in the team member IDs
-                    $teamMemberIds[] = AuthHelper::getCurrentUserId();
+                    $teamMemberIds[] = AuthHelper::getCurrentUserId();  
                     $query->whereIn('telecaller_id', $teamMemberIds);
                 } else {
                     // If no team assigned, only show their own leads
                     $query->where('telecaller_id', AuthHelper::getCurrentUserId());
                 }
-            } elseif ($request->filled('telecaller_id') && !AuthHelper::isTelecaller()) {
+            } elseif (AuthHelper::isTelecaller()) {
+                // Telecaller: Can only see their own leads
+                $query->where('telecaller_id', AuthHelper::getCurrentUserId());
+            }elseif ($request->filled('telecaller_id') && !AuthHelper::isTelecaller()) {
                 // Admin/Super Admin: Can filter by specific telecaller
                 $query->where('telecaller_id', $request->telecaller_id);
             }
@@ -102,16 +104,63 @@ class LeadController extends Controller
         $courseName = $courses->pluck('title', 'id')->toArray();
         $telecallerList = $telecallers->pluck('name', 'id')->toArray();
 
+        // Get current user for role checking
+        $currentUser = AuthHelper::getCurrentUser();
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        
+        // Filter telecallers based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team members
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
+                $telecallers = User::whereIn('id', $teamMemberIds)->get();
+            } else {
+                $telecallers = collect([$currentUser]); // Only themselves if no team
+            }
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only themselves
+            $telecallers = collect([$currentUser]);
+        }
+        // Admin/Super Admin: Show all telecallers (already loaded above)
+        
+        // Update telecallerList after filtering
+        $telecallerList = $telecallers->pluck('name', 'id')->toArray();
+
         return view('admin.leads.index', compact(
             'leads', 'leadStatuses', 'leadSources', 'countries', 'courses', 'telecallers',
             'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList',
-            'fromDate', 'toDate'
+            'fromDate', 'toDate', 'isTelecaller', 'isTeamLead'
         ))->with('search_key', $request->search_key);
     }
 
     public function create()
     {
-        $telecallers = User::where('role_id', 3)->get();
+        $currentUser = AuthHelper::getCurrentUser();
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        
+        // Filter telecallers based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team members
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
+                $telecallers = User::whereIn('id', $teamMemberIds)->get();
+            } else {
+                $telecallers = collect([$currentUser]); // Only themselves if no team
+            }
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only themselves
+            $telecallers = collect([$currentUser]);
+        } else {
+            // Admin/Super Admin: Show all telecallers
+            $telecallers = User::where('role_id', 3)->get();
+        }
+        
         $leadStatuses = LeadStatus::where('is_active', true)->get();
         $leadSources = LeadSource::where('is_active', true)->get();
         $countries = Country::where('is_active', true)->get();
@@ -126,7 +175,29 @@ class LeadController extends Controller
 
     public function ajax_add()
     {
-        $telecallers = User::where('role_id', 3)->get();
+        $currentUser = AuthHelper::getCurrentUser();
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        
+        // Filter telecallers based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team members
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
+                $telecallers = User::whereIn('id', $teamMemberIds)->get();
+            } else {
+                $telecallers = collect([$currentUser]); // Only themselves if no team
+            }
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only themselves
+            $telecallers = collect([$currentUser]);
+        } else {
+            // Admin/Super Admin: Show all telecallers
+            $telecallers = User::where('role_id', 3)->get();
+        }
+        
         $leadStatuses = LeadStatus::where('is_active', true)->get();
         $leadSources = LeadSource::where('is_active', true)->get();
         $countries = Country::where('is_active', true)->get();
@@ -300,21 +371,34 @@ class LeadController extends Controller
                 ], 422);
             }
 
+            // Get current status before updating
+            $currentStatus = $lead->leadStatus->title;
+            $newStatusId = $request->lead_status_id;
+            $newStatus = LeadStatus::find($newStatusId)->title;
+
             // Update lead status
             $lead->update([
                 'lead_status_id' => $request->lead_status_id,
-                'updated_by' => AuthHelper::getCurrentUserId(),
-                'is_converted' => $request->lead_status_id == 4 ? true : false,
+                'updated_by' => AuthHelper::getCurrentUserId()
             ]);
+
+            // Generate automatic status change remark
+            $statusChangeRemark = "Status changed from '{$currentStatus}' to '{$newStatus}'";
+            
+            // Combine with user remarks if provided
+            $finalRemarks = $statusChangeRemark;
+            if (!empty($request->remarks)) {
+                $finalRemarks .= " | User Note: " . $request->remarks;
+            }
 
             // Create lead activity
             LeadActivity::create([
                 'lead_id' => $lead->id,
                 'lead_status_id' => $request->lead_status_id,
                 'activity_type' => 'status_update',
-                'description' => 'Status updated to ' . $lead->fresh()->leadStatus->title,
+                'description' => 'Status updated to ' . $newStatus,
                 'followup_date' => $request->date,
-                'remarks' => $request->remarks,
+                'remarks' => $finalRemarks,
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
@@ -361,11 +445,6 @@ class LeadController extends Controller
         return view('admin.leads.edit-modal', compact(
             'lead', 'telecallers', 'leadStatuses', 'leadSources', 'countries', 'courses', 'teams', 'country_codes'
         ));
-    }
-
-    public function delete(Lead $lead)
-    {
-        return view('admin.leads.delete-modal', compact('lead'));
     }
 
     public function destroy(Lead $lead)
@@ -799,34 +878,74 @@ class LeadController extends Controller
     public function getTelecallersByTeam(Request $request)
     {
         $teamId = $request->get('team_id');
+        $currentUser = AuthHelper::getCurrentUser();
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
         
         if (!$teamId) {
             return response()->json(['telecallers' => []]);
         }
 
         if ($teamId === 'all') {
-            // Get all telecallers from all teams
-            $telecallers = User::where('role_id', 3) // Telecaller role
-                              ->where('is_active', true)
-                              ->with('team:id,name')
-                              ->select('id', 'name', 'email', 'team_id')
-                              ->get()
-                              ->map(function($user) {
-                                  return [
-                                      'id' => $user->id,
-                                      'name' => $user->name,
-                                      'email' => $user->email,
-                                      'team_name' => $user->team ? $user->team->name : 'No Team'
-                                  ];
-                              });
+            // Get telecallers based on role
+            if ($isTeamLead) {
+                // Team Lead: Show only their team members
+                $userTeamId = $currentUser->team_id;
+                if ($userTeamId) {
+                    $teamMemberIds = AuthHelper::getTeamMemberIds($userTeamId);
+                    
+                    $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
+                    $telecallers = User::whereIn('id', $teamMemberIds)
+                                      ->where('is_active', true)
+                                      ->with('team:id,name')
+                                      ->select('id', 'name', 'email', 'team_id')
+                                      ->get();
+                } else {
+                    $telecallers = collect([$currentUser]); // Only themselves if no team
+                }
+            } elseif ($isTelecaller) {
+                // Telecaller: Show only themselves
+                $telecallers = collect([$currentUser]);
+            } else {
+                // Admin/Super Admin: Show all telecallers
+                $telecallers = User::where('role_id', 3)
+                                  ->where('is_active', true)
+                                  ->with('team:id,name')
+                                  ->select('id', 'name', 'email', 'team_id')
+                                  ->get();
+            }
         } else {
-            // Get telecallers from specific team
-            $telecallers = User::where('team_id', $teamId)
-                              ->where('role_id', 3) // Telecaller role
-                              ->where('is_active', true)
-                              ->select('id', 'name', 'email')
-                              ->get();
+            // Get telecallers from specific team (with role filtering)
+            $query = User::where('team_id', $teamId)
+                        ->where('role_id', 3) // Telecaller role
+                        ->where('is_active', true)
+                        ->select('id', 'name', 'email');
+            
+            if ($isTeamLead) {
+                // Team Lead: Only show if it's their team
+                $userTeamId = $currentUser->team_id;
+                if ($teamId != $userTeamId) {
+                    $telecallers = collect([]);
+                } else {
+                    $telecallers = $query->get();
+                }
+            } elseif ($isTelecaller) {
+                // Telecaller: Only show themselves
+                $telecallers = $query->where('id', $currentUser->id)->get();
+            } else {
+                // Admin/Super Admin: Show all
+                $telecallers = $query->get();
+            }
         }
+
+        $telecallers = $telecallers->map(function($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'team_name' => $user->team ? $user->team->name : 'No Team'
+            ];
+        });
 
         return response()->json(['telecallers' => $telecallers]);
     }
@@ -836,17 +955,31 @@ class LeadController extends Controller
      */
     public function ajaxBulkReassign()
     {
-        // Get telecallers based on role
-        $telecallerWhere = [];
-        if (RoleHelper::is_team_lead() && !RoleHelper::is_admin()) {
-            $teamId = User::where('id', AuthHelper::getCurrentUserId())->value('team_id');
-            $teamMemberIds = User::where('team_id', $teamId)->pluck('id')->toArray();
-            $telecallerWhere['id'] = $teamMemberIds;
+        $currentUser = AuthHelper::getCurrentUser();
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        
+        // Filter telecallers based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team members
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
+                $telecallers = User::whereIn('id', $teamMemberIds)->get();
+            } else {
+                $telecallers = collect([$currentUser]); // Only themselves if no team
+            }
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only themselves
+            $telecallers = collect([$currentUser]);
+        } else {
+            // Admin/Super Admin: Show all telecallers
+            $telecallers = User::where('role_id', 3)->get();
         }
-        $telecallerWhere['role_id'] = 3; // Telecaller role
         
         $data = [
-            'telecallers' => User::where($telecallerWhere)->get(),
+            'telecallers' => $telecallers,
             'leadStatuses' => LeadStatus::where('is_active', 1)->get(),
             'leadSources' => LeadSource::where('is_active', 1)->get(),
             'countries' => Country::where('is_active', 1)->get(),
@@ -898,8 +1031,31 @@ class LeadController extends Controller
      */
     public function ajaxBulkDelete()
     {
+        $currentUser = AuthHelper::getCurrentUser();
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        
+        // Filter telecallers based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team members
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
+                $telecallers = User::whereIn('id', $teamMemberIds)->get();
+            } else {
+                $telecallers = collect([$currentUser]); // Only themselves if no team
+            }
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only themselves
+            $telecallers = collect([$currentUser]);
+        } else {
+            // Admin/Super Admin: Show all telecallers
+            $telecallers = User::where('role_id', 3)->get();
+        }
+        
         $data = [
-            'telecallers' => User::where('role_id', 3)->get(),
+            'telecallers' => $telecallers,
             'leadStatuses' => LeadStatus::where('is_active', 1)->get(),
             'leadSources' => LeadSource::where('is_active', 1)->get(),
             'countries' => Country::where('is_active', 1)->get(),
@@ -1036,7 +1192,7 @@ class LeadController extends Controller
     public function convert(Lead $lead)
     {
         $courses = Course::where('is_active', true)->get();
-        $academic_assistants = User::where('role_id', 13)->where('is_active', true)->get();
+        $academic_assistants = User::where('role_id', 5)->where('is_active', true)->get();
         $country_codes = get_country_code();
 
         return view('admin.leads.convert-modal', compact(

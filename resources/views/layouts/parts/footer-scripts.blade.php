@@ -213,4 +213,145 @@
             }
         }).showToast();
     }
+
+    // Notification system
+    function loadNotifications() {
+        fetch('{{ route("notifications.api") }}')
+            .then(response => response.json())
+            .then(data => {
+                const notificationList = document.getElementById('notificationList');
+                const notificationLoading = document.getElementById('notificationLoading');
+                const notificationEmpty = document.getElementById('notificationEmpty');
+                const notificationBadge = document.getElementById('notificationBadge');
+                
+                notificationLoading.style.display = 'none';
+                
+                if (data.notifications && data.notifications.length > 0) {
+                    notificationEmpty.style.display = 'none';
+                    
+                    // Count unread notifications
+                    const unreadCount = data.notifications.filter(n => !n.is_read).length;
+                    if (unreadCount > 0) {
+                        notificationBadge.textContent = unreadCount;
+                        notificationBadge.style.display = 'inline-block';
+                    } else {
+                        notificationBadge.style.display = 'none';
+                    }
+                    
+                    // Render notifications
+                    notificationList.innerHTML = data.notifications.map(notification => `
+                        <div class="list-group-item list-group-item-action ${notification.is_read ? '' : 'bg-light'}" 
+                             data-notification-id="${notification.id}">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <div class="notification-icon bg-${getNotificationColor(notification.type)} text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 40px; height: 40px;">
+                                        <i class="ti ti-${getNotificationIcon(notification.type)}"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h6 class="mb-1 ${notification.is_read ? 'text-muted' : ''}">${notification.title}</h6>
+                                        <small class="text-muted">${notification.created_at}</small>
+                                    </div>
+                                    <p class="text-body mb-1 ${notification.is_read ? 'text-muted' : ''}">${notification.message}</p>
+                                    <small class="text-muted">by ${notification.created_by}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    notificationEmpty.style.display = 'block';
+                    notificationBadge.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading notifications:', error);
+                document.getElementById('notificationLoading').style.display = 'none';
+                document.getElementById('notificationEmpty').style.display = 'block';
+            });
+    }
+
+    function markAllAsRead() {
+        // Get all unread notifications
+        const unreadNotifications = document.querySelectorAll('.list-group-item.bg-light[data-notification-id]');
+        if (unreadNotifications.length === 0) {
+            return; // No unread notifications to mark
+        }
+
+        // Extract notification IDs from the current notifications
+        const notificationIds = [];
+        unreadNotifications.forEach(item => {
+            const notificationId = item.getAttribute('data-notification-id');
+            if (notificationId) {
+                notificationIds.push(notificationId);
+            }
+        });
+
+        if (notificationIds.length === 0) {
+            return;
+        }
+
+        // Mark all unread notifications as read
+        Promise.all(notificationIds.map(id => 
+            fetch(`/notifications/${id}/mark-read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+        ))
+        .then(() => {
+            // Reload notifications to update read status
+            loadNotifications();
+        })
+        .catch(error => {
+            console.error('Error marking notifications as read:', error);
+        });
+    }
+
+
+    function getNotificationColor(type) {
+        const colors = {
+            'info': 'primary',
+            'success': 'success',
+            'warning': 'warning',
+            'error': 'danger'
+        };
+        return colors[type] || 'primary';
+    }
+
+    function getNotificationIcon(type) {
+        const icons = {
+            'info': 'info-circle',
+            'success': 'check-circle',
+            'warning': 'alert-triangle',
+            'error': 'x-circle'
+        };
+        return icons[type] || 'bell';
+    }
+
+    // Load notifications when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Only load notifications for non-admin users
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        if (notificationDropdown) {
+            loadNotifications();
+            
+            // Mark all notifications as read when page loads
+            setTimeout(() => {
+                markAllAsRead();
+            }, 1000); // Small delay to ensure notifications are loaded
+            
+            // Refresh notifications every 30 seconds
+            setInterval(loadNotifications, 30000);
+            
+            // Mark all notifications as read when dropdown is opened
+            notificationDropdown.addEventListener('shown.bs.dropdown', function() {
+                // Mark all notifications as read when dropdown is fully shown
+                markAllAsRead();
+            });
+        }
+    });
 </script>

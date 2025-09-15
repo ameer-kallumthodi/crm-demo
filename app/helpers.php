@@ -51,6 +51,7 @@ if (!function_exists('is_telecaller')) {
     }
 }
 
+
 if (!function_exists('is_logged_in')) {
     /**
      * Check if user is logged in

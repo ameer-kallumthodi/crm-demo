@@ -14,13 +14,15 @@ class LeadStatusSeeder extends Seeder
     public function run(): void
     {
         $statuses = [
-            ['title' => 'New Lead', 'description' => 'Newly created lead', 'color' => '#28a745'],
-            ['title' => 'Contacted', 'description' => 'Lead has been contacted', 'color' => '#17a2b8'],
-            ['title' => 'Interested', 'description' => 'Lead is interested', 'color' => '#ffc107'],
-            ['title' => 'Not Interested', 'description' => 'Lead is not interested', 'color' => '#dc3545'],
-            ['title' => 'Follow Up', 'description' => 'Lead needs follow up', 'color' => '#6f42c1'],
-            ['title' => 'Converted', 'description' => 'Lead has been converted', 'color' => '#20c997'],
-            ['title' => 'Lost', 'description' => 'Lead is lost', 'color' => '#6c757d'],
+            ['title' => 'Un Touched Leads', 'description' => 'Un Touched Leads', 'color' => ''],
+            ['title' => 'Follow-up', 'description' => 'Lead Follow-up', 'color' => ''],
+            ['title' => 'Not-interested IN FULL COURSE', 'description' => 'Not-interested IN FULL COURSE', 'color' => ''],
+            ['title' => 'Disqualified', 'description' => 'Lead is Disqualified', 'color' => ''],
+            ['title' => 'DNP', 'description' => 'DNP', 'color' => ''],
+            ['title' => 'Demo', 'description' => 'Demo', 'color' => ''],
+            ['title' => 'Interested to Buy', 'description' => 'Interested to Buy', 'color' => ''],
+            ['title' => 'Positive', 'description' => 'Positive', 'color' => ''],
+            ['title' => 'May Buy Later', 'description' => 'May Buy Later', 'color' => ''],
         ];
 
         foreach ($statuses as $status) {

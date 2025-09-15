@@ -87,6 +87,7 @@
                                 @endforeach
                             </select>
                         </div>
+                        @if(!$isTelecaller || $isTeamLead)
                         <div class="col-md-2">
                             <label for="telecaller_id" class="form-label">Telecaller</label>
                             <select class="form-select" id="telecaller_id_filter" name="telecaller_id">
@@ -98,6 +99,7 @@
                                 @endforeach
                             </select>
                         </div>
+                        @endif
                         <div class="col-md-3 mt-3">
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-primary">
@@ -124,6 +126,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">All Leads</h5>
                     <div class="d-flex gap-2">
+                        @if(!$isTelecaller || $isTeamLead)
                         <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
                             onclick="show_ajax_modal('{{ route('leads.add') }}', 'Add New Lead')">
                             <i class="ti ti-plus"></i> Add Lead
@@ -140,6 +143,7 @@
                             onclick="show_ajax_modal('{{ route('admin.leads.bulk-delete') }}', 'Bulk Delete Leads')">
                             <i class="ti ti-trash"></i> Bulk Delete
                         </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -188,10 +192,12 @@
                                             <i class="ti ti-refresh"></i>
                                         </a>
                                         @endif
+                                        @if(!$isTelecaller || $isTeamLead)
                                         <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
-                                            onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}', 'Delete Lead', 'Are you sure you want to delete this lead? This action cannot be undone.')">
+                                            onclick="show_ajax_modal('{{ route('leads.delete', $lead->id) }}', 'Delete Lead')">
                                             <i class="ti ti-trash"></i>
                                         </a>
+                                        @endif
                                     </div>
                                 </td>
                                 <td>
@@ -261,7 +267,6 @@ $(document).ready(function() {
         "responsive": true,
         "pageLength": 25,
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-        "order": [[7, "desc"]], // Sort by created date descending
         "columnDefs": [
             { "orderable": false, "targets": [0, 8] }, // Disable sorting on serial number and actions columns
             { "searchable": false, "targets": [0, 8] } // Disable searching on serial number and actions columns
@@ -297,27 +302,5 @@ $(document).ready(function() {
     });
 });
 
-function deleteLead(id) {
-    if (confirm('Are you sure you want to delete this lead?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/leads/${id}`;
-        
-        const methodField = document.createElement('input');
-        methodField.type = 'hidden';
-        methodField.name = '_method';
-        methodField.value = 'DELETE';
-        
-        const tokenField = document.createElement('input');
-        tokenField.type = 'hidden';
-        tokenField.name = '_token';
-        tokenField.value = '{{ csrf_token() }}';
-        
-        form.appendChild(methodField);
-        form.appendChild(tokenField);
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
 </script>
 @endpush

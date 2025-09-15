@@ -61,6 +61,7 @@
                                     </span>
                                 </td>
                                 <td>
+                                    @if(is_super_admin())
                                     <a href="javascript:void(0);" class="btn btn-warning btn-sm shadow-sm px-3"
                                         onclick="show_small_modal('{{ route('admin.lead-sources.edit', $source->id) }}', 'Edit Lead Source')"
                                         title="Edit">
@@ -70,6 +71,9 @@
                                         onclick="delete_modal('{{ route('admin.lead-sources.delete', $source->id) }}')" title="Delete">
                                         <i class="ti ti-trash"></i> Delete
                                     </a>
+                                    @else
+                                    <span class="badge bg-light-secondary text-secondary">Not Allowed</span>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach

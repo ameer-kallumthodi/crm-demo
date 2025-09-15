@@ -6,57 +6,59 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AcademicAssistant extends Model
+class AcademicAssistant extends User
 {
     use SoftDeletes;
 
+    protected $table = 'users';
+
+    /**
+     * The attributes that are mass assignable.
+     */
     protected $fillable = [
         'name',
         'email',
         'phone',
         'code',
-        'address',
+        'password',
+        'role_id',
         'is_active',
-        'created_by',
-        'updated_by',
-        'deleted_by'
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
     ];
 
     /**
-     * Get the user who created this academic assistant
+     * Boot the model.
      */
-    public function createdBy(): BelongsTo
+    protected static function boot()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        parent::boot();
+        
+        static::addGlobalScope('academic_assistant', function ($builder) {
+            $builder->where('role_id', 5);
+        });
     }
 
     /**
-     * Get the user who last updated this academic assistant
+     * Get the user role that owns the academic assistant.
      */
-    public function updatedBy(): BelongsTo
+    public function role(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsTo(UserRole::class, 'role_id');
+    }
+
+
+    /**
+     * Get the leads for the academic assistant.
+     */
+    public function leads()
+    {
+        return $this->hasMany(Lead::class, 'telecaller_id');
     }
 
     /**
-     * Get the user who deleted this academic assistant
+     * Scope a query to only include active academic assistants.
      */
-    public function deletedBy(): BelongsTo
+    public function scopeActive($query)
     {
-        return $this->belongsTo(User::class, 'deleted_by');
-    }
-
-    /**
-     * Override the delete method to set deleted_by
-     */
-    public function delete()
-    {
-        $this->deleted_by = auth()->id();
-        $this->save();
-        return parent::delete();
+        return $query->where('is_active', true);
     }
 }

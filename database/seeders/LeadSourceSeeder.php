@@ -14,14 +14,11 @@ class LeadSourceSeeder extends Seeder
     public function run(): void
     {
         $sources = [
-            ['title' => 'Website', 'description' => 'Leads from website'],
-            ['title' => 'Social Media', 'description' => 'Leads from social media'],
-            ['title' => 'Referral', 'description' => 'Leads from referrals'],
-            ['title' => 'Cold Call', 'description' => 'Leads from cold calling'],
-            ['title' => 'Email Campaign', 'description' => 'Leads from email campaigns'],
-            ['title' => 'Advertisement', 'description' => 'Leads from advertisements'],
-            ['title' => 'Walk-in', 'description' => 'Walk-in leads'],
-            ['title' => 'Other', 'description' => 'Other sources'],
+            ['title' => 'Google Ad', 'description' => 'Leads from Google Ad'],
+            ['title' => 'Facebook Instagram Ad', 'description' => 'Leads from Meta Ad'],
+            ['title' => 'Seminar', 'description' => 'Leads from Seminar'],
+            ['title' => 'Reference', 'description' => 'Leads from Reference'],
+            ['title' => 'Others', 'description' => 'Others'],
         ];
 
         foreach ($sources as $source) {

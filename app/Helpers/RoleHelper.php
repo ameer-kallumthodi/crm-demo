@@ -87,6 +87,41 @@ class RoleHelper
     }
 
     /**
+     * Check if current user is Admission Counsellor
+     */
+    public static function is_admission_counsellor()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        return $user->role_id == 4;
+    }
+
+    /**
+     * Check if current user is Academic Assistant
+     */
+    public static function is_academic_assistant()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        return $user->role_id == 5;
+    }
+
+
+    /**
      * Check if current user has admin or super admin role
      */
     public static function is_admin_or_super_admin()

@@ -110,6 +110,7 @@ class TelecallerController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:10',
+            'ext_no' => 'nullable|string|max:20',
             'password' => 'required|string|min:6',
             'team_id' => 'nullable|exists:teams,id',
             'is_team_lead' => 'nullable|boolean',
@@ -125,6 +126,7 @@ class TelecallerController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'code' => $request->code,
+            'ext_no' => $request->ext_no,
             'password' => Hash::make($request->password),
             'role_id' => 3, // Static role for Telecaller
             'team_id' => $request->team_id,
@@ -169,6 +171,7 @@ class TelecallerController extends Controller
             'email' => 'required|email|unique:users,email,' . $id,
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:10',
+            'ext_no' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:8',
             'team_id' => 'nullable|exists:teams,id',
             'is_team_lead' => 'nullable|boolean',
@@ -182,7 +185,7 @@ class TelecallerController extends Controller
         $telecaller = User::findOrFail($id);
         
         // Filter only the fields we need
-        $updateData = $request->only(['name', 'email', 'phone', 'code', 'team_id']);
+        $updateData = $request->only(['name', 'email', 'phone', 'code', 'ext_no', 'team_id']);
         $updateData['is_team_lead'] = $request->has('is_team_lead') ? 1 : 0;
 
         if ($request->filled('password')) {

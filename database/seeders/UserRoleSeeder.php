@@ -32,6 +32,16 @@ class UserRoleSeeder extends Seeder
                 'description' => 'Telecaller access for lead management',
                 'is_active' => true,
             ],
+            [
+                'title' => 'Admission Counsellor',
+                'description' => 'Admission Counsellor access for Converted lead management',
+                'is_active' => true,
+            ],
+            [
+                'title' => 'Academic Assistant',
+                'description' => 'Academic Assistant access for Converted lead management',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($roles as $role) {

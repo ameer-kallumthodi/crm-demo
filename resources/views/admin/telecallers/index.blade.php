@@ -44,6 +44,7 @@
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
+                                <th>Extension</th>
                                 <th>Team</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -65,6 +66,7 @@
                                 </td>
                                 <td>{{ $telecaller->email }}</td>
                                 <td>{{ $telecaller->phone ?? '-' }}</td>
+                                <td>{{ $telecaller->ext_no ?? '-' }}</td>
                                 <td>{{ $telecaller->team ? $telecaller->team->name : '-' }}</td>
                                 <td>
                                     <span class="badge bg-success">Active</span>

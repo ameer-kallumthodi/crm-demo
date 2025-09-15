@@ -181,39 +181,35 @@
         })
     }
 
-    function delete_modal(
-        delete_url,
-        message = 'Are you sure?',
-        message_description = 'You won\'t be able to revert this action!',
-        button_text = 'Yes, delete it!'
-    ) {
+    function delete_modal(delete_url, message = 'Are you sure?') {
         Swal.fire({
             title: message,
-            text: message_description,
+            text: "This action cannot be undone!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: button_text,
+            confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'Cancel',
             reverseButtons: true,
-            focusCancel: true,
-            customClass: {
-                popup: 'swal2-popup-custom',
-                title: 'swal2-title-custom',
-                content: 'swal2-content-custom',
-                confirmButton: 'swal2-confirm-custom',
-                cancelButton: 'swal2-cancel-custom'
-            },
-            buttonsStyling: false,
-            showCloseButton: true,
-            allowOutsideClick: false,
-            allowEscapeKey: true,
             preConfirm: () => {
-                window.location.href = delete_url;
+                return fetch(delete_url, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                }).then(response => response.json());
             }
-        })
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire('Deleted!', 'Lead has been deleted.', 'success').then(() => {
+                    location.reload();
+                });
+            }
+        });
     }
+
 
     // AJAX function to load content
     function call_ajax_view(url, target) {

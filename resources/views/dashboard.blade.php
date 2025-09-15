@@ -33,26 +33,15 @@
             </div>
         </div>
     </div>
-    @if(\App\Helpers\RoleHelper::is_super_admin())
-    <div class="col-md-6 col-lg-4 col-xl-2">
+    <div class="col-md-6 col-lg-4 col-xl-3">
         <div class="card">
             <div class="card-body">
-                <h6 class="mb-2 f-w-400 text-muted">Total Admins</h6>
-                <h4 class="mb-3">{{ $totalAdmins ?? 0 }} <span class="badge bg-light-success border border-success"><i class="ti ti-shield-check"></i> Active</span></h4>
-                <p class="mb-0 text-muted text-sm">Administrative users with <span class="text-success">full access</span></p>
+                <h6 class="mb-2 f-w-400 text-muted">Active Leads</h6>
+                <h4 class="mb-3">{{ $totalLeads - ($weeklyStats['convertedLeads'] ?? 0) }} <span class="badge bg-light-success border border-success"><i class="ti ti-trending-up"></i> Active</span></h4>
+                <p class="mb-0 text-muted text-sm">Active leads: <span class="text-success">{{ $totalLeads - ($weeklyStats['convertedLeads'] ?? 0) }}</span></p>
             </div>
         </div>
-    </div>
-    @endif
-    <div class="col-md-6 col-lg-4 col-xl-2">
-        <div class="card">
-            <div class="card-body">
-                <h6 class="mb-2 f-w-400 text-muted">Total Telecallers</h6>
-                <h4 class="mb-3">{{ $totalTelecallers ?? 0 }} <span class="badge bg-light-info border border-info"><i class="ti ti-phone"></i> Active</span></h4>
-                <p class="mb-0 text-muted text-sm">Sales team members with <span class="text-info">lead access</span></p>
-            </div>
-        </div>
-    </div>
+    </div>  
     <div class="col-md-6 col-lg-4 col-xl-3">
         <div class="card">
             <div class="card-body">
@@ -62,38 +51,34 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-lg-4 col-xl-3">
+    @if(\App\Helpers\RoleHelper::is_super_admin())
+    <div class="col-md-6 col-lg-4 col-xl-2">
         <div class="card">
             <div class="card-body">
-                <h6 class="mb-2 f-w-400 text-muted">Active Leads</h6>
-                <h4 class="mb-3">{{ $totalLeads - ($weeklyStats['convertedLeads'] ?? 0) }} <span class="badge bg-light-danger border border-danger"><i class="ti ti-trending-up"></i> Active</span></h4>
-                <p class="mb-0 text-muted text-sm">Active leads: <span class="text-danger">{{ $totalLeads - ($weeklyStats['convertedLeads'] ?? 0) }}</span></p>
+                <h6 class="mb-2 f-w-400 text-muted">Total Admins</h6>
+                <h4 class="mb-3">{{ $totalAdmins ?? 0 }} <span class="badge bg-light-success border border-success"><i class="ti ti-shield-check"></i> Active</span></h4>
+                <p class="mb-0 text-muted text-sm">Users with <span class="text-success">full access</span></p>
+            </div>
+        </div>
+    </div>
+    @endif
+    <div class="col-md-6 col-lg-4 col-xl-2">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-2 f-w-400 text-muted">Total Telecallers</h6>
+                <h4 class="mb-3">{{ $totalTelecallers ?? 0 }} <span class="badge bg-light-info border border-info"><i class="ti ti-phone"></i> Active</span></h4>
+                <p class="mb-0 text-muted text-sm">Users with <span class="text-info">lead access</span></p>
             </div>
         </div>
     </div>
 
     <div class="col-md-12 col-xl-8">
         <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 class="mb-0">Lead Status Overview</h5>
-            <ul class="nav nav-pills justify-content-end mb-0" id="chart-tab-tab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="chart-tab-home-tab" data-bs-toggle="pill" data-bs-target="#chart-tab-home" type="button" role="tab" aria-controls="chart-tab-home" aria-selected="true">Month</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="chart-tab-profile-tab" data-bs-toggle="pill" data-bs-target="#chart-tab-profile" type="button" role="tab" aria-controls="chart-tab-profile" aria-selected="false">Week</button>
-                </li>
-            </ul>
+            <h5 class="mb-0">Lead Analytics</h5>
         </div>
         <div class="card">
             <div class="card-body">
-                <div class="tab-content" id="chart-tab-tabContent">
-                    <div class="tab-pane" id="chart-tab-home" role="tabpanel" aria-labelledby="chart-tab-home-tab" tabindex="0">
-                        <div id="visitor-chart-1"></div>
-                    </div>
-                    <div class="tab-pane show active" id="chart-tab-profile" role="tabpanel" aria-labelledby="chart-tab-profile-tab" tabindex="0">
-                        <div id="visitor-chart"></div>
-                    </div>
-                </div>
+                <div id="visitor-chart"></div>
             </div>
         </div>
     </div>
@@ -108,7 +93,7 @@
         </div>
     </div>
 
-    <div class="col-md-12 col-xl-8">
+    <div class="col-md-12 col-xl-12">
         <h5 class="mb-3">Recent Leads</h5>
         <div class="card tbl-card">
             <div class="card-body">
@@ -145,25 +130,6 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-12 col-xl-4">
-        <h5 class="mb-3">Analytics Report</h5>
-        <div class="card">
-            <div class="list-group list-group-flush">
-                <a href="#" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
-                    Lead Conversion Rate<span class="h5 mb-0">{{ $conversionRate ?? 0 }}%</span>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
-                    This Week Leads<span class="h5 mb-0">{{ $weeklyStats['totalLeads'] ?? 0 }}</span>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
-                    This Week Converted<span class="h5 mb-0">{{ $weeklyStats['convertedLeads'] ?? 0 }}</span>
-                </a>
-            </div>
-            <div class="card-body px-2">
-                <div id="analytics-report-chart"></div>
             </div>
         </div>
     </div>
@@ -238,32 +204,74 @@
         </div>
         </div>
     </div>
+    <div class="col-md-12 col-xl-4">
+        <h5 class="mb-3">Analytics Report</h5>
+        <div class="card">
+            <div class="list-group list-group-flush">
+                <a href="#" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
+                    Lead Conversion Rate<span class="h5 mb-0">{{ $conversionRate ?? 0 }}%</span>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
+                    This Week Leads<span class="h5 mb-0">{{ $weeklyStats['totalLeads'] ?? 0 }}</span>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
+                    This Week Converted<span class="h5 mb-0">{{ $weeklyStats['convertedLeads'] ?? 0 }}</span>
+                </a>
+            </div>
+            <div class="card-body px-2">
+                <div id="analytics-report-chart"></div>
+            </div>
+        </div>
+    </div>
 </div>
 <!-- [ Main Content ] end -->
 @endsection
 
 @push('scripts')
+<!-- ApexCharts -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@latest"></script>
 <script>
 // Chart data from backend
 const monthlyData = @json($monthlyLeads ?? []);
 const leadSourcesData = @json($leadSourcesData ?? []);
 const conversionRate = {{ $conversionRate ?? 0 }};
 
+// Wait for ApexCharts to load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if ApexCharts is available
+    if (typeof ApexCharts === 'undefined') {
+        console.error('ApexCharts is not loaded');
+        return;
+    }
+    
+    initializeCharts();
+});
+
+function initializeCharts() {
+
 // Monthly leads chart
-if (monthlyData.months && monthlyData.leadCounts) {
-    const monthlyChart = new ApexCharts(document.querySelector("#visitor-chart"), {
+console.log('Monthly Data:', monthlyData);
+const chartContainer = document.querySelector("#visitor-chart");
+console.log('Chart container:', chartContainer);
+
+if (chartContainer) {
+    // Always show the chart with months, even if no data
+    const monthlyChart = new ApexCharts(chartContainer, {
         series: [{
             name: 'Total Leads',
-            data: monthlyData.leadCounts
+            data: monthlyData.leadCounts || []
         }, {
             name: 'Converted Leads',
-            data: monthlyData.convertedCounts
+            data: monthlyData.convertedCounts || []
         }],
         chart: {
             type: 'area',
             height: 350,
             toolbar: {
                 show: false
+            },
+            zoom: {
+                enabled: false
             }
         },
         colors: ['#7366ff', '#f73164'],
@@ -272,24 +280,65 @@ if (monthlyData.months && monthlyData.leadCounts) {
         },
         stroke: {
             curve: 'smooth',
-            width: 2
+            width: 3
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.7,
+                opacityTo: 0.3,
+                stops: [0, 90, 100]
+            }
         },
         xaxis: {
-            categories: monthlyData.months
+            categories: monthlyData.months || ['Oct 2024', 'Nov 2024', 'Dec 2024', 'Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025', 'Jul 2025', 'Aug 2025', 'Sep 2025'],
+            labels: {
+                style: {
+                    fontSize: '12px'
+                }
+            }
         },
         yaxis: {
             title: {
-                text: 'Number of Leads'
-            }
+                text: 'Number of Leads',
+                style: {
+                    fontSize: '12px'
+                }
+            },
+            min: 0,
+            forceNiceScale: true
         },
         legend: {
-            position: 'top'
+            position: 'top',
+            horizontalAlign: 'right'
         },
         grid: {
-            borderColor: '#f1f1f1'
+            borderColor: '#f1f1f1',
+            strokeDashArray: 5
+        },
+        tooltip: {
+            shared: true,
+            intersect: false,
+            y: {
+                formatter: function (val) {
+                    return val + " leads"
+                }
+            }
+        },
+        noData: {
+            text: 'No data available',
+            align: 'center',
+            verticalAlign: 'middle',
+            style: {
+                color: '#999',
+                fontSize: '14px'
+            }
         }
     });
     monthlyChart.render();
+} else {
+    console.error('Chart container #visitor-chart not found');
 }
 
 // Lead sources pie chart
@@ -298,15 +347,50 @@ if (leadSourcesData.length > 0) {
         series: leadSourcesData.map(item => item.value),
         chart: {
             type: 'pie',
-            height: 300
+            height: 300,
+            toolbar: {
+                show: false
+            }
         },
         labels: leadSourcesData.map(item => item.name),
-        colors: ['#7366ff', '#f73164', '#51d28c', '#ffa726', '#ef5350'],
+        colors: ['#7366ff', '#f73164', '#51d28c', '#ffa726', '#ef5350', '#26a69a', '#ab47bc', '#ff7043'],
         legend: {
-            position: 'bottom'
+            position: 'bottom',
+            fontSize: '12px',
+            itemMargin: {
+                horizontal: 10,
+                vertical: 5
+            }
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val, opts) {
+                return opts.w.config.series[opts.seriesIndex] + " (" + val.toFixed(1) + "%)"
+            },
+            style: {
+                fontSize: '11px',
+                fontWeight: 'bold'
+            }
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return val + " leads"
+                }
+            }
+        },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '60%'
+                }
+            }
         }
     });
     leadSourcesChart.render();
+} else {
+    // Show message if no data
+    document.querySelector("#sales-report-chart").innerHTML = '<div class="text-center text-muted p-4"><i class="ti ti-chart-pie f-48 mb-3 text-primary"></i><h6 class="mb-2">No Lead Sources</h6><p class="mb-0">Add leads with sources to see distribution</p></div>';
 }
 
 // Conversion rate chart
@@ -314,19 +398,31 @@ const conversionChart = new ApexCharts(document.querySelector("#income-overview-
     series: [conversionRate],
     chart: {
         type: 'radialBar',
-        height: 200
+        height: 200,
+        toolbar: {
+            show: false
+        }
     },
     plotOptions: {
         radialBar: {
             startAngle: -90,
             endAngle: 90,
+            hollow: {
+                size: '60%'
+            },
             dataLabels: {
                 name: {
-                    show: false
+                    show: true,
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: '#666',
+                    offsetY: -10
                 },
                 value: {
-                    fontSize: '16px',
+                    fontSize: '20px',
+                    fontWeight: 'bold',
                     show: true,
+                    color: '#333',
                     formatter: function (val) {
                         return val + '%';
                     }
@@ -334,7 +430,15 @@ const conversionChart = new ApexCharts(document.querySelector("#income-overview-
             }
         }
     },
-    colors: ['#51d28c']
+    colors: ['#51d28c'],
+    labels: ['Conversion Rate'],
+    tooltip: {
+        y: {
+            formatter: function (val) {
+                return val + '% conversion rate';
+            }
+        }
+    }
 });
 conversionChart.render();
 
@@ -346,16 +450,59 @@ const analyticsChart = new ApexCharts(document.querySelector("#analytics-report-
     }],
     chart: {
         type: 'bar',
-        height: 200
+        height: 200,
+        toolbar: {
+            show: false
+        }
     },
     colors: ['#7366ff'],
+    dataLabels: {
+        enabled: true,
+        formatter: function (val) {
+            return val + '%';
+        },
+        style: {
+            fontSize: '12px',
+            fontWeight: 'bold',
+            colors: ['#fff']
+        }
+    },
     xaxis: {
-        categories: ['Conversion Rate']
+        categories: ['Conversion Rate'],
+        labels: {
+            style: {
+                fontSize: '12px'
+            }
+        }
     },
     yaxis: {
-        max: 100
+        max: 100,
+        min: 0,
+        labels: {
+            formatter: function (val) {
+                return val + '%';
+            },
+            style: {
+                fontSize: '11px'
+            }
+        }
+    },
+    tooltip: {
+        y: {
+            formatter: function (val) {
+                return val + '% conversion rate';
+            }
+        }
+    },
+    plotOptions: {
+        bar: {
+            borderRadius: 4,
+            columnWidth: '60%'
+        }
     }
 });
 analyticsChart.render();
+
+} // End of initializeCharts function
 </script>
 @endpush

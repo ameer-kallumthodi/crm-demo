@@ -9,3 +9,80 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Notification Badge Styles */
+.notification-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.pc-h-item {
+    position: relative;
+}
+
+/* Notification dropdown styles */
+.dropdown-notification {
+    min-width: 320px;
+    max-width: 400px;
+}
+
+.notification-icon {
+    font-size: 16px;
+}
+
+/* Unread notification highlight */
+.list-group-item.bg-light {
+    background-color: #f8f9fa !important;
+    border-left: 3px solid #007bff;
+}
+
+/* Notification dropdown scrolling */
+.dropdown-notification .dropdown-header {
+    scrollbar-width: thin;
+    scrollbar-color: #e2e8f0 #f7fafc;
+}
+
+.dropdown-notification .dropdown-header::-webkit-scrollbar {
+    width: 4px;
+}
+
+.dropdown-notification .dropdown-header::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 2px;
+}
+
+.dropdown-notification .dropdown-header::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 2px;
+}
+
+.dropdown-notification .dropdown-header::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e0;
+}
+
+/* Ensure proper spacing for scrollable content */
+.dropdown-notification .list-group-item {
+    border-left: none;
+    border-right: none;
+}
+
+.dropdown-notification .list-group-item:first-child {
+    border-top: none;
+}
+
+.dropdown-notification .list-group-item:last-child {
+    border-bottom: none;
+}

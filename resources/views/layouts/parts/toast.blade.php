@@ -3,7 +3,7 @@
     <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
             <img src="{{ asset('assets/images/logo-sm.png') }}" class="rounded me-2" alt="..." height="16">
-            <strong class="me-auto">{{ config('app.name', 'Laravel') }}</strong>
+            <strong class="me-auto">{{ config('app.name', '') }}</strong>
             <small class="text-muted">just now</small>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
