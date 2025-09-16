@@ -214,4 +214,6 @@ Route::middleware('custom.auth')->group(function () {
         Route::get('/notifications', [NotificationController::class, 'viewAll'])->name('notifications.view-all');
         Route::get('/api/notifications', [NotificationController::class, 'getUserNotifications'])->name('notifications.api');
         Route::post('/notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+        
+        
 });

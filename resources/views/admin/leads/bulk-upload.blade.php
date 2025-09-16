@@ -1,3 +1,48 @@
+<!-- Select2 is now loaded globally -->
+<style>
+/* Ensure Select2 styling is applied */
+.select2-container--default .select2-selection--multiple {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    min-height: 38px;
+    padding: 0.375rem 0.75rem;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #0d6efd;
+    border: 1px solid #0d6efd;
+    border-radius: 0.25rem;
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    margin: 0.125rem;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: #fff;
+    margin-right: 0.25rem;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #fff;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.select2-dropdown {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #0d6efd;
+    color: #fff;
+}
+</style>
+
 <div class="p-3">
     <form action="{{ route('leads.bulk-upload.submit') }}" method="post" enctype="multipart/form-data" id="bulkUploadForm">
         @csrf
@@ -79,12 +124,13 @@
             <div class="col-md-12" id="telecaller-selection">
                 <div class="mb-3">
                     <label class="form-label" for="telecallers">Assign to Telecallers <span class="text-danger">*</span></label>
-                    <select class="form-select" name="telecallers[]" id="telecaller" multiple>
+                    <select class="form-select select2-multiple" name="telecallers[]" id="telecaller" multiple>
                         @foreach($telecallers as $telecaller)
                             <option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>
                         @endforeach
                     </select>
-                    <small class="text-muted">Hold Ctrl/Cmd to select multiple telecallers</small>
+                    
+                    <small class="text-muted">Select multiple telecallers from the dropdown</small>
                 </div>
             </div>
 
@@ -121,6 +167,50 @@
 
 <script>
 $(document).ready(function() {
+    // Initialize Select2 for telecaller dropdown
+    function initializeTelecallerSelect2() {
+        const telecallerSelect = $('#telecaller');
+        
+        // Destroy existing Select2 if any
+        if (telecallerSelect.hasClass('select2-hidden-accessible')) {
+            telecallerSelect.select2('destroy');
+        }
+        
+        // Initialize Select2
+        try {
+            telecallerSelect.select2({
+                placeholder: 'Select telecallers...',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: telecallerSelect.parent()
+            });
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+    
+    // Try to initialize Select2
+    let attempts = 0;
+    const maxAttempts = 3;
+    
+    function tryInitializeSelect2() {
+        attempts++;
+        
+        if (typeof $.fn.select2 !== 'undefined') {
+            if (initializeTelecallerSelect2()) {
+                return;
+            }
+        }
+        
+        if (attempts < maxAttempts) {
+            setTimeout(tryInitializeSelect2, 200 * attempts);
+        }
+    }
+    
+    // Start initialization
+    tryInitializeSelect2();
+
     // Handle team selection to load telecallers
     $('#team_id').on('change', function() {
         const teamId = $(this).val();
@@ -136,6 +226,17 @@ $(document).ready(function() {
                             $('<option></option>').val(telecaller.id).text(telecaller.name + ' (' + telecaller.team_name + ')')
                         );
                     });
+                    // Trigger Select2 update if available
+                    if (typeof $.fn.select2 !== 'undefined' && telecallerSelect.hasClass('select2-hidden-accessible')) {
+                        telecallerSelect.trigger('change');
+                    } else if (typeof $.fn.select2 !== 'undefined') {
+                        // Reinitialize Select2 if it's not already initialized
+                        telecallerSelect.select2({
+                            placeholder: 'Select telecallers...',
+                            allowClear: true,
+                            width: '100%'
+                        });
+                    }
                 })
                 .fail(function() {
                     console.error('Failed to load telecallers');
@@ -150,12 +251,25 @@ $(document).ready(function() {
                             $('<option></option>').val(telecaller.id).text(telecaller.name)
                         );
                     });
+                    // Trigger Select2 update if available
+                    if (typeof $.fn.select2 !== 'undefined' && telecallerSelect.hasClass('select2-hidden-accessible')) {
+                        telecallerSelect.trigger('change');
+                    } else if (typeof $.fn.select2 !== 'undefined') {
+                        // Reinitialize Select2 if it's not already initialized
+                        telecallerSelect.select2({
+                            placeholder: 'Select telecallers...',
+                            allowClear: true,
+                            width: '100%'
+                        });
+                    }
                 })
                 .fail(function() {
                     console.error('Failed to load telecallers');
                 });
         } else {
             telecallerSelect.empty();
+            // Trigger Select2 update
+            telecallerSelect.trigger('change');
         }
     });
 

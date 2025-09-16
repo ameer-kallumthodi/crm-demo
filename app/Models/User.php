@@ -131,4 +131,20 @@ class User extends Authenticatable
             'current_role' => $this->current_role ?? '',
         ];
     }
+
+    /**
+     * Check if user is admin or super admin.
+     */
+    public function isAdmin()
+    {
+        return in_array($this->role_id, [1, 2]); // Adjust role IDs based on your system
+    }
+
+    /**
+     * Check if user is super admin.
+     */
+    public function isSuperAdmin()
+    {
+        return $this->role_id == 1; // Adjust role ID based on your system
+    }
 }

@@ -1,5 +1,5 @@
 <!--   Core JS Files   -->
-<script src="{{ asset('assets/js/core/jquery-3.7.1.min.js') }}"></script>
+<!-- jQuery is already loaded in main layout -->
 <script src="{{ asset('assets/js/core/popper.min.js') }}"></script>
 <script src="{{ asset('assets/js/core/bootstrap.min.js') }}"></script>
 
@@ -39,8 +39,9 @@
         // Initialize any custom functionality here
         console.log('CRM Dashboard loaded successfully');
         
-        // Initialize DataTables with reinitialization check
+        // Initialize DataTables globally for all tables
         if ($.fn.DataTable) {
+            // Initialize tables with 'datatable' class
             $('.datatable').each(function() {
                 if (!$.fn.DataTable.isDataTable(this)) {
                     $(this).DataTable({
@@ -64,6 +65,78 @@
                     });
                 }
             });
+            
+            // Initialize specific tables with custom configurations
+            initializeSpecificTables();
+        }
+        
+        // Function to initialize specific tables with custom settings
+        function initializeSpecificTables() {
+            // Converted Leads Table
+            if ($('#convertedLeadsTable').length && !$.fn.DataTable.isDataTable('#convertedLeadsTable')) {
+                $('#convertedLeadsTable').DataTable({
+                    "processing": true,
+                    "serverSide": false,
+                    "responsive": true,
+                    "pageLength": 25,
+                    "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                    "order": [[6, 'desc']], // Sort by converted date descending
+                    "columnDefs": [
+                        { "orderable": false, "targets": [0, 7] }, // Disable sorting on serial number and actions columns
+                        { "searchable": false, "targets": [0, 7] } // Disable searching on serial number and actions columns
+                    ],
+                    "language": {
+                        "processing": "Loading converted leads...",
+                        "emptyTable": "No converted leads found",
+                        "zeroRecords": "No matching converted leads found",
+                        "search": "Search:",
+                        "lengthMenu": "Show _MENU_ entries",
+                        "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                        "paginate": {
+                            "first": "First",
+                            "last": "Last",
+                            "next": "Next",
+                            "previous": "Previous"
+                        }
+                    },
+                    "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                           '<"row"<"col-sm-12"tr>>' +
+                           '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                    "initComplete": function() {
+                        // Hide the original pagination since DataTable handles it
+                        $('.d-flex.justify-content-center').hide();
+                    }
+                });
+            }
+            
+            // Leads Table
+            if ($('#leadsTable').length && !$.fn.DataTable.isDataTable('#leadsTable')) {
+                $('#leadsTable').DataTable({
+                    "processing": true,
+                    "serverSide": false,
+                    "responsive": true,
+                    "pageLength": 25,
+                    "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                    "columnDefs": [
+                        { "orderable": false, "targets": [0, 1] }, // Disable sorting on serial number and actions columns
+                        { "searchable": false, "targets": [0, 1] } // Disable searching on serial number and actions columns
+                    ],
+                    "language": {
+                        "processing": "Loading leads...",
+                        "emptyTable": "No leads found",
+                        "zeroRecords": "No matching leads found",
+                        "search": "Search:",
+                        "lengthMenu": "Show _MENU_ entries",
+                        "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                        "paginate": {
+                            "first": "First",
+                            "last": "Last",
+                            "next": "Next",
+                            "previous": "Previous"
+                        }
+                    }
+                });
+            }
         }
         
         // Initialize sidebar toggle
@@ -103,6 +176,43 @@
         
         // Initialize popovers
         $('[data-bs-toggle="popover"]').popover();
+        
+        // Initialize Select2 globally for elements with select2 class
+        function initializeGlobalSelect2() {
+            if (typeof $.fn.select2 !== 'undefined') {
+                // Initialize single selects (but not the telecaller dropdown)
+                $('.select2:not(#telecaller)').each(function() {
+                    if (!$(this).hasClass('select2-hidden-accessible')) {
+                        $(this).select2({
+                            placeholder: 'Select an option...',
+                            allowClear: true,
+                            width: '100%'
+                        });
+                    }
+                });
+                
+                // Initialize multiple selects (but not the telecaller dropdown)
+                $('.select2-multiple:not(#telecaller)').each(function() {
+                    if (!$(this).hasClass('select2-hidden-accessible')) {
+                        $(this).select2({
+                            placeholder: 'Select options...',
+                            allowClear: true,
+                            width: '100%'
+                        });
+                    }
+                });
+                
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        // Try to initialize immediately
+        if (!initializeGlobalSelect2()) {
+            // If failed, retry after a short delay
+            setTimeout(initializeGlobalSelect2, 200);
+        }
     });
 
     // Show toast messages from session

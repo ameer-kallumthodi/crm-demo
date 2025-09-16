@@ -145,7 +145,7 @@
                                     @csrf
                                     <div class="mb-3">
                                         <label for="bg_image" class="form-label">Upload New Background Image</label>
-                                        <input type="file" class="form-control" id="bg_image" name="bg_image" accept="image/*" required>
+                                        <input type="file" class="form-control" id="bg_image" name="bg_image" accept="image/*">
                                         <div class="form-text">Supported formats: JPEG, PNG, JPG, GIF, SVG. Max size: 2MB. Recommended: 1920x1080px</div>
                                         <div id="bg_image_error" class="text-danger mt-1" style="display: none;"></div>
                                     </div>
@@ -153,9 +153,9 @@
                                         <button type="submit" class="btn btn-primary">
                                             <i class="ti ti-upload"></i> Update Background Image
                                         </button>
-                                        <button type="button" class="btn btn-outline-danger" id="removeBgImageBtn">
+                                        <!-- <button type="button" class="btn btn-outline-danger" id="removeBgImageBtn">
                                             <i class="ti ti-trash"></i> Remove Background Image
-                                        </button>
+                                        </button> -->
                                     </div>
                                 </form>
                             </div>

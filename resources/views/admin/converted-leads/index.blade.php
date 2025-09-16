@@ -80,7 +80,7 @@
             <div class="card-body">
                 <!-- Table -->
                 <div class="table-responsive">
-                    <table class="table table-hover" id="convertedLeadsTable">
+                    <table class="table table-hover datatable" id="convertedLeadsTable">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -96,7 +96,7 @@
                         <tbody>
                             @forelse($convertedLeads as $index => $convertedLead)
                             <tr>
-                                <td>{{ $convertedLeads->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avtar avtar-s rounded-circle bg-light-success me-2 d-flex align-items-center justify-content-center">
@@ -115,7 +115,7 @@
                                 <td>{{ $convertedLead->created_at->format('M d, Y') }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
                                             <i class="ti ti-eye"></i>
                                         </a>
                                     </div>
@@ -129,14 +129,42 @@
                         </tbody>
                     </table>
                 </div>
-
-                <!-- Pagination -->
-                <div class="d-flex justify-content-center">
-                    {{ $convertedLeads->appends(request()->query())->links() }}
-                </div>
             </div>
         </div>
     </div>
 </div>
 <!-- [ Main Content ] end -->
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Handle filter form submission
+    $('#filterForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Get form data
+        const formData = new FormData(this);
+        const params = new URLSearchParams();
+        
+        // Add form data to params
+        for (let [key, value] of formData.entries()) {
+            if (value.trim() !== '') {
+                params.append(key, value);
+            }
+        }
+        
+        // Redirect with filter parameters
+        const url = new URL(window.location.href);
+        url.search = params.toString();
+        window.location.href = url.toString();
+    });
+
+    // Handle clear button
+    $('a[href="{{ route("admin.converted-leads.index") }}"]').on('click', function(e) {
+        e.preventDefault();
+        window.location.href = '{{ route("admin.converted-leads.index") }}';
+    });
+});
+</script>
+@endpush

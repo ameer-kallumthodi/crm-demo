@@ -66,7 +66,7 @@ class ConvertedLeadController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(20);
+        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
