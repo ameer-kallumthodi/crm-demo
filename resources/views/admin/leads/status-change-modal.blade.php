@@ -34,6 +34,28 @@
                             @endforeach
                         </select>
                     </div>
+
+                    <!-- Demo Booking Button - Only shown when status 6 is selected -->
+                    <div class="mb-3" id="demoBookingSection" style="display: none;">
+                        <div class="alert alert-info d-flex align-items-center">
+                            <i class="ti ti-info-circle me-2"></i>
+                            <div class="flex-grow-1">
+                                <strong>Demo Conduction Required:</strong> Please complete the demo conduction form before updating the status.
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link" 
+                               target="_blank" 
+                               class="btn btn-warning" 
+                               id="demoBookingBtn"
+                               title="Open Demo Conduction Form">
+                                <i class="ti ti-file-text me-2"></i>Complete Demo Conduction Form
+                            </a>
+                            <div class="mt-2">
+                                <small class="text-muted">Click the button above to open the demo conduction form in a new tab. After clicking this button, you can update the status.</small>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="mb-3">
                         <label class="form-label" for="remarks">Remarks <span class="text-danger">*</span></label>
@@ -57,7 +79,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Status</button>
+                    <button type="submit" class="btn btn-primary" id="updateStatusBtn">Update Status</button>
                 </div>
             </form>
         </div>
@@ -66,9 +88,60 @@
 
 <script>
 $(document).ready(function() {
+    let formCompleted = false;
+    
+    // Handle status selection change
+    $('#lead_status_id').on('change', function() {
+        const selectedStatus = $(this).val();
+        const demoBookingSection = $('#demoBookingSection');
+        const updateStatusBtn = $('#updateStatusBtn');
+        
+        if (selectedStatus == '6') {
+            // Show demo booking section
+            demoBookingSection.show();
+            // Disable update button until form is completed
+            updateStatusBtn.prop('disabled', true);
+            updateStatusBtn.html('Complete Demo Booking First');
+            formCompleted = false;
+        } else {
+            // Hide demo booking section
+            demoBookingSection.hide();
+            // Enable update button
+            updateStatusBtn.prop('disabled', false);
+            updateStatusBtn.html('Update Status');
+            formCompleted = true;
+        }
+    });
+    
+    // Handle demo booking form button click
+    $('#demoBookingBtn').on('click', function() {
+        formCompleted = true;
+        const updateStatusBtn = $('#updateStatusBtn');
+        
+        // Enable update button
+        updateStatusBtn.prop('disabled', false);
+        updateStatusBtn.html('Update Status');
+        
+        // Show a brief success message
+        if (typeof toast_success === 'function') {
+            toast_success('Demo conduction form opened. You can now update the status.');
+        }
+    });
+    
     // Handle form submission
     $('#statusChangeForm').on('submit', function(e) {
         e.preventDefault();
+        
+        // Check if status 6 is selected and form is not completed
+        const selectedStatus = $('#lead_status_id').val();
+        if (selectedStatus == '6' && !formCompleted) {
+            if (typeof toast_error === 'function') {
+                toast_error('Please click the "Complete Demo Conduction Form" button before updating the status.');
+            } else {
+                alert('Please click the "Complete Demo Conduction Form" button before updating the status.');
+            }
+            return;
+        }
         
         const submitBtn = $(this).find('button[type="submit"]');
         const originalText = submitBtn.html();
@@ -125,5 +198,14 @@ $(document).ready(function() {
             }
         });
     });
+    
+    // Initialize form state on page load
+    const initialStatus = $('#lead_status_id').val();
+    if (initialStatus == '6') {
+        $('#demoBookingSection').show();
+        // Don't disable the button if current status is already 6
+        $('#updateStatusBtn').prop('disabled', false).html('Update Status');
+        formCompleted = true; // Allow immediate submission since current status is 6
+    }
 });
 </script>

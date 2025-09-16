@@ -175,26 +175,39 @@
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary"
-                                            onclick="show_large_modal('{{ route('leads.ajax-show', $lead->id) }}', 'View Lead')">
+                                            onclick="show_large_modal('{{ route('leads.ajax-show', $lead->id) }}', 'View Lead')"
+                                            title="View Lead">
                                             <i class="ti ti-eye"></i>
                                         </a>
                                         <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
-                                            onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')">
+                                            onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
+                                            title="Edit Lead">
                                             <i class="ti ti-edit"></i>
                                         </a>
                                         <a href="javascript:void(0);" class="btn btn-sm btn-outline-success"
-                                            onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')">
+                                            onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')"
+                                            title="Update Status">
                                             <i class="ti ti-arrow-up"></i>
                                         </a>
                                         @if(!$lead->is_converted)
                                         <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning"
-                                            onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')">
+                                            onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
+                                            title="Convert Lead">
                                             <i class="ti ti-refresh"></i>
+                                        </a>
+                                        @endif
+                                        @if($lead->lead_status_id == 6)
+                                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-info" 
+                                           title="Demo Conduction Form">
+                                            <i class="ti ti-file-text"></i>
                                         </a>
                                         @endif
                                         @if(!$isTelecaller || $isTeamLead)
                                         <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
-                                            onclick="show_ajax_modal('{{ route('leads.delete', $lead->id) }}', 'Delete Lead')">
+                                            onclick="show_ajax_modal('{{ route('leads.delete', $lead->id) }}', 'Delete Lead')"
+                                            title="Delete Lead">
                                             <i class="ti ti-trash"></i>
                                         </a>
                                         @endif
