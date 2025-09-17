@@ -39,6 +39,14 @@ class SettingsSeeder extends Seeder
                 'group' => 'general',
                 'is_public' => true,
             ],
+            [
+                'key' => 'site_favicon',
+                'value' => 'storage/favicon.ico',
+                'type' => 'file',
+                'description' => 'Website favicon',
+                'group' => 'general',
+                'is_public' => true,
+            ],
             
             // Contact Settings
             [

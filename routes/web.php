@@ -223,6 +223,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
                 Route::get('/dashboard', [App\Http\Controllers\TelecallerReportController::class, 'dashboard'])->name('dashboard');
                 Route::get('/reports', [App\Http\Controllers\TelecallerReportController::class, 'reports'])->name('reports');
                 Route::get('/reports/{userId}', [App\Http\Controllers\TelecallerReportController::class, 'telecallerReport'])->name('telecaller-report');
+                Route::get('/session-details/{sessionId}', [App\Http\Controllers\TelecallerReportController::class, 'sessionDetails'])->name('session-details');
                 Route::get('/reports/export/excel', [App\Http\Controllers\TelecallerReportController::class, 'exportExcel'])->name('export.excel');
                 Route::get('/reports/export/pdf', [App\Http\Controllers\TelecallerReportController::class, 'exportPdf'])->name('export.pdf');
                 Route::get('/realtime-data', [App\Http\Controllers\TelecallerReportController::class, 'getRealtimeData'])->name('realtime-data');
@@ -251,4 +252,74 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
         
         
+});
+
+// Debug routes for idle time calculation
+Route::get('/debug-idle-calc', function() {
+    $userId = 2;
+    $startDate = '2025-09-17';
+    $endDate = '2025-09-17';
+    
+    // Get idle times for user 2 on 2025-09-17
+    $idleTimes = \App\Models\TelecallerIdleTime::where('user_id', $userId)
+        ->whereBetween('idle_start_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+        ->get();
+    
+    $totalIdleSeconds = $idleTimes->sum('idle_duration_seconds');
+    
+    return response()->json([
+        'user_id' => $userId,
+        'date_range' => [$startDate . ' 00:00:00', $endDate . ' 23:59:59'],
+        'idle_times_count' => $idleTimes->count(),
+        'idle_times_data' => $idleTimes->pluck('idle_duration_seconds')->toArray(),
+        'total_idle_seconds' => $totalIdleSeconds,
+        'formatted_time' => gmdate('H:i:s', $totalIdleSeconds)
+    ]);
+});
+
+Route::get('/debug-telecaller-stats', function() {
+    $userId = 2;
+    $startDate = '2025-09-17';
+    $endDate = '2025-09-17';
+    
+    // Simulate the getTelecallerStats method
+    $sessions = \App\Models\TelecallerSession::where('user_id', $userId)
+        ->whereBetween('login_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+        ->with('idleTimes')
+        ->get();
+        
+    // If no sessions found in date range, get all sessions for this user (fallback)
+    if ($sessions->isEmpty()) {
+        $sessions = \App\Models\TelecallerSession::where('user_id', $userId)
+            ->with('idleTimes')
+            ->get();
+    }
+    
+    $idleTimes = \App\Models\TelecallerIdleTime::where('user_id', $userId)
+        ->whereBetween('idle_start_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+        ->get();
+        
+    // If no idle times found in date range, get all idle times for this user (fallback)
+    if ($idleTimes->isEmpty()) {
+        $idleTimes = \App\Models\TelecallerIdleTime::where('user_id', $userId)->get();
+    }
+    
+    $totalIdleSeconds = $idleTimes->sum('idle_duration_seconds');
+    
+    return response()->json([
+        'user_id' => $userId,
+        'sessions_count' => $sessions->count(),
+        'idle_times_count' => $idleTimes->count(),
+        'idle_times_data' => $idleTimes->pluck('idle_duration_seconds')->toArray(),
+        'total_idle_seconds' => $totalIdleSeconds,
+        'formatted_time' => gmdate('H:i:s', $totalIdleSeconds),
+        'sessions_data' => $sessions->map(function($session) {
+            return [
+                'id' => $session->id,
+                'login_time' => $session->login_time,
+                'idle_times_count' => $session->idleTimes->count(),
+                'idle_times_sum' => $session->idleTimes->sum('idle_duration_seconds')
+            ];
+        })
+    ]);
 });

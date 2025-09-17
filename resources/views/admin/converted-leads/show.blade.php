@@ -7,20 +7,22 @@
 <div class="page-header">
     <div class="page-block">
         <div class="row align-items-center">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <div class="page-header-title">
                     <h5 class="m-b-10">Converted Lead Details</h5>
                 </div>
-                <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                    <li class="breadcrumb-item">View</li>
-                </ul>
             </div>
-            <div class="col-md-4 text-end">
-                <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-secondary">
-                    <i class="ti ti-arrow-left"></i> Back to List
-                </a>
+            <div class="col-md-6">
+                <div class="d-flex justify-content-end align-items-center gap-3">
+                    <ul class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
+                        <li class="breadcrumb-item">View</li>
+                    </ul>
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-secondary">
+                        <i class="ti ti-arrow-left"></i> Back to List
+                    </a>
+                </div>
             </div>
         </div>
     </div>

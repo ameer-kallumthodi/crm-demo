@@ -2,16 +2,22 @@
 
 @section('title', 'Telecaller Task Management')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('assets/css/telecaller-tracking.css') }}">
+@endpush
+
 @section('content')
 <!-- [ breadcrumb ] start -->
 <div class="page-header">
     <div class="page-block">
         <div class="row align-items-center">
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <div class="page-header-title">
                     <h5 class="m-b-10">Telecaller Task Management</h5>
                 </div>
-                <ul class="breadcrumb">
+            </div>
+            <div class="col-md-6">
+                <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item">Telecaller Tracking</li>
                     <li class="breadcrumb-item">Task Management</li>
@@ -28,16 +34,24 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Lead Assignments (Tasks)</h5>
+                    <div class="d-flex align-items-center">
+                        <div class="avtar avtar-s rounded-circle bg-light-success me-3 d-flex align-items-center justify-content-center">
+                            <i class="ti ti-list-check f-20 text-success"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Lead Assignments (Tasks)</h5>
+                            <small class="text-muted">Manage and track telecaller lead assignments</small>
+                        </div>
+                    </div>
                     <div class="d-flex gap-2">
                         <a href="{{ route('admin.telecaller-tasks.create') }}" class="btn btn-primary btn-sm">
-                            <i class="ti ti-plus"></i> Assign Lead
+                            <i class="ti ti-plus me-1"></i> Assign Lead
                         </a>
                         <a href="{{ route('admin.telecaller-tasks.overdue') }}" class="btn btn-outline-danger btn-sm">
-                            <i class="ti ti-alert-triangle"></i> Overdue Leads
+                            <i class="ti ti-alert-triangle me-1"></i> Overdue
                         </a>
                         <a href="{{ route('admin.telecaller-tasks.due-today') }}" class="btn btn-outline-warning btn-sm">
-                            <i class="ti ti-calendar"></i> Today's Leads
+                            <i class="ti ti-calendar me-1"></i> Today
                         </a>
                     </div>
                 </div>
@@ -168,7 +182,7 @@
                                 <td>{{ $task->place ?? '-' }}</td>
                                 <td>{{ $task->remarks ? Str::limit($task->remarks, 30) : '-' }}</td>
                                 <td>{{ $task->created_at->format('M d, Y') }}</td>
-                                <td>{{ $task->created_at->format('H:i A') }}</td>
+                                <td>{{ $task->created_at->format('g:i A') }}</td>
                             </tr>
                             @empty
                             <tr>

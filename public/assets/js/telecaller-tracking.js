@@ -5,13 +5,15 @@
 
 class TelecallerTracking {
     constructor() {
-        this.idleThreshold = 30 * 1000; // 30 seconds in milliseconds
-        this.logoutThreshold = 10 * 1000; // 10 seconds for auto-logout
+        this.idleThreshold = 60 * 60 * 1000; // 1 hour in milliseconds
+        this.logoutThreshold = 20 * 1000; // 20 seconds for auto-logout
         this.syncInterval = 30 * 1000; // 30 seconds
         this.isIdle = false;
         this.idleStartTime = null;
         this.idleData = [];
         this.lastActivityTime = Date.now();
+        this.pageHiddenTime = null;
+        this.pageVisibleTime = null;
         this.activityTimer = null;
         this.logoutTimer = null; // New timer for auto-logout
         this.syncTimer = null;
@@ -31,6 +33,7 @@ class TelecallerTracking {
             this.startTracking();
             this.setupEventListeners();
             this.startSyncTimer();
+            this.trackPageVisit(); // Track initial page visit
         } else {
             console.log('TelecallerTracking: User is not telecaller, skipping tracking');
         }
@@ -45,7 +48,7 @@ class TelecallerTracking {
     startTracking() {
         this.isTracking = true;
         console.log('TelecallerTracking: Tracking started');
-        this.logActivity('tracking_started', 'User activity tracking started');
+        // Removed internal tracking activity log
         
         // Start the initial activity timer
         this.resetActivityTimer();
@@ -55,7 +58,7 @@ class TelecallerTracking {
         this.isTracking = false;
         this.endIdleTime();
         this.clearTimers();
-        this.logActivity('tracking_stopped', 'User activity tracking stopped');
+        // Removed internal tracking activity log
     }
 
     setupEventListeners() {
@@ -93,13 +96,30 @@ class TelecallerTracking {
             this.handlePageUnload();
         });
 
-        // Window focus/blur
-        window.addEventListener('focus', () => this.handleActivity('window_focus'));
-        window.addEventListener('blur', () => this.handleActivity('window_blur'));
+        // Setup page visit tracking
+        this.setupPageVisitTracking();
+
+        // Window focus/blur - these are crucial for detecting when user switches away
+        window.addEventListener('focus', () => {
+            console.log('Window gained focus - idle tracking continues');
+            // Don't automatically reset timers on focus
+            // Only reset when actual mouse/keyboard activity is detected
+        });
+        window.addEventListener('blur', () => {
+            console.log('Window lost focus - idle tracking continues in background');
+            // Don't treat window blur as activity, just log it
+        });
     }
 
     handleActivity(type) {
         if (!this.isTracking) return;
+
+        // Only respond to actual user interactions, not page visibility or window events
+        const userInteractionTypes = ['mouse', 'keyboard', 'scroll', 'touch'];
+        if (!userInteractionTypes.includes(type)) {
+            console.log('Non-user activity detected:', type, '- ignoring for timer reset');
+            return;
+        }
 
         this.lastActivityTime = Date.now();
         
@@ -113,7 +133,7 @@ class TelecallerTracking {
         this.clearAllTimers();
         this.resetActivityTimer();
 
-        console.log('Activity detected:', type, '- Timer reset');
+        console.log('User activity detected:', type, '- Timer reset');
         // Don't log every activity - only log significant ones
         // this.logActivity('user_activity', `User activity detected: ${type}`);
     }
@@ -127,7 +147,7 @@ class TelecallerTracking {
             this.startIdleTime();
         }, this.idleThreshold);
         
-        console.log('Activity timer reset - will check for idle in 30 seconds');
+        console.log('Activity timer reset - will check for idle in 1 hour');
     }
 
     startIdleTime() {
@@ -144,7 +164,7 @@ class TelecallerTracking {
             this.performAutoLogout();
         }, this.logoutThreshold);
 
-        console.log('User became idle - auto-logout in 10 seconds');
+        console.log('User became idle - auto-logout in 20 seconds');
         console.log('Idle start time:', new Date(this.idleStartTime).toLocaleTimeString());
         
         // Show countdown to user
@@ -229,6 +249,25 @@ class TelecallerTracking {
     logActivity(activityName, description, metadata = {}) {
         if (!this.isTracking) return;
 
+        // Only log page visits, not internal API calls or tracking activities
+        const shouldLog = this.shouldLogActivity(activityName, window.location.href);
+        
+        if (!shouldLog) {
+            console.log('Skipping activity log for:', activityName, '- not a user page visit');
+            return;
+        }
+
+        // Additional check: Don't log if this is an API call or internal tracking
+        if (activityName.includes('api/') || activityName.includes('telecaller-tracking') || 
+            activityName.includes('notifications') || activityName.includes('start-idle') || 
+            activityName.includes('end-idle') || activityName.includes('auto-logout') ||
+            activityName.includes('sync-idle') || activityName.includes('log-activity')) {
+            console.log('Skipping activity log for internal API call:', activityName);
+            return;
+        }
+
+        console.log('Logging page visit:', activityName, 'for URL:', window.location.href);
+
         fetch('/api/telecaller-tracking/log-activity', {
             method: 'POST',
             headers: {
@@ -236,7 +275,7 @@ class TelecallerTracking {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
             body: JSON.stringify({
-                activity_type: 'action',
+                activity_type: 'page_view',
                 activity_name: activityName,
                 description: description,
                 page_url: window.location.href,
@@ -246,12 +285,154 @@ class TelecallerTracking {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log('Activity logged:', activityName);
+                console.log('Page visit logged:', activityName);
             }
         })
         .catch(error => {
-            console.error('Error logging activity:', error);
+            console.error('Error logging page visit:', error);
         });
+    }
+
+    shouldLogActivity(activityName, pageUrl) {
+        // Don't log internal tracking activities
+        const internalActivities = [
+            'tracking_started',
+            'tracking_stopped', 
+            'user_activity',
+            'window_focus',
+            'window_blur',
+            'page_hidden',
+            'page_visible',
+            'auto_logout',
+            'idle_time_started',
+            'idle_time_ended',
+            'sync_idle_data',
+            'notifications.api'
+        ];
+
+        if (internalActivities.includes(activityName)) {
+            return false;
+        }
+
+        // Don't log API endpoints
+        if (pageUrl.includes('/api/')) {
+            return false;
+        }
+
+        // Don't log internal tracking URLs
+        const internalUrls = [
+            '/api/telecaller-tracking/',
+            '/api/notifications',
+            '/api/telecaller-tracking/log-activity',
+            '/api/telecaller-tracking/start-idle',
+            '/api/telecaller-tracking/end-idle',
+            '/api/telecaller-tracking/sync-idle',
+            '/api/telecaller-tracking/auto-logout'
+        ];
+
+        for (const url of internalUrls) {
+            if (pageUrl.includes(url)) {
+                return false;
+            }
+        }
+
+        // Don't log if the page URL contains API or if it's an AJAX call
+        if (pageUrl.includes('api/') || pageUrl.includes('/api/')) {
+            return false;
+        }
+
+        // Only log actual page visits (not AJAX calls or internal activities)
+        return true;
+    }
+
+    setupPageVisitTracking() {
+        // Track page visits when the page loads
+        console.log('Setting up page visit tracking for URL:', window.location.href);
+        this.trackPageVisit();
+
+        // Track page visits when navigating (for SPA-like behavior)
+        let lastUrl = window.location.href;
+        const observer = new MutationObserver(() => {
+            const currentUrl = window.location.href;
+            if (currentUrl !== lastUrl) {
+                console.log('URL changed from', lastUrl, 'to', currentUrl);
+                lastUrl = currentUrl;
+                this.trackPageVisit();
+            }
+        });
+
+        // Start observing
+        observer.observe(document, { subtree: true, childList: true });
+    }
+
+    trackPageVisit() {
+        if (!this.isTracking) return;
+
+        // Skip if current URL is an API endpoint
+        if (window.location.href.includes('/api/')) {
+            console.log('Skipping page visit tracking for API URL:', window.location.href);
+            return;
+        }
+
+        const pageName = this.getPageName(window.location.href);
+        
+        // Skip if getPageName returns null (API URLs)
+        if (!pageName) {
+            console.log('Skipping page visit tracking for API URL:', window.location.href);
+            return;
+        }
+        
+        const description = `Page view: ${pageName}`;
+        
+        // Use the existing logActivity function which now has filtering
+        this.logActivity(pageName, description, {
+            page_title: document.title,
+            referrer: document.referrer,
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    getPageName(url) {
+        // Extract meaningful page names from URLs
+        const path = new URL(url).pathname;
+        
+        // Don't process API URLs - they should be filtered out
+        if (path.includes('/api/')) {
+            return null; // This will be filtered out by shouldLogActivity
+        }
+        
+        // Remove common prefixes and get the meaningful part
+        let pageName = path.replace(/^\/admin\//, '').replace(/^\/api\//, '');
+        
+        // Handle specific routes
+        if (pageName === '') {
+            return 'dashboard';
+        }
+        
+        if (pageName.includes('leads')) {
+            if (pageName.includes('create')) return 'leads.create';
+            if (pageName.includes('edit')) return 'leads.edit';
+            if (pageName.includes('show')) return 'leads.show';
+            return 'leads.index';
+        }
+        
+        if (pageName.includes('telecaller-tracking')) {
+            if (pageName.includes('dashboard')) return 'telecaller-tracking.dashboard';
+            if (pageName.includes('reports')) return 'telecaller-tracking.reports';
+            if (pageName.includes('session-details')) return 'telecaller-tracking.session-details';
+            return 'telecaller-tracking.index';
+        }
+        
+        if (pageName.includes('converted-leads')) {
+            return 'converted-leads.index';
+        }
+        
+        if (pageName.includes('profile')) {
+            return 'profile';
+        }
+        
+        // Default to the pathname
+        return pageName || 'unknown';
     }
 
     startSyncTimer() {
@@ -286,15 +467,24 @@ class TelecallerTracking {
     }
 
     handlePageHidden() {
-        if (this.isIdle) {
-            this.endIdleTime();
-        }
-        this.logActivity('page_hidden', 'Page became hidden');
+        console.log('Page became hidden - continuing idle tracking in background');
+        this.pageHiddenTime = Date.now();
+        
+        // Continue idle tracking even when page is hidden
+        // Don't end idle time or reset timers - let them continue running
     }
 
     handlePageVisible() {
-        this.handleActivity('page_visible');
-        this.logActivity('page_visible', 'Page became visible');
+        console.log('Page became visible - checking if user is still idle');
+        this.pageVisibleTime = Date.now();
+        
+        // Don't automatically reset timers when page becomes visible
+        // Only reset when actual mouse/keyboard activity is detected
+        if (this.pageHiddenTime) {
+            const timeAway = this.pageVisibleTime - this.pageHiddenTime;
+            console.log('Page was hidden for:', Math.round(timeAway / 1000), 'seconds');
+            console.log('Idle tracking continues - waiting for actual user activity');
+        }
     }
 
     handlePageUnload() {
@@ -308,8 +498,7 @@ class TelecallerTracking {
         // Stop tracking immediately
         this.stopTracking();
         
-        // Log the auto-logout activity
-        this.logActivity('auto_logout', 'User auto-logged out due to 10 seconds of inactivity');
+        // Auto-logout activity (not logged as it's internal)
         
         // Send auto-logout to backend
         fetch('/api/telecaller-tracking/auto-logout', {
@@ -331,16 +520,13 @@ class TelecallerTracking {
                 localStorage.clear();
                 sessionStorage.clear();
                 
-                // Show logout message
-                alert('You have been automatically logged out due to inactivity.');
-                // Redirect to login page
-                window.location.href = '/';
+                // Show logout modal instead of alert
+                this.showLogoutModal();
             } else {
                 // Force redirect even if API call fails
                 localStorage.clear();
                 sessionStorage.clear();
-                alert('You have been automatically logged out due to inactivity.');
-                window.location.href = '/';
+                this.showLogoutModal();
             }
         })
         .catch(error => {
@@ -348,9 +534,55 @@ class TelecallerTracking {
             // Force redirect even if API call fails
             localStorage.clear();
             sessionStorage.clear();
+            this.showLogoutModal();
+        });
+    }
+
+    showLogoutModal() {
+        // Use SweetAlert2 for logout modal
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Session Expired',
+                html: `
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <i class="ti ti-clock-off" style="font-size: 3rem; color: #dc3545;"></i>
+                        </div>
+                        <p class="mb-3">You have been automatically logged out due to inactivity.</p>
+                        <p class="text-muted small">For security reasons, your session has expired after 1 hour of inactivity.</p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: false,
+                confirmButtonText: 'Login Again',
+                confirmButtonColor: '#dc3545',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                customClass: {
+                    popup: 'swal2-popup-custom',
+                    title: 'swal2-title-custom',
+                    content: 'swal2-content-custom',
+                    confirmButton: 'swal2-confirm-custom'
+                },
+                didOpen: () => {
+                    // Add custom styling
+                    const popup = document.querySelector('.swal2-popup');
+                    if (popup) {
+                        popup.style.borderRadius = '12px';
+                        popup.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to login page
+                    window.location.href = '/';
+                }
+            });
+        } else {
+            // Fallback to regular alert if SweetAlert2 is not available
             alert('You have been automatically logged out due to inactivity.');
             window.location.href = '/';
-        });
+        }
     }
 
     clearTimers() {
@@ -393,7 +625,7 @@ class TelecallerTracking {
             document.body.appendChild(countdownElement);
         }
 
-        let timeLeft = 10; // 10 seconds
+        let timeLeft = 20; // 20 seconds
         countdownElement.textContent = `Auto-logout in ${timeLeft} seconds`;
 
         const countdownInterval = setInterval(() => {

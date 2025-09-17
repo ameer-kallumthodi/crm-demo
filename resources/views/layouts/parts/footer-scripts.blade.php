@@ -336,59 +336,96 @@
 
     // Notification system
     function loadNotifications() {
+        // Check if notification elements exist on the page
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        if (!notificationDropdown) {
+            console.log('Notification dropdown not found, skipping notification load');
+            return;
+        }
+
         fetch('{{ route("notifications.api") }}')
-            .then(response => response.json())
+            .then(async response => {
+                const contentType = response.headers.get('content-type') || '';
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                if (!contentType.includes('application/json')) {
+                    // Avoid parsing HTML error pages like "<!DOCTYPE ..."
+                    throw new Error('Non-JSON response');
+                }
+                return response.json();
+            })
             .then(data => {
                 const notificationList = document.getElementById('notificationList');
                 const notificationLoading = document.getElementById('notificationLoading');
                 const notificationEmpty = document.getElementById('notificationEmpty');
                 const notificationBadge = document.getElementById('notificationBadge');
                 
-                notificationLoading.style.display = 'none';
+                // Check if elements exist before accessing their properties
+                if (notificationLoading) {
+                    notificationLoading.style.display = 'none';
+                }
                 
                 if (data.notifications && data.notifications.length > 0) {
-                    notificationEmpty.style.display = 'none';
+                    if (notificationEmpty) {
+                        notificationEmpty.style.display = 'none';
+                    }
                     
                     // Count unread notifications
                     const unreadCount = data.notifications.filter(n => !n.is_read).length;
-                    if (unreadCount > 0) {
-                        notificationBadge.textContent = unreadCount;
-                        notificationBadge.style.display = 'inline-block';
-                    } else {
-                        notificationBadge.style.display = 'none';
+                    if (notificationBadge) {
+                        if (unreadCount > 0) {
+                            notificationBadge.textContent = unreadCount;
+                            notificationBadge.style.display = 'inline-block';
+                        } else {
+                            notificationBadge.style.display = 'none';
+                        }
                     }
                     
                     // Render notifications
-                    notificationList.innerHTML = data.notifications.map(notification => `
-                        <div class="list-group-item list-group-item-action ${notification.is_read ? '' : 'bg-light'}" 
-                             data-notification-id="${notification.id}">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0">
-                                    <div class="notification-icon bg-${getNotificationColor(notification.type)} text-white rounded-circle d-flex align-items-center justify-content-center" 
-                                         style="width: 40px; height: 40px;">
-                                        <i class="ti ti-${getNotificationIcon(notification.type)}"></i>
+                    if (notificationList) {
+                        notificationList.innerHTML = data.notifications.map(notification => `
+                            <div class="list-group-item list-group-item-action ${notification.is_read ? '' : 'bg-light'}" 
+                                 data-notification-id="${notification.id}">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <div class="notification-icon bg-${getNotificationColor(notification.type)} text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                             style="width: 40px; height: 40px;">
+                                            <i class="ti ti-${getNotificationIcon(notification.type)}"></i>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="flex-grow-1 ms-2">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <h6 class="mb-1 ${notification.is_read ? 'text-muted' : ''}">${notification.title}</h6>
-                                        <small class="text-muted">${notification.created_at}</small>
+                                    <div class="flex-grow-1 ms-2">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h6 class="mb-1 ${notification.is_read ? 'text-muted' : ''}">${notification.title}</h6>
+                                            <small class="text-muted">${notification.created_at}</small>
+                                        </div>
+                                        <p class="text-body mb-1 ${notification.is_read ? 'text-muted' : ''}">${notification.message}</p>
+                                        <small class="text-muted">by ${notification.created_by}</small>
                                     </div>
-                                    <p class="text-body mb-1 ${notification.is_read ? 'text-muted' : ''}">${notification.message}</p>
-                                    <small class="text-muted">by ${notification.created_by}</small>
                                 </div>
                             </div>
-                        </div>
-                    `).join('');
+                        `).join('');
+                    }
                 } else {
-                    notificationEmpty.style.display = 'block';
-                    notificationBadge.style.display = 'none';
+                    if (notificationEmpty) {
+                        notificationEmpty.style.display = 'block';
+                    }
+                    if (notificationBadge) {
+                        notificationBadge.style.display = 'none';
+                    }
                 }
             })
             .catch(error => {
                 console.error('Error loading notifications:', error);
-                document.getElementById('notificationLoading').style.display = 'none';
-                document.getElementById('notificationEmpty').style.display = 'block';
+                const notificationLoading = document.getElementById('notificationLoading');
+                const notificationEmpty = document.getElementById('notificationEmpty');
+                
+                if (notificationLoading) {
+                    notificationLoading.style.display = 'none';
+                }
+                if (notificationEmpty) {
+                    notificationEmpty.style.display = 'block';
+                }
             });
     }
 

@@ -111,17 +111,7 @@ class TelecallerTrackingMiddleware
             $session->endSession('auto');
         }
 
-        // Log the auto-logout activity
-        TelecallerActivityLog::create([
-            'user_id' => $userId,
-            'session_id' => $session ? $session->id : null,
-            'activity_type' => 'logout',
-            'activity_name' => 'auto_logout',
-            'description' => 'Auto-logout due to inactivity (30 seconds)',
-            'activity_time' => now(),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        // Auto-logout activity (not logged as it's internal tracking)
 
         // Note: Notification creation removed as per requirement
         // TelecallerNotificationService::notifyAutoLogout($userId, $sessionId);
@@ -145,19 +135,6 @@ class TelecallerTrackingMiddleware
             ->where('is_active', true)
             ->first();
 
-        if ($session) {
-            // Log page view activity
-            TelecallerActivityLog::create([
-                'user_id' => $userId,
-                'session_id' => $session->id,
-                'activity_type' => 'page_view',
-                'activity_name' => $request->route() ? $request->route()->getName() : 'unknown',
-                'description' => 'Page view: ' . $request->path(),
-                'page_url' => $request->fullUrl(),
-                'activity_time' => now(),
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
-        }
+        // Page view activity (not logged as it's handled by JavaScript)
     }
 }

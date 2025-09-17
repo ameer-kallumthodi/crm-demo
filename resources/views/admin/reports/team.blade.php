@@ -7,20 +7,22 @@
 <div class="page-header">
     <div class="page-block">
         <div class="row align-items-center">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <div class="page-header-title">
                     <h5 class="m-b-10">Team Report</h5>
                 </div>
-                <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.reports.leads') }}">Reports</a></li>
-                    <li class="breadcrumb-item">Team</li>
-                </ul>
             </div>
-            <div class="col-md-4 text-end">
-                <a href="{{ route('admin.reports.leads') }}" class="btn btn-outline-secondary btn-sm">
-                    <i class="ti ti-arrow-left me-1"></i>Back to Reports
-                </a>
+            <div class="col-md-6">
+                <div class="d-flex justify-content-end align-items-center gap-3">
+                    <ul class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.reports.leads') }}">Reports</a></li>
+                        <li class="breadcrumb-item">Team</li>
+                    </ul>
+                    <a href="{{ route('admin.reports.leads') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="ti ti-arrow-left me-1"></i>Back to Reports
+                    </a>
+                </div>
             </div>
         </div>
     </div>

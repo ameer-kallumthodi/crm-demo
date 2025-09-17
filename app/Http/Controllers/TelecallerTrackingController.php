@@ -48,17 +48,7 @@ class TelecallerTrackingController extends Controller
             'is_active' => true,
         ]);
 
-        // Log the activity
-        TelecallerActivityLog::create([
-            'user_id' => $userId,
-            'session_id' => $session->id,
-            'activity_type' => 'idle_start',
-            'activity_name' => 'idle_time_started',
-            'description' => 'User became idle',
-            'activity_time' => now(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        // Idle start activity (not logged as it's internal tracking)
 
         return response()->json([
             'success' => true,
@@ -98,17 +88,7 @@ class TelecallerTrackingController extends Controller
         // End the idle time
         $idleTime->endIdleTime();
 
-        // Log the activity
-        TelecallerActivityLog::create([
-            'user_id' => $userId,
-            'session_id' => $session->id,
-            'activity_type' => 'idle_end',
-            'activity_name' => 'idle_time_ended',
-            'description' => 'User became active again',
-            'activity_time' => now(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        // Idle end activity (not logged as it's internal tracking)
 
         return response()->json([
             'success' => true,
@@ -256,17 +236,7 @@ class TelecallerTrackingController extends Controller
                 $session->endSession('auto');
             }
 
-            // Log the auto-logout activity
-            TelecallerActivityLog::create([
-                'user_id' => $userId,
-                'session_id' => $session ? $session->id : null,
-                'activity_type' => 'logout',
-                'activity_name' => 'auto_logout',
-                'description' => 'Auto-logout due to inactivity (30 seconds)',
-                'activity_time' => now(),
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
+            // Auto-logout activity (not logged as it's internal tracking)
 
             // Note: Notification creation removed as per requirement
             // TelecallerNotificationService::notifyAutoLogout($userId, $sessionId);

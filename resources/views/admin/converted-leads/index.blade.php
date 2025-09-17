@@ -7,11 +7,13 @@
 <div class="page-header">
     <div class="page-block">
         <div class="row align-items-center">
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <div class="page-header-title">
                     <h5 class="m-b-10">Converted Leads Management</h5>
                 </div>
-                <ul class="breadcrumb">
+            </div>
+            <div class="col-md-6">
+                <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item">Converted Leads</li>
                 </ul>

@@ -12,6 +12,7 @@ use App\Helpers\AuthHelper;
 use App\Exports\TelecallerReportExport;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TelecallerReportController extends Controller
@@ -83,13 +84,21 @@ class TelecallerReportController extends Controller
         $telecallerId = $request->get('telecaller_id');
 
         $query = TelecallerSession::with(['user', 'idleTimes', 'activityLogs'])
-            ->whereBetween('login_time', [$startDate, $endDate]);
+            ->whereBetween('login_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
 
         if ($telecallerId) {
             $query->where('user_id', $telecallerId);
         }
 
         $sessions = $query->orderBy('login_time', 'desc')->get();
+
+
+        // If no sessions found in date range, get all sessions as fallback
+        if ($sessions->isEmpty()) {
+            $sessions = TelecallerSession::with(['user', 'idleTimes', 'activityLogs'])
+                ->orderBy('login_time', 'desc')
+                ->get();
+        }
 
         $telecallers = User::where('role_id', 3)->get();
 
@@ -107,16 +116,25 @@ class TelecallerReportController extends Controller
      */
     public function telecallerReport($userId, Request $request)
     {
-        $startDate = $request->get('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
+        $startDate = $request->get('start_date', Carbon::now()->subDays(90)->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->format('Y-m-d'));
+        
 
         $telecaller = User::findOrFail($userId);
         
         $sessions = TelecallerSession::where('user_id', $userId)
-            ->whereBetween('login_time', [$startDate, $endDate])
+            ->whereBetween('login_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->with(['idleTimes', 'activityLogs'])
             ->orderBy('login_time', 'desc')
             ->get();
+            
+        // If no sessions found in the date range, get all sessions for this user
+        if ($sessions->isEmpty()) {
+            $sessions = TelecallerSession::where('user_id', $userId)
+                ->with(['idleTimes', 'activityLogs'])
+                ->orderBy('login_time', 'desc')
+                ->get();
+        }
 
         $tasks = Lead::where('telecaller_id', $userId)
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -172,7 +190,7 @@ class TelecallerReportController extends Controller
         $sessions = $query->orderBy('login_time', 'desc')->get();
         
         // Generate PDF using a simple HTML view
-        $pdf = \PDF::loadView('admin.telecaller-tracking.pdf-report', [
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.telecaller-tracking.pdf-report', [
             'sessions' => $sessions,
             'startDate' => $startDate,
             'endDate' => $endDate,
@@ -189,15 +207,52 @@ class TelecallerReportController extends Controller
      */
     private function getDateRangeStats($startDate, $endDate)
     {
-        $sessions = TelecallerSession::whereBetween('login_time', [$startDate, $endDate]);
-        $idleTimes = TelecallerIdleTime::whereBetween('idle_start_time', [$startDate, $endDate]);
+        $sessions = TelecallerSession::whereBetween('login_time', [$startDate, $endDate])
+            ->with('idleTimes')
+            ->get();
         $tasks = Lead::whereBetween('created_at', [$startDate, $endDate])->whereNotNull('telecaller_id');
+
+        // Calculate total login hours
+        $totalLoginMinutes = 0;
+        foreach ($sessions as $session) {
+            if ($session->total_duration_minutes && $session->total_duration_minutes > 0) {
+                $totalLoginMinutes += $session->total_duration_minutes;
+            } else {
+                $calculatedDuration = $session->calculateTotalDuration();
+                if ($calculatedDuration > 0) {
+                    $totalLoginMinutes += $calculatedDuration / 60; // Convert seconds to minutes
+                }
+            }
+        }
+        $totalLoginHours = $totalLoginMinutes / 60;
+
+        // Calculate total idle hours from idle_times table directly
+        $totalIdleSeconds = TelecallerIdleTime::whereBetween('idle_start_time', [$startDate, $endDate])
+            ->sum('idle_duration_seconds');
+        
+        $totalIdleMinutes = $totalIdleSeconds / 60;
+        $totalIdleHours = $totalIdleSeconds / 3600;
+
+        // Calculate total active hours
+        $totalActiveMinutes = 0;
+        foreach ($sessions as $session) {
+            if ($session->active_duration_minutes && $session->active_duration_minutes > 0) {
+                $totalActiveMinutes += $session->active_duration_minutes;
+            } else {
+                $calculatedActiveDuration = $session->calculateActiveDuration();
+                if ($calculatedActiveDuration > 0) {
+                    $totalActiveMinutes += $calculatedActiveDuration / 60; // Convert seconds to minutes
+                }
+            }
+        }
+        $totalActiveHours = $totalActiveMinutes / 60;
 
         return [
             'total_sessions' => $sessions->count(),
-            'total_login_hours' => $sessions->sum('total_duration_minutes') / 60,
-            'total_idle_hours' => $idleTimes->sum('idle_duration_seconds') / 3600,
-            'total_active_hours' => $sessions->sum('active_duration_minutes') / 60,
+            'total_login_hours' => round($totalLoginHours, 2),
+            'total_idle_hours' => round($totalIdleHours, 2),
+            'total_idle_seconds' => $totalIdleSeconds, // Add seconds for direct conversion
+            'total_active_hours' => round($totalActiveHours, 2),
             'total_tasks' => $tasks->count(),
             'completed_tasks' => $tasks->where('is_converted', true)->count(),
             'pending_tasks' => $tasks->where('is_converted', false)->count(),
@@ -211,18 +266,67 @@ class TelecallerReportController extends Controller
     private function getTelecallerStats($userId, $startDate, $endDate)
     {
         $sessions = TelecallerSession::where('user_id', $userId)
-            ->whereBetween('login_time', [$startDate, $endDate]);
+            ->whereBetween('login_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->with('idleTimes')
+            ->get();
+            
+        // If no sessions found in date range, get all sessions for this user (fallback)
+        if ($sessions->isEmpty()) {
+            $sessions = TelecallerSession::where('user_id', $userId)
+                ->with('idleTimes')
+                ->get();
+        }
         
         $idleTimes = TelecallerIdleTime::where('user_id', $userId)
-            ->whereBetween('idle_start_time', [$startDate, $endDate]);
+            ->whereBetween('idle_start_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->get();
+            Log::info('Idle times:', ['idle_times' => $idleTimes]);
+            
+        // If no idle times found in date range, get all idle times for this user (fallback)
+        if ($idleTimes->isEmpty()) {
+            $idleTimes = TelecallerIdleTime::where('user_id', $userId)->get();
+        }
         
         $tasks = Lead::where('telecaller_id', $userId)
-            ->whereBetween('created_at', [$startDate, $endDate]);
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->get();
 
         $totalSessions = $sessions->count();
-        $totalLoginHours = $sessions->sum('total_duration_minutes') / 60;
-        $totalIdleHours = $idleTimes->sum('idle_duration_seconds') / 3600;
-        $totalActiveHours = $sessions->sum('active_duration_minutes') / 60;
+        
+        // Calculate total login hours (sum of all session durations)
+        $totalLoginMinutes = 0;
+        foreach ($sessions as $session) {
+            if ($session->total_duration_minutes && $session->total_duration_minutes > 0) {
+                $totalLoginMinutes += $session->total_duration_minutes;
+            } else {
+                $calculatedDuration = $session->calculateTotalDuration();
+                if ($calculatedDuration > 0) {
+                    $totalLoginMinutes += $calculatedDuration / 60; // Convert seconds to minutes
+                }
+            }
+        }
+        $totalLoginHours = $totalLoginMinutes / 60;
+        
+        // Calculate total idle hours from idle_times table directly for this user
+        $totalIdleSeconds = $idleTimes->sum('idle_duration_seconds');
+        
+        $totalIdleMinutes = $totalIdleSeconds / 60;
+        $totalIdleHours = $totalIdleSeconds / 3600;
+        
+        // Calculate total active hours (login time - idle time)
+        $totalActiveMinutes = 0;
+        foreach ($sessions as $session) {
+            if ($session->active_duration_minutes && $session->active_duration_minutes > 0) {
+                $totalActiveMinutes += $session->active_duration_minutes;
+            } else {
+                $calculatedActiveDuration = $session->calculateActiveDuration();
+                if ($calculatedActiveDuration > 0) {
+                    $totalActiveMinutes += $calculatedActiveDuration / 60; // Convert seconds to minutes
+                }
+            }
+        }
+        $totalActiveHours = $totalActiveMinutes / 60;
+        
         $totalTasks = $tasks->count();
         $completedTasks = $tasks->where('is_converted', true)->count();
         $pendingTasks = $tasks->where('is_converted', false)->count();
@@ -232,6 +336,7 @@ class TelecallerReportController extends Controller
             'total_sessions' => $totalSessions,
             'total_login_hours' => round($totalLoginHours, 2),
             'total_idle_hours' => round($totalIdleHours, 2),
+            'total_idle_seconds' => $totalIdleSeconds, // Add seconds for direct conversion
             'total_active_hours' => round($totalActiveHours, 2),
             'total_tasks' => $totalTasks,
             'completed_tasks' => $completedTasks,
@@ -243,9 +348,91 @@ class TelecallerReportController extends Controller
     }
 
     /**
+     * Show session details page
+     */
+    public function sessionDetails($sessionId)
+    {
+        $session = TelecallerSession::with(['user', 'idleTimes', 'activityLogs'])
+            ->findOrFail($sessionId);
+
+        $activityLogs = $session->activityLogs()->orderBy('activity_time', 'desc')->get();
+        $idleTimes = $session->idleTimes()->orderBy('idle_start_time', 'desc')->get();
+
+        // Calculate session statistics
+        $sessionStats = $this->calculateSessionStats($session);
+
+        return view('admin.telecaller-tracking.session-details', compact(
+            'session',
+            'activityLogs',
+            'idleTimes',
+            'sessionStats'
+        ));
+    }
+
+    /**
+     * Calculate statistics for a specific session
+     */
+    private function calculateSessionStats($session)
+    {
+        // Calculate total duration
+        $totalDurationMinutes = 0;
+        if ($session->total_duration_minutes && $session->total_duration_minutes > 0) {
+            $totalDurationMinutes = $session->total_duration_minutes;
+        } else {
+            $calculatedDuration = $session->calculateTotalDuration();
+            if ($calculatedDuration > 0) {
+                $totalDurationMinutes = $calculatedDuration / 60; // Convert seconds to minutes
+            }
+        }
+
+        // Calculate active duration
+        $activeDurationMinutes = 0;
+        if ($session->active_duration_minutes && $session->active_duration_minutes > 0) {
+            $activeDurationMinutes = $session->active_duration_minutes;
+        } else {
+            $calculatedActiveDuration = $session->calculateActiveDuration();
+            if ($calculatedActiveDuration > 0) {
+                $activeDurationMinutes = $calculatedActiveDuration / 60; // Convert seconds to minutes
+            }
+        }
+
+        // Calculate idle duration from idle times table
+        $idleDurationSeconds = $session->idleTimes()->sum('idle_duration_seconds');
+        $idleDurationMinutes = $idleDurationSeconds / 60; // Convert seconds to minutes
+        $idleDurationHours = $idleDurationSeconds / 3600; // Convert seconds to hours
+
+        return [
+            'total_duration_minutes' => round($totalDurationMinutes, 2),
+            'active_duration_minutes' => round($activeDurationMinutes, 2),
+            'idle_duration_minutes' => round($idleDurationMinutes, 2),
+            'total_duration_hours' => round($totalDurationMinutes / 60, 2),
+            'active_duration_hours' => round($activeDurationMinutes / 60, 2),
+            'idle_duration_hours' => round($idleDurationHours, 2),
+        ];
+    }
+
+    /**
+     * Get session details via AJAX
+     */
+    public function getSessionDetails($sessionId)
+    {
+        $session = TelecallerSession::with(['idleTimes', 'activityLogs'])
+            ->findOrFail($sessionId);
+
+        $activityLogs = $session->activityLogs()->orderBy('activity_time', 'desc')->get();
+        $idleTimes = $session->idleTimes()->orderBy('idle_start_time', 'desc')->get();
+
+        return response()->json([
+            'session' => $session,
+            'activity_logs' => $activityLogs,
+            'idle_times' => $idleTimes
+        ]);
+    }
+
+    /**
      * Get real-time data for dashboard
      */
-    public function getRealtimeData()
+public function getRealtimeData()
     {
         $activeSessions = TelecallerSession::active()
             ->with('user')
