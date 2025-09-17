@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'custom.auth' => \App\Http\Middleware\AuthMiddleware::class,
+            'telecaller.tracking' => \App\Http\Middleware\TelecallerTrackingMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

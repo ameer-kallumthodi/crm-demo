@@ -20,13 +20,13 @@ use App\Http\Controllers\NotificationController;
 
 // Public routes
 Route::get('/', [AuthController::class, 'index'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Bulk upload form should be protected - moved back to protected routes
 
 // Protected routes
-Route::middleware('custom.auth')->group(function () {
+Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
@@ -70,6 +70,16 @@ Route::middleware('custom.auth')->group(function () {
         // Call logs API routes
         Route::get('/call-logs', [VoxbayCallLogController::class, 'ajaxList'])->name('call-logs.ajax-list');
         Route::get('/call-logs/statistics', [VoxbayCallLogController::class, 'statistics'])->name('call-logs.statistics');
+        
+        // Telecaller Tracking API routes
+        Route::prefix('telecaller-tracking')->group(function () {
+            Route::post('/start-idle', [App\Http\Controllers\TelecallerTrackingController::class, 'startIdleTime'])->name('telecaller-tracking.start-idle');
+            Route::post('/end-idle', [App\Http\Controllers\TelecallerTrackingController::class, 'endIdleTime'])->name('telecaller-tracking.end-idle');
+            Route::post('/sync-idle', [App\Http\Controllers\TelecallerTrackingController::class, 'syncIdleTime'])->name('telecaller-tracking.sync-idle');
+            Route::post('/log-activity', [App\Http\Controllers\TelecallerTrackingController::class, 'logActivity'])->name('telecaller-tracking.log-activity');
+            Route::get('/current-session', [App\Http\Controllers\TelecallerTrackingController::class, 'getCurrentSession'])->name('telecaller-tracking.current-session');
+            Route::post('/auto-logout', [App\Http\Controllers\TelecallerTrackingController::class, 'autoLogout'])->name('telecaller-tracking.auto-logout');
+        });
     });
     
         // Admin routes
@@ -207,6 +217,31 @@ Route::middleware('custom.auth')->group(function () {
             // Notifications Routes (Admin only)
             Route::resource('notifications', NotificationController::class);
             Route::get('/notifications/{notification}/show', [NotificationController::class, 'show'])->name('notifications.show');
+            
+            // Telecaller Tracking Routes (Super Admin only)
+            Route::prefix('telecaller-tracking')->name('telecaller-tracking.')->group(function () {
+                Route::get('/dashboard', [App\Http\Controllers\TelecallerReportController::class, 'dashboard'])->name('dashboard');
+                Route::get('/reports', [App\Http\Controllers\TelecallerReportController::class, 'reports'])->name('reports');
+                Route::get('/reports/{userId}', [App\Http\Controllers\TelecallerReportController::class, 'telecallerReport'])->name('telecaller-report');
+                Route::get('/reports/export/excel', [App\Http\Controllers\TelecallerReportController::class, 'exportExcel'])->name('export.excel');
+                Route::get('/reports/export/pdf', [App\Http\Controllers\TelecallerReportController::class, 'exportPdf'])->name('export.pdf');
+                Route::get('/realtime-data', [App\Http\Controllers\TelecallerReportController::class, 'getRealtimeData'])->name('realtime-data');
+            });
+            
+            // Telecaller Task Management Routes (Super Admin only)
+            Route::prefix('telecaller-tasks')->name('telecaller-tasks.')->group(function () {
+                Route::get('/', [App\Http\Controllers\TelecallerTaskController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\TelecallerTaskController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\TelecallerTaskController::class, 'store'])->name('store');
+                Route::get('/{task}', [App\Http\Controllers\TelecallerTaskController::class, 'show'])->name('show');
+                Route::get('/{task}/edit', [App\Http\Controllers\TelecallerTaskController::class, 'edit'])->name('edit');
+                Route::put('/{task}', [App\Http\Controllers\TelecallerTaskController::class, 'update'])->name('update');
+                Route::post('/{task}/complete', [App\Http\Controllers\TelecallerTaskController::class, 'complete'])->name('complete');
+                Route::delete('/{task}', [App\Http\Controllers\TelecallerTaskController::class, 'destroy'])->name('destroy');
+                Route::get('/overdue', [App\Http\Controllers\TelecallerTaskController::class, 'overdue'])->name('overdue');
+                Route::get('/due-today', [App\Http\Controllers\TelecallerTaskController::class, 'dueToday'])->name('due-today');
+                Route::get('/statistics', [App\Http\Controllers\TelecallerTaskController::class, 'statistics'])->name('statistics');
+            });
             
         });
         

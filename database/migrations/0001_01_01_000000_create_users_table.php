@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('phone')->nullable();
+            $table->string('ext_no', 20)->nullable()->comment('Extension number for Voxbay calling');
             $table->string('code')->nullable();
             $table->string('otp')->nullable();
             $table->string('profile_picture')->nullable();
@@ -26,9 +27,13 @@ return new class extends Migration
             $table->boolean('is_team_manager')->default(false);
             $table->string('current_role')->nullable();
             $table->unsignedBigInteger('team_id')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();
+            $table->unsignedBigInteger('deleted_by')->nullable();
             $table->softDeletes();
+            
+            $table->foreign('deleted_by')->references('id')->on('users')->onDelete('set null');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

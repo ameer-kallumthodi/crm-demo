@@ -26,24 +26,12 @@ return new class extends Migration
             $table->text('remarks')->nullable();
             $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unsignedBigInteger('deleted_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
             
-            // Foreign key constraints
             $table->foreign('lead_id')->references('id')->on('leads')->onDelete('cascade');
-            $table->foreign('board_id')->references('id')->on('boards')->onDelete('set null');
-            $table->foreign('batch_id')->references('id')->on('batches')->onDelete('set null');
-            $table->foreign('course_id')->references('id')->on('courses')->onDelete('set null');
-            $table->foreign('academic_assistant_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('set null');
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
-            
-            // Indexes
-            $table->index(['lead_id']);
-            $table->index(['phone']);
-            $table->index(['email']);
-            $table->index(['created_by']);
+            $table->foreign('deleted_by')->references('id')->on('users')->onDelete('set null');
         });
     }
 

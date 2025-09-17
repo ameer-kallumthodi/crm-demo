@@ -67,7 +67,7 @@
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('login.post') }}">
+                        <form method="POST" action="{{ route('login.submit') }}">
                             @csrf
                             <div class="form-group mb-3">
                                 <label class="form-label">Email Address</label>

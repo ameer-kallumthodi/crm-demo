@@ -85,6 +85,38 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the telecaller sessions for the user.
+     */
+    public function telecallerSessions()
+    {
+        return $this->hasMany(TelecallerSession::class);
+    }
+
+    /**
+     * Get the telecaller idle times for the user.
+     */
+    public function telecallerIdleTimes()
+    {
+        return $this->hasMany(TelecallerIdleTime::class);
+    }
+
+    /**
+     * Get the telecaller activity logs for the user.
+     */
+    public function telecallerActivityLogs()
+    {
+        return $this->hasMany(TelecallerActivityLog::class);
+    }
+
+    /**
+     * Get the leads assigned to the user (telecaller).
+     */
+    public function assignedLeads()
+    {
+        return $this->hasMany(Lead::class, 'telecaller_id');
+    }
+
+    /**
      * Login method
      */
     public static function login($email, $password)

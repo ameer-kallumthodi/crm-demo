@@ -15,11 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('key')->unique();
             $table->text('value')->nullable();
-            $table->string('type')->default('text'); // text, number, boolean, json, file
+            $table->string('type')->default('text');
             $table->text('description')->nullable();
-            $table->string('group')->default('general'); // general, contact, social, email, etc.
-            $table->boolean('is_public')->default(false); // Can be accessed publicly
+            $table->string('group')->default('general');
+            $table->boolean('is_public')->default(false);
             $table->timestamps();
+            $table->unsignedBigInteger('deleted_by')->nullable();
+            
+            $table->foreign('deleted_by')->references('id')->on('users')->onDelete('set null');
         });
     }
 

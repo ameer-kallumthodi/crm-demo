@@ -7,6 +7,7 @@ use App\Models\Lead;
 use App\Models\User;
 use App\Models\LeadStatus;
 use App\Models\Country;
+use App\Helpers\AuthHelper;
 
 class DashboardController extends Controller
 {
@@ -287,28 +288,28 @@ class DashboardController extends Controller
      */
     private function applyRoleBasedFilter($query)
     {
-        $currentUser = \App\Helpers\AuthHelper::getCurrentUser();
+        $currentUser = AuthHelper::getCurrentUser();
         
         // If no user is logged in, return all leads (for admin view)
         if (!$currentUser) {
             return $query;
         }
         
-        if (\App\Helpers\AuthHelper::isTeamLead()) {
+        if (AuthHelper::isTeamLead()) {
             // Team Lead: Can see their own leads + their team members' leads
             $teamId = $currentUser->team_id;
             if ($teamId) {
-                $teamMemberIds = \App\Helpers\AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
                 // Include current user's ID in the team member IDs
-                $teamMemberIds[] = \App\Helpers\AuthHelper::getCurrentUserId();
+                $teamMemberIds[] = AuthHelper::getCurrentUserId();
                 $query->whereIn('telecaller_id', $teamMemberIds);
             } else {
                 // If no team assigned, only show their own leads
-                $query->where('telecaller_id', \App\Helpers\AuthHelper::getCurrentUserId());
+                $query->where('telecaller_id', AuthHelper::getCurrentUserId());
             }
-        } elseif (\App\Helpers\AuthHelper::isTelecaller()) {
+        } elseif (AuthHelper::isTelecaller()) {
             // Telecaller: Can only see their own leads
-            $query->where('telecaller_id', \App\Helpers\AuthHelper::getCurrentUserId());
+            $query->where('telecaller_id', AuthHelper::getCurrentUserId());
         }
         
         return $query;
@@ -319,28 +320,28 @@ class DashboardController extends Controller
      */
     private function applyRoleBasedFilterToConvertedLeads($query)
     {
-        $currentUser = \App\Helpers\AuthHelper::getCurrentUser();
+        $currentUser = AuthHelper::getCurrentUser();
         
         // If no user is logged in, return all converted leads (for admin view)
         if (!$currentUser) {
             return $query;
         }
         
-        if (\App\Helpers\AuthHelper::isTeamLead()) {
+        if (AuthHelper::isTeamLead()) {
             // Team Lead: Can see converted leads they created + their team members' converted leads
             $teamId = $currentUser->team_id;
             if ($teamId) {
-                $teamMemberIds = \App\Helpers\AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
                 // Include current user's ID in the team member IDs
-                $teamMemberIds[] = \App\Helpers\AuthHelper::getCurrentUserId();
+                $teamMemberIds[] = AuthHelper::getCurrentUserId();
                 $query->whereIn('created_by', $teamMemberIds);
             } else {
                 // If no team assigned, only show their own converted leads
-                $query->where('created_by', \App\Helpers\AuthHelper::getCurrentUserId());
+                $query->where('created_by', AuthHelper::getCurrentUserId());
             }
-        } elseif (\App\Helpers\AuthHelper::isTelecaller()) {
+        } elseif (AuthHelper::isTelecaller()) {
             // Telecaller: Can only see converted leads they created
-            $query->where('created_by', \App\Helpers\AuthHelper::getCurrentUserId());
+            $query->where('created_by', AuthHelper::getCurrentUserId());
         }
         
         return $query;

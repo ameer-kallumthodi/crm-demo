@@ -2,75 +2,129 @@
 
 namespace App\Exports;
 
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
+use App\Models\TelecallerSession;
+use App\Models\TelecallerTask;
+use App\Models\User;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Carbon\Carbon;
 
-class TelecallerReportExport
+class TelecallerReportExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    protected $reports;
-    protected $fromDate;
-    protected $toDate;
+    protected $startDate;
+    protected $endDate;
+    protected $telecallerId;
 
-    public function __construct($reports, $fromDate, $toDate)
+    public function __construct($startDate, $endDate, $telecallerId = null)
     {
-        $this->reports = $reports;
-        $this->fromDate = $fromDate;
-        $this->toDate = $toDate;
+        $this->startDate = $startDate;
+        $this->endDate = $endDate;
+        $this->telecallerId = $telecallerId;
     }
 
-    public function export()
+    public function collection()
     {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        
-        // Set title
-        $sheet->setTitle('Telecaller Report');
-        
-        $row = 1;
-        
-        // Header
-        $sheet->setCellValue('A' . $row, 'Telecaller Report');
-        $sheet->getStyle('A' . $row)->getFont()->setBold(true)->setSize(16);
-        $sheet->mergeCells('A' . $row . ':E' . $row);
-        $row += 2;
-        
-        $sheet->setCellValue('A' . $row, 'Report Period: ' . \Carbon\Carbon::parse($this->fromDate)->format('M d, Y') . ' to ' . \Carbon\Carbon::parse($this->toDate)->format('M d, Y'));
-        $row += 3;
-        
-        // Headers
-        $headers = ['S.No', 'Telecaller Name', 'Phone', 'Team Name', 'Total Leads', 'Percentage'];
-        $col = 'A';
-        foreach ($headers as $header) {
-            $sheet->setCellValue($col . $row, $header);
-            $sheet->getStyle($col . $row)->getFont()->setBold(true);
-            $col++;
+        $query = TelecallerSession::with(['user', 'idleTimes'])
+            ->whereBetween('login_time', [$this->startDate, $this->endDate]);
+
+        if ($this->telecallerId) {
+            $query->where('user_id', $this->telecallerId);
         }
-        $row++;
+
+        return $query->orderBy('login_time', 'desc')->get();
+    }
+
+    public function headings(): array
+    {
+        return [
+            'Telecaller Name',
+            'Email',
+            'Login Time',
+            'Logout Time',
+            'Total Duration (Hours)',
+            'Active Duration (Hours)',
+            'Idle Duration (Hours)',
+            'Logout Type',
+            'IP Address',
+            'Sessions Count',
+            'Tasks Assigned',
+            'Tasks Completed',
+            'Productivity Score (%)'
+        ];
+    }
+
+    public function map($session): array
+    {
+        $totalHours = $session->total_duration_minutes ? 
+            round($session->total_duration_minutes / 60, 2) : 
+            round($session->calculateTotalDuration() / 60, 2);
+
+        $activeHours = $session->active_duration_minutes ? 
+            round($session->active_duration_minutes / 60, 2) : 
+            round($session->calculateActiveDuration() / 60, 2);
+
+        $idleHours = $session->idle_duration_minutes ? 
+            round($session->idle_duration_minutes / 60, 2) : 
+            round($session->idleTimes()->sum('idle_duration_seconds') / 3600, 2);
+
+        // Get tasks for this user in the date range
+        $tasksQuery = TelecallerTask::where('user_id', $session->user_id)
+            ->whereBetween('created_at', [$this->startDate, $this->endDate]);
         
-        // Data
-        $total = $this->reports['telecaller']->sum('count');
-        $serialNumber = 1;
-        foreach ($this->reports['telecaller'] as $telecaller) {
-            $percentage = $total > 0 ? round(($telecaller->count / $total) * 100, 1) : 0;
-            
-            $sheet->setCellValue('A' . $row, $serialNumber);
-            $sheet->setCellValue('B' . $row, $telecaller->name);
-            $sheet->setCellValue('C' . $row, $telecaller->phone ?? 'N/A');
-            $sheet->setCellValue('D' . $row, $telecaller->team_name ?? 'No Team');
-            $sheet->setCellValue('E' . $row, $telecaller->count);
-            $sheet->setCellValue('F' . $row, $percentage . '%');
-            $row++;
-            $serialNumber++;
-        }
-        
-        // Auto-size columns
-        foreach (range('A', 'F') as $column) {
-            $sheet->getColumnDimension($column)->setAutoSize(true);
-        }
-        
-        return $spreadsheet;
+        $totalTasks = $tasksQuery->count();
+        $completedTasks = $tasksQuery->where('status', 'completed')->count();
+        $productivityScore = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0;
+
+        // Get total sessions for this user in the date range
+        $sessionsCount = TelecallerSession::where('user_id', $session->user_id)
+            ->whereBetween('login_time', [$this->startDate, $this->endDate])
+            ->count();
+
+        return [
+            $session->user->name,
+            $session->user->email,
+            $session->login_time->format('Y-m-d H:i:s'),
+            $session->logout_time ? $session->logout_time->format('Y-m-d H:i:s') : 'Active',
+            $totalHours,
+            $activeHours,
+            $idleHours,
+            ucfirst($session->logout_type),
+            $session->ip_address,
+            $sessionsCount,
+            $totalTasks,
+            $completedTasks,
+            $productivityScore
+        ];
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            // Style the first row as bold
+            1 => ['font' => ['bold' => true]],
+        ];
+    }
+
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 20, // Telecaller Name
+            'B' => 25, // Email
+            'C' => 20, // Login Time
+            'D' => 20, // Logout Time
+            'E' => 18, // Total Duration
+            'F' => 18, // Active Duration
+            'G' => 18, // Idle Duration
+            'H' => 15, // Logout Type
+            'I' => 15, // IP Address
+            'J' => 15, // Sessions Count
+            'K' => 15, // Tasks Assigned
+            'L' => 15, // Tasks Completed
+            'M' => 18, // Productivity Score
+        ];
     }
 }

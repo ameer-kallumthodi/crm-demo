@@ -33,6 +33,15 @@
 <!-- Include Toastify -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
+<!-- Telecaller Tracking Script -->
+@if(is_telecaller())
+<script src="{{ asset('assets/js/telecaller-tracking.js') }}"></script>
+<script>
+    // Set user role for tracking script
+    window.userRoleId = {{ \App\Helpers\AuthHelper::getRoleId() }};
+</script>
+@endif
+
 <!-- Custom Scripts -->
 <script>
     $(document).ready(function() {
@@ -137,6 +146,7 @@
                     }
                 });
             }
+            
         }
         
         // Initialize sidebar toggle

@@ -168,6 +168,29 @@
                 </li>
                 @endif
                 
+                {{-- Telecaller Tracking Section --}}
+                @if(is_super_admin())
+                <li class="pc-item pc-caption">
+                    <label>Telecaller Tracking</label>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.telecaller-tracking.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.telecaller-tracking.dashboard') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-chart-line"></i>
+                        </span>
+                        <span class="pc-mtext">Tracking Dashboard</span>
+                    </a>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.telecaller-tasks.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.telecaller-tasks.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-tasks"></i>
+                        </span>
+                        <span class="pc-mtext">Task Management</span>
+                    </a>
+                </li>
+                @endif
+                
                 {{-- Master Data Section --}}
                 @if(has_permission('admin/courses/index') || has_permission('admin/countries/index') || has_permission('admin/teams/index'))
                 <li class="pc-item pc-caption">

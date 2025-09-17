@@ -200,6 +200,47 @@ class Lead extends Model
     }
 
     /**
+     * Check if lead is overdue (older than 7 days and not converted)
+     */
+    public function isOverdue()
+    {
+        return !$this->is_converted && $this->created_at->lt(now()->subDays(7));
+    }
+
+    /**
+     * Check if lead is due today (created today)
+     */
+    public function isDueToday()
+    {
+        return $this->created_at->isToday();
+    }
+
+    /**
+     * Check if lead is completed (converted)
+     */
+    public function isCompleted()
+    {
+        return $this->is_converted;
+    }
+
+    /**
+     * Scope for overdue leads
+     */
+    public function scopeOverdue($query)
+    {
+        return $query->where('is_converted', false)
+                    ->where('created_at', '<', now()->subDays(7));
+    }
+
+    /**
+     * Scope for leads due today
+     */
+    public function scopeDueToday($query)
+    {
+        return $query->whereDate('created_at', today());
+    }
+
+    /**
      * Override the delete method to set deleted_by
      */
     public function delete()

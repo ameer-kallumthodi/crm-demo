@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\Session;
+use App\Models\User;
 
 class AuthHelper
 {
@@ -104,7 +105,7 @@ class AuthHelper
             return [];
         }
 
-        $users = \App\Models\User::where('team_id', $teamId)
+        $users = User::where('team_id', $teamId)
             ->where('role_id', 3)
             ->whereNull('deleted_at')
             ->pluck('id')
@@ -131,6 +132,6 @@ class AuthHelper
             return null;
         }
         
-        return \App\Models\User::find($userId);
+        return User::find($userId);
     }
 }
