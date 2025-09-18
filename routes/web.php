@@ -182,6 +182,24 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
             Route::get('/reports/export/excel', [App\Http\Controllers\LeadReportController::class, 'exportMainReportsExcel'])->name('reports.main.excel');
             Route::get('/reports/export/pdf', [App\Http\Controllers\LeadReportController::class, 'exportMainReportsPdf'])->name('reports.main.pdf');
             
+            // New Super Admin Reports Routes
+            Route::middleware(['super.admin'])->group(function () {
+                // Lead Source Efficiency Report
+                Route::get('/reports/lead-efficiency', [App\Http\Controllers\LeadEfficiencyReportController::class, 'index'])->name('reports.lead-efficiency');
+                Route::get('/reports/lead-efficiency/export/excel', [App\Http\Controllers\LeadEfficiencyReportController::class, 'exportExcel'])->name('reports.lead-efficiency.export.excel');
+                Route::get('/reports/lead-efficiency/export/pdf', [App\Http\Controllers\LeadEfficiencyReportController::class, 'exportPdf'])->name('reports.lead-efficiency.export.pdf');
+                
+                // Lead Stage Movement Report
+                Route::get('/reports/lead-stage-movement', [App\Http\Controllers\LeadStageReportController::class, 'index'])->name('reports.lead-stage-movement');
+                Route::get('/reports/lead-stage-movement/export/excel', [App\Http\Controllers\LeadStageReportController::class, 'exportExcel'])->name('reports.lead-stage-movement.export.excel');
+                Route::get('/reports/lead-stage-movement/export/pdf', [App\Http\Controllers\LeadStageReportController::class, 'exportPdf'])->name('reports.lead-stage-movement.export.pdf');
+                
+                // Lead Aging Report
+                Route::get('/reports/lead-aging', [App\Http\Controllers\LeadAgingReportController::class, 'index'])->name('reports.lead-aging');
+                Route::get('/reports/lead-aging/export/excel', [App\Http\Controllers\LeadAgingReportController::class, 'exportExcel'])->name('reports.lead-aging.export.excel');
+                Route::get('/reports/lead-aging/export/pdf', [App\Http\Controllers\LeadAgingReportController::class, 'exportPdf'])->name('reports.lead-aging.export.pdf');
+            });
+            
             // Admin Management routes
             Route::get('/admins', [App\Http\Controllers\AdminController::class, 'index'])->name('admins.index');
             Route::get('/admins-add', [App\Http\Controllers\AdminController::class, 'ajax_add'])->name('admins.add');

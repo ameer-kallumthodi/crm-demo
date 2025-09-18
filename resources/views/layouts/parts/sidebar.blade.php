@@ -128,12 +128,43 @@
                 <li class="pc-item pc-caption">
                     <label>Reports</label>
                 </li>
-                <li class="pc-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                <li class="pc-item {{ request()->routeIs('admin.reports.leads') || request()->routeIs('admin.reports.lead-status') || request()->routeIs('admin.reports.lead-source') || request()->routeIs('admin.reports.team') || request()->routeIs('admin.reports.telecaller') ? 'active' : '' }}">
                     <a href="{{ route('admin.reports.leads') }}" class="pc-link">
                         <span class="pc-micon">
                             <i class="ti ti-chart-pie"></i>
                         </span>
                         <span class="pc-mtext">Lead Reports</span>
+                    </a>
+                </li>
+                @endif
+                
+                {{-- Super Admin Reports Section --}}
+                @if(is_super_admin())
+                <li class="pc-item pc-caption">
+                    <label>Advanced Reports</label>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.reports.lead-efficiency*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.lead-efficiency') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-chart-line"></i>
+                        </span>
+                        <span class="pc-mtext">Source Efficiency</span>
+                    </a>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.reports.lead-stage-movement*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.lead-stage-movement') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-arrow-right"></i>
+                        </span>
+                        <span class="pc-mtext">Stage Movement</span>
+                    </a>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.reports.lead-aging*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.lead-aging') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-clock"></i>
+                        </span>
+                        <span class="pc-mtext">Lead Aging</span>
                     </a>
                 </li>
                 @endif
@@ -184,7 +215,7 @@
                 <li class="pc-item {{ request()->routeIs('admin.telecaller-tasks.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.telecaller-tasks.index') }}" class="pc-link">
                         <span class="pc-micon">
-                            <i class="ti ti-tasks"></i>
+                            <i class="ti ti-checklist"></i>
                         </span>
                         <span class="pc-mtext">Task Management</span>
                     </a>
