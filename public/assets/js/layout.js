@@ -8,7 +8,7 @@ window.LayoutConfig = {
     
     // Initialize layout
     init: function() {
-        console.log('Layout configuration loaded');
+        // console.log('Layout configuration loaded');
     }
 };
 

@@ -76,8 +76,8 @@
             </div>
             <div id="telecaller_list">
                 <hr>
-                <div class="table-responsive reassign-table" style="max-height: 300px; overflow-y: auto;">
-                    <table class="table table-striped table-bordered">
+                <div class="table-responsive bulk-operations-table">
+                    <table class="table table-striped table-bordered bulk-table">
                         <thead>
                             <tr>
                                 <th style="width: 10%;">#</th>
@@ -86,7 +86,7 @@
                                 <th style="width: 60%;">Course Interested</th>
                                 <th style="width: 60%;">Remarks</th>
                                 <th style="width: 60%; white-space: nowrap;">Date</th>
-                                <th style="width: 30%;">Action <input type="checkbox" id="check_all"></th>
+                                <th style="width: 30%;">Action <input type="checkbox" id="check_all" class="bulk-checkbox"></th>
                             </tr>
                         </thead>
                         <tbody id="lead_table_body">
@@ -177,19 +177,19 @@ $(document).ready(function() {
 </script>
 
 <style>
-.reassign-table {
+.bulk-operations-table {
     max-height: 300px;
     overflow-y: auto;
 }
 
-table thead th {
+.bulk-table thead th {
     background-color: #fff;
     position: sticky;
     top: 0;
     border: 1px solid #ddd;
 }
 
-input[type="checkbox"] {
+.bulk-checkbox {
     width: 22px;
     height: 22px;
 }

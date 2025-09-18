@@ -46,7 +46,7 @@
 <script>
     $(document).ready(function() {
         // Initialize any custom functionality here
-        console.log('CRM Dashboard loaded successfully');
+        // console.log('CRM Dashboard loaded successfully');
         
         // Initialize DataTables globally for all tables
         if ($.fn.DataTable) {

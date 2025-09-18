@@ -36,14 +36,14 @@
             <label for="assign_all_counselor">Select Leads to be Deleted.</label>
             <div id="telecaller_list">
                 <hr>
-                <div class="table-responsive reassign-table" style="max-height: 300px; overflow-y: auto;">
-                    <table class="table table-striped table-bordered">
+                <div class="table-responsive bulk-operations-table">
+                    <table class="table table-striped table-bordered bulk-table">
                         <thead>
                             <tr>
                                 <th style="width: 10%;">#</th>
                                 <th style="width: 60%;">Lead</th>
                                 <th style="width: 60%;">Date</th>
-                                <th style="width: 30%;">Action <input type="checkbox" id="check_all"></th>
+                                <th style="width: 30%;">Action <input type="checkbox" id="check_all" class="bulk-checkbox"></th>
                             </tr>
                         </thead>
                         <tbody id="lead_table_body">
@@ -119,20 +119,20 @@
 </script>
 
 <style>
-    .reassign-table {
-        max-height: 300px;
-        overflow-y: auto;
-    }
+.bulk-operations-table {
+    max-height: 300px;
+    overflow-y: auto;
+}
 
-    table thead th {
-        background-color: #fff;
-        position: sticky;
-        top: 0;
-        border: 1px solid #ddd;
-    }
+.bulk-table thead th {
+    background-color: #fff;
+    position: sticky;
+    top: 0;
+    border: 1px solid #ddd;
+}
 
-    input[type="checkbox"] {
-        width: 22px;
-        height: 22px;
-    }
+.bulk-checkbox {
+    width: 22px;
+    height: 22px;
+}
 </style>

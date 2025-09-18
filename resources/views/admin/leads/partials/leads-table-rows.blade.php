@@ -14,7 +14,7 @@
     </td>
     <td>{{ $lead->created_at->format('M d, Y') }}</td>
     <td>
-        <input type="checkbox" name="lead_id[]" value="{{ $lead->id }}" class="form-check-input">
+        <input type="checkbox" name="lead_id[]" value="{{ $lead->id }}" class="form-check-input bulk-checkbox">
     </td>
 </tr>
 @empty
