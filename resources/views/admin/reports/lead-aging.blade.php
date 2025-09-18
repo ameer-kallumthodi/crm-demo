@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'Lead Aging Report')
+@section('title', 'Lead Idle Time Analysis')
 
 @section('content')
 <div class="container-fluid">
@@ -8,14 +8,24 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0">Lead Aging Report</h4>
+                <h4 class="mb-sm-0">Lead Idle Time Analysis</h4>
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
                         <li class="breadcrumb-item"><a href="{{ route('admin.reports.leads') }}">Reports</a></li>
-                        <li class="breadcrumb-item active">Lead Aging</li>
+                        <li class="breadcrumb-item active">Lead Idle Time</li>
                     </ol>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description Section -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6 class="alert-heading">📊 Lead Idle Time Analysis</h6>
+                <p class="mb-0">This report shows how long leads are staying idle in each stage. It analyzes the time since leads were last updated to their current status, helping you identify leads that may need attention or follow-up.</p>
             </div>
         </div>
     </div>
@@ -222,9 +232,10 @@
                                     <th>Telecaller</th>
                                     <th>Current Status</th>
                                     <th>Created Date</th>
-                                    <th>Days</th>
+                                    <th>Days Idle</th>
                                     <th>Last Activity</th>
-                                    <th>Aging Category</th>
+                                    <th>Idle Category</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -258,23 +269,30 @@
                                         </td>
                                         <td>{{ $lead->last_activity_date->format('d-m-Y h:i A') }}</td>
                                         <td>
-                                            @if($lead->aging_category == 'Fresh (0-1 days)')
-                                                <span class="badge bg-success">Fresh</span>
+                                            @if($lead->aging_category == 'Active (0-1 days)')
+                                                <span class="badge bg-success">Active</span>
                                             @elseif($lead->aging_category == 'Recent (2-3 days)')
                                                 <span class="badge bg-info">Recent</span>
-                                            @elseif($lead->aging_category == 'Moderate (4-7 days)')
-                                                <span class="badge bg-warning">Moderate</span>
-                                            @elseif($lead->aging_category == 'Old (8-14 days)')
-                                                <span class="badge bg-orange">Old</span>
+                                            @elseif($lead->aging_category == 'Idle (4-7 days)')
+                                                <span class="badge bg-warning">Idle</span>
+                                            @elseif($lead->aging_category == 'Stale (8-14 days)')
+                                                <span class="badge bg-orange">Stale</span>
                                             @else
-                                                <span class="badge bg-danger">Very Old</span>
+                                                <span class="badge bg-danger">Abandoned</span>
                                             @endif
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('admin.reports.lead-detail', $lead->id) }}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               title="View Detailed Activity Report">
+                                                <i class="ti ti-eye"></i> Detail
+                                            </a>
                                         </td>
                                     </tr>
                                     @endforeach
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="text-center">No non-converted leads found for the selected date range.</td>
+                                    <td colspan="11" class="text-center">No non-converted leads found for the selected date range.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -308,6 +326,7 @@
                                     <th>Conversion Date</th>
                                     <th>Days</th>
                                     <th>Days to Conversion</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -340,10 +359,17 @@
                                     <td>
                                         <span class="badge bg-success">{{ $lead->days_to_conversion }} days</span>
                                     </td>
+                                    <td>
+                                        <a href="{{ route('admin.reports.lead-detail', $lead->id) }}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="View Detailed Activity Report">
+                                            <i class="ti ti-eye"></i> Detail
+                                        </a>
+                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="text-center">No converted leads found for the selected date range.</td>
+                                    <td colspan="11" class="text-center">No converted leads found for the selected date range.</td>
                                 </tr>
                                 @endforelse
                             </tbody>

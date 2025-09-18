@@ -76,15 +76,19 @@ class LeadAgingReportController extends Controller
         
         $leads = $query->get()
             ->map(function ($lead) {
-                // Calculate days in current status based on lead created_at
-                $daysInCurrentStatus = Carbon::parse($lead->created_at)->diffInDays(now());
-                
-                // Round to whole days
-                $daysInCurrentStatus = (int) $daysInCurrentStatus;
-                
-                // Get last activity date
-                $lastActivity = LeadActivity::where('lead_id', $lead->id)
+                // Get the last status update activity to determine when lead entered current status
+                $lastStatusUpdate = LeadActivity::where('lead_id', $lead->id)
                     ->where('activity_type', 'status_update')
+                    ->where('lead_status_id', $lead->lead_status_id)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+                
+                // Calculate days in current status based on when lead entered this status
+                $statusEntryDate = $lastStatusUpdate ? $lastStatusUpdate->created_at : $lead->created_at;
+                $daysInCurrentStatus = Carbon::parse($statusEntryDate)->diffInDays(now());
+                
+                // Get last activity date (any activity, not just status updates)
+                $lastActivity = LeadActivity::where('lead_id', $lead->id)
                     ->orderBy('created_at', 'desc')
                     ->first();
                 
@@ -92,24 +96,25 @@ class LeadAgingReportController extends Controller
                 $daysSinceLastActivity = Carbon::parse($lastActivityDate)->diffInDays(now());
                 
                 // Round to whole days
+                $daysInCurrentStatus = (int) $daysInCurrentStatus;
                 $daysSinceLastActivity = (int) $daysSinceLastActivity;
                 
                 $lead->days_in_current_status = $daysInCurrentStatus;
                 $lead->days_since_last_activity = $daysSinceLastActivity;
-                $lead->first_activity_in_status = $lead->created_at; // Use lead created_at as first activity
+                $lead->first_activity_in_status = $statusEntryDate; // When lead entered current status
                 $lead->last_activity_date = Carbon::parse($lastActivityDate); // Convert to Carbon instance
                 
-                // Categorize aging
+                // Categorize aging based on idle time in current status
                 if ($daysInCurrentStatus <= 1) {
-                    $lead->aging_category = 'Fresh (0-1 days)';
+                    $lead->aging_category = 'Active (0-1 days)';
                 } elseif ($daysInCurrentStatus <= 3) {
                     $lead->aging_category = 'Recent (2-3 days)';
                 } elseif ($daysInCurrentStatus <= 7) {
-                    $lead->aging_category = 'Moderate (4-7 days)';
+                    $lead->aging_category = 'Idle (4-7 days)';
                 } elseif ($daysInCurrentStatus <= 14) {
-                    $lead->aging_category = 'Old (8-14 days)';
+                    $lead->aging_category = 'Stale (8-14 days)';
                 } else {
-                    $lead->aging_category = 'Very Old (15+ days)';
+                    $lead->aging_category = 'Abandoned (15+ days)';
                 }
                 
                 return $lead;
@@ -277,6 +282,118 @@ class LeadAgingReportController extends Controller
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"'
         ]);
+    }
+
+    /**
+     * Show detailed lead activity report
+     */
+    public function leadDetail($leadId)
+    {
+        if (!RoleHelper::is_super_admin()) {
+            abort(403, 'Access denied. Super admin access required.');
+        }
+
+        // Get lead details
+        $lead = Lead::with(['leadStatus', 'leadSource', 'telecaller'])
+            ->where('id', $leadId)
+            ->firstOrFail();
+
+        // Get all status update activities for this lead
+        $activities = LeadActivity::where('lead_id', $leadId)
+            ->where('activity_type', 'status_update')
+            ->whereNotNull('lead_status_id')
+            ->with('leadStatus')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Check if lead is converted
+        $isConverted = $lead->is_converted;
+        $conversionDate = null;
+        
+        if ($isConverted) {
+            // Get conversion date from converted_leads table
+            $convertedLead = \DB::table('converted_leads')
+                ->where('lead_id', $leadId)
+                ->first();
+            $conversionDate = $convertedLead ? $convertedLead->created_at : null;
+        }
+
+        // Calculate days spent in each status
+        $statusHistory = [];
+        $previousDate = $lead->created_at;
+        
+        foreach ($activities as $index => $activity) {
+            $statusEntryDate = $activity->created_at;
+            
+            // For converted leads, don't process activities after conversion date
+            if ($isConverted && $conversionDate && Carbon::parse($statusEntryDate)->gt(Carbon::parse($conversionDate))) {
+                break;
+            }
+            
+            $daysInStatus = Carbon::parse($previousDate)->startOfDay()->diffInDays(Carbon::parse($statusEntryDate)->startOfDay());
+            
+            // Add the previous status period
+            if ($index > 0) {
+                $statusHistory[] = [
+                    'status_name' => $activities[$index - 1]->leadStatus->title ?? 'Unknown',
+                    'status_id' => $activities[$index - 1]->lead_status_id,
+                    'entry_date' => $previousDate,
+                    'exit_date' => $statusEntryDate,
+                    'days_in_status' => (int) $daysInStatus,
+                    'description' => $activities[$index - 1]->description,
+                    'remarks' => $activities[$index - 1]->remarks,
+                ];
+            }
+            
+            $previousDate = $statusEntryDate;
+        }
+        
+        // Add final status period
+        if ($isConverted && $conversionDate) {
+            // For converted leads, show the last status until conversion
+            $finalDays = Carbon::parse($previousDate)->startOfDay()->diffInDays(Carbon::parse($conversionDate)->startOfDay());
+            $statusHistory[] = [
+                'status_name' => $lead->leadStatus->title ?? 'Unknown',
+                'status_id' => $lead->lead_status_id,
+                'entry_date' => $previousDate,
+                'exit_date' => $conversionDate,
+                'days_in_status' => (int) $finalDays,
+                'description' => 'Status before conversion',
+                'remarks' => null,
+            ];
+            
+            // Add conversion status
+            $conversionDays = Carbon::parse($conversionDate)->startOfDay()->diffInDays(now()->startOfDay());
+            $statusHistory[] = [
+                'status_name' => 'Converted',
+                'status_id' => null, // No specific status ID for converted
+                'entry_date' => $conversionDate,
+                'exit_date' => null, // Current status
+                'days_in_status' => (int) $conversionDays,
+                'description' => 'Lead Converted',
+                'remarks' => null,
+            ];
+            
+            $totalDays = (int) Carbon::parse($lead->created_at)->startOfDay()->diffInDays(now()->startOfDay());
+        } else {
+            // For non-converted leads, show current status
+            $currentDays = Carbon::parse($previousDate)->startOfDay()->diffInDays(now()->startOfDay());
+            $statusHistory[] = [
+                'status_name' => $lead->leadStatus->title ?? 'Unknown',
+                'status_id' => $lead->lead_status_id,
+                'entry_date' => $previousDate,
+                'exit_date' => null, // Current status, no exit date
+                'days_in_status' => (int) $currentDays,
+                'description' => 'Current Status',
+                'remarks' => null,
+            ];
+            
+            $totalDays = (int) Carbon::parse($lead->created_at)->startOfDay()->diffInDays(now()->startOfDay());
+        }
+
+        $averageDaysPerStatus = count($statusHistory) > 0 ? round($totalDays / count($statusHistory), 1) : 0;
+
+        return view('admin.reports.lead-detail', compact('lead', 'statusHistory', 'totalDays', 'averageDaysPerStatus'));
     }
 
     /**

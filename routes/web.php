@@ -198,6 +198,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
                 Route::get('/reports/lead-aging', [App\Http\Controllers\LeadAgingReportController::class, 'index'])->name('reports.lead-aging');
                 Route::get('/reports/lead-aging/export/excel', [App\Http\Controllers\LeadAgingReportController::class, 'exportExcel'])->name('reports.lead-aging.export.excel');
                 Route::get('/reports/lead-aging/export/pdf', [App\Http\Controllers\LeadAgingReportController::class, 'exportPdf'])->name('reports.lead-aging.export.pdf');
+                Route::get('/reports/lead-detail/{leadId}', [App\Http\Controllers\LeadAgingReportController::class, 'leadDetail'])->name('reports.lead-detail');
             });
             
             // Admin Management routes
