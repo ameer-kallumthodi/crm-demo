@@ -215,7 +215,7 @@
                 <li class="pc-item {{ request()->routeIs('admin.telecaller-tasks.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.telecaller-tasks.index') }}" class="pc-link">
                         <span class="pc-micon">
-                            <i class="ti ti-checklist"></i>
+                            <i class="ti ti-notes"></i>
                         </span>
                         <span class="pc-mtext">Task Management</span>
                     </a>
