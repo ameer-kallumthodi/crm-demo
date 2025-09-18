@@ -43,17 +43,6 @@
                             <small class="text-muted">Manage and track telecaller lead assignments</small>
                         </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('admin.telecaller-tasks.create') }}" class="btn btn-primary btn-sm">
-                            <i class="ti ti-plus me-1"></i> Assign Lead
-                        </a>
-                        <a href="{{ route('admin.telecaller-tasks.overdue') }}" class="btn btn-outline-danger btn-sm">
-                            <i class="ti ti-alert-triangle me-1"></i> Overdue
-                        </a>
-                        <a href="{{ route('admin.telecaller-tasks.due-today') }}" class="btn btn-outline-warning btn-sm">
-                            <i class="ti ti-calendar me-1"></i> Today
-                        </a>
-                    </div>
                 </div>
             </div>
             <div class="card-body">
