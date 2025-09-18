@@ -48,6 +48,7 @@
                                 <th>Phone</th>
                                 <th>Extension</th>
                                 <th>Team</th>
+                                <th>Joining Date</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -70,6 +71,13 @@
                                 <td>{{ $telecaller->phone ?? '-' }}</td>
                                 <td>{{ $telecaller->ext_no ?? '-' }}</td>
                                 <td>{{ $telecaller->team ? $telecaller->team->name : '-' }}</td>
+                                <td>
+                                    @if($telecaller->joining_date)
+                                        {{ $telecaller->joining_date->format('M d, Y') }}
+                                    @else
+                                        <span class="text-muted">Not set</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <span class="badge bg-success">Active</span>
                                 </td>

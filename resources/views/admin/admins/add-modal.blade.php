@@ -22,6 +22,11 @@
                     <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone') }}" required>
                     <div class="invalid-feedback"></div>
                 </div>
+                <div class="col-md-6 mb-3">
+                    <label for="joining_date" class="form-label">Joining Date</label>
+                    <input type="date" class="form-control" id="joining_date" name="joining_date" value="{{ old('joining_date') }}">
+                    <div class="invalid-feedback"></div>
+                </div>
             </div>
             
             <div class="row">

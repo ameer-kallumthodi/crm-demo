@@ -36,7 +36,7 @@ class TelecallerController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:10',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:6',
             'team_id' => 'nullable|exists:teams,id',
         ]);
 
@@ -114,6 +114,7 @@ class TelecallerController extends Controller
             'password' => 'required|string|min:6',
             'team_id' => 'nullable|exists:teams,id',
             'is_team_lead' => 'nullable|boolean',
+            'joining_date' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
@@ -131,6 +132,7 @@ class TelecallerController extends Controller
             'role_id' => 3, // Static role for Telecaller
             'team_id' => $request->team_id,
             'is_team_lead' => $request->has('is_team_lead') ? 1 : 0,
+            'joining_date' => $request->joining_date,
         ]);
 
         // If user is marked as team lead and has a team, set them as team lead
@@ -172,9 +174,10 @@ class TelecallerController extends Controller
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:10',
             'ext_no' => 'nullable|string|max:20',
-            'password' => 'nullable|string|min:8',
+            'password' => 'nullable|string|min:6',
             'team_id' => 'nullable|exists:teams,id',
             'is_team_lead' => 'nullable|boolean',
+            'joining_date' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
@@ -185,7 +188,7 @@ class TelecallerController extends Controller
         $telecaller = User::findOrFail($id);
         
         // Filter only the fields we need
-        $updateData = $request->only(['name', 'email', 'phone', 'code', 'ext_no', 'team_id']);
+        $updateData = $request->only(['name', 'email', 'phone', 'code', 'ext_no', 'team_id', 'joining_date']);
         $updateData['is_team_lead'] = $request->has('is_team_lead') ? 1 : 0;
 
         if ($request->filled('password')) {

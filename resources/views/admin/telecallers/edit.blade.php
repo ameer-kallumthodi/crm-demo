@@ -47,6 +47,13 @@
 
             <div class="col-md-12">
                 <div class="mb-3">
+                    <label class="form-label" for="joining_date">Joining Date</label>
+                    <input type="date" name="joining_date" class="form-control" id="joining_date" value="{{ $edit_data->joining_date ? $edit_data->joining_date->format('Y-m-d') : '' }}">
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="mb-3">
                     <label class="form-label" for="team_id">Team</label>
                     <select class="form-select" id="team_id" name="team_id">
                         <option value="">Select Team</option>

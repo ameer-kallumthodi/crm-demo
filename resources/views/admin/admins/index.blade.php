@@ -46,6 +46,7 @@
                                 <th>Phone</th>
                                 <th>Role</th>
                                 <th>Status</th>
+                                <th>Joining Date</th>
                                 <th>Created</th>
                                 <th>Actions</th>
                             </tr>
@@ -76,6 +77,13 @@
                                         <span class="badge bg-light-success text-success">Active</span>
                                     @else
                                         <span class="badge bg-light-danger text-danger">Inactive</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($admin->joining_date)
+                                        {{ $admin->joining_date->format('M d, Y') }}
+                                    @else
+                                        <span class="text-muted">Not set</span>
                                     @endif
                                 </td>
                                 <td>{{ $admin->created_at->format('M d, Y') }}</td>

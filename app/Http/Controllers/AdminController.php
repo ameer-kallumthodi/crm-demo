@@ -36,6 +36,7 @@ class AdminController extends Controller
                 'email' => 'required|email|unique:users,email',
                 'phone' => 'required|string|max:20',
                 'password' => 'required|string|min:8|confirmed',
+                'joining_date' => 'nullable|date',
             ]);
 
             if ($validator->fails()) {
@@ -53,6 +54,7 @@ class AdminController extends Controller
                 'password' => Hash::make($request->password),
                 'role_id' => 2, // Always set to admin role
                 'is_active' => true,
+                'joining_date' => $request->joining_date,
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
@@ -80,6 +82,7 @@ class AdminController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email,' . $id,
                 'phone' => 'required|string|max:20',
+                'joining_date' => 'nullable|date',
             ]);
 
             if ($validator->fails()) {
@@ -95,6 +98,7 @@ class AdminController extends Controller
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'is_active' => $request->has('is_active'),
+                'joining_date' => $request->joining_date,
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
 
