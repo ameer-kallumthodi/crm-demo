@@ -199,6 +199,12 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
                 Route::get('/reports/lead-aging/export/excel', [App\Http\Controllers\LeadAgingReportController::class, 'exportExcel'])->name('reports.lead-aging.export.excel');
                 Route::get('/reports/lead-aging/export/pdf', [App\Http\Controllers\LeadAgingReportController::class, 'exportPdf'])->name('reports.lead-aging.export.pdf');
                 Route::get('/reports/lead-detail/{leadId}', [App\Http\Controllers\LeadAgingReportController::class, 'leadDetail'])->name('reports.lead-detail');
+                
+                // Team-Wise Detailed Report
+                Route::get('/reports/team-wise', [App\Http\Controllers\TeamWiseReportController::class, 'index'])->name('reports.team-wise');
+                Route::get('/reports/team-wise/detail', [App\Http\Controllers\TeamWiseReportController::class, 'teamDetail'])->name('reports.team-wise.detail');
+                Route::get('/reports/team-wise/export/excel', [App\Http\Controllers\TeamWiseReportController::class, 'export'])->name('reports.team-wise.export');
+                Route::get('/reports/team-wise/export/pdf', [App\Http\Controllers\TeamWiseReportController::class, 'exportPdf'])->name('reports.team-wise.export-pdf');
             });
             
             // Admin Management routes

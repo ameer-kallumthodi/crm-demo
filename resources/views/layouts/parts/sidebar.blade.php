@@ -167,6 +167,14 @@
                         <span class="pc-mtext">Lead Aging</span>
                     </a>
                 </li>
+                <li class="pc-item {{ request()->routeIs('admin.reports.team-wise*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.team-wise') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-users"></i>
+                        </span>
+                        <span class="pc-mtext">Team-Wise Report</span>
+                    </a>
+                </li>
                 @endif
                 
                 {{-- Notifications Section --}}
