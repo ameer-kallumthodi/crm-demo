@@ -106,6 +106,7 @@
                             <option value="{{ $team->id }}">{{ $team->name }}</option>
                         @endforeach
                     </select>
+                    <div id="team_id_error" class="text-danger mt-1" style="display: none;"></div>
                 </div>
             </div>
 
@@ -131,6 +132,7 @@
                     </select>
                     
                     <small class="text-muted">Select multiple telecallers from the dropdown</small>
+                    <div id="telecallers_error" class="text-danger mt-1" style="display: none;"></div>
                 </div>
             </div>
 
@@ -155,6 +157,12 @@
                     <p class="mb-2"><strong>Template:</strong> Click "Download Template" above to get the correct Excel format with sample data.</p>
                     <p class="mb-0"><strong>Note:</strong> Duplicate phone numbers (same code + phone) will be automatically skipped. Place and Remarks fields are optional.</p>
                 </div>
+            </div>
+
+            <!-- Error Alert -->
+            <div id="bulk-upload-error" class="alert alert-danger" style="display: none;">
+                <h6><i class="ti ti-alert-circle"></i> Upload Error</h6>
+                <div id="bulk-upload-error-message"></div>
             </div>
         </div>
 
@@ -330,6 +338,12 @@ $(document).ready(function() {
         }
     });
 
+    // Clear errors when form values change
+    $('#team_id, #telecaller, #assign_to_all').on('change', function() {
+        $('.text-danger').hide();
+        $('#bulk-upload-error').hide();
+    });
+
     // Form submission with loading state
     $('#bulkUploadForm').on('submit', function(e) {
         e.preventDefault();
@@ -395,15 +409,43 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 let errorMessage = 'An error occurred while uploading leads.';
+                let errorDetails = '';
                 
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
-                    const errors = xhr.responseJSON.errors;
-                    errorMessage = Object.values(errors).flat().join('<br>');
+                // Clear previous field errors
+                $('.text-danger').hide();
+                $('#bulk-upload-error').hide();
+                
+                if (xhr.responseJSON) {
+                    // Show main error message
+                    if (xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    
+                    // Show detailed validation errors
+                    if (xhr.responseJSON.errors) {
+                        const errors = xhr.responseJSON.errors;
+                        const errorList = Object.values(errors).flat();
+                        
+                        // Show field-specific errors
+                        Object.keys(errors).forEach(field => {
+                            const errorDiv = $('#' + field + '_error');
+                            if (errorDiv.length) {
+                                errorDiv.html(errors[field].join('<br>')).show();
+                            }
+                        });
+                        
+                        if (errorList.length > 0) {
+                            errorDetails = '<br><br><strong>Details:</strong><br>' + errorList.join('<br>');
+                        }
+                    }
                 }
                 
-                toast_danger(errorMessage);
+                // Show error in alert box
+                $('#bulk-upload-error-message').html(errorMessage + errorDetails);
+                $('#bulk-upload-error').show();
+                
+                // Also show toast error
+                toast_error(errorMessage + errorDetails);
                 
                 // Re-enable submit button
                 submitBtn.prop('disabled', false);
