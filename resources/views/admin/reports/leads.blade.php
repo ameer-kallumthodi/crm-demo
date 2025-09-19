@@ -30,39 +30,39 @@
         <div class="card">
             <div class="card-body">
                 <form method="GET" action="{{ route('admin.reports.leads') }}" id="reportFilterForm">
-                    <div class="row align-items-end">
-                        <div class="col-md-3">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-sm-6 col-md-3">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from" 
                                    value="{{ $fromDate }}">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-12 col-sm-6 col-md-3">
                             <label for="date_to" class="form-label">To Date</label>
                             <input type="date" class="form-control" id="date_to" name="date_to" 
                                    value="{{ $toDate }}">
                         </div>
-                        <div class="col-md-3">
-                            <div class="d-flex gap-2">
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <div class="d-flex gap-2 flex-wrap">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="ti ti-filter"></i> Generate Report
+                                    <i class="ti ti-filter"></i> <span class="d-none d-sm-inline">Generate Report</span>
                                 </button>
                                 <a href="{{ route('admin.reports.leads') }}" class="btn btn-outline-secondary">
-                                    <i class="ti ti-refresh"></i> Reset
+                                    <i class="ti ti-refresh"></i> <span class="d-none d-sm-inline">Reset</span>
                                 </a>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="d-flex gap-2">
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <div class="d-flex gap-2 flex-wrap">
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('admin.reports.main.excel', request()->query()) }}" class="btn btn-success">
-                                        <i class="ti ti-file-excel"></i> Excel
+                                    <a href="{{ route('admin.reports.main.excel', request()->query()) }}" class="btn btn-success btn-sm">
+                                        <i class="ti ti-file-excel"></i> <span class="d-none d-sm-inline">Excel</span>
                                     </a>
-                                    <a href="{{ route('admin.reports.main.pdf', request()->query()) }}" class="btn btn-danger">
-                                        <i class="ti ti-file-pdf"></i> PDF
+                                    <a href="{{ route('admin.reports.main.pdf', request()->query()) }}" class="btn btn-danger btn-sm">
+                                        <i class="ti ti-file-pdf"></i> <span class="d-none d-sm-inline">PDF</span>
                                     </a>
                                 </div>
-                                <button type="button" class="btn btn-info" onclick="printReport()">
-                                    <i class="ti ti-printer"></i> Print
+                                <button type="button" class="btn btn-info btn-sm" onclick="printReport()">
+                                    <i class="ti ti-printer"></i> <span class="d-none d-sm-inline">Print</span>
                                 </button>
                             </div>
                         </div>
@@ -94,28 +94,28 @@
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="col-6 col-lg-3">
                         <div class="text-center p-3 border rounded">
-                            <h3 class="text-primary mb-2">{{ $reports['lead_status']->sum('count') }}</h3>
-                            <p class="text-muted mb-0 fw-medium">Total Leads</p>
+                            <h3 class="text-primary mb-2 f-24">{{ $reports['lead_status']->sum('count') }}</h3>
+                            <p class="text-muted mb-0 fw-medium f-14">Total Leads</p>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="col-6 col-lg-3">
                         <div class="text-center p-3 border rounded">
-                            <h3 class="text-success mb-2">{{ $reports['lead_status']->where('title', 'Converted')->first()->count ?? 0 }}</h3>
-                            <p class="text-muted mb-0 fw-medium">Converted</p>
+                            <h3 class="text-success mb-2 f-24">{{ $reports['lead_status']->where('title', 'Converted')->first()->count ?? 0 }}</h3>
+                            <p class="text-muted mb-0 fw-medium f-14">Converted</p>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="col-6 col-lg-3">
                         <div class="text-center p-3 border rounded">
-                            <h3 class="text-info mb-2">{{ $reports['lead_source']->count() }}</h3>
-                            <p class="text-muted mb-0 fw-medium">Lead Sources</p>
+                            <h3 class="text-info mb-2 f-24">{{ $reports['lead_source']->count() }}</h3>
+                            <p class="text-muted mb-0 fw-medium f-14">Lead Sources</p>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="col-6 col-lg-3">
                         <div class="text-center p-3 border rounded">
-                            <h3 class="text-warning mb-2">{{ $reports['team']->count() }}</h3>
-                            <p class="text-muted mb-0 fw-medium">Active Teams</p>
+                            <h3 class="text-warning mb-2 f-24">{{ $reports['team']->count() }}</h3>
+                            <p class="text-muted mb-0 fw-medium f-14">Active Teams</p>
                         </div>
                     </div>
                 </div>
@@ -180,7 +180,7 @@
     </div>
 
     <!-- Lead Source Report -->
-    <div class="col-md-6 mb-4">
+    <div class="col-12 col-md-6 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
@@ -188,37 +188,66 @@
                 </h5>
                 <a href="{{ route('admin.reports.lead-source', ['date_from' => $fromDate, 'date_to' => $toDate]) }}" 
                    class="btn btn-sm btn-outline-primary">
-                    <i class="ti ti-eye"></i> Detailed Report
+                    <i class="ti ti-eye"></i> <span class="d-none d-sm-inline">Detailed Report</span>
                 </a>
             </div>
             <div class="card-body">
                 @if($reports['lead_source']->count() > 0)
-                    <div class="table-responsive">
-                        <table id="leadSourceTable" class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Source</th>
-                                    <th class="text-end">Count</th>
-                                    <th class="text-end">Percentage</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($reports['lead_source'] as $source)
-                                    @php
-                                        $total = $reports['lead_source']->sum('count');
-                                        $percentage = $total > 0 ? round(($source->count / $total) * 100, 1) : 0;
-                                    @endphp
+                    <!-- Desktop Table View -->
+                    <div class="d-none d-md-block">
+                        <div class="table-responsive">
+                            <table id="leadSourceTable" class="table table-hover">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <i class="ti ti-source me-2 text-primary"></i>
-                                            {{ $source->title }}
-                                        </td>
-                                        <td class="text-end fw-bold">{{ $source->count }}</td>
-                                        <td class="text-end">{{ $percentage }}%</td>
+                                        <th>Source</th>
+                                        <th class="text-end">Count</th>
+                                        <th class="text-end">Percentage</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach($reports['lead_source'] as $source)
+                                        @php
+                                            $total = $reports['lead_source']->sum('count');
+                                            $percentage = $total > 0 ? round(($source->count / $total) * 100, 1) : 0;
+                                        @endphp
+                                        <tr>
+                                            <td>
+                                                <i class="ti ti-source me-2 text-primary"></i>
+                                                {{ $source->title }}
+                                            </td>
+                                            <td class="text-end fw-bold">{{ $source->count }}</td>
+                                            <td class="text-end">{{ $percentage }}%</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Card View -->
+                    <div class="d-md-none">
+                        @foreach($reports['lead_source'] as $source)
+                            @php
+                                $total = $reports['lead_source']->sum('count');
+                                $percentage = $total > 0 ? round(($source->count / $total) * 100, 1) : 0;
+                            @endphp
+                            <div class="card mb-2">
+                                <div class="card-body py-2">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center">
+                                                <i class="ti ti-source me-2 text-primary"></i>
+                                                <h6 class="mb-0 f-14">{{ $source->title }}</h6>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold f-16">{{ $source->count }}</div>
+                                            <small class="text-muted f-12">{{ $percentage }}%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 @else
                     <div class="text-center text-muted py-4">
@@ -231,7 +260,7 @@
     </div>
 
     <!-- Team Report -->
-    <div class="col-md-6 mb-4">
+    <div class="col-12 col-md-6 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
@@ -240,38 +269,67 @@
                 @if($isTeamLead || !$isTelecaller)
                     <a href="{{ route('admin.reports.team', ['date_from' => $fromDate, 'date_to' => $toDate]) }}" 
                        class="btn btn-sm btn-outline-primary">
-                        <i class="ti ti-eye"></i> Detailed Report
+                        <i class="ti ti-eye"></i> <span class="d-none d-sm-inline">Detailed Report</span>
                     </a>
                 @endif
             </div>
             <div class="card-body">
                 @if($reports['team']->count() > 0)
-                    <div class="table-responsive">
-                        <table id="teamTable" class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Team</th>
-                                    <th class="text-end">Count</th>
-                                    <th class="text-end">Percentage</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($reports['team'] as $team)
-                                    @php
-                                        $total = $reports['team']->sum('count');
-                                        $percentage = $total > 0 ? round(($team->count / $total) * 100, 1) : 0;
-                                    @endphp
+                    <!-- Desktop Table View -->
+                    <div class="d-none d-md-block">
+                        <div class="table-responsive">
+                            <table id="teamTable" class="table table-hover">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <i class="ti ti-users me-2 text-success"></i>
-                                            {{ $team->title }}
-                                        </td>
-                                        <td class="text-end fw-bold">{{ $team->count }}</td>
-                                        <td class="text-end">{{ $percentage }}%</td>
+                                        <th>Team</th>
+                                        <th class="text-end">Count</th>
+                                        <th class="text-end">Percentage</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach($reports['team'] as $team)
+                                        @php
+                                            $total = $reports['team']->sum('count');
+                                            $percentage = $total > 0 ? round(($team->count / $total) * 100, 1) : 0;
+                                        @endphp
+                                        <tr>
+                                            <td>
+                                                <i class="ti ti-users me-2 text-success"></i>
+                                                {{ $team->title }}
+                                            </td>
+                                            <td class="text-end fw-bold">{{ $team->count }}</td>
+                                            <td class="text-end">{{ $percentage }}%</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Card View -->
+                    <div class="d-md-none">
+                        @foreach($reports['team'] as $team)
+                            @php
+                                $total = $reports['team']->sum('count');
+                                $percentage = $total > 0 ? round(($team->count / $total) * 100, 1) : 0;
+                            @endphp
+                            <div class="card mb-2">
+                                <div class="card-body py-2">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center">
+                                                <i class="ti ti-users me-2 text-success"></i>
+                                                <h6 class="mb-0 f-14">{{ $team->title }}</h6>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold f-16">{{ $team->count }}</div>
+                                            <small class="text-muted f-12">{{ $percentage }}%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 @else
                     <div class="text-center text-muted py-4">

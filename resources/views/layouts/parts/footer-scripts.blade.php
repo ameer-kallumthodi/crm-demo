@@ -42,6 +42,9 @@
 </script>
 @endif
 
+<!-- Voxbay Calling Integration -->
+<script src="{{ asset('assets/js/voxbay.js') }}"></script>
+
 <!-- Custom Scripts -->
 <script>
     $(document).ready(function() {

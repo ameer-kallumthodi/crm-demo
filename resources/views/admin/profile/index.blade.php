@@ -24,8 +24,8 @@
 <!-- [ breadcrumb ] end -->
 
 <!-- [ Main Content ] start -->
-<div class="row">
-    <div class="col-xl-4 col-md-12">
+<div class="row g-3">
+    <div class="col-12 col-xl-4">
         <div class="card">
             <div class="card-body">
                 <div class="text-center">
@@ -34,12 +34,12 @@
                     </div>
                     <h5 class="mb-1">{{ \App\Helpers\AuthHelper::getUserName() ?? 'User' }}</h5>
                     <p class="text-muted mb-3">{{ \App\Helpers\AuthHelper::getRoleTitle() ?? 'User' }}</p>
-                    <div class="d-flex justify-content-center gap-2">
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
                         <a href="{{ route('profile.edit') }}" class="btn btn-primary btn-sm">
-                            <i class="ti ti-edit"></i> Edit Profile
+                            <i class="ti ti-edit"></i> <span class="d-none d-sm-inline">Edit Profile</span>
                         </a>
                         <button class="btn btn-outline-secondary btn-sm">
-                            <i class="ti ti-settings"></i> Settings
+                            <i class="ti ti-settings"></i> <span class="d-none d-sm-inline">Settings</span>
                         </button>
                     </div>
                 </div>
@@ -90,32 +90,32 @@
         </div>
     </div>
 
-    <div class="col-xl-8 col-md-12">
+    <div class="col-12 col-xl-8">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">Profile Details</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
                         <div class="form-group mb-3">
                             <label class="form-label">Full Name</label>
                             <input type="text" class="form-control" value="{{ \App\Helpers\AuthHelper::getUserName() ?? 'User' }}" readonly>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <div class="form-group mb-3">
                             <label class="form-label">Role</label>
                             <input type="text" class="form-control" value="{{ \App\Helpers\AuthHelper::getRoleTitle() ?? 'User' }}" readonly>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <div class="form-group mb-3">
                             <label class="form-label">Email Address</label>
                             <input type="email" class="form-control" value="{{ \App\Helpers\AuthHelper::getCurrentUser()->email ?? 'N/A' }}" readonly>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <div class="form-group mb-3">
                             <label class="form-label">Phone Number</label>
                             <input type="text" class="form-control" value="{{ \App\Helpers\AuthHelper::getCurrentUser()->phone ?? 'N/A' }}" readonly>
@@ -136,23 +136,23 @@
                 <h5 class="mb-0">Activity Summary</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
+                <div class="row g-3">
+                    <div class="col-4 col-md-4">
                         <div class="text-center">
-                            <h4 class="text-primary mb-1">0</h4>
-                            <p class="text-muted mb-0">Total Leads</p>
+                            <h4 class="text-primary mb-1 f-24">0</h4>
+                            <p class="text-muted mb-0 f-14">Total Leads</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-4 col-md-4">
                         <div class="text-center">
-                            <h4 class="text-success mb-1">0</h4>
-                            <p class="text-muted mb-0">Converted</p>
+                            <h4 class="text-success mb-1 f-24">0</h4>
+                            <p class="text-muted mb-0 f-14">Converted</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-4 col-md-4">
                         <div class="text-center">
-                            <h4 class="text-warning mb-1">0</h4>
-                            <p class="text-muted mb-0">Pending</p>
+                            <h4 class="text-warning mb-1 f-24">0</h4>
+                            <p class="text-muted mb-0 f-14">Pending</p>
                         </div>
                     </div>
                 </div>

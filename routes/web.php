@@ -23,6 +23,14 @@ Route::get('/', [AuthController::class, 'index'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Public Voxbay API routes (no authentication required)
+Route::prefix('api/voxbay')->group(function () {
+    Route::post('/outgoing-call', [VoxbayController::class, 'outgoingCall'])->name('voxbay.outgoing-call');
+    Route::get('/telecaller/{id}/extension', [VoxbayController::class, 'getTelecallerExtension'])->name('voxbay.telecaller.extension');
+    Route::get('/test-connection', [VoxbayController::class, 'testConnection'])->name('voxbay.test-connection');
+    Route::post('/webhook', [VoxbayController::class, 'webhook'])->name('voxbay.webhook');
+});
+
 // Bulk upload form should be protected - moved back to protected routes
 
 // Protected routes
@@ -169,6 +177,11 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
             Route::get('/reports/lead-source', [App\Http\Controllers\LeadReportController::class, 'leadSourceReport'])->name('reports.lead-source');
             Route::get('/reports/team', [App\Http\Controllers\LeadReportController::class, 'teamReport'])->name('reports.team');
             Route::get('/reports/telecaller', [App\Http\Controllers\LeadReportController::class, 'telecallerReport'])->name('reports.telecaller');
+            
+            // Voxbay Call Logs Report routes
+            Route::get('/reports/voxbay-call-logs', [App\Http\Controllers\VoxbayReportController::class, 'index'])->name('reports.voxbay-call-logs');
+            Route::get('/reports/voxbay-call-logs/export/excel', [App\Http\Controllers\VoxbayReportController::class, 'exportExcel'])->name('reports.voxbay-call-logs.export.excel');
+            Route::get('/reports/voxbay-call-logs/export/pdf', [App\Http\Controllers\VoxbayReportController::class, 'exportPdf'])->name('reports.voxbay-call-logs.export.pdf');
             
             // Export routes
             Route::get('/reports/lead-status/export/excel', [App\Http\Controllers\LeadReportController::class, 'exportLeadStatusExcel'])->name('reports.lead-status.excel');

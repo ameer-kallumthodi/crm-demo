@@ -24,135 +24,196 @@
 <!-- [ breadcrumb ] end -->
 
 <!-- [ Main Content ] start -->
-<div class="row">
+<div class="row g-3">
     <!-- [ sample-page ] start -->
-    <div class="col-md-6 col-lg-4 col-xl-2">
-        <div class="card">
+    <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+        <div class="card h-100">
             <div class="card-body">
                 <h6 class="mb-2 f-w-400 text-muted">Total Leads</h6>
-                <h4 class="mb-3">{{ $totalLeads ?? 0 }} <span class="badge bg-light-primary border border-primary"><i class="ti ti-trending-up"></i> {{ $weeklyStats['totalLeads'] ?? 0 }}</span></h4>
-                <p class="mb-0 text-muted text-sm">This week: <span class="text-primary">{{ $weeklyStats['totalLeads'] ?? 0 }}</span> leads</p>
+                <h4 class="mb-2">{{ $totalLeads ?? 0 }}</h4>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-light-primary border border-primary me-2">
+                        <i class="ti ti-trending-up"></i> {{ $weeklyStats['totalLeads'] ?? 0 }}
+                    </span>
+                    <small class="text-muted">This week</small>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-lg-4 col-xl-3">
-        <div class="card">
+    <div class="col-6 col-md-4 col-lg-3 col-xl-3">
+        <div class="card h-100">
             <div class="card-body">
                 <h6 class="mb-2 f-w-400 text-muted">Active Leads</h6>
-                <h4 class="mb-3">{{ $totalLeads - ($weeklyStats['convertedLeads'] ?? 0) }} <span class="badge bg-light-success border border-success"><i class="ti ti-trending-up"></i> Active</span></h4>
-                <p class="mb-0 text-muted text-sm">Active leads: <span class="text-success">{{ $totalLeads - ($weeklyStats['convertedLeads'] ?? 0) }}</span></p>
+                <h4 class="mb-2">{{ $totalLeads - ($weeklyStats['convertedLeads'] ?? 0) }}</h4>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-light-success border border-success me-2">
+                        <i class="ti ti-trending-up"></i> Active
+                    </span>
+                    <small class="text-muted">Currently active</small>
+                </div>
             </div>
         </div>
     </div>  
-    <div class="col-md-6 col-lg-4 col-xl-3">
-        <div class="card">
+    <div class="col-6 col-md-4 col-lg-3 col-xl-3">
+        <div class="card h-100">
             <div class="card-body">
                 <h6 class="mb-2 f-w-400 text-muted">Converted</h6>
-                <h4 class="mb-3">{{ $weeklyStats['convertedLeads'] ?? 0 }} <span class="badge bg-light-warning border border-warning"><i class="ti ti-trending-up"></i> {{ $conversionRate ?? 0 }}%</span></h4>
-                <p class="mb-0 text-muted text-sm">Conversion rate: <span class="text-warning">{{ $conversionRate ?? 0 }}%</span></p>
+                <h4 class="mb-2">{{ $weeklyStats['convertedLeads'] ?? 0 }}</h4>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-light-warning border border-warning me-2">
+                        <i class="ti ti-trending-up"></i> {{ $conversionRate ?? 0 }}%
+                    </span>
+                    <small class="text-muted">Conversion rate</small>
+                </div>
             </div>
         </div>
     </div>
     @if(\App\Helpers\RoleHelper::is_super_admin())
-    <div class="col-md-6 col-lg-4 col-xl-2">
-        <div class="card">
+    <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+        <div class="card h-100">
             <div class="card-body">
                 <h6 class="mb-2 f-w-400 text-muted">Total Admins</h6>
-                <h4 class="mb-3">{{ $totalAdmins ?? 0 }} <span class="badge bg-light-success border border-success"><i class="ti ti-shield-check"></i> Active</span></h4>
-                <p class="mb-0 text-muted text-sm">Users with <span class="text-success">full access</span></p>
+                <h4 class="mb-2">{{ $totalAdmins ?? 0 }}</h4>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-light-success border border-success me-2">
+                        <i class="ti ti-shield-check"></i> Active
+                    </span>
+                    <small class="text-muted">Full access</small>
+                </div>
             </div>
         </div>
     </div>
     @endif
-    <div class="col-md-6 col-lg-4 col-xl-2">
-        <div class="card">
+    <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+        <div class="card h-100">
             <div class="card-body">
                 <h6 class="mb-2 f-w-400 text-muted">Total Telecallers</h6>
-                <h4 class="mb-3">{{ $totalTelecallers ?? 0 }} <span class="badge bg-light-info border border-info"><i class="ti ti-phone"></i> Active</span></h4>
-                <p class="mb-0 text-muted text-sm">Users with <span class="text-info">lead access</span></p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-12 col-xl-8">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 class="mb-0">Lead Analytics</h5>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <div id="visitor-chart"></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-12 col-xl-4">
-        <h5 class="mb-3">Lead Conversion</h5>
-        <div class="card">
-            <div class="card-body">
-                <h6 class="mb-2 f-w-400 text-muted">This Week Statistics</h6>
-                <h3 class="mb-3">{{ $weeklyStats['convertedLeads'] ?? 0 }}</h3>
-                <div id="income-overview-chart"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-12 col-xl-12">
-        <h5 class="mb-3">Recent Leads</h5>
-        <div class="card tbl-card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover table-borderless mb-0">
-                        <thead>
-                            <tr>
-                                <th>NAME</th>
-                                <th>PHONE</th>
-                                <th>STATUS</th>
-                                <th>SOURCE</th>
-                                <th class="text-end">CREATED</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($recentLeads ?? [] as $lead)
-                            <tr>
-                                <td><a href="#" class="text-muted">{{ $lead->title }}</a></td>
-                                <td>{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</td>
-                                <td>
-                                    <span class="d-flex align-items-center gap-2">
-                                        <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus->id) }} f-10 m-r-5"></i>
-                                        {{ $lead->leadStatus->title }}
-                                    </span>
-                                </td>
-                                <td>{{ $lead->leadSource->title ?? 'N/A' }}</td>
-                                <td class="text-end">{{ $lead->created_at->format('M d, Y') }}</td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="text-center">No recent leads found</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                <h4 class="mb-2">{{ $totalTelecallers ?? 0 }}</h4>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-light-info border border-info me-2">
+                        <i class="ti ti-phone"></i> Active
+                    </span>
+                    <small class="text-muted">Lead access</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-12 col-xl-8">
+    <div class="col-12 col-xl-8">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="mb-0">Lead Analytics</h5>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div id="visitor-chart" style="min-height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-4">
+        <h5 class="mb-3">Lead Conversion</h5>
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-2 f-w-400 text-muted">This Week Statistics</h6>
+                <h3 class="mb-3">{{ $weeklyStats['convertedLeads'] ?? 0 }}</h3>
+                <div id="income-overview-chart" style="min-height: 200px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <h5 class="mb-3">Recent Leads</h5>
+        <div class="card tbl-card">
+            <div class="card-body">
+                <!-- Desktop Table View -->
+                <div class="d-none d-md-block">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-borderless mb-0">
+                            <thead>
+                                <tr>
+                                    <th>NAME</th>
+                                    <th>PHONE</th>
+                                    <th>STATUS</th>
+                                    <th>SOURCE</th>
+                                    <th class="text-end">CREATED</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($recentLeads ?? [] as $lead)
+                                <tr>
+                                    <td><a href="#" class="text-muted">{{ $lead->title }}</a></td>
+                                    <td>{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</td>
+                                    <td>
+                                        <span class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus->id) }} f-10 m-r-5"></i>
+                                            {{ $lead->leadStatus->title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $lead->leadSource->title ?? 'N/A' }}</td>
+                                    <td class="text-end">{{ $lead->created_at->format('M d, Y') }}</td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="text-center">No recent leads found</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="d-md-none">
+                    @forelse($recentLeads ?? [] as $lead)
+                    <div class="card mb-2">
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fw-bold">{{ $lead->title }}</h6>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus->id) }} f-10"></i>
+                                        <small class="text-muted">{{ $lead->leadStatus->title }}</small>
+                                    </div>
+                                    <small class="text-muted">{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">{{ $lead->created_at->format('M d') }}</small>
+                                    <div class="mt-1">
+                                        <small class="badge bg-light-secondary">{{ $lead->leadSource->title ?? 'N/A' }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="ti ti-inbox f-48 mb-3 d-block"></i>
+                            <p class="mb-0">No recent leads found</p>
+                        </div>
+                    </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-8">
         <h5 class="mb-3">Lead Status Overview</h5>
         <div class="card">
             <div class="card-body">
                 <h6 class="mb-2 f-w-400 text-muted">Lead Status Distribution</h6>
-                <div class="row">
+                <div class="row g-3">
                     @forelse($leadStatuses ?? [] as $status)
-                    <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="col-6 col-md-4 col-lg-3">
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0">
                                 <div class="avtar avtar-s rounded-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($status->id) }} bg-light-{{ \App\Helpers\StatusHelper::getLeadStatusColor($status->id) }}">
                                     <i class="ti ti-circle f-18"></i>
                                 </div>
                             </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1">{{ $status->title }}</h6>
-                                <p class="mb-0 text-muted">{{ $status->leads_count ?? 0 }} leads</p>
+                            <div class="flex-grow-1 ms-2">
+                                <h6 class="mb-1 f-14">{{ $status->title }}</h6>
+                                <p class="mb-0 text-muted f-12">{{ $status->leads_count ?? 0 }} leads</p>
                             </div>
                         </div>
                     </div>
@@ -165,45 +226,45 @@
             </div>
         </div>
     </div>
-    <div class="col-md-12 col-xl-4">
+    <div class="col-12 col-xl-4">
         <h5 class="mb-3">Lead Sources</h5>
         <div class="card">
             <div class="card-body">
                 <h6 class="mb-2 f-w-400 text-muted">This Week Statistics</h6>
                 <h3 class="mb-0">{{ $totalLeads ?? 0 }}</h3>
-                <div id="sales-report-chart"></div>
+                <div id="sales-report-chart" style="min-height: 200px;"></div>
             </div>
         </div>
     </div>
-    <div class="col-md-12 col-xl-4">
+    <div class="col-12 col-xl-4">
         <h5 class="mb-3">Recent Activity</h5>
         <div class="card">
-        <div class="list-group list-group-flush">
-            @forelse($recentActivities ?? [] as $activity)
-            <a href="#" class="list-group-item list-group-item-action">
-                <div class="d-flex">
-                    <div class="flex-shrink-0">
-                        <div class="avtar avtar-s rounded-circle text-{{ $activity['color'] }} bg-light-{{ $activity['color'] }}">
-                            <i class="{{ $activity['icon'] }} f-18"></i>
+            <div class="list-group list-group-flush">
+                @forelse($recentActivities ?? [] as $activity)
+                <a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="avtar avtar-s rounded-circle text-{{ $activity['color'] }} bg-light-{{ $activity['color'] }}">
+                                <i class="{{ $activity['icon'] }} f-18"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1 f-14">{{ $activity['title'] }}</h6>
+                            <p class="mb-0 text-muted f-12">{{ $activity['description'] }}</p>
+                            <small class="text-muted f-11">{{ $activity['time']->diffForHumans() }}</small>
+                        </div>
+                        <div class="flex-shrink-0 text-end d-none d-md-block">
+                            <h6 class="mb-1 f-14">+ 1</h6>
+                            <p class="mb-0 text-muted f-12">{{ $activity['time']->format('M d') }}</p>
                         </div>
                     </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-1">{{ $activity['title'] }}</h6>
-                        <p class="mb-0 text-muted">{{ $activity['description'] }}</p>
-                        <small class="text-muted">{{ $activity['time']->diffForHumans() }}</small>
-                    </div>
-                    <div class="flex-shrink-0 text-end">
-                        <h6 class="mb-1">+ 1</h6>
-                        <p class="mb-0 text-muted">{{ $activity['time']->format('M d') }}</p>
-                    </div>
+                </a>
+                @empty
+                <div class="list-group-item text-center text-muted">
+                    <p class="mb-0">No recent activities</p>
                 </div>
-            </a>
-            @empty
-            <div class="list-group-item text-center text-muted">
-                <p class="mb-0">No recent activities</p>
+                @endforelse
             </div>
-            @endforelse
-        </div>
         </div>
     </div>
     <div class="col-md-12 col-xl-4">

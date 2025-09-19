@@ -30,9 +30,17 @@
             <h2>Lead Details</h2>
             <div class="btn-group">
                 @if($lead->phone && is_telecaller())
-                <button class="btn btn-success" onclick="makeCall({{ $lead->id }}, '{{ $lead->code }}{{ $lead->phone }}')">
+                @php
+                    $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
+                @endphp
+                @if($currentUserId > 0)
+                <button class="btn btn-success voxbay-call-btn" 
+                        data-lead-id="{{ $lead->id }}" 
+                        data-telecaller-id="{{ $currentUserId }}"
+                        title="Click to call this lead">
                     <i class="fas fa-phone"></i> Call Lead
                 </button>
+                @endif
                 @endif
                 <a href="{{ route('leads.call-logs', $lead) }}" class="btn btn-info">
                     <i class="fas fa-phone-alt"></i> Call Logs

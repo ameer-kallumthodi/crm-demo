@@ -6,8 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\User;
 use App\Models\Lead;
-use App\Helpers\AuthHelper;
+use App\Models\VoxbayCallLog;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class VoxbayController extends Controller
 {
@@ -18,66 +19,115 @@ class VoxbayController extends Controller
     public function outgoingCall(Request $request): JsonResponse
     {
         try {
-            $data = $request->json()->all();
+            $validator = Validator::make($request->all(), [
+                'telecaller_id' => 'required|integer|exists:users,id',
+                'lead_id' => 'required|integer|exists:leads,id'
+            ]);
 
-            if (!isset($data['phoneNumber'], $data['telecaller_id'])) {
+            if ($validator->fails()) {
+                Log::error('Voxbay Outgoing Call Validation Failed', [
+                    'request_data' => $request->all(),
+                    'validation_errors' => $validator->errors()->toArray()
+                ]);
+                
                 return response()->json([
-                    'status' => 'error', 
-                    'message' => 'Missing required fields: phoneNumber and telecaller_id'
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 400)->header('Access-Control-Allow-Origin', '*')
+                       ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+                       ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-CSRF-TOKEN');
+            }
+
+            $data = $request->all();
+            $telecallerId = $data['telecaller_id'];
+            $leadId = $data['lead_id'];
+
+            // Get telecaller information
+            $telecaller = User::select('code', 'phone', 'ext_no')
+                ->where('id', $telecallerId)
+                ->first();
+
+            if (!$telecaller) {
+                Log::error('Voxbay Outgoing Call - Telecaller not found', [
+                    'telecaller_id' => $telecallerId,
+                    'request_data' => $request->all()
+                ]);
+                
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Telecaller not found'
                 ], 400);
             }
 
-            $telecallerId = $data['telecaller_id'];
-            $leadId = $data['lead_id'] ?? null;
-
-            // Get telecaller information
-            $telecaller = User::find($telecallerId);
-            if (!$telecaller || empty($telecaller->ext_no)) {
+            if (empty($telecaller->ext_no)) {
+                Log::error('Voxbay Outgoing Call - Extension not found', [
+                    'telecaller_id' => $telecallerId,
+                    'telecaller_data' => $telecaller->toArray()
+                ]);
+                
                 return response()->json([
                     'status' => 'error', 
                     'message' => 'Extension not found for telecaller'
                 ], 400);
             }
 
-            // Get lead information if lead_id is provided
-            $lead = null;
-            if ($leadId) {
-                $lead = Lead::find($leadId);
+            // Get lead information
+            $lead = Lead::select('phone', 'code')
+                ->where('id', $leadId)
+                ->first();
+
                 if (!$lead) {
+                Log::error('Voxbay Outgoing Call - Lead not found', [
+                    'lead_id' => $leadId,
+                    'request_data' => $request->all()
+                ]);
+                
                     return response()->json([
                         'status' => 'error', 
                         'message' => 'Lead not found'
                     ], 400);
-                }
             }
 
-            // Prepare call parameters
             $extension = $telecaller->ext_no;
-            $phone = $data['phoneNumber'];
-            $countryCode = $data['country_code'] ?? $lead?->code ?? '91';
+            $phone = $lead->phone;
+            $uidNumber = env('UID_NUMBER');
+            $upin = env('UPIN');
+            $countryCode = $lead->code;
             $destination = $countryCode . $phone;
 
-            // Get Voxbay configuration from environment
-            $uidNumber = env('VOXBAY_UID_NUMBER');
-            $upin = env('VOXBAY_UPIN');
-
-            if (!$uidNumber || !$upin) {
+            // Validate Voxbay credentials
+            if (empty($uidNumber) || empty($upin)) {
                 return response()->json([
                     'status' => 'error', 
-                    'message' => 'Voxbay configuration not found'
-                ], 500);
+                    'message' => 'Voxbay credentials not configured. Please check UID_NUMBER and UPIN environment variables.'
+                ], 400);
             }
 
-            // Build Voxbay API URL
             $url = "https://x.voxbay.com/api/click_to_call?id_dept=0&uid={$uidNumber}&upin={$upin}&user_no={$extension}&destination={$destination}";
-
-            // Make the API call
-            $response = file_get_contents($url);
+            // Log::info('Voxbay Outgoing Call URL: ' . $url);
+            // Make the API call with error handling
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 30,
+                    'method' => 'GET'
+                ]
+            ]);
+            
+            $response = @file_get_contents($url, false, $context);
+            
+            if ($response === false) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to connect to Voxbay service. Please check your internet connection and Voxbay service status.'
+                ], 500);
+            }
 
             // Log the call attempt
             Log::info('Voxbay Outgoing Call', [
                 'telecaller_id' => $telecallerId,
                 'lead_id' => $leadId,
+                'extension' => $extension,
                 'destination' => $destination,
                 'url' => $url,
                 'response' => $response
@@ -86,32 +136,36 @@ class VoxbayController extends Controller
             return response()->json([
                 'status' => 'success', 
                 'url_called' => $url,
-                'destination' => $destination,
-                'telecaller' => $telecaller->name,
-                'lead' => $lead ? $lead->title : null
-            ], 200);
+                'response' => $response
+            ], 200)->header('Access-Control-Allow-Origin', '*')
+                   ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+                   ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-CSRF-TOKEN');
 
         } catch (\Exception $e) {
             Log::error('Voxbay Outgoing Call Error: ' . $e->getMessage(), [
-                'request_data' => $request->json()->all(),
+                'telecaller_id' => $request->input('telecaller_id'),
+                'lead_id' => $request->input('lead_id'),
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'status' => 'error', 
-                'message' => 'Internal server error'
+                'message' => 'Internal Server Error'
             ], 500);
         }
     }
 
     /**
-     * Get telecaller extension for a user
+     * Get telecaller extension number
      * GET /api/voxbay/telecaller/{id}/extension
      */
     public function getTelecallerExtension($id): JsonResponse
     {
         try {
-            $telecaller = User::find($id);
+            $telecaller = User::select('id', 'name', 'ext_no', 'phone', 'code')
+                ->where('id', $id)
+                ->first();
             
             if (!$telecaller) {
                 return response()->json([
@@ -122,10 +176,13 @@ class VoxbayController extends Controller
 
             return response()->json([
                 'status' => 'success',
+                'data' => [
+                    'id' => $telecaller->id,
+                    'name' => $telecaller->name,
                 'extension' => $telecaller->ext_no,
-                'name' => $telecaller->name,
                 'phone' => $telecaller->phone,
                 'code' => $telecaller->code
+                ]
             ], 200);
 
         } catch (\Exception $e) {
@@ -133,7 +190,7 @@ class VoxbayController extends Controller
             
             return response()->json([
                 'status' => 'error', 
-                'message' => 'Internal server error'
+                'message' => 'Internal Server Error'
             ], 500);
         }
     }
@@ -145,29 +202,117 @@ class VoxbayController extends Controller
     public function testConnection(): JsonResponse
     {
         try {
-            $uidNumber = env('VOXBAY_UID_NUMBER');
-            $upin = env('VOXBAY_UPIN');
+            $uidNumber = env('UID_NUMBER');
+            $upin = env('UPIN');
 
-            if (!$uidNumber || !$upin) {
+            if (empty($uidNumber) || empty($upin)) {
                 return response()->json([
                     'status' => 'error', 
-                    'message' => 'Voxbay configuration not found'
-                ], 500);
+                    'message' => 'Voxbay credentials not configured'
+                ], 400);
             }
+
+            // Test with a dummy call
+            $testUrl = "https://x.voxbay.com/api/click_to_call?id_dept=0&uid={$uidNumber}&upin={$upin}&user_no=test&destination=test";
+            
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 10,
+                    'method' => 'GET'
+                ]
+            ]);
+
+            $response = @file_get_contents($testUrl, false, $context);
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Voxbay configuration is valid',
-                'uid_number' => $uidNumber,
-                'upin_configured' => !empty($upin)
+                'message' => 'Voxbay connection test completed',
+                'credentials_configured' => true,
+                'test_response' => $response
             ], 200);
 
         } catch (\Exception $e) {
-            Log::error('Voxbay Test Connection Error: ' . $e->getMessage());
+            Log::error('Voxbay Connection Test Error: ' . $e->getMessage());
             
             return response()->json([
                 'status' => 'error', 
-                'message' => 'Internal server error'
+                'message' => 'Connection test failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Handle incoming call webhook from Voxbay
+     * POST /api/voxbay/webhook
+     */
+    public function webhook(Request $request): JsonResponse
+    {
+        try {
+            $data = $request->all();
+            
+            Log::info('Voxbay Webhook Received', $data);
+
+            // Validate required fields
+            $validator = Validator::make($data, [
+                'type' => 'required|string',
+                'call_uuid' => 'required|string',
+                'calledNumber' => 'nullable|string',
+                'callerNumber' => 'nullable|string',
+                'AgentNumber' => 'nullable|string',
+                'extensionNumber' => 'nullable|string',
+                'destinationNumber' => 'nullable|string',
+                'callerid' => 'nullable|string',
+                'duration' => 'nullable|integer',
+                'status' => 'nullable|string',
+                'date' => 'nullable|date',
+                'start_time' => 'nullable|string',
+                'end_time' => 'nullable|string',
+                'recording_URL' => 'nullable|string'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid webhook data',
+                    'errors' => $validator->errors()
+                ], 400);
+            }
+
+            // Create or update call log
+            $callLog = VoxbayCallLog::updateOrCreate(
+                ['call_uuid' => $data['call_uuid']],
+                [
+                    'type' => $data['type'],
+                    'calledNumber' => $data['calledNumber'] ?? null,
+                    'callerNumber' => $data['callerNumber'] ?? null,
+                    'AgentNumber' => $data['AgentNumber'] ?? null,
+                    'extensionNumber' => $data['extensionNumber'] ?? null,
+                    'destinationNumber' => $data['destinationNumber'] ?? null,
+                    'callerid' => $data['callerid'] ?? null,
+                    'duration' => $data['duration'] ?? null,
+                    'status' => $data['status'] ?? null,
+                    'date' => $data['date'] ?? null,
+                    'start_time' => $data['start_time'] ?? null,
+                    'end_time' => $data['end_time'] ?? null,
+                    'recording_URL' => $data['recording_URL'] ?? null,
+                ]
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Call log saved successfully',
+                'call_log_id' => $callLog->id
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Voxbay Webhook Error: ' . $e->getMessage(), [
+                'data' => $request->all(),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Webhook processing failed'
             ], 500);
         }
     }

@@ -142,6 +142,24 @@
                                             <i class="ti ti-refresh"></i>
                                         </a>
                                         @endif
+                                        @if($task->phone && is_telecaller())
+                                        @php
+                                            $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
+                                        @endphp
+                                        @if($currentUserId > 0)
+                                        <button class="btn btn-sm btn-outline-success voxbay-call-btn" 
+                                                data-lead-id="{{ $task->id }}" 
+                                                data-telecaller-id="{{ $currentUserId }}"
+                                                title="Call Lead">
+                                            <i class="ti ti-phone"></i>
+                                        </button>
+                                        @endif
+                                        @endif
+                                        <a href="{{ route('leads.call-logs', $task) }}" 
+                                           class="btn btn-sm btn-outline-info" 
+                                           title="View Call Logs">
+                                            <i class="ti ti-phone-call"></i>
+                                        </a>
                                         <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
                                             onclick="deleteTask({{ $task->id }})"
                                             title="Delete Lead">
