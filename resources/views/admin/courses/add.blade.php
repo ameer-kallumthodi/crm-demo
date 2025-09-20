@@ -21,13 +21,24 @@
                 </div>
             </div>
 
-            <div class="col-md-12">
-                <div class="form-check">
-                    <input type="hidden" name="is_active" value="0">
-                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" checked>
-                    <label class="form-check-label" for="is_active">
-                        Active
-                    </label>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label" for="amount">Amount (₹) <span class="text-danger">*</span></label>
+                    <input type="number" name="amount" class="form-control" 
+                           id="amount" placeholder="0.00" step="0.01" min="0" required>
+                    <div class="invalid-feedback" id="amount-error"></div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <div class="form-check mt-4">
+                        <input type="hidden" name="is_active" value="0">
+                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" checked>
+                        <label class="form-check-label" for="is_active">
+                            Active
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>

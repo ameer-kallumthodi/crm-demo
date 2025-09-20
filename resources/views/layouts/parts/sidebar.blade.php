@@ -25,12 +25,23 @@
                 @endif
                 
                 @if(has_permission('leads/index'))
-                <li class="pc-item {{ request()->routeIs('leads.*') ? 'active' : '' }}">
+                <li class="pc-item {{ request()->routeIs('leads.index') ? 'active' : '' }}">
                     <a href="{{ route('leads.index') }}" class="pc-link">
                         <span class="pc-micon">
                             <i class="ti ti-users"></i>
                         </span>
                         <span class="pc-mtext">Leads</span>
+                    </a>
+                </li>
+                @endif
+
+                @if(has_permission('leads/followup'))
+                <li class="pc-item {{ request()->routeIs('leads.followup') ? 'active' : '' }}">
+                    <a href="{{ route('leads.followup') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-clock"></i>
+                        </span>
+                        <span class="pc-mtext">Follow-up Leads</span>
                     </a>
                 </li>
                 @endif

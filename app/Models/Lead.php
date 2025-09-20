@@ -23,6 +23,7 @@ class Lead extends Model
         'qualification',
         'country_id',
         'interest_status',
+        'rating',
         'lead_status_id',
         'lead_source_id',
         'address',
@@ -249,5 +250,133 @@ class Lead extends Model
         $this->save();
         
         return parent::delete();
+    }
+
+    /**
+     * Calculate profile completeness percentage
+     * Based on all basic lead details fields
+     */
+    public function getProfileCompletenessAttribute()
+    {
+        $requiredFields = [
+            'title', 'gender', 'age', 'phone', 'code', 'whatsapp', 'whatsapp_code',
+            'email', 'qualification', 'country_id', 'interest_status', 'lead_status_id',
+            'lead_source_id', 'address', 'telecaller_id', 'team_id', 'place'
+        ];
+        $completedFields = 0;
+        
+        foreach ($requiredFields as $field) {
+            if (!empty($this->$field)) {
+                $completedFields++;
+            }
+        }
+        
+        return round(($completedFields / count($requiredFields)) * 100);
+    }
+
+    /**
+     * Check if profile is incomplete
+     */
+    public function isProfileIncomplete()
+    {
+        return $this->profile_completeness < 100;
+    }
+
+    /**
+     * Get profile completeness status
+     */
+    public function getProfileStatusAttribute()
+    {
+        if ($this->profile_completeness == 100) {
+            return 'complete';
+        } elseif ($this->profile_completeness >= 75) {
+            return 'almost_complete';
+        } elseif ($this->profile_completeness >= 50) {
+            return 'partial';
+        } else {
+            return 'incomplete';
+        }
+    }
+
+    /**
+     * Get detailed field completion status
+     */
+    public function getFieldCompletionStatus()
+    {
+        $fields = [
+            'title' => 'Name',
+            'gender' => 'Gender',
+            'age' => 'Age',
+            'phone' => 'Phone',
+            'code' => 'Country Code',
+            'whatsapp' => 'WhatsApp',
+            'whatsapp_code' => 'WhatsApp Code',
+            'email' => 'Email',
+            'qualification' => 'Qualification',
+            'country_id' => 'Country',
+            'interest_status' => 'Interest Status',
+            'lead_status_id' => 'Lead Status',
+            'lead_source_id' => 'Lead Source',
+            'address' => 'Address',
+            'telecaller_id' => 'Telecaller',
+            'team_id' => 'Team',
+            'place' => 'Place'
+        ];
+        
+        $completion = [];
+        foreach ($fields as $field => $label) {
+            $completion[$field] = [
+                'label' => $label,
+                'completed' => !empty($this->$field),
+                'value' => $this->$field
+            ];
+        }
+        
+        return $completion;
+    }
+
+    /**
+     * Get missing fields for profile completion
+     */
+    public function getMissingFields()
+    {
+        $completion = $this->getFieldCompletionStatus();
+        $missing = [];
+        
+        foreach ($completion as $field => $data) {
+            if (!$data['completed']) {
+                $missing[] = $data['label'];
+            }
+        }
+        
+        return $missing;
+    }
+
+    public function getInterestStatusLabelAttribute()
+    {
+        switch ($this->interest_status) {
+            case 1:
+                return 'Hot';
+            case 2:
+                return 'Warm';
+            case 3:
+                return 'Cold';
+            default:
+                return 'Not Set';
+        }
+    }
+
+    public function getInterestStatusColorAttribute()
+    {
+        switch ($this->interest_status) {
+            case 1:
+                return 'danger'; // Red for Hot
+            case 2:
+                return 'warning'; // Yellow for Warm
+            case 3:
+                return 'info'; // Blue for Cold
+            default:
+                return 'secondary';
+        }
     }
 }

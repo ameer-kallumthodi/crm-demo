@@ -112,8 +112,14 @@
                         <div class="col-6">
                             <div class="card border-0 shadow-sm">
                                 <div class="card-body p-3 text-center">
-                                    <h6 class="card-title text-muted mb-1">Team</h6>
-                                    <p class="card-text mb-0">{{ $lead->team ? $lead->team->name : 'N/A' }}</p>
+                                    <h6 class="card-title text-muted mb-1">Interest Status</h6>
+                                    <p class="card-text mb-0">
+                                        @if($lead->interest_status)
+                                            <span class="badge bg-{{ $lead->interest_status_color }}">{{ $lead->interest_status_label }}</span>
+                                        @else
+                                            N/A
+                                        @endif
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -157,6 +163,18 @@
                                             <small class="text-muted">{{ $activity->created_at ? $activity->created_at->format('d-m-Y') : 'N/A' }}</small>
                                         </div>
                                         <p class="card-text mb-2">{{ $activity->description }}</p>
+                                        @if($activity->reason)
+                                        <div class="mt-2">
+                                            <span class="text-muted fw-semibold">Reason:</span>
+                                            <span class="badge bg-info ms-2">{{ $activity->formatted_reason }}</span>
+                                        </div>
+                                        @endif
+                                        @if($activity->lead_status_id == 2 && $activity->followup_date)
+                                        <div class="mt-2">
+                                            <span class="text-muted fw-semibold">Followup Date:</span>
+                                            <span class="badge bg-warning ms-2">{{ $activity->followup_date->format('d M Y') }}</span>
+                                        </div>
+                                        @endif
                                         @if($activity->remarks)
                                         <div class="mt-2">
                                             <span class="text-muted fw-semibold">Remarks:</span>
@@ -198,10 +216,29 @@
                                             <small class="text-muted">{{ $activity->created_at ? $activity->created_at->format('d-m-Y') : 'N/A' }}</small>
                                         </div>
                                         <p class="card-text mb-2">{{ $activity->description }}</p>
+                                        
+                                        @if($activity->lead_status_id == 2 && $activity->followup_date)
+                                        <div class="mt-2">
+                                            <span class="text-muted fw-semibold">Followup Date:</span>
+                                            <span class="badge bg-warning ms-2">{{ $activity->followup_date->format('d M Y') }}</span>
+                                        </div>
+                                        @endif
                                         @if($activity->remarks)
                                         <div class="mt-2">
                                             <span class="text-muted fw-semibold">Remarks:</span>
                                             <div class="mt-1 p-2 bg-light rounded" style="white-space: pre-wrap; word-wrap: break-word;">{{ $activity->remarks }}</div>
+                                        </div>
+                                        @endif
+                                        @if($activity->reason)
+                                        <div class="mt-2">
+                                            <span class="text-muted fw-semibold">Reason:</span>
+                                            <div class="mt-1 p-2 bg-light rounded" style="white-space: pre-wrap; word-wrap: break-word;">{{ $activity->formatted_reason }}</div>
+                                        </div>
+                                        @endif
+                                        @if($activity->rating)
+                                        <div class="mt-2">
+                                            <span class="text-muted fw-semibold">Rating:</span>
+                                            <span class="badge bg-success ms-2">{{ $activity->rating }}/10</span>
                                         </div>
                                         @endif
                                         <div class="d-flex justify-content-between align-items-center mt-2">
@@ -246,11 +283,17 @@ function printLeadHistory(leadName) {
         const cardTitle = item.querySelector('.card-title');
         const cardText = item.querySelector('.card-text');
         const remarksDiv = item.querySelector('.bg-light');
+        const reasonBadge = item.querySelector('.badge.bg-info');
+        const followupBadge = item.querySelector('.badge.bg-warning');
+        const ratingBadge = item.querySelector('.badge.bg-success');
         const smallElements = item.querySelectorAll('small');
         
         const activityType = cardTitle ? cardTitle.textContent.trim() : 'Activity';
         const description = cardText ? cardText.textContent.trim() : '';
         const remarks = remarksDiv ? remarksDiv.textContent.trim() : '';
+        const reason = reasonBadge ? reasonBadge.textContent.trim() : '';
+        const followupDate = followupBadge ? followupBadge.textContent.trim() : '';
+        const rating = ratingBadge ? ratingBadge.textContent.trim() : '';
         
         let updatedBy = 'N/A';
         let date = 'N/A';
@@ -279,6 +322,24 @@ function printLeadHistory(leadName) {
                                 <small style="color: #6c757d;">${date}</small>
                             </div>
                             <p style="margin-bottom: 10px;">${description}</p>
+                            ${reason ? `
+                                <div style="margin-top: 8px;">
+                                    <span style="color: #6c757d; font-weight: 600;">Reason:</span>
+                                    <span style="background-color: #17a2b8; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">${reason}</span>
+                                </div>
+                            ` : ''}
+                            ${followupDate ? `
+                                <div style="margin-top: 8px;">
+                                    <span style="color: #6c757d; font-weight: 600;">Followup Date:</span>
+                                    <span style="background-color: #ffc107; color: #212529; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">${followupDate}</span>
+                                </div>
+                            ` : ''}
+                            ${rating ? `
+                                <div style="margin-top: 8px;">
+                                    <span style="color: #6c757d; font-weight: 600;">Rating:</span>
+                                    <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">${rating}</span>
+                                </div>
+                            ` : ''}
                             ${remarks ? `
                                 <div style="margin-top: 8px;">
                                     <span style="color: #6c757d; font-weight: 600;">Remarks:</span>

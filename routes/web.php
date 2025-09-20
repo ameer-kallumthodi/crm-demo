@@ -46,6 +46,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     
     // Leads
     Route::get('leads', [LeadController::class, 'index'])->name('leads.index');
+    Route::get('followup-leads', [LeadController::class, 'followupLeads'])->name('leads.followup');
     Route::get('/leads-add', [LeadController::class, 'ajax_add'])->name('leads.add');
     Route::post('/leads-submit', [LeadController::class, 'submit'])->name('leads.submit');
     Route::get('/leads/bulk-upload-form', [LeadController::class, 'bulkUploadView'])->name('leads.bulk-upload.test');
@@ -55,7 +56,6 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     Route::get('leads/{lead}/ajax-show', [LeadController::class, 'ajax_show'])->name('leads.ajax-show');
     Route::get('leads/{lead}/edit', [LeadController::class, 'edit'])->name('leads.edit');
     Route::get('leads/{lead}/ajax-edit', [LeadController::class, 'ajax_edit'])->name('leads.ajax-edit');
-    Route::get('leads/{lead}/delete', [LeadController::class, 'delete'])->name('leads.delete');
     Route::get('leads/{lead}/status-update', [LeadController::class, 'status_update'])->name('leads.status-update');
     Route::post('leads/{lead}/status-update', [LeadController::class, 'status_update_submit'])->name('leads.status-update-submit');
     Route::put('leads/{lead}', [LeadController::class, 'update'])->name('leads.update');

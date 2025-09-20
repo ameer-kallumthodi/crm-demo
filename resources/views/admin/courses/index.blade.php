@@ -44,6 +44,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Title</th>
+                                <th>Amount</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -53,6 +54,7 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $course->title }}</td>
+                                <td>{{ $course->amount ? '₹' . number_format($course->amount, 2) : '-' }}</td>
                                 <td>
                                     <span class="badge {{ $course->is_active ? 'bg-success' : 'bg-danger' }}">
                                         {{ $course->is_active ? 'Active' : 'Inactive' }}

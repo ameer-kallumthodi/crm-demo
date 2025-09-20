@@ -39,7 +39,7 @@
             <div class="card-body">
                 @if($notifications->count() > 0)
                     <div class="table-responsive">
-                        <table id="notificationsTable" class="table table-hover">
+                        <table id="notificationsTable" class="table table-hover data_table_basic">
                             <thead>
                                 <tr>
                                     <th width="50">#</th>
@@ -150,30 +150,7 @@
 @section('page-scripts')
 <script>
 $(document).ready(function() {
-    // Initialize DataTable
-    if ($.fn.DataTable.isDataTable('#notificationsTable')) {
-        $('#notificationsTable').DataTable().destroy();
-    }
-    
-    $('#notificationsTable').DataTable({
-        responsive: true,
-        pageLength: 25,
-        order: [[8, 'desc']], // Sort by created_at desc (updated index)
-        columnDefs: [
-            { orderable: false, targets: [0, 9] } // Disable sorting on Serial # and Actions columns
-        ],
-        language: {
-            search: "Search notifications:",
-            lengthMenu: "Show _MENU_ notifications per page",
-            info: "Showing _START_ to _END_ of _TOTAL_ notifications",
-            paginate: {
-                first: "First",
-                last: "Last",
-                next: "Next",
-                previous: "Previous"
-            }
-        }
-    });
+    // DataTable is now initialized globally via initializeTables() function
 });
 </script>
 @endsection

@@ -126,7 +126,8 @@ class ConvertedLeadController extends Controller
 
         // Get lead activities for this converted lead
         $leadActivities = \App\Models\LeadActivity::where('lead_id', $convertedLead->lead_id)
-            ->with(['leadStatus', 'createdBy'])
+            ->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id')
+            ->with(['leadStatus:id,title', 'createdBy:id,name'])
             ->orderBy('created_at', 'desc')
             ->get();
 

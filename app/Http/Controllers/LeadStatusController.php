@@ -27,12 +27,14 @@ class LeadStatusController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'interest_status' => 'required|integer|in:1,2,3',
             'is_active' => 'boolean',
         ]);
 
         $leadStatus = LeadStatus::create([
             'title' => $request->title,
             'description' => $request->description,
+            'interest_status' => $request->interest_status,
             'is_active' => $request->has('is_active'),
         ]);
 
@@ -75,12 +77,14 @@ class LeadStatusController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'interest_status' => 'required|integer|in:1,2,3',
             'is_active' => 'boolean',
         ]);
 
         $leadStatus = LeadStatus::create([
             'title' => $request->title,
             'description' => $request->description,
+            'interest_status' => $request->interest_status,
             'is_active' => $request->boolean('is_active'),
         ]);
 
@@ -117,6 +121,7 @@ class LeadStatusController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'interest_status' => 'required|integer|in:1,2,3',
             'is_active' => 'boolean',
         ]);
 
@@ -124,6 +129,7 @@ class LeadStatusController extends Controller
         $leadStatus->update([
             'title' => $request->title,
             'description' => $request->description,
+            'interest_status' => $request->interest_status,
             'is_active' => $request->boolean('is_active'),
         ]);
 

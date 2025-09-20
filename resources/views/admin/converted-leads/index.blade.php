@@ -85,7 +85,7 @@
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover datatable" id="convertedLeadsTable">
+                        <table class="table table-hover data_table_basic" id="convertedLeadsTable">
                             <thead>
                                 <tr>
                                     <th>#</th>

@@ -14,6 +14,7 @@ class LeadStatus extends Model
         'title',
         'description',
         'color',
+        'interest_status',
         'is_active',
     ];
 
@@ -37,5 +38,33 @@ class LeadStatus extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function getInterestStatusLabelAttribute()
+    {
+        switch ($this->interest_status) {
+            case 1:
+                return 'Hot';
+            case 2:
+                return 'Warm';
+            case 3:
+                return 'Cold';
+            default:
+                return 'Not Set';
+        }
+    }
+
+    public function getInterestStatusColorAttribute()
+    {
+        switch ($this->interest_status) {
+            case 1:
+                return 'danger'; // Red for Hot
+            case 2:
+                return 'warning'; // Yellow for Warm
+            case 3:
+                return 'info'; // Blue for Cold
+            default:
+                return 'secondary';
+        }
     }
 }

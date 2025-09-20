@@ -25,7 +25,12 @@ class LeadController extends Controller
         // Set execution time limit for this operation
         set_time_limit(config('timeout.max_execution_time', 300));
         
-        $query = Lead::with(['leadStatus:id,title', 'leadSource:id,title', 'course:id,title', 'telecaller:id,name'])
+        $query = Lead::with(['leadStatus:id,title', 'leadSource:id,title', 'course:id,title', 'telecaller:id,name', 'leadActivities' => function($query) {
+            $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type')
+                  ->whereNotNull('reason')
+                  ->where('reason', '!=', '')
+                  ->orderBy('created_at', 'desc');
+        }])
                     ->notConverted()
                     ->notDropped();
 
@@ -49,6 +54,10 @@ class LeadController extends Controller
 
         if ($request->filled('telecaller_id')) {
             $query->where('telecaller_id', $request->telecaller_id);
+        }
+
+        if ($request->filled('rating')) {
+            $query->where('rating', $request->rating);
         }
 
         // Add search functionality
@@ -88,8 +97,8 @@ class LeadController extends Controller
             }
         }
 
-        // Add pagination to prevent loading too many records
-        $leads = $query->orderBy('id', 'desc')->paginate(50);
+        // Get all leads without pagination
+        $leads = $query->orderBy('id', 'desc')->get();
 
         // Get filter options (optimized with select only needed fields)
         $leadStatuses = LeadStatus::select('id', 'title')->get();
@@ -134,6 +143,93 @@ class LeadController extends Controller
             'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList',
             'fromDate', 'toDate', 'isTelecaller', 'isTeamLead'
         ))->with('search_key', $request->search_key);
+    }
+
+    /**
+     * Display follow-up leads (status = 2)
+     */
+    public function followupLeads(Request $request)
+    {
+        $isTelecaller = AuthHelper::isTelecaller();
+        $isTeamLead = AuthHelper::isTeamLead();
+
+        // Base query for follow-up leads (status = 2)
+        $query = Lead::with(['leadStatus:id,title', 'leadSource:id,title', 'course:id,title', 'telecaller:id,name', 'leadActivities' => function($query) {
+            $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type')
+                  ->whereNotNull('reason')
+                  ->where('reason', '!=', '')
+                  ->orderBy('created_at', 'desc');
+        }])
+                    ->where('lead_status_id', 2)
+                    ->notConverted()
+                    ->notDropped();
+
+        // Apply filters
+        if ($request->filled('search_key')) {
+            $searchTerm = $request->search_key;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('title', 'like', "%{$searchTerm}%")
+                  ->orWhere('phone', 'like', "%{$searchTerm}%")
+                  ->orWhere('email', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        if ($request->filled('lead_source_id')) {
+            $query->where('lead_source_id', $request->lead_source_id);
+        }
+
+        if ($request->filled('course_id')) {
+            $query->where('course_id', $request->course_id);
+        }
+
+        if ($request->filled('country_id')) {
+            $query->where('country_id', $request->country_id);
+        }
+
+        if ($request->filled('telecaller_id')) {
+            $query->where('telecaller_id', $request->telecaller_id);
+        }
+
+        // Role-based filtering
+        if ($isTelecaller && !$isTeamLead) {
+            // Telecaller: Can only see their own leads
+            $query->where('telecaller_id', AuthHelper::getCurrentUserId());
+        } elseif ($isTeamLead) {
+            // Team Lead: Can see leads from their team
+            $teamId = AuthHelper::getCurrentUserTeamId();
+            if ($teamId) {
+                $query->whereHas('telecaller', function($q) use ($teamId) {
+                    $q->where('team_id', $teamId);
+                });
+            }
+            // Admin/Super Admin: Can filter by specific telecaller
+            if ($request->filled('telecaller_id')) {
+                $query->where('telecaller_id', $request->telecaller_id);
+            }
+        }
+
+        // Order by follow-up date: current date first, then tomorrow, then future dates, then past dates
+        $query->orderByRaw("
+            CASE 
+                WHEN DATE(followup_date) = CURDATE() THEN 1
+                WHEN DATE(followup_date) = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN 2
+                WHEN DATE(followup_date) > CURDATE() THEN 3
+                ELSE 4
+            END,
+            followup_date ASC
+        ");
+
+        // Get all follow-up leads without pagination
+        $leads = $query->get();
+
+        // Get filter options (optimized with select only needed fields)
+        $leadStatuses = LeadStatus::select('id', 'title')->get();
+        $leadSources = LeadSource::select('id', 'title')->get();
+        $countries = Country::select('id', 'title')->get();
+        $courses = Course::select('id', 'title')->get();
+        $telecallers = User::select('id', 'name')->where('role_id', 3)->get();
+
+        return view('admin.leads.followup', compact('leads', 'leadStatuses', 'leadSources', 'countries', 'courses', 'telecallers', 'isTelecaller', 'isTeamLead'));
     }
 
     public function create()
@@ -216,18 +312,17 @@ class LeadController extends Controller
             'title' => 'nullable|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
-            'code' => 'nullable|string|max:10',
+            'code' => 'required|string|max:10',
             'whatsapp_code' => 'nullable|string|max:10',
             'whatsapp' => 'nullable|string|max:20',
             'gender' => 'nullable|in:male,female,other',
             'age' => 'nullable|integer|min:1|max:999',
             'place' => 'nullable|string|max:255',
             'qualification' => 'nullable|string|max:255',
-            'interest_status' => 'nullable|in:1,2,3',
-            'lead_status_id' => 'nullable|exists:lead_statuses,id',
-            'lead_source_id' => 'nullable|exists:lead_sources,id',
+            'lead_status_id' => 'required|exists:lead_statuses,id',
+            'lead_source_id' => 'required|exists:lead_sources,id',
             'country_id' => 'nullable|exists:countries,id',
-            'course_id' => 'nullable|exists:courses,id',
+            'course_id' => 'required|exists:courses,id',
             'team_id' => 'nullable|exists:teams,id',
             'telecaller_id' => 'nullable|exists:users,id',
             'address' => 'nullable|string|max:500',
@@ -242,12 +337,29 @@ class LeadController extends Controller
             return redirect()->back()->with('message_danger', $firstError)->withInput();
         }
 
+        // Check for duplicate lead (code + phone + course_id combination)
+        $existingLead = Lead::where('code', $request->code)
+            ->where('phone', $request->phone)
+            ->where('course_id', $request->course_id)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if ($existingLead) {
+            return redirect()->back()
+                ->with('message_danger', 'A lead with this phone number and course combination already exists.')
+                ->withInput();
+        }
+
         $leadData = $request->all();
         
         // Set default values
         $leadData['lead_status_id'] = $leadData['lead_status_id'] ?? 1;
         $leadData['add_date'] = $leadData['add_date'] ?? date('Y-m-d');
         $leadData['add_time'] = $leadData['add_time'] ?? date('H:i');
+        
+        // Get interest_status from lead_status
+        $leadStatus = LeadStatus::find($leadData['lead_status_id']);
+        $leadData['interest_status'] = $leadStatus ? $leadStatus->interest_status : null;
         
         $lead = Lead::create($leadData);
 
@@ -267,13 +379,12 @@ class LeadController extends Controller
             'age' => 'nullable|integer|min:1|max:999',
             'place' => 'nullable|string|max:255',
             'qualification' => 'nullable|string|max:255',
-            'interest_status' => 'nullable|in:1,2,3',
             'country_id' => 'required|exists:countries,id',
             'lead_status_id' => 'required|exists:lead_statuses,id',
             'lead_source_id' => 'required|exists:lead_sources,id',
             'team_id' => 'nullable|exists:teams,id',
             'telecaller_id' => 'nullable|exists:users,id',
-            'course_id' => 'nullable|exists:courses,id',
+            'course_id' => 'required|exists:courses,id',
             'address' => 'nullable|string|max:500',
             'followup_date' => 'nullable|date',
             'remarks' => 'nullable|string|max:1000',
@@ -285,18 +396,25 @@ class LeadController extends Controller
                 ->withInput();
         }
 
-        // Check for duplicate phone
+        // Check for duplicate lead (phone + code + course)
         $existingLead = Lead::where('phone', $request->phone)
                            ->where('code', $request->code)
+                           ->where('course_id', $request->course_id)
+                           ->whereNull('deleted_at')
                            ->first();
 
         if ($existingLead) {
             return redirect()->back()
-                ->with('message_danger', 'Lead with this phone number already exists')
+                ->with('message_danger', 'Lead with this phone number and course already exists')
                 ->withInput();
         }
 
+        // Get interest_status from lead_status
+        $leadStatus = LeadStatus::find($request->lead_status_id);
+        $interestStatus = $leadStatus ? $leadStatus->interest_status : null;
+
         $data = $request->all();
+        $data['interest_status'] = $interestStatus; // Override with lead status interest_status
         $data['created_by'] = AuthHelper::getCurrentUserId();
         $data['updated_by'] = AuthHelper::getCurrentUserId();
         $data['is_converted'] = $request->lead_status_id == 4 ? true : false;
@@ -325,7 +443,17 @@ class LeadController extends Controller
 
     public function show(Lead $lead)
     {
-        $lead->load(['leadStatus', 'leadSource', 'course', 'telecaller', 'leadActivities']);
+        $lead->load([
+            'leadStatus', 
+            'leadSource', 
+            'course', 
+            'telecaller', 
+            'leadActivities' => function($query) {
+                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id')
+                      ->with('createdBy:id,name')
+                      ->orderBy('created_at', 'desc');
+            }
+        ]);
         
         $leadStatusList = LeadStatus::pluck('title', 'id')->toArray();
         $leadSourceList = LeadSource::pluck('title', 'id')->toArray();
@@ -339,7 +467,17 @@ class LeadController extends Controller
 
     public function ajax_show(Lead $lead)
     {
-        $lead->load(['leadStatus', 'leadSource', 'course', 'telecaller', 'leadActivities']);
+        $lead->load([
+            'leadStatus', 
+            'leadSource', 
+            'course', 
+            'telecaller', 
+            'leadActivities' => function($query) {
+                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by')
+                      ->with('createdBy:id,name')
+                      ->orderBy('created_at', 'desc');
+            }
+        ]);
         
         return view('admin.leads.show-modal', compact('lead'));
     }
@@ -356,12 +494,27 @@ class LeadController extends Controller
     public function status_update_submit(Request $request, Lead $lead)
     {
         try {
-            $validator = Validator::make($request->all(), [
+            // Debug: Log the incoming request data
+            \Log::info('Status Update Request Data:', $request->all());
+            
+            // Prepare validation rules
+            $rules = [
                 'lead_status_id' => 'required|exists:lead_statuses,id',
-                'remarks' => 'nullable|string|max:1000',
+                'reason' => 'required|string|max:255',
+                'remarks' => 'required|string|max:1000',
+                'rating' => 'required|integer|min:1|max:10',
                 'date' => 'required|date',
                 'time' => 'required',
-            ]);
+            ];
+
+            // Only add followup_date validation if status is 2
+            if ($request->lead_status_id == 2) {
+                $rules['followup_date'] = 'required|date|after_or_equal:today';
+            } else {
+                $rules['followup_date'] = 'nullable|date';
+            }
+
+            $validator = Validator::make($request->all(), $rules);
 
             if ($validator->fails()) {
                 return response()->json([
@@ -376,11 +529,26 @@ class LeadController extends Controller
             $newStatusId = $request->lead_status_id;
             $newStatus = LeadStatus::find($newStatusId)->title;
 
-            // Update lead status
-            $lead->update([
+            // Get interest_status from new lead_status
+            $leadStatus = LeadStatus::find($newStatusId);
+            $interestStatus = $leadStatus ? $leadStatus->interest_status : null;
+
+            // Prepare lead update data
+            $leadUpdateData = [
                 'lead_status_id' => $request->lead_status_id,
+                'interest_status' => $interestStatus,
+                'rating' => $request->rating,
+                'remarks' => $request->remarks,
                 'updated_by' => AuthHelper::getCurrentUserId()
-            ]);
+            ];
+            
+            // If status is 2 (followup), store followup date
+            if ($request->lead_status_id == 2 && $request->followup_date) {
+                $leadUpdateData['followup_date'] = $request->followup_date;
+            }
+            
+            // Update lead
+            $lead->update($leadUpdateData);
 
             // Generate automatic status change remark
             $statusChangeRemark = "Status changed from '{$currentStatus}' to '{$newStatus}'";
@@ -391,17 +559,27 @@ class LeadController extends Controller
                 $finalRemarks .= " | User Note: " . $request->remarks;
             }
 
-            // Create lead activity
-            LeadActivity::create([
+            // Prepare lead activity data
+            $activityData = [
                 'lead_id' => $lead->id,
                 'lead_status_id' => $request->lead_status_id,
                 'activity_type' => 'status_update',
                 'description' => 'Status updated to ' . $newStatus,
                 'followup_date' => $request->date,
+                'reason' => $request->reason,
+                'rating' => $request->rating,
                 'remarks' => $finalRemarks,
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
-            ]);
+            ];
+            
+            // If status is 2 (followup), store followup date in activity
+            if ($request->lead_status_id == 2 && $request->followup_date) {
+                $activityData['followup_date'] = $request->followup_date;
+            }
+            
+            // Create lead activity
+            LeadActivity::create($activityData);
 
             return response()->json([
                 'success' => true,
@@ -483,18 +661,17 @@ class LeadController extends Controller
                 'title' => 'nullable|string|max:255',
                 'phone' => 'required|string|max:20',
                 'email' => 'nullable|email|max:255',
-                'code' => 'nullable|string|max:10',
+                'code' => 'required|string|max:10',
                 'whatsapp_code' => 'nullable|string|max:10',
                 'whatsapp' => 'nullable|string|max:20',
                 'gender' => 'nullable|in:male,female,other',
                 'age' => 'nullable|integer|min:1|max:999',
                 'place' => 'nullable|string|max:255',
                 'qualification' => 'nullable|string|max:255',
-                'interest_status' => 'nullable|in:1,2,3',
-                'lead_status_id' => 'nullable|exists:lead_statuses,id',
-                'lead_source_id' => 'nullable|exists:lead_sources,id',
+                'lead_status_id' => 'required|exists:lead_statuses,id',
+                'lead_source_id' => 'required|exists:lead_sources,id',
                 'country_id' => 'nullable|exists:countries,id',
-                'course_id' => 'nullable|exists:courses,id',
+                'course_id' => 'required|exists:courses,id',
                 'team_id' => 'nullable|exists:teams,id',
                 'telecaller_id' => 'nullable|exists:users,id',
                 'address' => 'nullable|string|max:500',
@@ -517,16 +694,19 @@ class LeadController extends Controller
                     ->withInput();
             }
 
-            // Check for duplicate phone (excluding current lead)
+            // Check for duplicate lead (phone + code + course, excluding current lead)
             $existingLead = Lead::where('phone', $request->phone)
+                               ->where('code', $request->code)
+                               ->where('course_id', $request->course_id)
                                ->where('id', '!=', $lead->id)
+                               ->whereNull('deleted_at')
                                ->first();
 
             if ($existingLead) {
                 if (request()->ajax()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Lead with this phone number already exists'
+                        'message' => 'Lead with this phone number and course already exists'
                     ], 422);
                 }
                 return redirect()->back()
@@ -540,6 +720,10 @@ class LeadController extends Controller
             $data['lead_status_id'] = $data['lead_status_id'] ?? 1;
             $data['add_date'] = $data['add_date'] ?? date('Y-m-d');
             $data['add_time'] = $data['add_time'] ?? date('H:i');
+            
+            // Get interest_status from lead_status
+            $leadStatus = LeadStatus::find($data['lead_status_id']);
+            $data['interest_status'] = $leadStatus ? $leadStatus->interest_status : null;
             
             $data['updated_by'] = AuthHelper::getCurrentUserId();
             $data['is_converted'] = $request->lead_status_id == 4 ? true : false;
@@ -743,9 +927,11 @@ class LeadController extends Controller
                     $phoneNumber = $phone;
                 }
 
-                // Check if lead already exists (check by both code and phone)
+                // Check if lead already exists (check by code, phone, and course)
                 $existingLead = Lead::where('phone', $phoneNumber)
                                   ->where('code', $code)
+                                  ->where('course_id', $request->course_id)
+                                  ->whereNull('deleted_at')
                                   ->first();
                 if ($existingLead) {
                     $duplicateCount++;
@@ -755,6 +941,10 @@ class LeadController extends Controller
                 // Ensure we have a valid telecaller index
                 $telecallerId = $telecallers[$telecallerIndex] ?? $telecallers[0];
                 
+                // Get interest_status from lead_status
+                $leadStatus = LeadStatus::find($request->lead_status_id);
+                $interestStatus = $leadStatus ? $leadStatus->interest_status : null;
+                
                 $lead = Lead::create([
                     'title' => $name,
                     'phone' => $phoneNumber,
@@ -763,6 +953,7 @@ class LeadController extends Controller
                     'remarks' => $remarks,
                     'lead_source_id' => $request->lead_source_id,
                     'lead_status_id' => $request->lead_status_id,
+                    'interest_status' => $interestStatus,
                     'course_id' => $request->course_id,
                     'telecaller_id' => $telecallerId,
                     'created_by' => AuthHelper::getCurrentUserId(),
@@ -1009,16 +1200,36 @@ class LeadController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        // Get telecaller names for activity history
+        $toTelecaller = \App\Models\User::find($request->telecaller_id);
+        $fromTelecaller = \App\Models\User::find($request->from_telecaller_id);
+        
+        $toTelecallerName = $toTelecaller ? $toTelecaller->name : 'Unknown';
+        $fromTelecallerName = $fromTelecaller ? $fromTelecaller->name : 'Unknown';
+
         $successCount = 0;
         foreach ($request->lead_id as $leadId) {
             $lead = Lead::find($leadId);
             if ($lead) {
+                // Update the lead
                 $lead->update([
                     'telecaller_id' => $request->telecaller_id,
                     'lead_source_id' => $request->lead_source_id,
                     'lead_status_id' => $request->lead_status_id,
                     'updated_by' => AuthHelper::getCurrentUserId(),
                 ]);
+
+                // Create lead activity history
+                \App\Models\LeadActivity::create([
+                    'lead_id' => $leadId,
+                    'lead_status_id' => $request->lead_status_id,
+                    'activity_type' => 'bulk_reassign',
+                    'description' => 'Lead reassigned via bulk operation',
+                    'remarks' => "Lead has been reassigned from telecaller {$fromTelecallerName} to telecaller {$toTelecallerName}.",
+                    'created_by' => AuthHelper::getCurrentUserId(),
+                    'updated_by' => AuthHelper::getCurrentUserId(),
+                ]);
+
                 $successCount++;
             }
         }
@@ -1176,13 +1387,16 @@ class LeadController extends Controller
      */
     public function getLeadsBySourceReassign(Request $request)
     {
+        $fromDate = date('Y-m-d H:i:s', strtotime($request->from_date . ' 00:00:00'));
+        $toDate = date('Y-m-d H:i:s', strtotime($request->to_date . ' 23:59:59'));
         $leads = Lead::where('lead_source_id', $request->lead_source_id)
                     ->where('telecaller_id', $request->tele_caller_id)
                     ->where('lead_status_id', $request->lead_status_id)
-                    ->whereBetween('created_at', [$request->from_date, $request->to_date])
+                    ->where('created_at', '>=', $fromDate)
+                    ->where('created_at', '<=', $toDate)
                     ->with(['leadStatus', 'leadSource', 'telecaller', 'course'])
                     ->get();
-
+        
         return view('admin.leads.partials.leads-table-rows-reassign', compact('leads'));
     }
 

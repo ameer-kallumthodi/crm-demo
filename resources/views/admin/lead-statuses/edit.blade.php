@@ -18,6 +18,18 @@
             </div>
 
             <div class="col-md-12">
+                <div class="mb-3">
+                    <label class="form-label" for="interest_status">Interest Status <span class="text-danger">*</span></label>
+                    <select name="interest_status" class="form-select" id="interest_status" required>
+                        <option value="">Select Interest Status</option>
+                        <option value="1" {{ $edit_data->interest_status == 1 ? 'selected' : '' }}>Hot</option>
+                        <option value="2" {{ $edit_data->interest_status == 2 ? 'selected' : '' }}>Warm</option>
+                        <option value="3" {{ $edit_data->interest_status == 3 ? 'selected' : '' }}>Cold</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-12">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" {{ $edit_data->is_active ? 'checked' : '' }}>
                     <label class="form-check-label" for="is_active">

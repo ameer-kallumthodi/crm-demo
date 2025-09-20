@@ -12,15 +12,13 @@ class Course extends Model
 
     protected $fillable = [
         'title',
-        'description',
-        'duration',
-        'fees',
+        'amount',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'fees' => 'decimal:2',
+        'amount' => 'double',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',

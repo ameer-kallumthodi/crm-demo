@@ -97,6 +97,36 @@
                                 <td>{{ $lead->place ?? 'N/A' }}</td>
                             </tr>
                             <tr>
+                                <td><strong>Followup Date:</strong></td>
+                                <td>
+                                    @if($lead->followup_date)
+                                        <span class="badge bg-warning">{{ $lead->followup_date->format('d M Y') }}</span>
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Last Reason:</strong></td>
+                                <td>
+                                    @if($lead->leadActivities->where('reason', '!=', null)->first())
+                                        <span class="badge bg-info">{{ $lead->leadActivities->where('reason', '!=', null)->first()->reason }}</span>
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Current Rating:</strong></td>
+                                <td>
+                                    @if($lead->rating)
+                                        <span class="badge bg-primary">{{ $lead->rating }}/10</span>
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
                                 <td><strong>Remarks:</strong></td>
                                 <td>{{ $lead->remarks ?? 'N/A' }}</td>
                             </tr>
@@ -113,11 +143,30 @@
                                 @foreach($lead->leadActivities as $activity)
                                 <div class="activity-item mb-3 p-3 border rounded">
                                     <div class="d-flex justify-content-between">
-                                        <strong>{{ $activity->activity_type ?? 'Activity' }}</strong>
+                                        <div>
+                                            <strong>{{ $activity->activity_type ?? 'Activity' }}</strong>
+                                            @if($activity->leadStatus)
+                                                <span class="badge bg-primary ms-2">{{ $activity->leadStatus->title }}</span>
+                                            @endif
+                                            @if($activity->reason)
+                                                <span class="badge bg-info ms-2">{{ $activity->formatted_reason }}</span>
+                                            @endif
+                                            @if($activity->rating)
+                                                <span class="badge bg-success ms-2">{{ $activity->rating }}/10</span>
+                                            @endif
+                                        </div>
                                         <small class="text-muted">{{ $activity->created_at->format('d M Y H:i') }}</small>
                                     </div>
-                                    <p class="mb-1">{{ $activity->notes ?? 'No notes' }}</p>
-                                    <small class="text-muted">By: {{ $activity->user->name ?? 'System' }}</small>
+                                    @if($activity->description)
+                                        <p class="mb-1">{{ $activity->description }}</p>
+                                    @endif
+                                    @if($activity->lead_status_id == 2 && $activity->followup_date)
+                                        <p class="mb-1"><strong>Followup Date:</strong> <span class="badge bg-warning">{{ $activity->followup_date->format('d M Y') }}</span></p>
+                                    @endif
+                                    @if($activity->remarks)
+                                        <p class="mb-1 text-muted">{{ $activity->remarks }}</p>
+                                    @endif
+                                    <small class="text-muted">By: {{ $activity->createdBy->name ?? 'System' }}</small>
                                 </div>
                                 @endforeach
                             @else

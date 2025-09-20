@@ -17,6 +17,18 @@
             </div>
 
             <div class="col-md-12">
+                <div class="mb-3">
+                    <label class="form-label" for="interest_status">Interest Status <span class="text-danger">*</span></label>
+                    <select name="interest_status" class="form-select" id="interest_status" required>
+                        <option value="">Select Interest Status</option>
+                        <option value="1">Hot</option>
+                        <option value="2">Warm</option>
+                        <option value="3">Cold</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-12">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" checked>
                     <label class="form-check-label" for="is_active">

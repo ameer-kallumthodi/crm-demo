@@ -44,6 +44,7 @@
                                 <th>#</th>
                                 <th>Title</th>
                                 <th>Description</th>
+                                <th>Interest Status</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -54,6 +55,15 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $status->title }}</td>
                                 <td>{{ $status->description ?? '-' }}</td>
+                                <td>
+                                    @if($status->interest_status)
+                                        <span class="badge bg-{{ $status->interest_status_color }}">
+                                            {{ $status->interest_status_label }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary">Not Set</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <span class="badge {{ $status->is_active ? 'bg-success' : 'bg-danger' }}">
                                         {{ $status->is_active ? 'Active' : 'Inactive' }}

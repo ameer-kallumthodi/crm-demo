@@ -59,8 +59,8 @@
                                        value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
                             </div>
                             <div class="col-md-2">
-                                <label for="lead_status_id" class="form-label">Status</label>
-                                <select class="form-select" name="lead_status_id">
+                                <label for="filter_lead_status_id" class="form-label">Status</label>
+                                <select class="form-select" name="lead_status_id" id="filter_lead_status_id">
                                     <option value="">All Statuses</option>
                                     @foreach($leadStatuses as $status)
                                         <option value="{{ $status->id }}" {{ request('lead_status_id') == $status->id ? 'selected' : '' }}>
@@ -70,8 +70,8 @@
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label for="lead_source_id" class="form-label">Source</label>
-                                <select class="form-select" name="lead_source_id">
+                                <label for="filter_lead_source_id" class="form-label">Source</label>
+                                <select class="form-select" name="lead_source_id" id="filter_lead_source_id">
                                     <option value="">All Sources</option>
                                     @foreach($leadSources as $source)
                                         <option value="{{ $source->id }}" {{ request('lead_source_id') == $source->id ? 'selected' : '' }}>
@@ -89,6 +89,17 @@
                                             {{ $course->title }}
                                         </option>
                                     @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="rating" class="form-label">Rating</label>
+                                <select class="form-select" name="rating">
+                                    <option value="">All Ratings</option>
+                                    @for($i = 1; $i <= 10; $i++)
+                                        <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>
+                                            {{ $i }}/10
+                                        </option>
+                                    @endfor
                                 </select>
                             </div>
                             @if(!$isTelecaller || $isTeamLead)
@@ -131,8 +142,8 @@
                                        value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
                             </div>
                             <div class="col-6">
-                                <label for="lead_status_id_mobile" class="form-label f-12">Status</label>
-                                <select class="form-select form-select-sm" name="lead_status_id" id="lead_status_id_mobile">
+                                <label for="filter_lead_status_id_mobile" class="form-label f-12">Status</label>
+                                <select class="form-select form-select-sm" name="lead_status_id" id="filter_lead_status_id_mobile">
                                     <option value="">All Statuses</option>
                                     @foreach($leadStatuses as $status)
                                         <option value="{{ $status->id }}" {{ request('lead_status_id') == $status->id ? 'selected' : '' }}>
@@ -142,8 +153,8 @@
                                 </select>
                             </div>
                             <div class="col-6">
-                                <label for="lead_source_id_mobile" class="form-label f-12">Source</label>
-                                <select class="form-select form-select-sm" name="lead_source_id" id="lead_source_id_mobile">
+                                <label for="filter_lead_source_id_mobile" class="form-label f-12">Source</label>
+                                <select class="form-select form-select-sm" name="lead_source_id" id="filter_lead_source_id_mobile">
                                     <option value="">All Sources</option>
                                     @foreach($leadSources as $source)
                                         <option value="{{ $source->id }}" {{ request('lead_source_id') == $source->id ? 'selected' : '' }}>
@@ -267,20 +278,25 @@
             <div class="card-body">
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="leadsTable">
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-hover data_table_basic" id="leadsTable" style="min-width: 1700px;">
                             <thead>
                                 <tr>
                                     <th>#</th>
                                     <th>Actions</th>
                                     <th>Name</th>
+                                    <th>Profile</th>
                                     <th>Phone</th>
                                     <th>Email</th>
                                     <th>Status</th>
+                                    <th>Interest</th>
+                                    <th>Rating</th>
                                     <th>Source</th>
                                     <th>Course</th>
                                     <th>Telecaller</th>
                                     <th>Place</th>
+                                    <th>Followup Date</th>
+                                    <th>Last Reason</th>
                                     <th>Remarks</th>
                                     <th>Date</th>
                                     <th>Time</th>
@@ -342,7 +358,7 @@
                                             </a>
                                             @if(!$isTelecaller || $isTeamLead)
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
-                                                onclick="show_ajax_modal('{{ route('leads.delete', $lead->id) }}', 'Delete Lead')"
+                                                onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}')"
                                                 title="Delete Lead">
                                                 <i class="ti ti-trash"></i>
                                             </a>
@@ -359,6 +375,43 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if($lead->isProfileIncomplete())
+                                                <div class="me-2">
+                                                    <div class="progress" style="width: 60px; height: 8px;">
+                                                        <div class="progress-bar 
+                                                            @if($lead->profile_status == 'incomplete') bg-danger
+                                                            @elseif($lead->profile_status == 'partial') bg-warning
+                                                            @elseif($lead->profile_status == 'almost_complete') bg-info
+                                                            @else bg-success
+                                                            @endif" 
+                                                            role="progressbar" 
+                                                            style="width: {{ $lead->profile_completeness }}%"
+                                                            aria-valuenow="{{ $lead->profile_completeness }}" 
+                                                            aria-valuemin="0" 
+                                                            aria-valuemax="100">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <span class="badge 
+                                                    @if($lead->profile_status == 'incomplete') bg-danger
+                                                    @elseif($lead->profile_status == 'partial') bg-warning
+                                                    @elseif($lead->profile_status == 'almost_complete') bg-info
+                                                    @else bg-success
+                                                    @endif" 
+                                                    data-bs-toggle="tooltip" 
+                                                    data-bs-placement="top" 
+                                                    title="Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}">
+                                                    {{ $lead->profile_completeness }}%
+                                                </span>
+                                            @else
+                                                <span class="badge bg-success">
+                                                    <i class="ti ti-check"></i> Complete
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td>{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</td>
                                     <td>{{ $lead->email ?? '-' }}</td>
                                     <td>
@@ -366,17 +419,50 @@
                                             {{ $lead->leadStatus->title }}
                                         </span>
                                     </td>
+                                    <td>
+                                        @if($lead->interest_status)
+                                            <span class="badge bg-{{ $lead->interest_status_color }}">
+                                                {{ $lead->interest_status_label }}
+                                            </span>
+                                        @else
+                                            <span class="badge bg-secondary">Not Set</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($lead->rating)
+                                            <span class="badge bg-primary">{{ $lead->rating }}/10</span>
+                                        @else
+                                            <span class="badge bg-secondary">Not Rated</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $lead->leadSource->title ?? '-' }}</td>
                                     <td>{{ $lead->course->title ?? '-' }}</td>
                                     <td>{{ $lead->telecaller->name ?? 'Unassigned' }}</td>
                                     <td>{{ $lead->place ?? '-' }}</td>
+                                    <td>
+                                        @if($lead->followup_date)
+                                            <span class="badge bg-warning">{{ $lead->followup_date->format('M d, Y') }}</span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php
+                                            $lastActivityWithReason = $lead->leadActivities->first();
+                                        @endphp
+                                        @if($lastActivityWithReason)
+                                            {{ Str::limit($lastActivityWithReason->reason, 20) }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
                                     <td>{{ $lead->remarks ? Str::limit($lead->remarks, 30) : '-' }}</td>
                                     <td>{{ $lead->created_at->format('M d, Y') }}</td>
                                     <td>{{ $lead->created_at->format('H:i A') }}</td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="13" class="text-center py-4">
+                                    <td colspan="18" class="text-center py-4">
                                         <div class="text-muted">
                                             <i class="ti ti-inbox f-48 mb-3 d-block"></i>
                                             No leads found
@@ -405,38 +491,74 @@
                                         <small class="text-muted f-11">#{{ $index + 1 }}</small>
                                     </div>
                                 </div>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false" id="dropdownMenuButton{{ $lead->id }}">
-                                        <i class="ti ti-dots-vertical f-12"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="show_large_modal('{{ route('leads.ajax-show', $lead->id) }}', 'View Lead')">
-                                            <i class="ti ti-eye me-2"></i>View Lead
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')">
-                                            <i class="ti ti-edit me-2"></i>Edit Lead
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')">
-                                            <i class="ti ti-arrow-up me-2"></i>Update Status
-                                        </a></li>
-                                        @if(!$lead->is_converted)
-                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')">
-                                            <i class="ti ti-refresh me-2"></i>Convert Lead
-                                        </a></li>
-                                        @endif
-                                        @if($lead->lead_status_id == 6)
-                                        <li><a class="dropdown-item" href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link" target="_blank">
-                                            <i class="ti ti-file-text me-2"></i>Demo Form
-                                        </a></li>
-                                        @endif
-                                        @if(!$isTelecaller || $isTeamLead)
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="show_ajax_modal('{{ route('leads.delete', $lead->id) }}', 'Delete Lead')">
-                                            <i class="ti ti-trash me-2"></i>Delete Lead
-                                        </a></li>
-                                        @endif
-                                    </ul>
+                                <!-- Action buttons in header -->
+                                <div class="d-flex gap-1">
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary" 
+                                       onclick="show_large_modal('{{ route('leads.ajax-show', $lead->id) }}', 'View Lead')"
+                                       title="View Lead">
+                                        <i class="ti ti-eye f-12"></i>
+                                    </a>
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary" 
+                                       onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
+                                       title="Edit Lead">
+                                        <i class="ti ti-edit f-12"></i>
+                                    </a>
+                                    @if(!$isTelecaller || $isTeamLead)
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger" 
+                                       onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}')"
+                                       title="Delete Lead">
+                                        <i class="ti ti-trash f-12"></i>
+                                    </a>
+                                    @endif
                                 </div>
+                            </div>
+
+                            <!-- Profile Completeness Indicator -->
+                            <div class="mb-2">
+                                @if($lead->isProfileIncomplete())
+                                    <div class="d-flex align-items-center">
+                                        <small class="text-muted me-2 f-11">Profile:</small>
+                                        <div class="progress me-2" style="width: 80px; height: 6px;">
+                                            <div class="progress-bar 
+                                                @if($lead->profile_status == 'incomplete') bg-danger
+                                                @elseif($lead->profile_status == 'partial') bg-warning
+                                                @elseif($lead->profile_status == 'almost_complete') bg-info
+                                                @else bg-success
+                                                @endif" 
+                                                role="progressbar" 
+                                                style="width: {{ $lead->profile_completeness }}%"
+                                                aria-valuenow="{{ $lead->profile_completeness }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <span class="badge 
+                                            @if($lead->profile_status == 'incomplete') bg-danger
+                                            @elseif($lead->profile_status == 'partial') bg-warning
+                                            @elseif($lead->profile_status == 'almost_complete') bg-info
+                                            @else bg-success
+                                            @endif f-10" 
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="top" 
+                                            title="Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}">
+                                            {{ $lead->profile_completeness }}%
+                                        </span>
+                                    </div>
+                                    @if(count($lead->getMissingFields()) > 0)
+                                        <div class="mt-1">
+                                            <small class="text-muted f-10">
+                                                Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}
+                                            </small>
+                                        </div>
+                                    @endif
+                                @else
+                                    <div class="d-flex align-items-center">
+                                        <small class="text-muted me-2 f-11">Profile:</small>
+                                        <span class="badge bg-success f-10">
+                                            <i class="ti ti-check me-1"></i> Complete
+                                        </span>
+                                    </div>
+                                @endif
                             </div>
 
                             <!-- Lead Details - Compact Layout -->
@@ -463,6 +585,28 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="d-flex align-items-center">
+                                        <i class="ti ti-flame f-12 text-muted me-1"></i>
+                                        @if($lead->interest_status)
+                                            <span class="badge bg-{{ $lead->interest_status_color }} f-10">
+                                                {{ $lead->interest_status_label }}
+                                            </span>
+                                        @else
+                                            <span class="badge bg-secondary f-10">Not Set</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="ti ti-star f-12 text-muted me-1"></i>
+                                        @if($lead->rating)
+                                            <span class="badge bg-primary f-10">{{ $lead->rating }}/10</span>
+                                        @else
+                                            <span class="badge bg-secondary f-10">Not Rated</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
                                         <i class="ti ti-user f-12 text-muted me-1"></i>
                                         <small class="text-muted f-11">{{ $lead->telecaller->name ?? 'Unassigned' }}</small>
                                     </div>
@@ -479,32 +623,82 @@
                                         <small class="text-muted f-11">{{ $lead->created_at->format('M d') }}</small>
                                     </div>
                                 </div>
+                                @if($lead->followup_date)
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="ti ti-clock f-12 text-muted me-1"></i>
+                                        <span class="badge bg-warning f-10">{{ $lead->followup_date->format('M d') }}</span>
+                                    </div>
+                                </div>
+                                @endif
+                                @php
+                                    $lastActivityWithReason = $lead->leadActivities->first();
+                                @endphp
+                                @if($lastActivityWithReason)
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="ti ti-message f-12 text-muted me-1"></i>
+                                        <span class="badge bg-info f-10" title="{{ $lastActivityWithReason->reason }}">{{ Str::limit($lastActivityWithReason->reason, 15) }}</span>
+                                    </div>
+                                </div>
+                                @endif
+                                @if($lead->remarks)
+                                <div class="col-12">
+                                    <div class="d-flex align-items-start">
+                                        <i class="ti ti-note f-12 text-muted me-1 mt-1"></i>
+                                        <small class="text-muted f-11" title="{{ $lead->remarks }}">{{ Str::limit($lead->remarks, 50) }}</small>
+                                    </div>
+                                </div>
+                                @endif
                             </div>
 
-                            <!-- Action Buttons - Compact -->
-                            <div class="d-flex gap-1 flex-wrap justify-content-end">
-                                @if($lead->phone && is_telecaller())
-                                @php
-                                    $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
-                                @endphp
-                                @if($currentUserId > 0)
-                                <button class="btn btn-sm btn-success voxbay-call-btn" 
-                                        data-lead-id="{{ $lead->id }}" 
-                                        data-telecaller-id="{{ $currentUserId }}"
-                                        title="Call Lead">
-                                    <i class="ti ti-phone f-12"></i>
-                                </button>
-                                @endif
-                                @endif
-                                <a href="{{ route('leads.call-logs', $lead) }}" 
-                                   class="btn btn-sm btn-info" 
-                                   title="View Call Logs">
-                                    <i class="ti ti-phone-call f-12"></i>
-                                </a>
-                                <a href="javascript:void(0);" class="btn btn-sm btn-primary"
-                                   onclick="show_large_modal('{{ route('leads.ajax-show', $lead->id) }}', 'View Lead')">
-                                    <i class="ti ti-eye f-12"></i>
-                                </a>
+                            <!-- Action Buttons - Enhanced -->
+                            <div class="d-flex gap-1 flex-wrap justify-content-between">
+                                <!-- Left side - Status and Convert buttons -->
+                                <div class="d-flex gap-1">
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning" 
+                                       onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')"
+                                       title="Update Status">
+                                        <i class="ti ti-arrow-up f-12"></i>
+                                    </a>
+                                    @if(!$lead->is_converted)
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-success" 
+                                       onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
+                                       title="Convert Lead">
+                                        <i class="ti ti-refresh f-12"></i>
+                                    </a>
+                                    @endif
+                                    @if($lead->lead_status_id == 6)
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link" 
+                                       target="_blank" 
+                                       class="btn btn-sm btn-outline-info" 
+                                       title="Demo Conduction Form">
+                                        <i class="ti ti-file-text f-12"></i>
+                                    </a>
+                                    @endif
+                                </div>
+                                
+                                <!-- Right side - Call and Logs buttons -->
+                                <div class="d-flex gap-1">
+                                    @if($lead->phone && is_telecaller())
+                                    @php
+                                        $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
+                                    @endphp
+                                    @if($currentUserId > 0)
+                                    <button class="btn btn-sm btn-success voxbay-call-btn" 
+                                            data-lead-id="{{ $lead->id }}" 
+                                            data-telecaller-id="{{ $currentUserId }}"
+                                            title="Call Lead">
+                                        <i class="ti ti-phone f-12"></i>
+                                    </button>
+                                    @endif
+                                    @endif
+                                    <a href="{{ route('leads.call-logs', $lead) }}" 
+                                       class="btn btn-sm btn-info" 
+                                       title="View Call Logs">
+                                        <i class="ti ti-phone-call f-12"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -519,12 +713,6 @@
                     @endforelse
                 </div>
 
-                <!-- Pagination -->
-                @if($leads->hasPages())
-                <div class="d-flex justify-content-center mt-3">
-                    {{ $leads->links() }}
-                </div>
-                @endif
             </div>
         </div>
     </div>
@@ -535,33 +723,177 @@
 @endsection
 
 @push('scripts')
+<style>
+/* Fix DataTables responsive dropdown icon issue */
+.dtr-control {
+    position: relative;
+    cursor: pointer;
+}
+
+.dtr-control:before {
+    content: '+';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    line-height: 18px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background-color: #f8f9fa;
+    color: #666;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.dtr-control.dtr-expanded:before {
+    content: '-';
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Remove the problematic sorting_1 class styling */
+.dtr-control.sorting_1:before {
+    content: '+';
+}
+
+/* Improve table responsiveness */
+.table-responsive {
+    border: none;
+}
+
+#leadsTable {
+    margin-bottom: 0;
+}
+
+#leadsTable thead th {
+    border-top: none;
+    font-weight: 600;
+    background-color: #f8f9fa;
+    white-space: nowrap;
+}
+
+#leadsTable tbody td {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* Fix action buttons in responsive mode */
+.dtr-details {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-left: 3px solid #007bff;
+}
+
+.dtr-details li {
+    margin-bottom: 5px;
+}
+
+/* Improve mobile card layout */
+@media (max-width: 991.98px) {
+    .card-body {
+        padding: 0.75rem;
+    }
+    
+    .mobile-card {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Additional responsive improvements */
+@media (max-width: 1200px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    #leadsTable th,
+    #leadsTable td {
+        padding: 0.5rem 0.25rem;
+    }
+}
+
+/* Enhanced action button styling */
+.btn-sm {
+    min-width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-sm i {
+    font-size: 12px;
+}
+
+/* Mobile action buttons layout */
+@media (max-width: 991.98px) {
+    .d-flex.gap-1 {
+        gap: 0.25rem !important;
+    }
+    
+    .btn-sm {
+        min-width: 28px;
+        height: 28px;
+        padding: 0.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.8rem;
+    }
+    
+    #leadsTable th,
+    #leadsTable td {
+        padding: 0.375rem 0.125rem;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Fix DataTables info and pagination on mobile */
+.dataTables_info,
+.dataTables_paginate {
+    font-size: 0.875rem;
+}
+
+@media (max-width: 576px) {
+    .dataTables_info,
+    .dataTables_paginate {
+        font-size: 0.75rem;
+    }
+    
+    .dataTables_length,
+    .dataTables_filter {
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
 <script>
 $(document).ready(function() {
 
-    // Only initialize if not already initialized
-    if (!$.fn.DataTable.isDataTable('#leadsTable')) {
-        // Initialize DataTable
-        var table = $('#leadsTable').DataTable({
-        "processing": true,
-        "serverSide": false,
-        "responsive": true,
-        "pageLength": 25,
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-        "columnDefs": [
-            { "orderable": false, "targets": [0, 8] }, // Disable sorting on serial number and actions columns
-            { "searchable": false, "targets": [0, 8] } // Disable searching on serial number and actions columns
-        ],
-        "language": {
-            "processing": "Loading leads...",
-            "emptyTable": "No leads found",
-            "zeroRecords": "No matching leads found"
-        }
+    // Function to fix DataTables responsive dropdown icons
+    function fixResponsiveIcons() {
+        // Remove problematic classes and ensure proper icon display
+        $('.dtr-control').each(function() {
+            $(this).removeClass('sorting_1 sorting_2 sorting_3');
+            if (!$(this).hasClass('dtr-control')) {
+                $(this).addClass('dtr-control');
+            }
         });
-
-
-        // Remove the old search input functionality since DataTable handles it
-        $('#searchInput').remove();
+        
+        // Ensure proper icon styling
+        $('.dtr-control:not(.dtr-expanded)').each(function() {
+            if (!$(this).find('::before').length) {
+                $(this).css('position', 'relative');
+            }
+        });
     }
+
+    // DataTable is now initialized globally via initializeTables() function
 
     // Handle global search form submission
     $('.header-search form, .drp-search form').on('submit', function(e) {
@@ -581,45 +913,8 @@ $(document).ready(function() {
         }
     });
 
-    // Initialize Bootstrap dropdowns
-    function initializeDropdowns() {
-        // Check if Bootstrap 5 is available
-        if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
-            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
-                return new bootstrap.Dropdown(dropdownToggleEl);
-            });
-        } else {
-            // Fallback for Bootstrap 4 or if Bootstrap 5 is not available
-            $('.dropdown-toggle').dropdown();
-        }
-    }
-
-    // Initialize dropdowns on page load
-    initializeDropdowns();
-
-    // Re-initialize dropdowns when new content is loaded (for AJAX)
-    $(document).on('click', '.dropdown-toggle', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        var $this = $(this);
-        var $dropdown = $this.next('.dropdown-menu');
-        
-        // Toggle dropdown manually if Bootstrap is not working
-        if ($dropdown.length) {
-            $dropdown.toggleClass('show');
-            $this.attr('aria-expanded', $dropdown.hasClass('show'));
-        }
-    });
-
-    // Close dropdown when clicking outside
-    $(document).on('click', function(e) {
-        if (!$(e.target).closest('.dropdown').length) {
-            $('.dropdown-menu').removeClass('show');
-            $('.dropdown-toggle').attr('aria-expanded', 'false');
-        }
-    });
+    // Action buttons are now directly accessible without dropdown
+    // All functionality is handled by onclick attributes on the buttons
 });
 
 </script>

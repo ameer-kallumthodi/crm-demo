@@ -149,20 +149,6 @@
                             </div>
                         </div>
                         
-                        <div class="col-lg-6">
-                            <div class="form-group mb-3">
-                                <label for="interest_status" class="form-label">Interest status</label>
-                                <select class="form-select @error('interest_status') is-invalid @enderror" name="interest_status" id="interest_status">
-                                    <option value="">Select Status</option>
-                                    <option value="1" {{ old('interest_status', $lead->interest_status) == '1' ? 'selected' : '' }}>Hot</option>
-                                    <option value="2" {{ old('interest_status', $lead->interest_status) == '2' ? 'selected' : '' }}>Warm</option>
-                                    <option value="3" {{ old('interest_status', $lead->interest_status) == '3' ? 'selected' : '' }}>Cold</option>
-                                </select>
-                                @error('interest_status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
                         
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
@@ -199,7 +185,7 @@
                                 <select class="form-select @error('country_id') is-invalid @enderror" name="country_id" id="country_id">
                                     <option value="">Select Country</option>
                                     @foreach($countries as $country)
-                                        <option value="{{ $country->id }}" {{ old('country_id', $lead->country_id) == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
+                                        <option value="{{ $country->id }}" {{ old('country_id', $lead->country_id) == $country->id ? 'selected' : '' }}>{{ $country->title }}</option>
                                     @endforeach
                                 </select>
                                 @error('country_id')

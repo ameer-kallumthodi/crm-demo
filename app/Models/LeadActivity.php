@@ -16,6 +16,8 @@ class LeadActivity extends Model
         'activity_type',
         'description',
         'followup_date',
+        'reason',
+        'rating',
         'remarks',
         'created_by',
         'updated_by',
@@ -67,6 +69,18 @@ class LeadActivity extends Model
     public function deletedBy()
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    /**
+     * Get formatted reason for display
+     */
+    public function getFormattedReasonAttribute()
+    {
+        if (!$this->reason) {
+            return null;
+        }
+        
+        return $this->reason; // Now just return the reason as-is since it's user input
     }
 
     /**

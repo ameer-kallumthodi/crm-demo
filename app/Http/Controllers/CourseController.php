@@ -26,11 +26,13 @@ class CourseController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
             'is_active' => 'boolean',
         ]);
 
         $course = Course::create([
             'title' => $request->title,
+            'amount' => $request->amount,
             'is_active' => $request->input('is_active', 0) == 1,
         ]);
 
@@ -90,11 +92,13 @@ class CourseController extends Controller
         try {
             $request->validate([
                 'title' => 'required|string|max:255',
+                'amount' => 'required|numeric|min:0',
                 'is_active' => 'boolean',
             ]);
 
             $course = Course::create([
                 'title' => $request->title,
+                'amount' => $request->amount,
                 'is_active' => $request->input('is_active', 0) == 1,
             ]);
 
@@ -156,12 +160,14 @@ class CourseController extends Controller
         try {
             $request->validate([
                 'title' => 'required|string|max:255',
+                'amount' => 'required|numeric|min:0',
                 'is_active' => 'boolean',
             ]);
 
             $course = Course::findOrFail($id);
             $course->update([
                 'title' => $request->title,
+                'amount' => $request->amount,
                 'is_active' => $request->input('is_active', 0) == 1,
             ]);
 

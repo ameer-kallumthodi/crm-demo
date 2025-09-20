@@ -37,7 +37,7 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover" id="adminsTable">
+                    <table class="table table-hover data_table_basic" id="adminsTable">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -128,25 +128,7 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    if (!$.fn.DataTable.isDataTable('#adminsTable')) {
-        $('#adminsTable').DataTable({
-            "processing": true,
-            "serverSide": false,
-            "responsive": true,
-            "pageLength": 25,
-            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-            "order": [[6, "desc"]], // Sort by created date descending
-            "columnDefs": [
-                { "orderable": false, "targets": [0, 7] }, // Disable sorting on serial number and actions columns
-                { "searchable": false, "targets": [0, 7] } // Disable searching on serial number and actions columns
-            ],
-            "language": {
-                "processing": "Loading admins...",
-                "emptyTable": "No admins found",
-                "zeroRecords": "No matching admins found"
-            }
-        });
-    }
+    // DataTable is now initialized globally via initializeTables() function
 });
 </script>
 @endpush

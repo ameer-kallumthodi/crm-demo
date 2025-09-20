@@ -34,17 +34,40 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="mb-3">
             <label class="form-label" for="lead_status_id">New Lead Status <span class="text-danger">*</span></label>
             <select class="form-select" name="lead_status_id" id="lead_status_id" required>
                 <option value="">Select New Status</option>
                 @foreach($leadStatuses as $status)
-                    <option value="{{ $status->id }}" {{ $status->id == $lead->lead_status_id ? 'selected' : '' }}>
-                        {{ $status->title }}
-                    </option>
+                <option value="{{ $status->id }}" {{ $status->id == $lead->lead_status_id ? 'selected' : '' }}>
+                    {{ $status->title }}
+                </option>
                 @endforeach
             </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="rating">Lead Rating (1 - 10) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" name="rating" id="rating"
+                min="1" max="10" required placeholder="Enter rating between 1 and 10">
+        </div>
+
+        <!-- Followup Date Section - Only shown when status 2 is selected -->
+        <div class="mb-3" id="followupDateSection" style="display: none;">
+            <div class="alert alert-warning d-flex align-items-center">
+                <i class="ti ti-calendar me-2"></i>
+                <div class="flex-grow-1">
+                    <strong>Followup Required:</strong> Please set a followup date for this lead.
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <label class="form-label" for="followup_date">Followup Date <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" name="followup_date" id="followup_date"
+                        min="{{ date('Y-m-d') }}" required>
+                </div>
+            </div>
         </div>
 
         <!-- Demo Booking Button - Only shown when status 6 is selected -->
@@ -56,11 +79,11 @@
                 </div>
             </div>
             <div class="text-center">
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link" 
-                   target="_blank" 
-                   class="btn btn-warning" 
-                   id="demoBookingBtn"
-                   title="Open Demo Conduction Form">
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link"
+                    target="_blank"
+                    class="btn btn-warning"
+                    id="demoBookingBtn"
+                    title="Open Demo Conduction Form">
                     <i class="ti ti-file-text me-2"></i>Complete Demo Conduction Form
                 </a>
                 <div class="mt-2">
@@ -68,12 +91,17 @@
                 </div>
             </div>
         </div>
-        
+
+        <div class="mb-3">
+            <label class="form-label" for="reason">Reason for Status Change <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="reason" id="reason" required placeholder="Enter reason for status change..." />
+        </div>
+
         <div class="mb-3">
             <label class="form-label" for="remarks">Remarks <span class="text-danger">*</span></label>
             <textarea class="form-control" name="remarks" id="remarks" rows="3" required placeholder="Enter remarks for this status change...">{{ $lead->remarks }}</textarea>
         </div>
-        
+
         <div class="row">
             <div class="col-md-6">
                 <div class="mb-3">
@@ -102,11 +130,11 @@
                         <div class="flex-shrink-0 me-3">
                             <div class="avtar avtar-s rounded-circle bg-light-info d-flex align-items-center justify-content-center">
                                 @if($activity->leadStatus)
-                                    <i class="ti ti-arrow-right f-12"></i>
+                                <i class="ti ti-arrow-right f-12"></i>
                                 @elseif($activity->activity_type == 'bulk_upload')
-                                    <i class="ti ti-upload f-12"></i>
+                                <i class="ti ti-upload f-12"></i>
                                 @else
-                                    <i class="ti ti-clock f-12"></i>
+                                <i class="ti ti-clock f-12"></i>
                                 @endif
                             </div>
                         </div>
@@ -115,18 +143,24 @@
                                 <div>
                                     <h6 class="mb-1 f-14 fw-semibold">
                                         @if($activity->leadStatus)
-                                            Status Changed to: {{ $activity->leadStatus->title }}
+                                        Status Changed to: {{ $activity->leadStatus->title }}
                                         @elseif($activity->activity_type)
-                                            {{ ucfirst(str_replace('_', ' ', $activity->activity_type)) }}
+                                        {{ ucfirst(str_replace('_', ' ', $activity->activity_type)) }}
                                         @else
-                                            Activity
+                                        Activity
                                         @endif
                                     </h6>
+                                    @if($activity->reason)
+                                    <p class="mb-1 f-13"><strong>Reason:</strong> <span class="badge bg-info">{{ $activity->formatted_reason }}</span></p>
+                                    @endif
                                     @if($activity->description)
-                                        <p class="mb-1 text-muted f-13">{{ $activity->description }}</p>
+                                    <p class="mb-1 text-muted f-13">{{ $activity->description }}</p>
+                                    @endif
+                                    @if($activity->lead_status_id == 2 && $activity->followup_date)
+                                    <p class="mb-1 f-13"><strong>Followup Date:</strong> <span class="badge bg-warning">{{ $activity->followup_date->format('d M Y') }}</span></p>
                                     @endif
                                     @if($activity->remarks)
-                                        <div class="mb-1 f-13 text-dark" style="white-space: pre-wrap; word-wrap: break-word;">{{ $activity->remarks }}</div>
+                                    <div class="mb-1 f-13 text-dark" style="white-space: pre-wrap; word-wrap: break-word;">{{ $activity->remarks }}</div>
                                     @endif
                                 </div>
                                 <small class="text-muted f-12">
@@ -134,9 +168,9 @@
                                 </small>
                             </div>
                             @if($activity->createdBy)
-                                <small class="text-muted f-12">
-                                    <i class="ti ti-user me-1"></i>By: {{ $activity->createdBy->name }}
-                                </small>
+                            <small class="text-muted f-12">
+                                <i class="ti ti-user me-1"></i>By: {{ $activity->createdBy->name }}
+                            </small>
                             @endif
                         </div>
                     </div>
@@ -153,125 +187,196 @@
 </form>
 
 <script>
-$(document).ready(function() {
-    let formCompleted = false;
-    
-    // Handle status selection change
-    $('#lead_status_id').on('change', function() {
-        const selectedStatus = $(this).val();
-        const demoBookingSection = $('#demoBookingSection');
-        const updateStatusBtn = $('#updateStatusBtn');
-        
-        if (selectedStatus == '6') {
-            // Show demo booking section
-            demoBookingSection.show();
-            // Disable update button until form is completed
-            updateStatusBtn.prop('disabled', true);
-            updateStatusBtn.html('Complete Demo Booking First');
-            formCompleted = false;
-        } else {
-            // Hide demo booking section
-            demoBookingSection.hide();
+    $(document).ready(function() {
+        let formCompleted = false;
+
+        // Handle status selection change
+        $('#lead_status_id').on('change', function() {
+            const selectedStatus = $(this).val();
+            const demoBookingSection = $('#demoBookingSection');
+            const followupDateSection = $('#followupDateSection');
+            const updateStatusBtn = $('#updateStatusBtn');
+            const followupInput = $('#followup_date');
+
+            if (selectedStatus == '6') {
+                // Show demo booking section
+                demoBookingSection.show();
+                followupDateSection.hide();
+                // Disable update button until form is completed
+                updateStatusBtn.prop('disabled', true);
+                followupInput.prop('required', false); // remove required
+                updateStatusBtn.html('Complete Demo Booking First');
+                formCompleted = false;
+            } else if (selectedStatus == '2') {
+                // Show followup date section
+                followupDateSection.show();
+                demoBookingSection.hide();
+                followupInput.prop('required', true); // make required
+                // Enable update button
+                updateStatusBtn.prop('disabled', false);
+                updateStatusBtn.html('Update Status');
+                formCompleted = true;
+            } else {
+                // Hide both sections
+                demoBookingSection.hide();
+                followupDateSection.hide();
+                // Enable update button
+                followupInput.prop('required', false); // remove required
+                updateStatusBtn.prop('disabled', false);
+                updateStatusBtn.html('Update Status');
+                formCompleted = true;
+            }
+        });
+
+        // Handle demo booking form button click
+        $('#demoBookingBtn').on('click', function() {
+            formCompleted = true;
+            const updateStatusBtn = $('#updateStatusBtn');
+
             // Enable update button
             updateStatusBtn.prop('disabled', false);
             updateStatusBtn.html('Update Status');
-            formCompleted = true;
-        }
-    });
-    
-    // Handle demo booking form button click
-    $('#demoBookingBtn').on('click', function() {
-        formCompleted = true;
-        const updateStatusBtn = $('#updateStatusBtn');
-        
-        // Enable update button
-        updateStatusBtn.prop('disabled', false);
-        updateStatusBtn.html('Update Status');
-        
-        // Show a brief success message
-        if (typeof toast_success === 'function') {
-            toast_success('Demo conduction form opened. You can now update the status.');
-        }
-    });
-    
-    // Handle form submission
-    $('#statusChangeForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        // Check if status 6 is selected and form is not completed
-        const selectedStatus = $('#lead_status_id').val();
-        if (selectedStatus == '6' && !formCompleted) {
-            if (typeof toast_error === 'function') {
-                toast_error('Please click the "Complete Demo Conduction Form" button before updating the status.');
-            } else {
-                alert('Please click the "Complete Demo Conduction Form" button before updating the status.');
+
+            // Show a brief success message
+            if (typeof toast_success === 'function') {
+                toast_success('Demo conduction form opened. You can now update the status.');
             }
-            return;
-        }
-        
-        const submitBtn = $(this).find('button[type="submit"]');
-        const originalText = submitBtn.html();
-        
-        submitBtn.prop('disabled', true);
-        submitBtn.html('<i class="ti ti-loader-2"></i> Updating...');
-        
-        $.ajax({
-            url: '{{ route("leads.status-update-submit", $lead->id) }}',
-            method: 'POST',
-            data: $(this).serialize(),
-            success: function(response) {
-                if (response.success) {
-                    // Show success message
-                    if (typeof toast_success === 'function') {
-                        toast_success(response.message);
-                    } else {
-                        alert(response.message);
-                    }
-                    
-                    // Close modal
-                    $('#ajax_modal').modal('hide');
-                    
-                    // Reload the page or update the table
-                    location.reload();
-                } else {
-                    // Show error message
-                    if (typeof toast_error === 'function') {
-                        toast_error(response.message);
-                    } else {
-                        alert(response.message);
-                    }
-                }
-            },
-            error: function(xhr) {
-                let errorMessage = 'An error occurred while updating the status.';
-                
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
-                    const errors = Object.values(xhr.responseJSON.errors).flat();
-                    errorMessage = errors.join(', ');
-                }
-                
+        });
+
+        // Handle form submission
+        $('#statusChangeForm').on('submit', function(e) {
+            e.preventDefault();
+
+            // Check if status 6 is selected and form is not completed
+            const selectedStatus = $('#lead_status_id').val();
+            if (selectedStatus == '6' && !formCompleted) {
                 if (typeof toast_error === 'function') {
-                    toast_error(errorMessage);
+                    toast_error('Please click the "Complete Demo Conduction Form" button before updating the status.');
                 } else {
-                    alert(errorMessage);
+                    toast_error('Please click the "Complete Demo Conduction Form" button before updating the status.');
                 }
-            },
-            complete: function() {
-                submitBtn.prop('disabled', false);
-                submitBtn.html(originalText);
+                return;
+            }
+
+            // Check if status 2 is selected and followup date is not provided
+            if (selectedStatus == '2') {
+                const followupDate = $('#followup_date').val();
+                if (!followupDate) {
+                    if (typeof toast_error === 'function') {
+                        toast_error('Please select a followup date for this status.');
+                    } else {
+                        alert('Please select a followup date for this status.');
+                    }
+                    return;
+                }
+            }
+
+            // Check if reason and remarks are provided
+            const reason = $('#reason').val().trim();
+            const remarks = $('#remarks').val().trim();
+
+            if (!reason) {
+                if (typeof toast_error === 'function') {
+                    toast_error('Please enter a reason for the status change.');
+                } else {
+                    alert('Please enter a reason for the status change.');
+                }
+                return;
+            }
+
+            if (!remarks) {
+                if (typeof toast_error === 'function') {
+                    toast_error('Please enter remarks for the status change.');
+                } else {
+                    alert('Please enter remarks for the status change.');
+                }
+                return;
+            }
+
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.html();
+
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<i class="ti ti-loader-2"></i> Updating...');
+
+            $.ajax({
+                url: '{{ route("leads.status-update-submit", $lead->id) }}',
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message
+                        if (typeof toast_success === 'function') {
+                            toast_success(response.message);
+                        } else {
+                            alert(response.message);
+                        }
+
+                        // Close modal
+                        $('#ajax_modal').modal('hide');
+
+                        // Reload the page or update the table
+                        location.reload();
+                    } else {
+                        // Show error message
+                        if (typeof toast_error === 'function') {
+                            toast_error(response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'An error occurred while updating the status.';
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errors = Object.values(xhr.responseJSON.errors).flat();
+                        errorMessage = errors.join(', ');
+                    }
+
+                    if (typeof toast_error === 'function') {
+                        toast_error(errorMessage);
+                    } else {
+                        alert(errorMessage);
+                    }
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false);
+                    submitBtn.html(originalText);
+                }
+            });
+        });
+
+        // Initialize form state on page load
+        const initialStatus = $('#lead_status_id').val();
+        if (initialStatus == '6') {
+            $('#demoBookingSection').show();
+            // Don't disable the button if current status is already 6
+            $('#updateStatusBtn').prop('disabled', false).html('Update Status');
+            formCompleted = true; // Allow immediate submission since current status is 6
+        } else if (initialStatus == '2') {
+            $('#followupDateSection').show();
+            // Don't disable the button if current status is already 2
+            $('#updateStatusBtn').prop('disabled', false).html('Update Status');
+            formCompleted = true; // Allow immediate submission since current status is 2
+        }
+        // Rating input validation
+        $('#rating').on('input', function() {
+            let value = parseInt($(this).val(), 10);
+
+            if (value > 10) {
+                $(this).val(10);
+                if (typeof toast_error === 'function') {
+                    toast_error('Rating cannot be more than 10.');
+                }
+            } else if (value < 1 && value !== '') {
+                $(this).val(1);
+                if (typeof toast_error === 'function') {
+                    toast_error('Rating cannot be less than 1.');
+                }
             }
         });
     });
-    
-    // Initialize form state on page load
-    const initialStatus = $('#lead_status_id').val();
-    if (initialStatus == '6') {
-        $('#demoBookingSection').show();
-        // Don't disable the button if current status is already 6
-        $('#updateStatusBtn').prop('disabled', false).html('Update Status');
-        formCompleted = true; // Allow immediate submission since current status is 6
-    }
-});
 </script>

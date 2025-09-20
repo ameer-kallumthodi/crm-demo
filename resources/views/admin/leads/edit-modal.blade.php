@@ -6,7 +6,7 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="title">Name <span class="text-danger">*</span></label>
-                    <input type="text" name="title" class="form-control" id="title" value="{{ old('title', $lead->title) }}" required>
+                    <input type="text" name="title" class="form-control" id="title" placeholder="Enter Name" value="{{ old('title', $lead->title) }}" required>
                     <div class="invalid-feedback" id="title-error"></div>
                 </div>
             </div>
@@ -30,7 +30,7 @@
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label" for="age">Age</label>
-                    <input type="number" class="form-control" id="age" name="age" value="{{ old('age', $lead->age) }}" max="999" />
+                    <input type="number" class="form-control" id="age" name="age" placeholder="Enter Age" value="{{ old('age', $lead->age) }}" max="999" />
                     <div class="invalid-feedback" id="age-error"></div>
                 </div>
             </div>
@@ -38,7 +38,7 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="place">Place</label>
-                    <input type="text" class="form-control" id="place" name="place" value="{{ old('place', $lead->place) }}" />
+                    <input type="text" class="form-control" id="place" name="place" placeholder="Enter Place" value="{{ old('place', $lead->place) }}" />
                     <div class="invalid-feedback" id="place-error"></div>
                 </div>
             </div>
@@ -46,8 +46,8 @@
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label class="form-label" for="code">Country Code</label>
-                        <select class="form-select" id="code" name="code">
+                        <label class="form-label" for="code">Country Code <span class="text-danger">*</span></label>
+                        <select class="form-select" id="code" name="code" required>
                             <option value="">Select Country</option>
                             @foreach($country_codes as $code => $country)
                                 <option value="{{ $code }}" {{ old('code', $lead->code) == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
@@ -59,7 +59,7 @@
                 <div class="col-md-8">
                     <div class="mb-3">
                         <label class="form-label" for="phone">Phone <span class="text-danger">*</span></label>
-                        <input type="number" name="phone" class="form-control" id="phone" value="{{ old('phone', $lead->phone) }}" required maxlength="15" />
+                        <input type="number" name="phone" class="form-control" id="phone" placeholder="Enter Phone" value="{{ old('phone', $lead->phone) }}" required maxlength="15" />
                         <div class="invalid-feedback" id="phone-error"></div>
                     </div>
                 </div>
@@ -81,7 +81,7 @@
                 <div class="col-md-8">
                     <div class="mb-3">
                         <label class="form-label" for="whatsapp">WhatsApp Number</label>
-                        <input type="number" name="whatsapp" class="form-control" id="whatsapp" value="{{ old('whatsapp', $lead->whatsapp) }}" maxlength="15" />
+                        <input type="number" name="whatsapp" class="form-control" id="whatsapp" placeholder="Enter WhatsApp Number" value="{{ old('whatsapp', $lead->whatsapp) }}" maxlength="15" />
                         <div class="invalid-feedback" id="whatsapp-error"></div>
                     </div>
                 </div>
@@ -90,7 +90,7 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="email">Email ID</label>
-                    <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $lead->email) }}" />
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter Email" value="{{ old('email', $lead->email) }}" />
                     <div class="invalid-feedback" id="email-error"></div>
                 </div>
             </div>
@@ -98,23 +98,11 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="qualification">Qualification</label>
-                    <input type="text" class="form-control" id="qualification" name="qualification" value="{{ old('qualification', $lead->qualification) }}" />
+                    <input type="text" class="form-control" id="qualification" name="qualification" placeholder="Enter Qualification" value="{{ old('qualification', $lead->qualification) }}" />
                     <div class="invalid-feedback" id="qualification-error"></div>
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label" for="interest_status">Interest Status</label>
-                    <select class="form-select" name="interest_status" id="interest_status">
-                        <option value="">Select Status</option>
-                        <option value="1" {{ old('interest_status', $lead->interest_status) == '1' ? 'selected' : '' }}>Hot</option>
-                        <option value="2" {{ old('interest_status', $lead->interest_status) == '2' ? 'selected' : '' }}>Warm</option>
-                        <option value="3" {{ old('interest_status', $lead->interest_status) == '3' ? 'selected' : '' }}>Cold</option>
-                    </select>
-                    <div class="invalid-feedback" id="interest_status-error"></div>
-                </div>
-            </div>
 
             <div class="col-md-6">
                 <div class="mb-3">
@@ -153,7 +141,7 @@
                         <option value="">Select Country</option>
                         @foreach($countries as $country)
                             <option value="{{ $country->id }}" {{ old('country_id', $lead->country_id) == $country->id ? 'selected' : '' }}>
-                                {{ $country->name }}
+                                {{ $country->title }}
                             </option>
                         @endforeach
                     </select>
@@ -163,8 +151,8 @@
 
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="course_id">Course Interested</label>
-                    <select class="form-select" name="course_id" id="course_id">
+                    <label class="form-label" for="course_id">Course Interested <span class="text-danger">*</span></label>
+                    <select class="form-select" name="course_id" id="course_id" required>
                         <option value="">Select Course</option>
                         @foreach($courses as $course)
                             <option value="{{ $course->id }}" {{ old('course_id', $lead->course_id) == $course->id ? 'selected' : '' }}>
@@ -194,7 +182,7 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="address">Address</label>
-                    <input type="text" class="form-control" name="address" id="address" value="{{ old('address', $lead->address) }}" />
+                    <input type="text" class="form-control" name="address" id="address" placeholder="Enter Address" value="{{ old('address', $lead->address) }}" />
                     <div class="invalid-feedback" id="address-error"></div>
                 </div>
             </div>
@@ -225,7 +213,7 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="remarks">Remarks</label>
-                    <textarea class="form-control" name="remarks" id="remarks" rows="3">{{ old('remarks', $lead->remarks) }}</textarea>
+                    <textarea class="form-control" name="remarks" id="remarks" placeholder="Enter Remarks" rows="3">{{ old('remarks', $lead->remarks) }}</textarea>
                     <div class="invalid-feedback" id="remarks-error"></div>
                 </div>
             </div>

@@ -105,6 +105,16 @@
                                 <label class="form-label text-muted">Lead Status</label>
                                 <p class="fw-bold">{{ $convertedLead->lead->leadStatus ? $convertedLead->lead->leadStatus->title : 'N/A' }}</p>
                             </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Interest Status</label>
+                                <p class="fw-bold">
+                                    @if($convertedLead->lead->interest_status)
+                                        <span class="badge bg-{{ $convertedLead->lead->interest_status_color }}">{{ $convertedLead->lead->interest_status_label }}</span>
+                                    @else
+                                        N/A
+                                    @endif
+                                </p>
+                            </div>
                         </div>
                     </div>
                     @endif
@@ -155,6 +165,15 @@
                                     <div>
                                         <h6 class="mb-1">{{ ucfirst(str_replace('_', ' ', $activity->activity_type)) }}</h6>
                                         <p class="mb-1 text-muted">{{ $activity->description }}</p>
+                                        @if($activity->reason)
+                                            <p class="mb-1"><strong>Reason:</strong> <span class="badge bg-info">{{ $activity->formatted_reason }}</span></p>
+                                        @endif
+                                        @if($activity->rating)
+                                            <p class="mb-1"><strong>Rating:</strong> <span class="badge bg-success">{{ $activity->rating }}/10</span></p>
+                                        @endif
+                                        @if($activity->lead_status_id == 2 && $activity->followup_date)
+                                            <p class="mb-1"><strong>Followup Date:</strong> <span class="badge bg-warning">{{ $activity->followup_date->format('d M Y') }}</span></p>
+                                        @endif
                                         @if($activity->remarks)
                                             <p class="mb-1"><small class="text-info">{{ $activity->remarks }}</small></p>
                                         @endif

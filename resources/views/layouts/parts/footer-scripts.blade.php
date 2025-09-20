@@ -47,110 +47,61 @@
 
 <!-- Custom Scripts -->
 <script>
+    // Global DataTable initialization function
+    function initializeTables() {
+        // Initialize all tables with data_table_basic or datatable class
+        $('.data_table_basic, .datatable').each(function() {
+            var tableId = $(this).attr('id') || 'table_' + Math.random().toString(36).substr(2, 9);
+            var lastPageKey = 'lastPage_' + tableId;
+            var lastPage = localStorage.getItem(lastPageKey);
+            
+            // Initialize the DataTable
+            var table = new DataTable(this, {
+                dom: "Bfrtip",
+                buttons: ["csv", "excel", "print", "pdf"],
+                pagingType: "full_numbers",
+                scrollCollapse: true,
+                paging: true,
+                stateSave: true,
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                
+                // Set the initial page if there was a stored page
+                "displayStart": lastPage ? lastPage * 25 : 0,  // Multiply by page size
+                
+                // Language configuration
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No data available",
+                    zeroRecords: "No matching records found",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    infoEmpty: "Showing 0 to 0 of 0 entries",
+                    infoFiltered: "(filtered from _MAX_ total entries)",
+                    search: "Search:",
+                    paginate: {
+                        first: "First",
+                        last: "Last",
+                        next: "Next",
+                        previous: "Previous"
+                    }
+                }
+            });
+            
+            // Listen for the page change event and store the current page
+            table.on('page', function() {
+                var pageInfo = table.page.info();
+                localStorage.setItem(lastPageKey, pageInfo.page);
+            });
+        });
+    }
+
     $(document).ready(function() {
         // Initialize any custom functionality here
         // console.log('CRM Dashboard loaded successfully');
         
-        // Initialize DataTables globally for all tables
-        if ($.fn.DataTable) {
-            // Initialize tables with 'datatable' class
-            $('.datatable').each(function() {
-                if (!$.fn.DataTable.isDataTable(this)) {
-                    $(this).DataTable({
-                        responsive: true,
-                        pageLength: 25,
-                        order: [[0, 'asc']],
-                        columnDefs: [
-                            { orderable: false, targets: -1 }
-                        ],
-                        language: {
-                            search: "Search:",
-                            lengthMenu: "Show _MENU_ entries",
-                            info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                            paginate: {
-                                first: "First",
-                                last: "Last",
-                                next: "Next",
-                                previous: "Previous"
-                            }
-                        }
-                    });
-                }
-            });
-            
-            // Initialize specific tables with custom configurations
-            initializeSpecificTables();
-        }
-        
-        // Function to initialize specific tables with custom settings
-        function initializeSpecificTables() {
-            // Converted Leads Table
-            if ($('#convertedLeadsTable').length && !$.fn.DataTable.isDataTable('#convertedLeadsTable')) {
-                $('#convertedLeadsTable').DataTable({
-                    "processing": true,
-                    "serverSide": false,
-                    "responsive": true,
-                    "pageLength": 25,
-                    "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-                    "order": [[6, 'desc']], // Sort by converted date descending
-                    "columnDefs": [
-                        { "orderable": false, "targets": [0, 7] }, // Disable sorting on serial number and actions columns
-                        { "searchable": false, "targets": [0, 7] } // Disable searching on serial number and actions columns
-                    ],
-                    "language": {
-                        "processing": "Loading converted leads...",
-                        "emptyTable": "No converted leads found",
-                        "zeroRecords": "No matching converted leads found",
-                        "search": "Search:",
-                        "lengthMenu": "Show _MENU_ entries",
-                        "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-                        "paginate": {
-                            "first": "First",
-                            "last": "Last",
-                            "next": "Next",
-                            "previous": "Previous"
-                        }
-                    },
-                    "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
-                           '<"row"<"col-sm-12"tr>>' +
-                           '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
-                    "initComplete": function() {
-                        // Hide the original pagination since DataTable handles it
-                        $('.d-flex.justify-content-center').hide();
-                    }
-                });
-            }
-            
-            // Leads Table
-            if ($('#leadsTable').length && !$.fn.DataTable.isDataTable('#leadsTable')) {
-                $('#leadsTable').DataTable({
-                    "processing": true,
-                    "serverSide": false,
-                    "responsive": true,
-                    "pageLength": 25,
-                    "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-                    "columnDefs": [
-                        { "orderable": false, "targets": [0, 1] }, // Disable sorting on serial number and actions columns
-                        { "searchable": false, "targets": [0, 1] } // Disable searching on serial number and actions columns
-                    ],
-                    "language": {
-                        "processing": "Loading leads...",
-                        "emptyTable": "No leads found",
-                        "zeroRecords": "No matching leads found",
-                        "search": "Search:",
-                        "lengthMenu": "Show _MENU_ entries",
-                        "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-                        "paginate": {
-                            "first": "First",
-                            "last": "Last",
-                            "next": "Next",
-                            "previous": "Previous"
-                        }
-                    }
-                });
-            }
-            
-        }
+        // Initialize global DataTables
+        initializeTables();
         
         // Initialize sidebar toggle
         $('.toggle-sidebar').click(function() {

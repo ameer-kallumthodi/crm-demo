@@ -12,8 +12,8 @@
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label class="form-label" for="code">Country Code</label>
-                        <select class="form-select" id="code" name="code">
+                        <label class="form-label" for="code">Country Code <span class="text-danger">*</span></label>
+                        <select class="form-select" id="code" name="code" required>
                             <option value="">Select Country</option>
                             @foreach($country_codes as $code => $country)
                                 <option value="{{ $code }}" {{ old('code') == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
@@ -93,22 +93,12 @@
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label" for="interest_status">Interest Status</label>
-                    <select class="form-select" name="interest_status" id="interest_status">
-                        <option value="">Select Status</option>
-                        <option value="1" {{ old('interest_status') == '1' ? 'selected' : '' }}>Hot</option>
-                        <option value="2" {{ old('interest_status') == '2' ? 'selected' : '' }}>Warm</option>
-                        <option value="3" {{ old('interest_status') == '3' ? 'selected' : '' }}>Cold</option>
-                    </select>
-                </div>
-            </div>
 
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="lead_status_id">Lead Status</label>
-                    <select class="form-select" name="lead_status_id" id="lead_status_id">
+                    <label class="form-label" for="lead_status_id">Lead Status <span class="text-danger">*</span></label>
+                    <select class="form-select" name="lead_status_id" id="lead_status_id" required>
+                        <option value="">Select Lead Status</option>
                         @foreach($leadStatuses as $status)
                             <option value="{{ $status->id }}" {{ old('lead_status_id', 1) == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
                         @endforeach
@@ -118,8 +108,8 @@
 
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="lead_source_id">Lead Source</label>
-                    <select class="form-select" name="lead_source_id" id="lead_source_id">
+                    <label class="form-label" for="lead_source_id">Lead Source <span class="text-danger">*</span></label>
+                    <select class="form-select" name="lead_source_id" id="lead_source_id" required>
                         <option value="">Select Source</option>
                         @foreach($leadSources as $source)
                             <option value="{{ $source->id }}" {{ old('lead_source_id') == $source->id ? 'selected' : '' }}>{{ $source->title }}</option>
@@ -142,8 +132,8 @@
 
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="course_id">Course Interested</label>
-                    <select class="form-select" name="course_id" id="course_id">
+                    <label class="form-label" for="course_id">Course Interested <span class="text-danger">*</span></label>
+                    <select class="form-select" name="course_id" id="course_id" required>
                         <option value="">Select Course</option>
                         @foreach($courses as $course)
                             <option value="{{ $course->id }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>{{ $course->title }}</option>
