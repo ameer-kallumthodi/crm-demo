@@ -93,6 +93,26 @@
                     </a>
                 </li>
                 @endif
+                @if(has_permission('admin/finance/index'))
+                <li class="pc-item {{ request()->routeIs('admin.finance.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.finance.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-currency-dollar"></i>
+                        </span>
+                        <span class="pc-mtext">Finance</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/post-sales/index'))
+                <li class="pc-item {{ request()->routeIs('admin.post-sales.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.post-sales.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-headset"></i>
+                        </span>
+                        <span class="pc-mtext">Post-sales</span>
+                    </a>
+                </li>
+                @endif
                 @if(has_permission('admin/admins/index'))
                 <li class="pc-item {{ request()->routeIs('admin.admins.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.admins.index') }}" class="pc-link">

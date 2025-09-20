@@ -160,6 +160,26 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
             Route::get('/academic-assistants-change-password/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'changePassword'])->name('academic-assistants.change-password');
             Route::post('/academic-assistants-update-password/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'updatePassword'])->name('academic-assistants.update-password');
             
+            // Finance routes (role_id = 6)
+            Route::resource('finance', App\Http\Controllers\FinanceController::class);
+            Route::get('/finance-add', [App\Http\Controllers\FinanceController::class, 'ajax_add'])->name('finance.add');
+            Route::get('/finance-edit/{id}', [App\Http\Controllers\FinanceController::class, 'ajax_edit'])->name('finance.edit');
+            Route::post('/finance-submit', [App\Http\Controllers\FinanceController::class, 'submit'])->name('finance.submit');
+            Route::put('/finance-update/{id}', [App\Http\Controllers\FinanceController::class, 'update'])->name('finance.update');
+            Route::get('/finance-delete/{id}', [App\Http\Controllers\FinanceController::class, 'delete'])->name('finance.delete');
+            Route::get('/finance-change-password/{id}', [App\Http\Controllers\FinanceController::class, 'changePassword'])->name('finance.change-password');
+            Route::post('/finance-update-password/{id}', [App\Http\Controllers\FinanceController::class, 'updatePassword'])->name('finance.update-password');
+            
+            // Post-sales routes (role_id = 7)
+            Route::resource('post-sales', App\Http\Controllers\PostSalesController::class);
+            Route::get('/post-sales-add', [App\Http\Controllers\PostSalesController::class, 'ajax_add'])->name('post-sales.add');
+            Route::get('/post-sales-edit/{id}', [App\Http\Controllers\PostSalesController::class, 'ajax_edit'])->name('post-sales.edit');
+            Route::post('/post-sales-submit', [App\Http\Controllers\PostSalesController::class, 'submit'])->name('post-sales.submit');
+            Route::put('/post-sales-update/{id}', [App\Http\Controllers\PostSalesController::class, 'update'])->name('post-sales.update');
+            Route::get('/post-sales-delete/{id}', [App\Http\Controllers\PostSalesController::class, 'delete'])->name('post-sales.delete');
+            Route::get('/post-sales-change-password/{id}', [App\Http\Controllers\PostSalesController::class, 'changePassword'])->name('post-sales.change-password');
+            Route::post('/post-sales-update-password/{id}', [App\Http\Controllers\PostSalesController::class, 'updatePassword'])->name('post-sales.update-password');
+            
             Route::resource('user-roles', UserRoleController::class);
             Route::resource('settings', SettingsController::class);
             

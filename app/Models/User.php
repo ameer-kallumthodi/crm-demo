@@ -28,6 +28,7 @@ class User extends Authenticatable
         'profile_picture',
         'is_team_lead',
         'is_team_manager',
+        'is_head',
         'current_role',
         'team_id',
         'is_active',
@@ -57,6 +58,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_team_lead' => 'boolean',
             'is_team_manager' => 'boolean',
+            'is_head' => 'boolean',
             'is_active' => 'boolean',
             'joining_date' => 'date',
         ];

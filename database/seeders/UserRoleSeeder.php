@@ -42,6 +42,16 @@ class UserRoleSeeder extends Seeder
                 'description' => 'Academic Assistant access for Converted lead management',
                 'is_active' => true,
             ],
+            [
+                'title' => 'Finance',
+                'description' => 'Finance department access for financial management',
+                'is_active' => true,
+            ],
+            [
+                'title' => 'Post-sales',
+                'description' => 'Post-sales department access for customer support',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($roles as $role) {
