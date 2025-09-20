@@ -169,19 +169,6 @@ php artisan test
 php artisan migrate:fresh --seed
 ```
 
-## Migration from CodeIgniter 4
-
-This Laravel project includes all the core functionality from the original CodeIgniter 4 project:
-
-- ✅ User authentication and session management
-- ✅ Lead management with full CRUD operations
-- ✅ Role-based access control
-- ✅ Team and telecaller management
-- ✅ Dashboard with analytics
-- ✅ Database migrations and seeders
-- ✅ Helper functions for authentication
-- ✅ Responsive UI with Bootstrap 5
-
 ## Support
 
 For any issues or questions, please refer to the Laravel documentation or contact the development team.
