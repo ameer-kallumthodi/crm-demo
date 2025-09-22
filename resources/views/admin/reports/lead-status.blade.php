@@ -166,7 +166,7 @@
                                     @endphp
                                     <tr>
                                         <td>
-                                            <span class="badge" style="background-color: {{ $status->color }}; color: white;">
+                                            <span class="badge {{ \App\Helpers\StatusHelper::getLeadStatusColorClass($status->id) }}">
                                                 {{ $status->title }}
                                             </span>
                                         </td>
@@ -273,7 +273,7 @@
                                         <td>{{ $lead->phone }}</td>
                                         <td>{{ $lead->email ?? '-' }}</td>
                                         <td>
-                                            <span class="badge" style="background-color: {{ $lead->leadStatus->color ?? '#6c757d' }}; color: white;">
+                                            <span class="badge {{ \App\Helpers\StatusHelper::getLeadStatusColorClass($lead->leadStatus->id) }}">
                                                 {{ $lead->leadStatus->title ?? 'Unknown' }}
                                             </span>
                                         </td>

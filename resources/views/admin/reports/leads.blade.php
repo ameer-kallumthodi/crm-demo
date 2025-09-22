@@ -158,7 +158,7 @@
                                     @endphp
                                     <tr>
                                         <td>
-                                            <span class="badge" style="background-color: {{ $status->color }}; color: white;">
+                                            <span class="badge {{ \App\Helpers\StatusHelper::getLeadStatusColorClass($status->id) }}">
                                                 {{ $status->title }}
                                             </span>
                                         </td>

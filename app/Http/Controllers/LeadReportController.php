@@ -139,11 +139,13 @@ class LeadReportController extends Controller
         ];
         
         // Get leads data for the detailed view with optional team filter
-        $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name', 'team:id,name'])
+        $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name,team_id', 'telecaller.team:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
             
         if ($teamId) {
-            $leadsQuery->where('team_id', $teamId);
+            $leadsQuery->whereHas('telecaller', function($query) use ($teamId) {
+                $query->where('team_id', $teamId);
+            });
         }
         
         $this->applyRoleBasedFilter($leadsQuery);
@@ -220,14 +222,14 @@ class LeadReportController extends Controller
 
     private function getLeadStatusReport($fromDate, $toDate)
     {
-        $query = Lead::select('lead_statuses.title', 'lead_statuses.color')
+        $query = Lead::select('lead_statuses.id', 'lead_statuses.title')
             ->selectRaw('COUNT(leads.id) as count')
             ->join('lead_statuses', 'leads.lead_status_id', '=', 'lead_statuses.id')
             ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
             
         $this->applyRoleBasedFilter($query);
         
-        return $query->groupBy('lead_statuses.id', 'lead_statuses.title', 'lead_statuses.color')
+        return $query->groupBy('lead_statuses.id', 'lead_statuses.title')
             ->orderBy('count', 'desc')
             ->get();
     }
@@ -257,9 +259,10 @@ class LeadReportController extends Controller
             if ($teamId) {
                 $team = Team::select('id', 'name as title')->find($teamId);
                 if ($team) {
-                    // Get lead count for this team
-                    $leadCountQuery = Lead::where('team_id', $team->id)
-                        ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
+                    // Get lead count for this team through telecallers
+                    $leadCountQuery = Lead::join('users', 'leads.telecaller_id', '=', 'users.id')
+                        ->where('users.team_id', $team->id)
+                        ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
                     $this->applyRoleBasedFilter($leadCountQuery);
                     $leadCount = $leadCountQuery->count();
                     
@@ -267,7 +270,7 @@ class LeadReportController extends Controller
                     $telecallersQuery = Lead::select('users.id', 'users.name')
                         ->selectRaw('COUNT(leads.id) as lead_count')
                         ->join('users', 'leads.telecaller_id', '=', 'users.id')
-                        ->where('leads.team_id', $team->id)
+                        ->where('users.team_id', $team->id)
                         ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59'])
                         ->where('users.role_id', 3); // Telecaller role
                     $this->applyRoleBasedFilter($telecallersQuery);
@@ -286,9 +289,10 @@ class LeadReportController extends Controller
             $allTeams = Team::select('id', 'name as title')->get();
             
             foreach ($allTeams as $team) {
-                // Get lead count for this team
-                $leadCountQuery = Lead::where('team_id', $team->id)
-                    ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
+                // Get lead count for this team through telecallers
+                $leadCountQuery = Lead::join('users', 'leads.telecaller_id', '=', 'users.id')
+                    ->where('users.team_id', $team->id)
+                    ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
                 $this->applyRoleBasedFilter($leadCountQuery);
                 $leadCount = $leadCountQuery->count();
                 
@@ -296,7 +300,7 @@ class LeadReportController extends Controller
                 $telecallersQuery = Lead::select('users.id', 'users.name')
                     ->selectRaw('COUNT(leads.id) as lead_count')
                     ->join('users', 'leads.telecaller_id', '=', 'users.id')
-                    ->where('leads.team_id', $team->id)
+                    ->where('users.team_id', $team->id)
                     ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59'])
                     ->where('users.role_id', 3); // Telecaller role
                 $this->applyRoleBasedFilter($telecallersQuery);

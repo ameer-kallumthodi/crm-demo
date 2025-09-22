@@ -46,25 +46,25 @@ class StatusHelper
     {
         switch ($statusId) {
             case 1: // Un Touched Leads
-                return 'bg-light-primary text-primary';
+                return 'bg-primary text-white';
             case 2: // Follow-up
-                return 'bg-light-warning text-warning';
+                return 'bg-warning text-dark';
             case 3: // Not-interested IN FULL COURSE
-                return 'bg-light-danger text-danger';
+                return 'bg-danger text-white';
             case 4: // Disqualified
-                return 'bg-light-dark text-dark';
+                return 'bg-dark text-white';
             case 5: // DNP
-                return 'bg-light-secondary text-secondary';
+                return 'bg-secondary text-white';
             case 6: // Demo
-                return 'bg-light-info text-info';
+                return 'bg-info text-white';
             case 7: // Interested to Buy
-                return 'bg-light-success text-success';
+                return 'bg-success text-white';
             case 8: // Positive
-                return 'bg-light-success text-success';
+                return 'bg-success text-white';
             case 9: // May Buy Later
-                return 'bg-light-warning text-warning';
+                return 'bg-warning text-dark';
             default:
-                return 'bg-light-secondary text-secondary';
+                return 'bg-secondary text-white';
         }
     }
 
