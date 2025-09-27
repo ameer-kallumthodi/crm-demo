@@ -147,17 +147,52 @@ class LeadStatusController extends Controller
     public function delete($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
+            if (request()->ajax()) {
+                return response()->json(['error' => 'Access denied.'], 403);
+            }
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $leadStatus = LeadStatus::findOrFail($id);
-        
-        // Check if lead status has leads
-        if ($leadStatus->leads()->count() > 0) {
-            return redirect()->route('admin.lead-statuses.index')->with('message_danger', 'Cannot delete lead status. It has assigned leads.');
-        }
+        try {
+            $leadStatus = LeadStatus::findOrFail($id);
+            
+            // Check if lead status has leads
+            if ($leadStatus->leads()->count() > 0) {
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Cannot delete lead status. It has assigned leads.'
+                    ], 422);
+                }
+                return redirect()->route('admin.lead-statuses.index')->with('message_danger', 'Cannot delete lead status. It has assigned leads.');
+            }
 
-        $leadStatus->delete();
-        return redirect()->route('admin.lead-statuses.index')->with('message_success', 'Lead Status deleted successfully!');
+            $leadStatus->delete();
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Lead Status deleted successfully!'
+                ]);
+            }
+            
+            return redirect()->route('admin.lead-statuses.index')->with('message_success', 'Lead Status deleted successfully!');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Lead Status not found.'
+                ], 404);
+            }
+            return redirect()->route('admin.lead-statuses.index')->with('message_danger', 'Lead Status not found.');
+        } catch (\Exception $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while deleting the lead status. Please try again.'
+                ], 500);
+            }
+            return redirect()->route('admin.lead-statuses.index')->with('message_danger', 'An error occurred while deleting the lead status. Please try again.');
+        }
     }
 }

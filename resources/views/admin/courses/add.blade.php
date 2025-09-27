@@ -12,12 +12,21 @@
     <form id="courseAddForm" action="{{ route('admin.courses.submit') }}" method="post">
         @csrf
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label" for="title">Title <span class="text-danger">*</span></label>
                     <input type="text" name="title" class="form-control" 
                            id="title" placeholder="Enter Course Title" required>
                     <div class="invalid-feedback" id="title-error"></div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label" for="code">Code</label>
+                    <input type="text" name="code" class="form-control" 
+                           id="code" placeholder="Enter Course Code">
+                    <div class="invalid-feedback" id="code-error"></div>
                 </div>
             </div>
 

@@ -47,6 +47,11 @@ class Subject extends Model
         return $this->belongsTo(User::class, 'deleted_by');
     }
 
+    public function convertedLeads()
+    {
+        return $this->hasMany(ConvertedLead::class);
+    }
+
     /**
      * Override the delete method to set deleted_by
      */

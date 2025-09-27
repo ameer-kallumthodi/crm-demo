@@ -12,6 +12,7 @@ class Course extends Model
 
     protected $fillable = [
         'title',
+        'code',
         'amount',
         'is_active',
     ];
@@ -28,6 +29,12 @@ class Course extends Model
     {
         return $this->hasMany(Lead::class);
     }
+
+    public function subjects()
+    {
+        return $this->hasMany(Subject::class);
+    }
+
 
     public function scopeActive($query)
     {

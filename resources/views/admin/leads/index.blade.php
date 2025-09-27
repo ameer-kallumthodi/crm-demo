@@ -50,22 +50,22 @@
                         <div class="row align-items-end">
                             <div class="col-md-2">
                                 <label for="date_from" class="form-label">From Date</label>
-                                <input type="date" class="form-control" name="date_from" 
-                                       value="{{ request('date_from', \Carbon\Carbon::now()->subDays(7)->format('Y-m-d')) }}">
+                                <input type="date" class="form-control" name="date_from"
+                                    value="{{ request('date_from', \Carbon\Carbon::now()->subDays(7)->format('Y-m-d')) }}">
                             </div>
                             <div class="col-md-2">
                                 <label for="date_to" class="form-label">To Date</label>
-                                <input type="date" class="form-control" name="date_to" 
-                                       value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
+                                <input type="date" class="form-control" name="date_to"
+                                    value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
                             </div>
                             <div class="col-md-2">
                                 <label for="filter_lead_status_id" class="form-label">Status</label>
                                 <select class="form-select" name="lead_status_id" id="filter_lead_status_id">
                                     <option value="">All Statuses</option>
                                     @foreach($leadStatuses as $status)
-                                        <option value="{{ $status->id }}" {{ request('lead_status_id') == $status->id ? 'selected' : '' }}>
-                                            {{ $status->title }}
-                                        </option>
+                                    <option value="{{ $status->id }}" {{ request('lead_status_id') == $status->id ? 'selected' : '' }}>
+                                        {{ $status->title }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -74,9 +74,9 @@
                                 <select class="form-select" name="lead_source_id" id="filter_lead_source_id">
                                     <option value="">All Sources</option>
                                     @foreach($leadSources as $source)
-                                        <option value="{{ $source->id }}" {{ request('lead_source_id') == $source->id ? 'selected' : '' }}>
-                                            {{ $source->title }}
-                                        </option>
+                                    <option value="{{ $source->id }}" {{ request('lead_source_id') == $source->id ? 'selected' : '' }}>
+                                        {{ $source->title }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -85,9 +85,9 @@
                                 <select class="form-select" name="course_id">
                                     <option value="">All Courses</option>
                                     @foreach($courses as $course)
-                                        <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
-                                            {{ $course->title }}
-                                        </option>
+                                    <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
+                                        {{ $course->title }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -97,9 +97,9 @@
                                     <option value="">All Ratings</option>
                                     @for($i = 1; $i <= 10; $i++)
                                         <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>
-                                            {{ $i }}/10
+                                        {{ $i }}/10
                                         </option>
-                                    @endfor
+                                        @endfor
                                 </select>
                             </div>
                             @if(!$isTelecaller || $isTeamLead)
@@ -108,9 +108,9 @@
                                 <select class="form-select" id="telecaller_id_filter" name="telecaller_id">
                                     <option value="">All Telecallers</option>
                                     @foreach($telecallers as $telecaller)
-                                        <option value="{{ $telecaller->id }}" {{ request('telecaller_id') == $telecaller->id ? 'selected' : '' }}>
-                                            {{ $telecaller->name }}
-                                        </option>
+                                    <option value="{{ $telecaller->id }}" {{ request('telecaller_id') == $telecaller->id ? 'selected' : '' }}>
+                                        {{ $telecaller->name }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -127,28 +127,28 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Mobile Filter Layout -->
                     <div class="d-lg-none">
                         <div class="row g-2">
                             <div class="col-6">
                                 <label for="date_from_mobile" class="form-label f-12">From Date</label>
                                 <input type="date" class="form-control form-control-sm" name="date_from" id="date_from_mobile"
-                                       value="{{ request('date_from', \Carbon\Carbon::now()->subDays(7)->format('Y-m-d')) }}">
+                                    value="{{ request('date_from', \Carbon\Carbon::now()->subDays(7)->format('Y-m-d')) }}">
                             </div>
                             <div class="col-6">
                                 <label for="date_to_mobile" class="form-label f-12">To Date</label>
                                 <input type="date" class="form-control form-control-sm" name="date_to" id="date_to_mobile"
-                                       value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
+                                    value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
                             </div>
                             <div class="col-6">
                                 <label for="filter_lead_status_id_mobile" class="form-label f-12">Status</label>
                                 <select class="form-select form-select-sm" name="lead_status_id" id="filter_lead_status_id_mobile">
                                     <option value="">All Statuses</option>
                                     @foreach($leadStatuses as $status)
-                                        <option value="{{ $status->id }}" {{ request('lead_status_id') == $status->id ? 'selected' : '' }}>
-                                            {{ $status->title }}
-                                        </option>
+                                    <option value="{{ $status->id }}" {{ request('lead_status_id') == $status->id ? 'selected' : '' }}>
+                                        {{ $status->title }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -157,9 +157,9 @@
                                 <select class="form-select form-select-sm" name="lead_source_id" id="filter_lead_source_id_mobile">
                                     <option value="">All Sources</option>
                                     @foreach($leadSources as $source)
-                                        <option value="{{ $source->id }}" {{ request('lead_source_id') == $source->id ? 'selected' : '' }}>
-                                            {{ $source->title }}
-                                        </option>
+                                    <option value="{{ $source->id }}" {{ request('lead_source_id') == $source->id ? 'selected' : '' }}>
+                                        {{ $source->title }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -168,9 +168,9 @@
                                 <select class="form-select form-select-sm" name="course_id" id="course_id_mobile">
                                     <option value="">All Courses</option>
                                     @foreach($courses as $course)
-                                        <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
-                                            {{ $course->title }}
-                                        </option>
+                                    <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
+                                        {{ $course->title }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -180,9 +180,9 @@
                                 <select class="form-select form-select-sm" name="telecaller_id" id="telecaller_id_mobile">
                                     <option value="">All Telecallers</option>
                                     @foreach($telecallers as $telecaller)
-                                        <option value="{{ $telecaller->id }}" {{ request('telecaller_id') == $telecaller->id ? 'selected' : '' }}>
-                                            {{ $telecaller->name }}
-                                        </option>
+                                    <option value="{{ $telecaller->id }}" {{ request('telecaller_id') == $telecaller->id ? 'selected' : '' }}>
+                                        {{ $telecaller->name }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -235,7 +235,7 @@
                         @endif
                     </div>
                 </div>
-                
+
                 <!-- Mobile Header -->
                 <div class="d-md-none">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -247,7 +247,7 @@
                         </a>
                         @endif
                     </div>
-                    
+
                     @if(!$isTelecaller || $isTeamLead)
                     <div class="row g-2">
                         <div class="col-6">
@@ -276,6 +276,7 @@
                 </div>
             </div>
             <div class="card-body">
+
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive" style="overflow-x: auto;">
@@ -284,6 +285,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Actions</th>
+                                    <th>Registration Details</th>
                                     <th>Name</th>
                                     <th>Profile</th>
                                     <th>Phone</th>
@@ -323,37 +325,41 @@
                                                 title="Update Status">
                                                 <i class="ti ti-arrow-up"></i>
                                             </a>
-                                            @if(!$lead->is_converted)
+                                            @if(!$lead->is_converted && $lead->studentDetails)
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning"
                                                 onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
                                                 title="Convert Lead">
                                                 <i class="ti ti-refresh"></i>
                                             </a>
                                             @endif
+                                        </div>
+                                        <br>
+                                        <hr><br>
+                                        <div class="btn-group" role="group">
                                             @if($lead->lead_status_id == 6)
-                                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link" 
-                                               target="_blank" 
-                                               class="btn btn-sm btn-outline-info" 
-                                               title="Demo Conduction Form">
+                                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link"
+                                                target="_blank"
+                                                class="btn btn-sm btn-outline-info"
+                                                title="Demo Conduction Form">
                                                 <i class="ti ti-file-text"></i>
                                             </a>
                                             @endif
                                             @if($lead->phone && is_telecaller())
                                             @php
-                                                $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
+                                            $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
                                             @endphp
                                             @if($currentUserId > 0)
-                                            <button class="btn btn-sm btn-outline-success voxbay-call-btn" 
-                                                    data-lead-id="{{ $lead->id }}" 
-                                                    data-telecaller-id="{{ $currentUserId }}"
-                                                    title="Call Lead">
+                                            <button class="btn btn-sm btn-outline-success voxbay-call-btn"
+                                                data-lead-id="{{ $lead->id }}"
+                                                data-telecaller-id="{{ $currentUserId }}"
+                                                title="Call Lead">
                                                 <i class="ti ti-phone"></i>
                                             </button>
                                             @endif
                                             @endif
-                                            <a href="{{ route('leads.call-logs', $lead) }}" 
-                                               class="btn btn-sm btn-outline-info" 
-                                               title="View Call Logs">
+                                            <a href="{{ route('leads.call-logs', $lead) }}"
+                                                class="btn btn-sm btn-outline-info"
+                                                title="View Call Logs">
                                                 <i class="ti ti-phone-call"></i>
                                             </a>
                                             @if(!$isTelecaller || $isTeamLead)
@@ -364,6 +370,90 @@
                                             </a>
                                             @endif
                                         </div>
+                                    </td>
+                                    <td class="text-center">
+                                        @if($lead->studentDetails)
+                                        <div class="d-flex flex-column gap-1">
+                                            <span class="badge bg-success">Form Submitted</span>
+                                            <small class="text-muted">{{ $lead->studentDetails->course->title ?? 'Unknown Course' }}</small>
+                                            @if($lead->studentDetails->status)
+                                            <span class="badge 
+                                                        @if($lead->studentDetails->status == 'approved') bg-success
+                                                        @elseif($lead->studentDetails->status == 'rejected') bg-danger
+                                                        @else bg-warning
+                                                        @endif">
+                                                {{ ucfirst($lead->studentDetails->status) }}
+                                            </span>
+                                            @endif
+                                            <a href="{{ route('leads.registration-details', $lead->id) }}" 
+                                               class="btn btn-sm btn-outline-primary mt-1" 
+                                               title="View Registration Details">
+                                                <i class="ti ti-eye me-1"></i>View Details
+                                            </a>
+                                        </div>
+                                        @else
+                                            @if($lead->course_id == 1)
+                                                <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open NIOS Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 2)
+                                                <a href="{{ route('public.lead.bosse.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open BOSSE Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 3)
+                                                <a href="{{ route('public.lead.medical-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Medical Coding Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 4)
+                                                <a href="{{ route('public.lead.hospital-admin.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Hospital Administration Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 5)
+                                                <a href="{{ route('public.lead.eschool.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open E-School Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 6)
+                                                <a href="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Eduthanzeel Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 7)
+                                                <a href="{{ route('public.lead.ttc.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open TTC Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 8)
+                                                <a href="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Hotel Management Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 9)
+                                                <a href="{{ route('public.lead.ugpg.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open UG/PG Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 10)
+                                                <a href="{{ route('public.lead.python.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Python Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 11)
+                                                <a href="{{ route('public.lead.digital-marketing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Digital Marketing Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 12)
+                                                <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open AI Automation Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 13)
+                                                <a href="{{ route('public.lead.web-dev.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Web Development & Designing Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 14)
+                                                <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Vibe Coding Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @elseif($lead->course_id == 15)
+                                                <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Graphic Designing Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            @endif
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
@@ -378,37 +468,37 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             @if($lead->isProfileIncomplete())
-                                                <div class="me-2">
-                                                    <div class="progress" style="width: 60px; height: 8px;">
-                                                        <div class="progress-bar 
+                                            <div class="me-2">
+                                                <div class="progress" style="width: 60px; height: 8px;">
+                                                    <div class="progress-bar 
                                                             @if($lead->profile_status == 'incomplete') bg-danger
                                                             @elseif($lead->profile_status == 'partial') bg-warning
                                                             @elseif($lead->profile_status == 'almost_complete') bg-info
                                                             @else bg-success
-                                                            @endif" 
-                                                            role="progressbar" 
-                                                            style="width: {{ $lead->profile_completeness }}%"
-                                                            aria-valuenow="{{ $lead->profile_completeness }}" 
-                                                            aria-valuemin="0" 
-                                                            aria-valuemax="100">
-                                                        </div>
+                                                            @endif"
+                                                        role="progressbar"
+                                                        style="width: {{ $lead->profile_completeness }}%"
+                                                        aria-valuenow="{{ $lead->profile_completeness }}"
+                                                        aria-valuemin="0"
+                                                        aria-valuemax="100">
                                                     </div>
                                                 </div>
-                                                <span class="badge 
+                                            </div>
+                                            <span class="badge 
                                                     @if($lead->profile_status == 'incomplete') bg-danger
                                                     @elseif($lead->profile_status == 'partial') bg-warning
                                                     @elseif($lead->profile_status == 'almost_complete') bg-info
                                                     @else bg-success
-                                                    @endif" 
-                                                    data-bs-toggle="tooltip" 
-                                                    data-bs-placement="top" 
-                                                    title="Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}">
-                                                    {{ $lead->profile_completeness }}%
-                                                </span>
+                                                    @endif"
+                                                data-bs-toggle="tooltip"
+                                                data-bs-placement="top"
+                                                title="Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}">
+                                                {{ $lead->profile_completeness }}%
+                                            </span>
                                             @else
-                                                <span class="badge bg-success">
-                                                    <i class="ti ti-check"></i> Complete
-                                                </span>
+                                            <span class="badge bg-success">
+                                                <i class="ti ti-check"></i> Complete
+                                            </span>
                                             @endif
                                         </div>
                                     </td>
@@ -421,18 +511,18 @@
                                     </td>
                                     <td>
                                         @if($lead->interest_status)
-                                            <span class="badge bg-{{ $lead->interest_status_color }}">
-                                                {{ $lead->interest_status_label }}
-                                            </span>
+                                        <span class="badge bg-{{ $lead->interest_status_color }}">
+                                            {{ $lead->interest_status_label }}
+                                        </span>
                                         @else
-                                            <span class="badge bg-secondary">Not Set</span>
+                                        <span class="badge bg-secondary">Not Set</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($lead->rating)
-                                            <span class="badge bg-primary">{{ $lead->rating }}/10</span>
+                                        <span class="badge bg-primary">{{ $lead->rating }}/10</span>
                                         @else
-                                            <span class="badge bg-secondary">Not Rated</span>
+                                        <span class="badge bg-secondary">Not Rated</span>
                                         @endif
                                     </td>
                                     <td>{{ $lead->leadSource->title ?? '-' }}</td>
@@ -441,19 +531,19 @@
                                     <td>{{ $lead->place ?? '-' }}</td>
                                     <td>
                                         @if($lead->followup_date)
-                                            <span class="badge bg-warning">{{ $lead->followup_date->format('M d, Y') }}</span>
+                                        <span class="badge bg-warning">{{ $lead->followup_date->format('M d, Y') }}</span>
                                         @else
-                                            -
+                                        -
                                         @endif
                                     </td>
                                     <td>
                                         @php
-                                            $lastActivityWithReason = $lead->leadActivities->first();
+                                        $lastActivityWithReason = $lead->leadActivities->first();
                                         @endphp
                                         @if($lastActivityWithReason)
-                                            {{ Str::limit($lastActivityWithReason->reason, 20) }}
+                                        {{ Str::limit($lastActivityWithReason->reason, 20) }}
                                         @else
-                                            -
+                                        -
                                         @endif
                                     </td>
                                     <td>{{ $lead->remarks ? Str::limit($lead->remarks, 30) : '-' }}</td>
@@ -462,7 +552,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="18" class="text-center py-4">
+                                    <td colspan="19" class="text-center py-4">
                                         <div class="text-muted">
                                             <i class="ti ti-inbox f-48 mb-3 d-block"></i>
                                             No leads found
@@ -474,6 +564,10 @@
                         </table>
                     </div>
                 </div>
+
+                <br>
+                <hr>
+                <br>
 
                 <!-- Mobile Card View -->
                 <div class="d-lg-none">
@@ -493,20 +587,20 @@
                                 </div>
                                 <!-- Action buttons in header -->
                                 <div class="d-flex gap-1">
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary" 
-                                       onclick="show_large_modal('{{ route('leads.ajax-show', $lead->id) }}', 'View Lead')"
-                                       title="View Lead">
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary"
+                                        onclick="show_large_modal('{{ route('leads.ajax-show', $lead->id) }}', 'View Lead')"
+                                        title="View Lead">
                                         <i class="ti ti-eye f-12"></i>
                                     </a>
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary" 
-                                       onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
-                                       title="Edit Lead">
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
+                                        onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
+                                        title="Edit Lead">
                                         <i class="ti ti-edit f-12"></i>
                                     </a>
                                     @if(!$isTelecaller || $isTeamLead)
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger" 
-                                       onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}')"
-                                       title="Delete Lead">
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
+                                        onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}')"
+                                        title="Delete Lead">
                                         <i class="ti ti-trash f-12"></i>
                                     </a>
                                     @endif
@@ -516,48 +610,48 @@
                             <!-- Profile Completeness Indicator -->
                             <div class="mb-2">
                                 @if($lead->isProfileIncomplete())
-                                    <div class="d-flex align-items-center">
-                                        <small class="text-muted me-2 f-11">Profile:</small>
-                                        <div class="progress me-2" style="width: 80px; height: 6px;">
-                                            <div class="progress-bar 
+                                <div class="d-flex align-items-center">
+                                    <small class="text-muted me-2 f-11">Profile:</small>
+                                    <div class="progress me-2" style="width: 80px; height: 6px;">
+                                        <div class="progress-bar 
                                                 @if($lead->profile_status == 'incomplete') bg-danger
                                                 @elseif($lead->profile_status == 'partial') bg-warning
                                                 @elseif($lead->profile_status == 'almost_complete') bg-info
                                                 @else bg-success
-                                                @endif" 
-                                                role="progressbar" 
-                                                style="width: {{ $lead->profile_completeness }}%"
-                                                aria-valuenow="{{ $lead->profile_completeness }}" 
-                                                aria-valuemin="0" 
-                                                aria-valuemax="100">
-                                            </div>
+                                                @endif"
+                                            role="progressbar"
+                                            style="width: {{ $lead->profile_completeness }}%"
+                                            aria-valuenow="{{ $lead->profile_completeness }}"
+                                            aria-valuemin="0"
+                                            aria-valuemax="100">
                                         </div>
-                                        <span class="badge 
+                                    </div>
+                                    <span class="badge 
                                             @if($lead->profile_status == 'incomplete') bg-danger
                                             @elseif($lead->profile_status == 'partial') bg-warning
                                             @elseif($lead->profile_status == 'almost_complete') bg-info
                                             @else bg-success
-                                            @endif f-10" 
-                                            data-bs-toggle="tooltip" 
-                                            data-bs-placement="top" 
-                                            title="Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}">
-                                            {{ $lead->profile_completeness }}%
-                                        </span>
-                                    </div>
-                                    @if(count($lead->getMissingFields()) > 0)
-                                        <div class="mt-1">
-                                            <small class="text-muted f-10">
-                                                Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}
-                                            </small>
-                                        </div>
-                                    @endif
+                                            @endif f-10"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}">
+                                        {{ $lead->profile_completeness }}%
+                                    </span>
+                                </div>
+                                @if(count($lead->getMissingFields()) > 0)
+                                <div class="mt-1">
+                                    <small class="text-muted f-10">
+                                        Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}
+                                    </small>
+                                </div>
+                                @endif
                                 @else
-                                    <div class="d-flex align-items-center">
-                                        <small class="text-muted me-2 f-11">Profile:</small>
-                                        <span class="badge bg-success f-10">
-                                            <i class="ti ti-check me-1"></i> Complete
-                                        </span>
-                                    </div>
+                                <div class="d-flex align-items-center">
+                                    <small class="text-muted me-2 f-11">Profile:</small>
+                                    <span class="badge bg-success f-10">
+                                        <i class="ti ti-check me-1"></i> Complete
+                                    </span>
+                                </div>
                                 @endif
                             </div>
 
@@ -587,11 +681,11 @@
                                     <div class="d-flex align-items-center">
                                         <i class="ti ti-flame f-12 text-muted me-1"></i>
                                         @if($lead->interest_status)
-                                            <span class="badge bg-{{ $lead->interest_status_color }} f-10">
-                                                {{ $lead->interest_status_label }}
-                                            </span>
+                                        <span class="badge bg-{{ $lead->interest_status_color }} f-10">
+                                            {{ $lead->interest_status_label }}
+                                        </span>
                                         @else
-                                            <span class="badge bg-secondary f-10">Not Set</span>
+                                        <span class="badge bg-secondary f-10">Not Set</span>
                                         @endif
                                     </div>
                                 </div>
@@ -599,9 +693,9 @@
                                     <div class="d-flex align-items-center">
                                         <i class="ti ti-star f-12 text-muted me-1"></i>
                                         @if($lead->rating)
-                                            <span class="badge bg-primary f-10">{{ $lead->rating }}/10</span>
+                                        <span class="badge bg-primary f-10">{{ $lead->rating }}/10</span>
                                         @else
-                                            <span class="badge bg-secondary f-10">Not Rated</span>
+                                        <span class="badge bg-secondary f-10">Not Rated</span>
                                         @endif
                                     </div>
                                 </div>
@@ -632,7 +726,7 @@
                                 </div>
                                 @endif
                                 @php
-                                    $lastActivityWithReason = $lead->leadActivities->first();
+                                $lastActivityWithReason = $lead->leadActivities->first();
                                 @endphp
                                 @if($lastActivityWithReason)
                                 <div class="col-6">
@@ -650,54 +744,154 @@
                                     </div>
                                 </div>
                                 @endif
+
+                                <!-- Registration Details Section -->
+                                @if($lead->studentDetails)
+                                <div class="col-12 mt-2">
+                                    <div class="border-top pt-2">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <small class="text-muted f-11 fw-bold">Registration Details:</small>
+                                            <span class="badge bg-success f-10">Form Submitted</span>
+                                        </div>
+                                        <div class="row g-1">
+                                            <div class="col-6">
+                                                <small class="text-muted f-10">Course:</small>
+                                                <div class="fw-medium f-11">{{ $lead->studentDetails->course->title ?? 'Unknown' }}</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted f-10">Status:</small>
+                                                <div>
+                                                    <span class="badge 
+                                                        @if($lead->studentDetails->status == 'approved') bg-success
+                                                        @elseif($lead->studentDetails->status == 'rejected') bg-danger
+                                                        @else bg-warning
+                                                        @endif f-10">
+                                                        {{ ucfirst($lead->studentDetails->status ?? 'Pending') }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <a href="{{ route('leads.registration-details', $lead->id) }}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               title="View Registration Details">
+                                                <i class="ti ti-eye me-1"></i>View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
                             </div>
 
                             <!-- Action Buttons - Enhanced -->
                             <div class="d-flex gap-1 flex-wrap justify-content-between">
                                 <!-- Left side - Status and Convert buttons -->
                                 <div class="d-flex gap-1">
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning" 
-                                       onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')"
-                                       title="Update Status">
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning"
+                                        onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')"
+                                        title="Update Status">
                                         <i class="ti ti-arrow-up f-12"></i>
                                     </a>
-                                    @if(!$lead->is_converted)
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-success" 
-                                       onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
-                                       title="Convert Lead">
+                                    @if(!$lead->is_converted && $lead->studentDetails)
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-success"
+                                        onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
+                                        title="Convert Lead">
                                         <i class="ti ti-refresh f-12"></i>
                                     </a>
                                     @endif
                                     @if($lead->lead_status_id == 6)
-                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link" 
-                                       target="_blank" 
-                                       class="btn btn-sm btn-outline-info" 
-                                       title="Demo Conduction Form">
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link"
+                                        target="_blank"
+                                        class="btn btn-sm btn-outline-info"
+                                        title="Demo Conduction Form">
                                         <i class="ti ti-file-text f-12"></i>
                                     </a>
                                     @endif
                                 </div>
-                                
+
                                 <!-- Right side - Call and Logs buttons -->
                                 <div class="d-flex gap-1">
                                     @if($lead->phone && is_telecaller())
                                     @php
-                                        $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
+                                    $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
                                     @endphp
                                     @if($currentUserId > 0)
-                                    <button class="btn btn-sm btn-success voxbay-call-btn" 
-                                            data-lead-id="{{ $lead->id }}" 
-                                            data-telecaller-id="{{ $currentUserId }}"
-                                            title="Call Lead">
+                                    <button class="btn btn-sm btn-success voxbay-call-btn"
+                                        data-lead-id="{{ $lead->id }}"
+                                        data-telecaller-id="{{ $currentUserId }}"
+                                        title="Call Lead">
                                         <i class="ti ti-phone f-12"></i>
                                     </button>
                                     @endif
                                     @endif
-                                    <a href="{{ route('leads.call-logs', $lead) }}" 
-                                       class="btn btn-sm btn-info" 
-                                       title="View Call Logs">
+                                    <a href="{{ route('leads.call-logs', $lead) }}"
+                                        class="btn btn-sm btn-info"
+                                        title="View Call Logs">
                                         <i class="ti ti-phone-call f-12"></i>
                                     </a>
+                                    <br>
+                                    <hr><br>
+                                    @if($lead->course_id == 1)
+                                    <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open NIOS Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 2)
+                                    <a href="{{ route('public.lead.bosse.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open BOSSE Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 3)
+                                    <a href="{{ route('public.lead.medical-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Medical Coding Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 4)
+                                    <a href="{{ route('public.lead.hospital-admin.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Hospital Administration Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 5)
+                                    <a href="{{ route('public.lead.eschool.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open E-School Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 6)
+                                    <a href="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Eduthanzeel Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 7)
+                                    <a href="{{ route('public.lead.ttc.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open TTC Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 8)
+                                    <a href="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Hotel Management Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 9)
+                                    <a href="{{ route('public.lead.ugpg.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open UG/PG Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 10)
+                                    <a href="{{ route('public.lead.python.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Python Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 11)
+                                    <a href="{{ route('public.lead.digital-marketing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Digital Marketing Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 12)
+                                    <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open AI Automation Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 13)
+                                    <a href="{{ route('public.lead.web-dev.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Web Development & Designing Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 14)
+                                    <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Vibe Coding Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @elseif($lead->course_id == 15)
+                                    <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Graphic Designing Registration Form">
+                                        <i class="ti ti-external-link f-12"></i>
+                                    </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -724,198 +918,201 @@
 
 @push('scripts')
 <style>
-/* Fix DataTables responsive dropdown icon issue */
-.dtr-control {
-    position: relative;
-    cursor: pointer;
-}
-
-.dtr-control:before {
-    content: '+';
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    line-height: 18px;
-    text-align: center;
-    border: 1px solid #ddd;
-    border-radius: 3px;
-    background-color: #f8f9fa;
-    color: #666;
-    font-weight: bold;
-    margin-right: 8px;
-}
-
-.dtr-control.dtr-expanded:before {
-    content: '-';
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-/* Remove the problematic sorting_1 class styling */
-.dtr-control.sorting_1:before {
-    content: '+';
-}
-
-/* Improve table responsiveness */
-.table-responsive {
-    border: none;
-}
-
-#leadsTable {
-    margin-bottom: 0;
-}
-
-#leadsTable thead th {
-    border-top: none;
-    font-weight: 600;
-    background-color: #f8f9fa;
-    white-space: nowrap;
-}
-
-#leadsTable tbody td {
-    vertical-align: middle;
-    white-space: nowrap;
-}
-
-/* Fix action buttons in responsive mode */
-.dtr-details {
-    background-color: #f8f9fa;
-    padding: 10px;
-    border-left: 3px solid #007bff;
-}
-
-.dtr-details li {
-    margin-bottom: 5px;
-}
-
-/* Improve mobile card layout */
-@media (max-width: 991.98px) {
-    .card-body {
-        padding: 0.75rem;
+    /* Fix DataTables responsive dropdown icon issue */
+    .dtr-control {
+        position: relative;
+        cursor: pointer;
     }
-    
-    .mobile-card {
-        margin-bottom: 0.5rem;
-    }
-}
 
-/* Additional responsive improvements */
-@media (max-width: 1200px) {
+    .dtr-control:before {
+        content: '+';
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        line-height: 18px;
+        text-align: center;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        background-color: #f8f9fa;
+        color: #666;
+        font-weight: bold;
+        margin-right: 8px;
+    }
+
+    .dtr-control.dtr-expanded:before {
+        content: '-';
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    /* Remove the problematic sorting_1 class styling */
+    .dtr-control.sorting_1:before {
+        content: '+';
+    }
+
+    /* Improve table responsiveness */
     .table-responsive {
-        font-size: 0.875rem;
+        border: none;
     }
-    
-    #leadsTable th,
-    #leadsTable td {
-        padding: 0.5rem 0.25rem;
+
+    #leadsTable {
+        margin-bottom: 0;
     }
-}
 
-/* Enhanced action button styling */
-.btn-sm {
-    min-width: 32px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-sm i {
-    font-size: 12px;
-}
-
-/* Mobile action buttons layout */
-@media (max-width: 991.98px) {
-    .d-flex.gap-1 {
-        gap: 0.25rem !important;
+    #leadsTable thead th {
+        border-top: none;
+        font-weight: 600;
+        background-color: #f8f9fa;
+        white-space: nowrap;
     }
-    
+
+    #leadsTable tbody td {
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    /* Fix action buttons in responsive mode */
+    .dtr-details {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-left: 3px solid #007bff;
+    }
+
+    .dtr-details li {
+        margin-bottom: 5px;
+    }
+
+    /* Improve mobile card layout */
+    @media (max-width: 991.98px) {
+        .card-body {
+            padding: 0.75rem;
+        }
+
+        .mobile-card {
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    /* Additional responsive improvements */
+    @media (max-width: 1200px) {
+        .table-responsive {
+            font-size: 0.875rem;
+        }
+
+        #leadsTable th,
+        #leadsTable td {
+            padding: 0.5rem 0.25rem;
+        }
+    }
+
+    /* Enhanced action button styling */
     .btn-sm {
-        min-width: 28px;
-        height: 28px;
-        padding: 0.25rem;
+        min-width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
-}
 
-@media (max-width: 768px) {
-    .table-responsive {
-        font-size: 0.8rem;
+    .btn-sm i {
+        font-size: 12px;
     }
-    
-    #leadsTable th,
-    #leadsTable td {
-        padding: 0.375rem 0.125rem;
-    }
-    
-    .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
-    }
-}
 
-/* Fix DataTables info and pagination on mobile */
-.dataTables_info,
-.dataTables_paginate {
-    font-size: 0.875rem;
-}
+    /* Mobile action buttons layout */
+    @media (max-width: 991.98px) {
+        .d-flex.gap-1 {
+            gap: 0.25rem !important;
+        }
 
-@media (max-width: 576px) {
+        .btn-sm {
+            min-width: 28px;
+            height: 28px;
+            padding: 0.25rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .table-responsive {
+            font-size: 0.8rem;
+        }
+
+        #leadsTable th,
+        #leadsTable td {
+            padding: 0.375rem 0.125rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+    }
+
+    /* Fix DataTables info and pagination on mobile */
     .dataTables_info,
     .dataTables_paginate {
-        font-size: 0.75rem;
+        font-size: 0.875rem;
     }
-    
-    .dataTables_length,
-    .dataTables_filter {
-        margin-bottom: 0.5rem;
+
+    @media (max-width: 576px) {
+
+        .dataTables_info,
+        .dataTables_paginate {
+            font-size: 0.75rem;
+        }
+
+        .dataTables_length,
+        .dataTables_filter {
+            margin-bottom: 0.5rem;
+        }
     }
-}
 </style>
 <script>
-$(document).ready(function() {
+    $(document).ready(function() {
 
-    // Function to fix DataTables responsive dropdown icons
-    function fixResponsiveIcons() {
-        // Remove problematic classes and ensure proper icon display
-        $('.dtr-control').each(function() {
-            $(this).removeClass('sorting_1 sorting_2 sorting_3');
-            if (!$(this).hasClass('dtr-control')) {
-                $(this).addClass('dtr-control');
+        // Function to fix DataTables responsive dropdown icons
+        function fixResponsiveIcons() {
+            // Remove problematic classes and ensure proper icon display
+            $('.dtr-control').each(function() {
+                $(this).removeClass('sorting_1 sorting_2 sorting_3');
+                if (!$(this).hasClass('dtr-control')) {
+                    $(this).addClass('dtr-control');
+                }
+            });
+
+            // Ensure proper icon styling
+            $('.dtr-control:not(.dtr-expanded)').each(function() {
+                if (!$(this).find('::before').length) {
+                    $(this).css('position', 'relative');
+                }
+            });
+        }
+
+        // DataTable is now initialized globally via initializeTables() function
+
+        // Handle global search form submission
+        $('.header-search form, .drp-search form').on('submit', function(e) {
+            e.preventDefault();
+            const searchValue = $(this).find('input[name="search_key"]').val().trim();
+            if (searchValue) {
+                window.location.href = '{{ route("leads.index") }}?search_key=' + encodeURIComponent(searchValue);
+            } else {
+                window.location.href = '{{ route("leads.index") }}';
             }
         });
-        
-        // Ensure proper icon styling
-        $('.dtr-control:not(.dtr-expanded)').each(function() {
-            if (!$(this).find('::before').length) {
-                $(this).css('position', 'relative');
+
+        // Handle search input enter key
+        $('.header-search input, .drp-search input').on('keypress', function(e) {
+            if (e.which === 13) { // Enter key
+                $(this).closest('form').submit();
             }
         });
-    }
 
-    // DataTable is now initialized globally via initializeTables() function
-
-    // Handle global search form submission
-    $('.header-search form, .drp-search form').on('submit', function(e) {
-        e.preventDefault();
-        const searchValue = $(this).find('input[name="search_key"]').val().trim();
-        if (searchValue) {
-            window.location.href = '{{ route("leads.index") }}?search_key=' + encodeURIComponent(searchValue);
-        } else {
-            window.location.href = '{{ route("leads.index") }}';
-        }
+        // Action buttons are now directly accessible without dropdown
+        // All functionality is handled by onclick attributes on the buttons
     });
 
-    // Handle search input enter key
-    $('.header-search input, .drp-search input').on('keypress', function(e) {
-        if (e.which === 13) { // Enter key
-            $(this).closest('form').submit();
-        }
-    });
-
-    // Action buttons are now directly accessible without dropdown
-    // All functionality is handled by onclick attributes on the buttons
-});
-
+    // Function to show registration details in a modal
+    
 </script>
 @endpush

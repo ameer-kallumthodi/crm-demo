@@ -44,6 +44,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Title</th>
+                                <th>Code</th>
                                 <th>Amount</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -54,6 +55,7 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $course->title }}</td>
+                                <td>{{ $course->code ?? 'N/A' }}</td>
                                 <td>{{ $course->amount ? '₹' . number_format($course->amount, 2) : '-' }}</td>
                                 <td>
                                     <span class="badge {{ $course->is_active ? 'bg-success' : 'bg-danger' }}">
@@ -66,10 +68,10 @@
                                         title="Edit">
                                         <i class="ti ti-edit"></i> Edit
                                     </a>
-                                    <a href="javascript:void(0);" class="btn btn-danger btn-sm shadow-sm px-3"
+                                    <!-- <a href="javascript:void(0);" class="btn btn-danger btn-sm shadow-sm px-3"
                                         onclick="delete_modal('{{ route('admin.courses.delete', $course->id) }}')" title="Delete">
                                         <i class="ti ti-trash"></i> Delete
-                                    </a>
+                                    </a> -->
                                 </td>
                             </tr>
                             @endforeach

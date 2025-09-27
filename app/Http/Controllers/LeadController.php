@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lead;
+use App\Models\LeadDetail;
 use App\Models\LeadStatus;
 use App\Models\LeadSource;
 use App\Models\Country;
@@ -14,7 +15,9 @@ use App\Models\ConvertedLead;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -1407,10 +1410,11 @@ class LeadController extends Controller
     {
         $courses = Course::where('is_active', true)->get();
         $academic_assistants = User::where('role_id', 5)->where('is_active', true)->get();
+        $boards = \App\Models\Board::where('is_active', true)->get();
         $country_codes = get_country_code();
 
         return view('admin.leads.convert-modal', compact(
-            'lead', 'courses', 'academic_assistants', 'country_codes'
+            'lead', 'courses', 'academic_assistants', 'boards', 'country_codes'
         ));
     }
 
@@ -1426,7 +1430,14 @@ class LeadController extends Controller
             'email' => 'nullable|email|max:255',
             'course_id' => 'required|exists:courses,id',
             'academic_assistant_id' => 'required|exists:users,id',
+            'batch_id' => 'required|exists:batches,id',
+            'board_id' => 'nullable|exists:boards,id',
             'remarks' => 'nullable|string|max:1000',
+            'payment_collected' => 'boolean',
+            'payment_amount' => 'required_if:payment_collected,true|numeric|min:0.01',
+            'payment_type' => 'required_if:payment_collected,true|in:Cash,Online,Bank,Cheque,Card,Other',
+            'transaction_id' => 'nullable|string|max:255',
+            'payment_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -1443,6 +1454,8 @@ class LeadController extends Controller
         }
 
         try {
+            DB::beginTransaction();
+            
             // Create converted lead record
             $convertedLead = ConvertedLead::create([
                 'lead_id' => $lead->id,
@@ -1452,6 +1465,8 @@ class LeadController extends Controller
                 'email' => $request->email,
                 'course_id' => $request->course_id,
                 'academic_assistant_id' => $request->academic_assistant_id,
+                'batch_id' => $request->batch_id,
+                'board_id' => $request->board_id,
                 'candidate_status_id' => 1,
                 'remarks' => $request->remarks,
                 'created_by' => AuthHelper::getCurrentUserId(),
@@ -1463,6 +1478,24 @@ class LeadController extends Controller
                 'is_converted' => true,
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
+
+            // Auto-generate invoice
+            $invoiceController = new \App\Http\Controllers\InvoiceController();
+            $invoice = $invoiceController->autoGenerate($convertedLead->id, $request->course_id);
+
+            // Process payment if collected
+            if ($request->payment_collected && $invoice) {
+                $paymentController = new \App\Http\Controllers\PaymentController();
+                $paymentController->autoCreate(
+                    $invoice->id,
+                    $request->payment_amount,
+                    $request->payment_type,
+                    $request->transaction_id,
+                    $request->file('payment_file')
+                );
+            }
+
+            DB::commit();
 
             if (request()->ajax()) {
                 return response()->json([
@@ -1476,6 +1509,8 @@ class LeadController extends Controller
                 ->with('message_success', 'Lead converted successfully!');
 
         } catch (\Exception $e) {
+            DB::rollback();
+            
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -1486,6 +1521,165 @@ class LeadController extends Controller
             return redirect()->back()
                 ->with('message_danger', 'An error occurred while converting the lead. Please try again.')
                 ->withInput();
+        }
+    }
+
+    /**
+     * Get registration details for a lead from leads_details table
+     */
+    public function getLeadRegistrationDetails(Lead $lead)
+    {
+        try {
+            // Load the lead with all necessary relationships
+            $lead->load([
+                'studentDetails.course', 
+                'studentDetails.subject', 
+                'studentDetails.batch',
+                'course',
+                'leadStatus',
+                'leadSource',
+                'telecaller',
+                'team'
+            ]);
+            
+            if (!$lead->studentDetails) {
+                return view('admin.leads.registration-details', compact('lead'))
+                    ->with('error', 'No registration details found for this lead.');
+            }
+
+            $studentDetail = $lead->studentDetails;
+            
+            return view('admin.leads.registration-details', compact('studentDetail', 'lead'));
+            
+        } catch (\Exception $e) {
+            return view('admin.leads.registration-details', compact('lead'))
+                ->with('error', 'Error loading registration details: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update document verification status
+     */
+    public function updateDocumentVerification(Request $request)
+    {
+        try {
+            $request->validate([
+                'lead_detail_id' => 'required|exists:leads_details,id',
+                'document_type' => 'required|in:sslc_certificate,plustwo_certificate,ug_certificate,passport_photo,adhar_front,adhar_back,signature',
+                'verification_status' => 'required|in:pending,verified',
+                'need_to_change_document' => 'nullable|boolean',
+                'new_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:1024'
+            ]);
+
+            $leadDetail = LeadDetail::findOrFail($request->lead_detail_id);
+            $documentType = $request->document_type;
+            $verificationStatus = $request->verification_status;
+            $needToChangeDocument = $request->boolean('need_to_change_document');
+            // Use AuthHelper to get the authenticated user
+            $currentUserId = AuthHelper::getCurrentUserId();
+            //Log the current user
+            \Log::info('Current user: ' . $currentUserId);
+            // Check if user is authenticated
+            if (!$currentUserId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated. Please login again.'
+                ], 401);
+            }
+
+            // If need to change document is checked, file upload is required
+            if ($needToChangeDocument && !$request->hasFile('new_file')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File upload is required when "Need to change document" is checked.'
+                ], 422);
+            }
+
+            // Update verification fields
+            $verificationField = $documentType . '_verification_status';
+            $verifiedByField = $documentType . '_verified_by';
+            $verifiedAtField = $documentType . '_verified_at';
+
+            $updateData = [
+                $verificationField => $verificationStatus,
+                $verifiedByField => $currentUserId,
+                $verifiedAtField => now(),
+            ];
+
+            // Handle file upload if provided
+            if ($request->hasFile('new_file')) {
+                $file = $request->file('new_file');
+                $fileName = $documentType . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('documents', $fileName, 'public');
+                
+                $updateData[$documentType] = $filePath;
+            }
+
+            $leadDetail->update($updateData);
+
+            // Log activity
+            LeadActivity::create([
+                'lead_id' => $leadDetail->lead_id,
+                'activity_type' => 'document_verification',
+                'description' => ucfirst(str_replace('_', ' ', $documentType)) . ' verification updated',
+                'reason' => "Document: " . ucfirst(str_replace('_', ' ', $documentType)) . 
+                           " | Status: " . ucfirst($verificationStatus),
+                'created_by' => $currentUserId,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Document verification updated successfully!',
+                'data' => $leadDetail->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating document verification: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update registration status
+     */
+    public function updateRegistrationStatus(Request $request)
+    {
+        try {
+            $request->validate([
+                'lead_id' => 'required|exists:leads,id',
+                'status' => 'required|in:approved,rejected',
+                'admin_remarks' => 'nullable|string|max:1000'
+            ]);
+
+            $lead = Lead::findOrFail($request->lead_id);
+            $studentDetail = $lead->studentDetails;
+
+            if (!$studentDetail) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No registration details found for this lead.'
+                ]);
+            }
+
+            $studentDetail->update([
+                'status' => $request->status,
+                'admin_remarks' => $request->admin_remarks,
+                'reviewed_by' => Auth::id(),
+                'reviewed_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration status updated successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating registration status: ' . $e->getMessage()
+            ]);
         }
     }
 

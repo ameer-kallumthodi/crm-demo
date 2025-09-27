@@ -5,6 +5,7 @@
             <a href="{{ route('dashboard') }}" class="b-brand text-primary">
                 <!-- ========   Change your logo from here   ============ -->
                 <img src="{{ asset('storage/logo.png') }}" class="img-fluid logo-lg" alt="logo" 
+                     style="height: 200px !important; width: 100px !important; object-fit: contain;padding: 5px !important;"
                      onerror="this.src='{{ asset('assets/mantis/images/logo-dark.svg') }}'">
             </a>
         </div>
@@ -262,7 +263,7 @@
                 @endif
                 
                 {{-- Master Data Section --}}
-                @if(has_permission('admin/courses/index') || has_permission('admin/countries/index') || has_permission('admin/teams/index'))
+                @if(has_permission('admin/courses/index') || has_permission('admin/countries/index') || has_permission('admin/teams/index') || has_permission('admin/subjects/index') || has_permission('admin/course-documents/index'))
                 <li class="pc-item pc-caption">
                     <label>Master Data</label>
                 </li>
@@ -276,6 +277,16 @@
                     </a>
                 </li>
                 @endif
+                @if(has_permission('admin/subjects/index'))
+                <li class="pc-item {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.subjects.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-bookmark"></i>
+                        </span>
+                        <span class="pc-mtext">Subjects</span>
+                    </a>
+                </li>
+                @endif
                 @if(has_permission('admin/countries/index'))
                 <li class="pc-item {{ request()->routeIs('admin.countries.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.countries.index') }}" class="pc-link">
@@ -283,6 +294,26 @@
                             <i class="ti ti-world"></i>
                         </span>
                         <span class="pc-mtext">Countries</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/boards/index'))
+                <li class="pc-item {{ request()->routeIs('admin.boards.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.boards.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-school"></i>
+                        </span>
+                        <span class="pc-mtext">Boards</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/batches/index'))
+                <li class="pc-item {{ request()->routeIs('admin.batches.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.batches.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-calendar"></i>
+                        </span>
+                        <span class="pc-mtext">Batches</span>
                     </a>
                 </li>
                 @endif

@@ -12,6 +12,7 @@ class Board extends Model
 
     protected $fillable = [
         'title',
+        'code',
         'description',
         'is_active',
         'created_by',
@@ -26,6 +27,16 @@ class Board extends Model
         'deleted_at' => 'datetime',
     ];
 
+    public function leads()
+    {
+        return $this->hasMany(Lead::class);
+    }
+
+    public function convertedLeads()
+    {
+        return $this->hasMany(ConvertedLead::class);
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -39,6 +50,11 @@ class Board extends Model
     public function deletedBy()
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 
     /**

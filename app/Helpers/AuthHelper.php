@@ -134,4 +134,21 @@ class AuthHelper
         
         return User::find($userId);
     }
+
+    /**
+     * Get current user role ID
+     */
+    public static function getCurrentUserRole()
+    {
+        return self::getRoleId();
+    }
+
+    /**
+     * Get current user team ID
+     */
+    public static function getCurrentUserTeam()
+    {
+        $user = self::getCurrentUser();
+        return $user ? $user->team_id : null;
+    }
 }

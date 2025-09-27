@@ -18,6 +18,9 @@ class ConvertedLead extends Model
         'email',
         'course_id',
         'academic_assistant_id',
+        'batch_id',
+        'board_id',
+        'subject_id',
         'remarks',
         'created_by',
         'updated_by',
@@ -41,6 +44,21 @@ class ConvertedLead extends Model
         return $this->belongsTo(Course::class);
     }
 
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class);
+    }
+
+    public function board()
+    {
+        return $this->belongsTo(Board::class);
+    }
+
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class);
+    }
+
     public function academicAssistant()
     {
         return $this->belongsTo(User::class, 'academic_assistant_id');
@@ -59,6 +77,31 @@ class ConvertedLead extends Model
     public function deletedBy()
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class, 'student_id');
+    }
+
+    public function studentDetails()
+    {
+        return $this->hasOne(ConvertedStudentDetail::class);
+    }
+
+    public function niosStudentDetails()
+    {
+        return $this->hasOne(ConvertedStudentDetail::class)->where('course_id', 1);
+    }
+
+    public function bosseStudentDetails()
+    {
+        return $this->hasOne(ConvertedStudentDetail::class)->where('course_id', 2);
+    }
+
+    public function medicalCodingStudentDetails()
+    {
+        return $this->hasOne(ConvertedStudentDetail::class)->where('course_id', 3);
     }
 
     /**

@@ -123,6 +123,9 @@
                                             <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
                                                 <i class="ti ti-eye"></i>
                                             </a>
+                                            <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice">
+                                                <i class="ti ti-receipt"></i>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -158,6 +161,9 @@
                                         <li><a class="dropdown-item" href="{{ route('admin.converted-leads.show', $convertedLead->id) }}">
                                             <i class="ti ti-eye me-2"></i>View Details
                                         </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.invoices.index', $convertedLead->id) }}">
+                                            <i class="ti ti-receipt me-2"></i>View Invoice
+                                        </a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -187,10 +193,14 @@
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-2 flex-wrap">
                                 <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" 
                                    class="btn btn-sm btn-primary">
                                     <i class="ti ti-eye me-1"></i>View Details
+                                </a>
+                                <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" 
+                                   class="btn btn-sm btn-success">
+                                    <i class="ti ti-receipt me-1"></i>View Invoice
                                 </a>
                             </div>
                         </div>
@@ -242,5 +252,6 @@ $(document).ready(function() {
         window.location.href = '{{ route("admin.converted-leads.index") }}';
     });
 });
+
 </script>
 @endpush

@@ -13,6 +13,7 @@ class Batch extends Model
     protected $fillable = [
         'title',
         'description',
+        'course_id',
         'is_active',
         'created_by',
         'updated_by',
@@ -39,6 +40,16 @@ class Batch extends Model
     public function deletedBy()
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
+
+    public function convertedLeads()
+    {
+        return $this->hasMany(ConvertedLead::class);
     }
 
     /**

@@ -34,6 +34,7 @@ class Lead extends Model
         'updated_by',
         'deleted_by',
         'course_id',
+        'batch_id',
         'by_meta',
         'meta_lead_id',
         'followup_date',
@@ -71,6 +72,11 @@ class Lead extends Model
         return $this->belongsTo(Course::class, 'course_id');
     }
 
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class, 'batch_id');
+    }
+
     public function telecaller()
     {
         return $this->belongsTo(User::class, 'telecaller_id');
@@ -99,6 +105,56 @@ class Lead extends Model
     public function leadActivities()
     {
         return $this->hasMany(LeadActivity::class, 'lead_id');
+    }
+
+    public function studentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id');
+    }
+
+    public function niosStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 1);
+    }
+
+    public function bosseStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 2);
+    }
+
+    public function medicalCodingStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 3);
+    }
+
+    public function hospitalAdminStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 4);
+    }
+
+    public function eSchoolStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 5);
+    }
+
+    public function eduthanzeelStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 6);
+    }
+
+    public function ttcStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 7);
+    }
+
+    public function hotelMgmtStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 8);
+    }
+
+    public function ugpgStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 9);
     }
 
     // Scopes
