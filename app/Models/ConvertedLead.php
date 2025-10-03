@@ -16,6 +16,7 @@ class ConvertedLead extends Model
         'code',
         'phone',
         'email',
+        'register_number',
         'course_id',
         'academic_assistant_id',
         'batch_id',
@@ -25,18 +26,25 @@ class ConvertedLead extends Model
         'created_by',
         'updated_by',
         'deleted_by',
+        'reg_updated_by',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'reg_updated_at' => 'datetime',
     ];
 
     // Relationships
     public function lead()
     {
         return $this->belongsTo(Lead::class);
+    }
+
+    public function leadDetail()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id', 'lead_id');
     }
 
     public function course()
@@ -77,6 +85,11 @@ class ConvertedLead extends Model
     public function deletedBy()
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    public function regUpdatedBy()
+    {
+        return $this->belongsTo(User::class, 'reg_updated_by');
     }
 
     public function invoices()

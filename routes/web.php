@@ -400,6 +400,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // Converted Leads Routes
         Route::get('/converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'index'])->name('converted-leads.index');
         Route::get('/converted-leads/view/{id}', [App\Http\Controllers\ConvertedLeadController::class, 'show'])->name('converted-leads.show');
+        Route::get('/converted-leads/{id}/id-card-pdf', [App\Http\Controllers\ConvertedLeadController::class, 'generateIdCardPdf'])->name('converted-leads.id-card-pdf');
+        Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
+        Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
 
         // Invoice Routes
         Route::get('/invoices/student/{studentId}', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');

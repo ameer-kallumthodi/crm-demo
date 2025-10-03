@@ -7,6 +7,7 @@ use App\Models\ConvertedLead;
 use App\Models\Lead;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
+use Mpdf\Mpdf;
 
 class ConvertedLeadController extends Controller
 {
@@ -46,10 +47,10 @@ class ConvertedLeadController extends Controller
         // Apply filters
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -80,9 +81,9 @@ class ConvertedLeadController extends Controller
     public function show($id)
     {
         $convertedLead = ConvertedLead::with([
-            'lead', 
-            'course', 
-            'academicAssistant', 
+            'lead',
+            'course',
+            'academicAssistant',
             'createdBy'
         ])->findOrFail($id);
 
@@ -132,5 +133,213 @@ class ConvertedLeadController extends Controller
             ->get();
 
         return view('admin.converted-leads.show', compact('convertedLead', 'leadActivities'));
+    }
+
+
+    public function generateIdCardPdf($id)
+    {
+        $convertedLead = ConvertedLead::with([
+            'lead',
+            'leadDetail',
+            'course',
+            'academicAssistant',
+            'createdBy'
+        ])->findOrFail($id);
+
+        // Role-based access (same logic as you had)
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    if (!in_array($convertedLead->created_by, $teamMemberIds)) {
+                        return redirect()->route('admin.converted-leads.index')
+                            ->with('message_danger', 'Access denied. You can only view converted leads from your team.');
+                    }
+                } else {
+                    if ($convertedLead->created_by != AuthHelper::getCurrentUserId()) {
+                        return redirect()->route('admin.converted-leads.index')
+                            ->with('message_danger', 'Access denied. You can only view converted leads you created.');
+                    }
+                }
+            } elseif (RoleHelper::is_academic_assistant()) {
+                if ($convertedLead->academic_assistant_id != AuthHelper::getCurrentUserId()) {
+                    return redirect()->route('admin.converted-leads.index')
+                        ->with('message_danger', 'Access denied. You can only view converted leads assigned to you.');
+                }
+            } elseif (RoleHelper::is_telecaller()) {
+                if ($convertedLead->created_by != AuthHelper::getCurrentUserId()) {
+                    return redirect()->route('admin.converted-leads.index')
+                        ->with('message_danger', 'Access denied. You can only view converted leads you created.');
+                }
+            }
+            // Admission counsellor = can see all
+        }
+
+        // Create circular image if passport photo exists
+        $circularImagePath = null;
+        if ($convertedLead->leadDetail && $convertedLead->leadDetail->passport_photo) {
+            $circularImagePath = $this->createCircularImage($convertedLead->leadDetail->passport_photo);
+        }
+
+        // Load Blade view
+        $html = view('admin.converted-leads.id-card-pdf', compact('convertedLead', 'circularImagePath'))->render();
+
+        // Create mPDF instance
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_top' => 0,
+            'margin_bottom' => 0,
+            'margin_left' => 0,
+            'margin_right' => 0,
+        ]);
+
+        // Write HTML
+        $mpdf->WriteHTML($html);
+
+        $filename = 'id_card_' . $convertedLead->name . '_' . $convertedLead->id . '.pdf';
+
+        // Stream to browser
+        return response($mpdf->Output($filename, 'I'))
+            ->header('Content-Type', 'application/pdf');
+    }
+
+    /**
+     * Show modal for updating register number
+     */
+    public function showUpdateRegisterNumberModal($id)
+    {
+        $convertedLead = ConvertedLead::findOrFail($id);
+        
+        // Check if user is admin or super admin
+        if (!RoleHelper::is_admin_or_super_admin()) {
+            return response()->json(['error' => 'Access denied. Only admins can update register numbers.'], 403);
+        }
+
+        return view('admin.converted-leads.update-register-number-modal', compact('convertedLead'));
+    }
+
+    /**
+     * Update register number
+     */
+    public function updateRegisterNumber(Request $request, $id)
+    {
+        // Check if user is admin or super admin
+        if (!RoleHelper::is_admin_or_super_admin()) {
+            return response()->json(['error' => 'Access denied. Only admins can update register numbers.'], 403);
+        }
+
+        $request->validate([
+            'register_number' => 'required|string|max:50|unique:converted_leads,register_number,' . $id
+        ]);
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+        
+        $convertedLead->update([
+            'register_number' => $request->register_number,
+            'reg_updated_at' => now(),
+            'reg_updated_by' => AuthHelper::getCurrentUserId()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Register number updated successfully.',
+            'register_number' => $convertedLead->register_number
+        ]);
+    }
+
+    /**
+     * Create a circular version of the passport photo
+     */
+    private function createCircularImage($imagePath)
+    {
+        try {
+            $originalPath = public_path('storage/' . $imagePath);
+            
+            if (!file_exists($originalPath)) {
+                return null;
+            }
+
+            // Get image info
+            $imageInfo = getimagesize($originalPath);
+            $mimeType = $imageInfo['mime'];
+            
+            // Create image resource based on type
+            switch ($mimeType) {
+                case 'image/jpeg':
+                    $source = imagecreatefromjpeg($originalPath);
+                    break;
+                case 'image/png':
+                    $source = imagecreatefrompng($originalPath);
+                    break;
+                case 'image/gif':
+                    $source = imagecreatefromgif($originalPath);
+                    break;
+                default:
+                    return null;
+            }
+
+            // Set dimensions
+            $size = 200;
+            $radius = $size / 2;
+
+            // Create a new image with transparent background
+            $circular = imagecreatetruecolor($size, $size);
+            imagealphablending($circular, false);
+            imagesavealpha($circular, true);
+            $transparent = imagecolorallocatealpha($circular, 0, 0, 0, 127);
+            imagefill($circular, 0, 0, $transparent);
+
+            // Create circular mask
+            $mask = imagecreatetruecolor($size, $size);
+            imagealphablending($mask, false);
+            imagesavealpha($mask, true);
+            imagefill($mask, 0, 0, $transparent);
+
+            // Draw white circle for mask
+            $white = imagecolorallocate($mask, 255, 255, 255);
+            imagefilledellipse($mask, $radius, $radius, $size, $size, $white);
+
+            // Apply mask to source image
+            imagealphablending($source, true);
+            imagealphablending($circular, true);
+            
+            // Copy and resize source image
+            imagecopyresampled($circular, $source, 0, 0, 0, 0, $size, $size, imagesx($source), imagesy($source));
+            
+            // Apply circular mask
+            for ($x = 0; $x < $size; $x++) {
+                for ($y = 0; $y < $size; $y++) {
+                    $color = imagecolorat($mask, $x, $y);
+                    if ($color == 0) { // Black pixels in mask
+                        imagesetpixel($circular, $x, $y, $transparent);
+                    }
+                }
+            }
+
+            // Save circular image
+            $circularPath = 'temp/circular_' . uniqid() . '.png';
+            $fullCircularPath = public_path($circularPath);
+            
+            // Create temp directory if it doesn't exist
+            if (!file_exists(public_path('temp'))) {
+                mkdir(public_path('temp'), 0755, true);
+            }
+            
+            imagepng($circular, $fullCircularPath);
+            
+            // Clean up
+            imagedestroy($source);
+            imagedestroy($circular);
+            imagedestroy($mask);
+            
+            return $circularPath;
+            
+        } catch (\Exception $e) {
+            \Log::error('Error creating circular image: ' . $e->getMessage());
+            return null;
+        }
     }
 }

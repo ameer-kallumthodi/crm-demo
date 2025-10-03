@@ -92,6 +92,7 @@
                                     <th>Name</th>
                                     <th>Phone</th>
                                     <th>Email</th>
+                                    <th>Register Number</th>
                                     <th>Course</th>
                                     <th>Academic Assistant</th>
                                     <th>Converted Date</th>
@@ -115,6 +116,13 @@
                                     </td>
                                     <td>{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
+                                    <td>
+                                        @if($convertedLead->register_number)
+                                            <span class="badge bg-success">{{ $convertedLead->register_number }}</span>
+                                        @else
+                                            <span class="text-muted">Not Set</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
                                     <td>{{ $convertedLead->academicAssistant ? $convertedLead->academicAssistant->name : 'N/A' }}</td>
                                     <td>{{ $convertedLead->created_at->format('M d, Y') }}</td>
@@ -126,12 +134,24 @@
                                             <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice">
                                                 <i class="ti ti-receipt"></i>
                                             </a>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
+                                                <button type="button" class="btn btn-sm btn-info update-register-btn" title="Update Register Number" 
+                                                        data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}" 
+                                                        data-title="Update Register Number">
+                                                    <i class="ti ti-edit"></i>
+                                                </button>
+                                                @if($convertedLead->register_number)
+                                                    <a href="{{ route('admin.converted-leads.id-card-pdf', $convertedLead->id) }}" class="btn btn-sm btn-warning" title="Generate ID Card PDF" target="_blank">
+                                                        <i class="ti ti-id"></i>
+                                                    </a>
+                                                @endif
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="text-center">No converted leads found</td>
+                                    <td colspan="9" class="text-center">No converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -164,6 +184,18 @@
                                         <li><a class="dropdown-item" href="{{ route('admin.invoices.index', $convertedLead->id) }}">
                                             <i class="ti ti-receipt me-2"></i>View Invoice
                                         </a></li>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
+                                            <li><a class="dropdown-item update-register-btn" href="#" 
+                                                   data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}" 
+                                                   data-title="Update Register Number">
+                                                <i class="ti ti-edit me-2"></i>Update Register Number
+                                            </a></li>
+                                            @if($convertedLead->register_number)
+                                                <li><a class="dropdown-item" href="{{ route('admin.converted-leads.id-card-pdf', $convertedLead->id) }}" target="_blank">
+                                                    <i class="ti ti-id me-2"></i>Generate ID Card PDF
+                                                </a></li>
+                                            @endif
+                                        @endif
                                     </ul>
                                 </div>
                             </div>
@@ -187,6 +219,14 @@
                                     <span class="fw-medium">{{ $convertedLead->academicAssistant ? $convertedLead->academicAssistant->name : 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
+                                    <small class="text-muted d-block">Register Number</small>
+                                    @if($convertedLead->register_number)
+                                        <span class="badge bg-success">{{ $convertedLead->register_number }}</span>
+                                    @else
+                                        <span class="text-muted">Not Set</span>
+                                    @endif
+                                </div>
+                                <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
                                     <span class="fw-medium">{{ $convertedLead->created_at->format('M d, Y') }}</span>
                                 </div>
@@ -202,6 +242,19 @@
                                    class="btn btn-sm btn-success">
                                     <i class="ti ti-receipt me-1"></i>View Invoice
                                 </a>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
+                                    <button type="button" class="btn btn-sm btn-info update-register-btn" 
+                                            data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}" 
+                                            data-title="Update Register Number">
+                                        <i class="ti ti-edit me-1"></i>Update Register
+                                    </button>
+                                    @if($convertedLead->register_number)
+                                        <a href="{{ route('admin.converted-leads.id-card-pdf', $convertedLead->id) }}" 
+                                           class="btn btn-sm btn-warning" target="_blank">
+                                            <i class="ti ti-id me-1"></i>ID Card PDF
+                                        </a>
+                                    @endif
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -250,6 +303,14 @@ $(document).ready(function() {
     $('a[href="{{ route("admin.converted-leads.index") }}"]').on('click', function(e) {
         e.preventDefault();
         window.location.href = '{{ route("admin.converted-leads.index") }}';
+    });
+
+    // Handle update register number button clicks
+    $('.update-register-btn').on('click', function(e) {
+        e.preventDefault();
+        const url = $(this).data('url');
+        const title = $(this).data('title');
+        show_small_modal(url, title);
     });
 });
 
