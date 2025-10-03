@@ -10,6 +10,7 @@ use App\Models\Subject;
 use App\Models\Batch;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\MailService;
 
 class LeadUGPGRegistrationController extends Controller
 {
@@ -186,6 +187,16 @@ class LeadUGPGRegistrationController extends Controller
                 'message' => $request->message,
                 'status' => 'pending',
             ]);
+            
+            
+            
+            // Send registration confirmation email
+            try {
+                MailService::sendStudentRegistrationEmail($studentDetail, 'UG/PG');
+            } catch (\Exception $e) {
+                // Log error but don't fail the registration
+                \Log::error('Email sending failed for UG/PG registration: ' . $e->getMessage());
+            }
             
             return response()->json([
                 'success' => true,

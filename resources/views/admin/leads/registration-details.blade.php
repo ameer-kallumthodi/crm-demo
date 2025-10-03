@@ -415,7 +415,7 @@
                             </div>
                             @endif
                             
-                            @if($studentDetail->plustwo_certificate)
+                            @if($studentDetail->plustwo_certificate || $studentDetail->plus_two_certificate)
                             <div class="col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
@@ -425,23 +425,29 @@
                                         <div class="document-info">
                                             <label class="document-label">Plus Two Certificate</label>
                                             <div class="verification-status">
-                                                <span class="badge bg-{{ $studentDetail->plustwo_verification_status === 'verified' ? 'success' : 'warning' }}">
-                                                    {{ ucfirst($studentDetail->plustwo_verification_status ?? 'pending') }}
+                                                @php
+                                                    $certificateField = $studentDetail->plustwo_certificate ? 'plustwo' : 'plus_two';
+                                                    $verificationStatus = $studentDetail->{$certificateField . '_verification_status'} ?? 'pending';
+                                                    $verifiedAt = $studentDetail->{$certificateField . '_verified_at'};
+                                                    $verifiedBy = $studentDetail->{ucfirst($certificateField) . 'VerifiedBy'} ?? null;
+                                                @endphp
+                                                <span class="badge bg-{{ $verificationStatus === 'verified' ? 'success' : 'warning' }}">
+                                                    {{ ucfirst($verificationStatus) }}
                                                 </span>
-                                                @if($studentDetail->plustwo_verified_at)
+                                                @if($verifiedAt)
                                                 <small class="text-muted d-block">
-                                                    Verified by: {{ $studentDetail->plustwoVerifiedBy->name ?? 'Unknown' }}<br>
-                                                    Date: {{ $studentDetail->plustwo_verified_at->format('M d, Y H:i') }}
+                                                    Verified by: {{ $verifiedBy->name ?? 'Unknown' }}<br>
+                                                    Date: {{ $verifiedAt->format('M d, Y H:i') }}
                                                 </small>
                                                 @endif
                                             </div>
                                         </div>
                                         <div class="document-actions">
-                                            <a href="{{ Storage::url($studentDetail->plustwo_certificate) }}" target="_blank" class="btn btn-sm btn-outline-success">
+                                            <a href="{{ Storage::url($studentDetail->plustwo_certificate ?? $studentDetail->plus_two_certificate) }}" target="_blank" class="btn btn-sm btn-outline-success">
                                                 <i class="ti ti-eye me-1"></i>View
                                             </a>
                                             @if(is_telecaller()) {{-- Telecaller or post-sales --}}
-                                            <button class="btn btn-sm btn-success" onclick="openVerificationModal('plustwo_certificate', '{{ $studentDetail->plustwo_verification_status }}')">
+                                            <button class="btn btn-sm btn-success" onclick="openVerificationModal('{{ $certificateField }}_certificate', '{{ $verificationStatus }}')">
                                                 <i class="ti ti-check me-1"></i>Verify
                                             </button>
                                             @endif
@@ -478,6 +484,46 @@
                                             </a>
                                             @if(is_telecaller()) {{-- Telecaller or post-sales --}}
                                             <button class="btn btn-sm btn-success" onclick="openVerificationModal('ug_certificate', '{{ $studentDetail->ug_verification_status }}')">
+                                                <i class="ti ti-check me-1"></i>Verify
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            
+                            @if($studentDetail->birth_certificate)
+                            <div class="col-md-6">
+                                <div class="document-card">
+                                    <div class="document-icon">
+                                        <i class="ti ti-file-certificate text-info"></i>
+                                    </div>
+                                    <div class="document-content">
+                                        <div class="document-info">
+                                            <label class="document-label">Birth Certificate</label>
+                                            <div class="verification-status">
+                                                @if(isset($studentDetail->birth_certificate_verification_status))
+                                                <span class="badge bg-{{ $studentDetail->birth_certificate_verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                    {{ ucfirst($studentDetail->birth_certificate_verification_status) }}
+                                                </span>
+                                                @if($studentDetail->birth_certificate_verified_at)
+                                                <small class="text-muted d-block">
+                                                    Verified by: {{ $studentDetail->birthCertificateVerifiedBy->name ?? 'Unknown' }}<br>
+                                                    Date: {{ $studentDetail->birth_certificate_verified_at->format('M d, Y H:i') }}
+                                                </small>
+                                                @endif
+                                                @else
+                                                <span class="badge bg-secondary">Not Required</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="document-actions">
+                                            <a href="{{ Storage::url($studentDetail->birth_certificate) }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                                <i class="ti ti-eye me-1"></i>View
+                                            </a>
+                                            @if(is_telecaller() && isset($studentDetail->birth_certificate_verification_status)) {{-- Telecaller or post-sales --}}
+                                            <button class="btn btn-sm btn-success" onclick="openVerificationModal('birth_certificate', '{{ $studentDetail->birth_certificate_verification_status }}')">
                                                 <i class="ti ti-check me-1"></i>Verify
                                             </button>
                                             @endif

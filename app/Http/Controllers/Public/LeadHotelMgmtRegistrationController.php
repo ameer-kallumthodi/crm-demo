@@ -10,6 +10,7 @@ use App\Models\Subject;
 use App\Models\Batch;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\MailService;
 
 class LeadHotelMgmtRegistrationController extends Controller
 {
@@ -175,6 +176,16 @@ class LeadHotelMgmtRegistrationController extends Controller
                 'message' => $request->message,
                 'status' => 'pending',
             ]);
+            
+            
+            
+            // Send registration confirmation email
+            try {
+                MailService::sendStudentRegistrationEmail($studentDetail, 'Hotel Management');
+            } catch (\Exception $e) {
+                // Log error but don't fail the registration
+                \Log::error('Email sending failed for Hotel Management registration: ' . $e->getMessage());
+            }
             
             return response()->json([
                 'success' => true,

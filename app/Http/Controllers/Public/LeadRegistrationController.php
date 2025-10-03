@@ -8,6 +8,7 @@ use App\Models\Lead;
 use App\Models\LeadDetail;
 use App\Models\Subject;
 use App\Models\Batch;
+use App\Services\MailService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -192,6 +193,14 @@ class LeadRegistrationController extends Controller
                 'message' => $request->message,
                 'status' => 'pending',
             ]);
+            
+            // Send registration confirmation email
+            try {
+                MailService::sendStudentRegistrationEmail($studentDetail, 'NIOS');
+            } catch (\Exception $e) {
+                // Log error but don't fail the registration
+                \Log::error('Email sending failed for NIOS registration: ' . $e->getMessage());
+            }
             
             return response()->json([
                 'success' => true,

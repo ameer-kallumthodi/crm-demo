@@ -10,6 +10,7 @@ use App\Models\Subject;
 use App\Models\Batch;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\MailService;
 
 class LeadDigitalMarketingRegistrationController extends Controller
 {
@@ -172,6 +173,16 @@ class LeadDigitalMarketingRegistrationController extends Controller
                 'message' => $request->message,
                 'status' => 'pending',
             ]);
+            
+            
+            
+            // Send registration confirmation email
+            try {
+                MailService::sendStudentRegistrationEmail($studentDetail, 'Digital Marketing');
+            } catch (\Exception $e) {
+                // Log error but don't fail the registration
+                \Log::error('Email sending failed for Digital Marketing registration: ' . $e->getMessage());
+            }
             
             return response()->json([
                 'success' => true,

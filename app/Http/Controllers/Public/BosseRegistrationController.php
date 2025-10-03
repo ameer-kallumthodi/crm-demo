@@ -8,6 +8,7 @@ use App\Models\ConvertedLead;
 use App\Models\ConvertedStudentDetail;
 use App\Models\Subject;
 use App\Models\Batch;
+use App\Services\MailService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -192,6 +193,14 @@ class BosseRegistrationController extends Controller
                 'status' => 'pending',
                 'course_type' => 'bosse', // Add course type to distinguish BOSSE from NIOS
             ]);
+            
+            // Send registration confirmation email
+            try {
+                MailService::sendStudentRegistrationEmail($studentDetail, 'BOSSE');
+            } catch (\Exception $e) {
+                // Log error but don't fail the registration
+                \Log::error('Email sending failed for BOSSE registration: ' . $e->getMessage());
+            }
             
             return response()->json([
                 'success' => true,

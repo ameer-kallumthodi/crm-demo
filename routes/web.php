@@ -530,3 +530,10 @@ Route::get('/debug-telecaller-stats', function () {
         })
     ]);
 });
+
+// Student Verification Routes
+Route::middleware(['auth'])->group(function () {
+    Route::post('/student/verification/toggle/{studentId}', [App\Http\Controllers\StudentVerificationController::class, 'toggleVerifyStudent'])->name('student.verification.toggle');
+    Route::get('/student/verification/status/{studentId}', [App\Http\Controllers\StudentVerificationController::class, 'getVerificationStatus'])->name('student.verification.status');
+    Route::post('/student/verification/bulk', [App\Http\Controllers\StudentVerificationController::class, 'bulkVerify'])->name('student.verification.bulk');
+});
