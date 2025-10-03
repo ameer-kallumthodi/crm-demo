@@ -44,13 +44,21 @@ class InvoiceController extends Controller
      */
     public function show($id)
     {
-        $invoice = Invoice::with(['course', 'student.lead', 'payments.createdBy'])
+        $invoice = Invoice::with(['course', 'student.lead', 'payments' => function($query) {
+            $query->with('createdBy')->orderBy('created_at', 'desc');
+        }])
             ->findOrFail($id);
         
         // Check permissions
         $this->checkStudentAccess($invoice->student);
 
-        return view('admin.invoices.show', compact('invoice'));
+        // Find the first payment (oldest approved payment) for tax invoice
+        $firstPayment = \App\Models\Payment::where('invoice_id', $id)
+            ->where('status', 'Approved')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        return view('admin.invoices.show', compact('invoice', 'firstPayment'));
     }
 
     /**

@@ -418,6 +418,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/payments/{id}/download', [App\Http\Controllers\PaymentController::class, 'downloadFile'])->name('payments.download');
         Route::get('/payments/{id}/tax-invoice', [App\Http\Controllers\PaymentController::class, 'taxInvoice'])->name('payments.tax-invoice');
         Route::get('/payments/{id}/tax-invoice-pdf', [App\Http\Controllers\PaymentController::class, 'taxInvoicePdf'])->name('payments.tax-invoice-pdf');
+        Route::get('/payments/{id}/payment-receipt', [App\Http\Controllers\PaymentController::class, 'paymentReceipt'])->name('payments.payment-receipt');
+        Route::get('/payments/{id}/payment-receipt-pdf', [App\Http\Controllers\PaymentController::class, 'paymentReceiptPdf'])->name('payments.payment-receipt-pdf');
 
         // Call Logs Routes
         Route::get('/call-logs', [VoxbayCallLogController::class, 'index'])->name('call-logs.index');

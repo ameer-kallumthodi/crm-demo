@@ -11,16 +11,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">Payments for Invoice {{ $invoice->invoice_number }}</h4>
                         <div>
-                            <button type="button" class="btn btn-success" onclick="showAddPaymentModal({{ $invoice->id }}, {
-                                'invoice_number': '{{ $invoice->invoice_number }}',
-                                'student_name': '{{ $invoice->student->name }}',
-                                'course_name': '{{ $invoice->course->title }}',
-                                'total_amount': {{ $invoice->total_amount }},
-                                'paid_amount': {{ $invoice->paid_amount }},
-                                'pending_amount': {{ $invoice->total_amount - $invoice->paid_amount }}
-                            })">
+                            <a href="{{ route('admin.payments.create', $invoice->id) }}" class="btn btn-success">
                                 <i class="fas fa-plus"></i> Add Payment
-                            </button>
+                            </a>
                             <a href="{{ route('admin.invoices.show', $invoice->id) }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Back to Invoice
                             </a>
@@ -83,7 +76,7 @@
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $payment->created_at->format('M d, Y h:i A') }}</td>
                                     <td>₹{{ number_format($payment->amount_paid, 2) }}</td>
-                                    <td>₹{{ number_format($payment->previous_balance, 2) }}</td>
+                                    <td>₹{{ number_format($payment->invoice->total_amount - $payment->previous_balance, 2) }}</td>
                                     <td>{{ $payment->payment_type }}</td>
                                     <td>{{ $payment->transaction_id ?? 'N/A' }}</td>
                                     <td>
@@ -120,15 +113,26 @@
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             @if($payment->status == 'Approved')
-                                                <a href="{{ route('admin.payments.tax-invoice', $payment->id) }}" class="btn btn-sm btn-warning" title="Tax Invoice" target="_blank">
-                                                    <i class="fas fa-file-invoice"></i>
-                                                </a>
-                                                <a href="{{ route('admin.payments.tax-invoice-pdf', $payment->id) }}" class="btn btn-sm btn-danger" title="View PDF" target="_blank">
-                                                    <i class="fas fa-file-pdf"></i>
-                                                </a>
+                                                @if($firstPayment && $payment->id == $firstPayment->id)
+                                                    <!-- Show Tax Invoice for first payment -->
+                                                    <a href="{{ route('admin.payments.tax-invoice', $payment->id) }}" class="btn btn-sm btn-warning" title="Tax Invoice" target="_blank">
+                                                        <i class="fas fa-file-invoice"></i>
+                                                    </a>
+                                                    <a href="{{ route('admin.payments.tax-invoice-pdf', $payment->id) }}" class="btn btn-sm btn-danger" title="View PDF" target="_blank">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </a>
+                                                @else
+                                                    <!-- Show Payment Receipt for other payments -->
+                                                    <a href="{{ route('admin.payments.payment-receipt', $payment->id) }}" class="btn btn-sm btn-warning" title="Payment Receipt" target="_blank">
+                                                        <i class="fas fa-receipt"></i>
+                                                    </a>
+                                                    <a href="{{ route('admin.payments.payment-receipt-pdf', $payment->id) }}" class="btn btn-sm btn-danger" title="View PDF" target="_blank">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </a>
+                                                @endif
                                             @endif
                                             @if($payment->status == 'Pending Approval')
-                                                <button type="button" class="btn btn-sm btn-success" onclick="showApproveModal({{ $payment->id }}, '{{ $payment->amount_paid }}', '{{ $payment->previous_balance }}', '{{ $payment->payment_type }}', '{{ $payment->transaction_id }}', '{{ $payment->file_upload }}')" title="Approve Payment">
+                                                <button type="button" class="btn btn-sm btn-success" onclick="showApproveModal({{ $payment->id }}, '{{ $payment->amount_paid }}', '{{ $payment->invoice->total_amount - $payment->previous_balance }}', '{{ $payment->payment_type }}', '{{ $payment->transaction_id }}', '{{ $payment->file_upload }}')" title="Approve Payment">
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-danger" onclick="showRejectModal({{ $payment->id }}, '{{ $payment->amount_paid }}', '{{ $payment->payment_type }}')" title="Reject Payment">

@@ -14,6 +14,9 @@
                             <a href="{{ route('admin.payments.create', $invoice->id) }}" class="btn btn-success">
                                 <i class="fas fa-plus"></i> Add Payment
                             </a>
+                            <a href="{{ route('admin.payments.index', $invoice->id) }}" class="btn btn-primary">
+                                <i class="fas fa-credit-card"></i> View Payments
+                            </a> 
                             <a href="{{ route('admin.invoices.index', $invoice->student_id) }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Back to Invoices
                             </a>
@@ -99,18 +102,21 @@
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
+                                            <th>#</th>
                                             <th>Payment Date</th>
                                             <th>Amount</th>
                                             <th>Payment Type</th>
                                             <th>Transaction ID</th>
                                             <th>Status</th>
                                             <th>Created By</th>
+                                            <th>File</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse($invoice->payments as $payment)
+                                        @forelse($invoice->payments as $index => $payment)
                                         <tr>
+                                            <td>{{ $index + 1 }}</td>
                                             <td>{{ $payment->created_at->format('M d, Y h:i A') }}</td>
                                             <td>₹{{ number_format($payment->amount_paid, 2) }}</td>
                                             <td>{{ $payment->payment_type }}</td>
@@ -126,33 +132,63 @@
                                             </td>
                                             <td>{{ $payment->createdBy->name }}</td>
                                             <td>
-                                                <a href="{{ route('admin.payments.show', $payment->id) }}" class="btn btn-sm btn-info">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                @if($payment->status == 'Pending Approval')
-                                                    <form action="{{ route('admin.payments.approve', $payment->id) }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to approve this payment?')">
-                                                            <i class="fas fa-check"></i>
-                                                        </button>
-                                                    </form>
-                                                    <form action="{{ route('admin.payments.reject', $payment->id) }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to reject this payment?')">
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
                                                 @if($payment->file_upload)
-                                                    <a href="{{ route('admin.payments.download', $payment->id) }}" class="btn btn-sm btn-secondary">
-                                                        <i class="fas fa-download"></i>
-                                                    </a>
+                                                    <div class="btn-group btn-group-sm" role="group" aria-label="Receipt/Proof">
+                                                        <a href="{{ route('admin.payments.download', $payment->id) }}" class="btn btn-outline-primary" title="Download Receipt/Proof">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                        <a href="{{ route('admin.payments.view', $payment->id) }}" class="btn btn-primary" title="View Receipt/Proof" target="_blank">
+                                                            <i class="fas fa-file-alt"></i>
+                                                        </a>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">No file</span>
                                                 @endif
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-wrap gap-1 justify-content-start">
+                                                    <a href="{{ route('admin.payments.show', $payment->id) }}" class="btn btn-sm btn-info" title="View Payment">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    @if($payment->status == 'Approved')
+                                                        @if($firstPayment && $payment->id == $firstPayment->id)
+                                                            <!-- Show Tax Invoice for first payment -->
+                                                            <a href="{{ route('admin.payments.tax-invoice', $payment->id) }}" class="btn btn-sm btn-warning" title="Tax Invoice" target="_blank">
+                                                                <i class="fas fa-file-invoice"></i>
+                                                            </a>
+                                                            <a href="{{ route('admin.payments.tax-invoice-pdf', $payment->id) }}" class="btn btn-sm btn-danger" title="View PDF" target="_blank">
+                                                                <i class="fas fa-file-pdf"></i>
+                                                            </a>
+                                                        @else
+                                                            <!-- Show Payment Receipt for other payments -->
+                                                            <a href="{{ route('admin.payments.payment-receipt', $payment->id) }}" class="btn btn-sm btn-warning" title="Payment Receipt" target="_blank">
+                                                                <i class="fas fa-receipt"></i>
+                                                            </a>
+                                                            <a href="{{ route('admin.payments.payment-receipt-pdf', $payment->id) }}" class="btn btn-sm btn-danger" title="View PDF" target="_blank">
+                                                                <i class="fas fa-file-pdf"></i>
+                                                            </a>
+                                                        @endif
+                                                    @endif
+                                                    @if($payment->status == 'Pending Approval')
+                                                        <form action="{{ route('admin.payments.approve', $payment->id) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-success" title="Approve Payment" onclick="return confirm('Are you sure you want to approve this payment?')">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </form>
+                                                        <form action="{{ route('admin.payments.reject', $payment->id) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-danger" title="Reject Payment" onclick="return confirm('Are you sure you want to reject this payment?')">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                </div>
                                             </td>
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="7" class="text-center">No payments found for this invoice.</td>
+                                            <td colspan="9" class="text-center">No payments found for this invoice.</td>
                                         </tr>
                                         @endforelse
                                     </tbody>

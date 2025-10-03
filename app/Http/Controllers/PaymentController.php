@@ -27,7 +27,13 @@ class PaymentController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.payments.index', compact('invoice', 'payments'));
+        // Find the first payment (oldest approved payment) for tax invoice
+        $firstPayment = Payment::where('invoice_id', $invoiceId)
+            ->where('status', 'Approved')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        return view('admin.payments.index', compact('invoice', 'payments', 'firstPayment'));
     }
 
     /**
@@ -317,10 +323,77 @@ class PaymentController extends Controller
             'debugLayoutBlocks' => false,
             'debugLayoutInline' => false,
             'debugLayoutPaddingBox' => false,
-            'isFontSubsettingEnabled' => true,
         ]);
         
         $filename = 'tax_invoice_' . $payment->invoice->invoice_number . '_' . $payment->id . '.pdf';
+        
+        return $pdf->stream($filename);
+    }
+
+    /**
+     * Show payment receipt for payment
+     */
+    public function paymentReceipt($id)
+    {
+        $payment = Payment::with(['invoice.student', 'invoice.course'])
+            ->findOrFail($id);
+        
+        // Check permissions
+        $this->checkInvoiceAccess($payment->invoice);
+        
+        // Check if payment is approved
+        if ($payment->status !== 'Approved') {
+            return redirect()->back()
+                ->with('message_danger', 'Payment receipt can only be viewed for approved payments.');
+        }
+        
+        // Add number to words conversion
+        $payment->amount_in_words = $this->numberToWords($payment->amount_paid);
+        
+        return view('admin.payments.payment-receipt', compact('payment'));
+    }
+
+    /**
+     * Generate PDF for payment receipt
+     */
+    public function paymentReceiptPdf($id)
+    {
+        $payment = Payment::with(['invoice.student', 'invoice.course'])
+            ->findOrFail($id);
+        
+        // Check permissions
+        $this->checkInvoiceAccess($payment->invoice);
+        
+        // Check if payment is approved
+        if ($payment->status !== 'Approved') {
+            return redirect()->back()
+                ->with('message_danger', 'Payment receipt PDF can only be generated for approved payments.');
+        }
+        
+        // Add number to words conversion
+        $payment->amount_in_words = $this->numberToWords($payment->amount_paid);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.payments.payment-receipt-pdf-inline', compact('payment'));
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'defaultFont' => 'Arial',
+            'isPhpEnabled' => true,
+            'isJavascriptEnabled' => false,
+            'dpi' => 96,
+            'defaultMediaType' => 'print',
+            'isFontSubsettingEnabled' => true,
+            'debugKeepTemp' => false,
+            'debugCss' => false,
+            'debugLayout' => false,
+            'debugLayoutLines' => false,
+            'debugLayoutBlocks' => false,
+            'debugLayoutInline' => false,
+            'debugLayoutPaddingBox' => false,
+        ]);
+        
+        $filename = 'payment_receipt_' . $payment->invoice->invoice_number . '_' . $payment->id . '.pdf';
         
         return $pdf->stream($filename);
     }
