@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserRole;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
+use App\Helpers\PermissionHelper;
 
 class NotificationController extends Controller
 {
@@ -16,7 +17,7 @@ class NotificationController extends Controller
      */
     public function index()
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!PermissionHelper::has_permission('admin/notifications/index')) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -32,7 +33,7 @@ class NotificationController extends Controller
      */
     public function create()
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!PermissionHelper::has_permission('admin/notifications/index')) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -47,7 +48,7 @@ class NotificationController extends Controller
      */
     public function store(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!PermissionHelper::has_permission('admin/notifications/index')) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -82,7 +83,7 @@ class NotificationController extends Controller
      */
     public function show($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!PermissionHelper::has_permission('admin/notifications/index')) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -97,7 +98,7 @@ class NotificationController extends Controller
      */
     public function edit($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!PermissionHelper::has_permission('admin/notifications/index')) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -113,7 +114,7 @@ class NotificationController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!PermissionHelper::has_permission('admin/notifications/index')) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -151,7 +152,7 @@ class NotificationController extends Controller
      */
     public function destroy($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!PermissionHelper::has_permission('admin/notifications/index')) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 

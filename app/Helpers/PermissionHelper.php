@@ -4,6 +4,8 @@ namespace App\Helpers;
 
 use App\Helpers\RoleHelper;
 
+use function Symfony\Component\VarDumper\Dumper\esc;
+
 class PermissionHelper
 {
     /**
@@ -18,6 +20,33 @@ class PermissionHelper
             return self::has_permission_admin($permission);
         } elseif (RoleHelper::is_telecaller()) {
             return self::has_permission_telecaller($permission);
+        } elseif (RoleHelper::is_admission_counsellor()) {
+            return self::has_permission_admission_counsellor($permission);
+        } elseif (RoleHelper::is_academic_assistant()) {
+            return self::has_permission_academic_assistant($permission);
+        } elseif (RoleHelper::is_finance()) {
+            return self::has_permission_finance($permission);
+        } elseif (RoleHelper::is_post_sales()) {
+            return self::has_permission_post_sales($permission);
+        }
+        
+        return false;
+    }
+
+    public static function has_lead_action_permission()
+    {
+        if (RoleHelper::is_admin_or_super_admin()) {
+            return true;
+        } elseif (RoleHelper::is_academic_assistant()) {
+            return false;
+        } elseif (RoleHelper::is_admission_counsellor()) {
+            return false;
+        } elseif (RoleHelper::is_finance()) {
+            return false;
+        } elseif (RoleHelper::is_post_sales()) {
+            return false;
+        } elseif (RoleHelper::is_telecaller()) {
+            return true;
         }
         
         return false;
@@ -56,6 +85,64 @@ class PermissionHelper
             'leads/index',
             'profile/index',
             'admin/reports/leads',
+            'admin/converted-leads/index',
+        ];
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * Admission Counsellor permissions
+     */
+    public static function has_permission_admission_counsellor($permission = '')
+    {
+        $permissions = [
+            'dashboard/index',
+            'leads/index',
+            'profile/index',
+            'admin/converted-leads/index',
+            'admin/notifications/index',
+        ];
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * Academic Assistant permissions
+     */
+    public static function has_permission_academic_assistant($permission = '')
+    {
+        $permissions = [
+            'dashboard/index',
+            'leads/index',
+            'profile/index',
+            'admin/converted-leads/index',
+            'admin/notifications/index',
+        ];
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * Academic Assistant permissions
+     */
+    public static function has_permission_finance($permission = '')
+    {
+        $permissions = [
+            'dashboard/index',
+            'leads/index',
+            'profile/index',
+            'admin/converted-leads/index',
+        ];
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * Academic Assistant permissions
+     */
+    public static function has_permission_post_sales($permission = '')
+    {
+        $permissions = [
+            'dashboard/index',
+            'leads/index',
+            'profile/index',
             'admin/converted-leads/index',
         ];
         return in_array($permission, $permissions);

@@ -195,6 +195,8 @@ class InvoiceController extends Controller
             case 1: // Super Admin
             case 2: // Admin
             case 4: // Admission Counsellor
+            case 6: // Finance
+            case 7: // Post Sales
                 // Can access all students
                 break;
                 

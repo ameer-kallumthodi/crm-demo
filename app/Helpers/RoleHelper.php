@@ -99,7 +99,7 @@ class RoleHelper
         if (!$user) {
             return false;
         }
-
+        
         return $user->role_id == 4;
     }
 
@@ -118,6 +118,40 @@ class RoleHelper
         }
 
         return $user->role_id == 5;
+    }
+
+    /**
+     * Check if current user is Finance
+     */
+    public static function is_finance()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        return $user->role_id == 6;
+    }
+
+    /**
+     * Check if current user is Post Sales
+     */
+    public static function is_post_sales()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        return $user->role_id == 7;
     }
 
 

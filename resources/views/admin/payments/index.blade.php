@@ -132,12 +132,14 @@
                                                 @endif
                                             @endif
                                             @if($payment->status == 'Pending Approval')
+                                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_finance())
                                                 <button type="button" class="btn btn-sm btn-success" onclick="showApproveModal({{ $payment->id }}, '{{ $payment->amount_paid }}', '{{ $payment->invoice->total_amount - $payment->previous_balance }}', '{{ $payment->payment_type }}', '{{ $payment->transaction_id }}', '{{ $payment->file_upload }}')" title="Approve Payment">
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-danger" onclick="showRejectModal({{ $payment->id }}, '{{ $payment->amount_paid }}', '{{ $payment->payment_type }}')" title="Reject Payment">
                                                     <i class="fas fa-times"></i>
                                                 </button>
+                                                @endif
                                             @endif
                                         </div>
                                     </td>

@@ -51,6 +51,36 @@ if (!function_exists('is_telecaller')) {
     }
 }
 
+if (!function_exists('is_admission_counsellor')) {
+    /**
+     * Check if current user is Admission Counsellor
+     */
+    function is_admission_counsellor()
+    {
+        return \App\Helpers\RoleHelper::is_admission_counsellor();
+    }
+}
+
+if (!function_exists('is_academic_assistant')) {
+    /**
+     * Check if current user is Academic Assistant
+     */
+    function is_academic_assistant()
+    {
+        return \App\Helpers\RoleHelper::is_academic_assistant();
+    }
+}
+
+if (!function_exists('is_finance')) {
+    /**
+     * Check if current user is Finance
+     */
+    function is_finance()
+    {
+        return \App\Helpers\RoleHelper::is_finance();
+    }
+}
+
 
 if (!function_exists('is_logged_in')) {
     /**

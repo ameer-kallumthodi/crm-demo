@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\LeadStatus;
 use App\Models\Country;
 use App\Helpers\AuthHelper;
+use App\Helpers\RoleHelper;
 
 class DashboardController extends Controller
 {
@@ -38,6 +39,7 @@ class DashboardController extends Controller
             'conversionRate' => $this->getConversionRate(),
             'recentActivities' => $this->getRecentActivities(),
             'weeklyStats' => $this->getWeeklyStats(),
+            'todaysLeads' => $this->getTodaysLeads(),
         ];
 
         return view('dashboard', $data);
@@ -284,6 +286,22 @@ class DashboardController extends Controller
     }
 
     /**
+     * Get today's leads based on user role
+     */
+    private function getTodaysLeads()
+    {
+        $today = now()->startOfDay();
+        $tomorrow = now()->addDay()->startOfDay();
+        
+        $query = Lead::with(['leadStatus', 'leadSource', 'telecaller'])
+            ->where('created_at', '>=', $today)
+            ->where('created_at', '<', $tomorrow)
+            ->orderBy('created_at', 'desc');
+        
+        return $this->applyRoleBasedFilter($query)->get();
+    }
+
+    /**
      * Apply role-based filtering to lead queries
      */
     private function applyRoleBasedFilter($query)
@@ -292,6 +310,16 @@ class DashboardController extends Controller
         
         // If no user is logged in, return all leads (for admin view)
         if (!$currentUser) {
+            return $query;
+        }
+        
+        // Roles that can see all leads (same as admin)
+        if (RoleHelper::is_admin_or_super_admin() || 
+            RoleHelper::is_admission_counsellor() || 
+            RoleHelper::is_finance() || 
+            RoleHelper::is_academic_assistant() || 
+            RoleHelper::is_post_sales()) {
+            // Can see all leads
             return $query;
         }
         

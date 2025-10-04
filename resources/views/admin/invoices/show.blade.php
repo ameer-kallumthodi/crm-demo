@@ -170,6 +170,7 @@
                                                         @endif
                                                     @endif
                                                     @if($payment->status == 'Pending Approval')
+                                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_finance())
                                                         <form action="{{ route('admin.payments.approve', $payment->id) }}" method="POST" class="d-inline">
                                                             @csrf
                                                             <button type="submit" class="btn btn-sm btn-success" title="Approve Payment" onclick="return confirm('Are you sure you want to approve this payment?')">
@@ -182,6 +183,7 @@
                                                                 <i class="fas fa-times"></i>
                                                             </button>
                                                         </form>
+                                                        @endif
                                                     @endif
                                                 </div>
                                             </td>

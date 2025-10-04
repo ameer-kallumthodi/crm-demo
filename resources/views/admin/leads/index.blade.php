@@ -39,163 +39,103 @@
 <!-- [ Search Results Indicator ] end -->
 @endif
 
-<!-- [ Date Filter ] start -->
+<!-- [ Filter Section ] start -->
 <div class="row mb-3">
     <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <form method="GET" action="{{ route('leads.index') }}" id="dateFilterForm">
-                    <!-- Desktop Filter Layout -->
-                    <div class="d-none d-lg-block">
-                        <div class="row align-items-end">
-                            <div class="col-md-2">
-                                <label for="date_from" class="form-label">From Date</label>
-                                <input type="date" class="form-control" name="date_from"
-                                    value="{{ request('date_from', \Carbon\Carbon::now()->subDays(7)->format('Y-m-d')) }}">
-                            </div>
-                            <div class="col-md-2">
-                                <label for="date_to" class="form-label">To Date</label>
-                                <input type="date" class="form-control" name="date_to"
-                                    value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
-                            </div>
-                            <div class="col-md-2">
-                                <label for="filter_lead_status_id" class="form-label">Status</label>
-                                <select class="form-select" name="lead_status_id" id="filter_lead_status_id">
-                                    <option value="">All Statuses</option>
-                                    @foreach($leadStatuses as $status)
-                                    <option value="{{ $status->id }}" {{ request('lead_status_id') == $status->id ? 'selected' : '' }}>
-                                        {{ $status->title }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="filter_lead_source_id" class="form-label">Source</label>
-                                <select class="form-select" name="lead_source_id" id="filter_lead_source_id">
-                                    <option value="">All Sources</option>
-                                    @foreach($leadSources as $source)
-                                    <option value="{{ $source->id }}" {{ request('lead_source_id') == $source->id ? 'selected' : '' }}>
-                                        {{ $source->title }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="course_id" class="form-label">Course</label>
-                                <select class="form-select" name="course_id">
-                                    <option value="">All Courses</option>
-                                    @foreach($courses as $course)
-                                    <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
-                                        {{ $course->title }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="rating" class="form-label">Rating</label>
-                                <select class="form-select" name="rating">
-                                    <option value="">All Ratings</option>
-                                    @for($i = 1; $i <= 10; $i++)
-                                        <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>
-                                        {{ $i }}/10
-                                        </option>
-                                        @endfor
-                                </select>
-                            </div>
-                            @if(!$isTelecaller || $isTeamLead)
-                            <div class="col-md-2">
-                                <label for="telecaller_id" class="form-label">Telecaller</label>
-                                <select class="form-select" id="telecaller_id_filter" name="telecaller_id">
-                                    <option value="">All Telecallers</option>
-                                    @foreach($telecallers as $telecaller)
-                                    <option value="{{ $telecaller->id }}" {{ request('telecaller_id') == $telecaller->id ? 'selected' : '' }}>
-                                        {{ $telecaller->name }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            @endif
-                            <div class="col-md-3 mt-3">
-                                <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="ti ti-filter"></i> Filter
-                                    </button>
-                                    <a href="{{ route('leads.index') }}" class="btn btn-outline-secondary">
-                                        <i class="ti ti-x"></i> Clear
-                                    </a>
-                                </div>
-                            </div>
+                    <div class="row g-3 align-items-end">
+                        <!-- From Date -->
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <label for="date_from" class="form-label">From Date</label>
+                            <input type="date" class="form-control form-control-sm" name="date_from" id="date_from"
+                                value="{{ request('date_from', \Carbon\Carbon::now()->subDays(7)->format('Y-m-d')) }}">
                         </div>
-                    </div>
 
-                    <!-- Mobile Filter Layout -->
-                    <div class="d-lg-none">
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <label for="date_from_mobile" class="form-label f-12">From Date</label>
-                                <input type="date" class="form-control form-control-sm" name="date_from" id="date_from_mobile"
-                                    value="{{ request('date_from', \Carbon\Carbon::now()->subDays(7)->format('Y-m-d')) }}">
-                            </div>
-                            <div class="col-6">
-                                <label for="date_to_mobile" class="form-label f-12">To Date</label>
-                                <input type="date" class="form-control form-control-sm" name="date_to" id="date_to_mobile"
-                                    value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
-                            </div>
-                            <div class="col-6">
-                                <label for="filter_lead_status_id_mobile" class="form-label f-12">Status</label>
-                                <select class="form-select form-select-sm" name="lead_status_id" id="filter_lead_status_id_mobile">
-                                    <option value="">All Statuses</option>
-                                    @foreach($leadStatuses as $status)
-                                    <option value="{{ $status->id }}" {{ request('lead_status_id') == $status->id ? 'selected' : '' }}>
-                                        {{ $status->title }}
+                        <!-- To Date -->
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <label for="date_to" class="form-label">To Date</label>
+                            <input type="date" class="form-control form-control-sm" name="date_to" id="date_to"
+                                value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <label for="filter_lead_status_id" class="form-label">Status</label>
+                            <select class="form-select form-select-sm" name="lead_status_id" id="filter_lead_status_id">
+                                <option value="">All Statuses</option>
+                                @foreach($leadStatuses as $status)
+                                <option value="{{ $status->id }}" {{ request('lead_status_id') == $status->id ? 'selected' : '' }}>
+                                    {{ $status->title }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Source -->
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <label for="filter_lead_source_id" class="form-label">Source</label>
+                            <select class="form-select form-select-sm" name="lead_source_id" id="filter_lead_source_id">
+                                <option value="">All Sources</option>
+                                @foreach($leadSources as $source)
+                                <option value="{{ $source->id }}" {{ request('lead_source_id') == $source->id ? 'selected' : '' }}>
+                                    {{ $source->title }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Course -->
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <label for="course_id" class="form-label">Course</label>
+                            <select class="form-select form-select-sm" name="course_id" id="course_id">
+                                <option value="">All Courses</option>
+                                @foreach($courses as $course)
+                                <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
+                                    {{ $course->title }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Rating -->
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <label for="rating" class="form-label">Rating</label>
+                            <select class="form-select form-select-sm" name="rating" id="rating">
+                                <option value="">All Ratings</option>
+                                @for($i = 1; $i <= 10; $i++)
+                                    <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>
+                                    {{ $i }}/10
                                     </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <label for="filter_lead_source_id_mobile" class="form-label f-12">Source</label>
-                                <select class="form-select form-select-sm" name="lead_source_id" id="filter_lead_source_id_mobile">
-                                    <option value="">All Sources</option>
-                                    @foreach($leadSources as $source)
-                                    <option value="{{ $source->id }}" {{ request('lead_source_id') == $source->id ? 'selected' : '' }}>
-                                        {{ $source->title }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <label for="course_id_mobile" class="form-label f-12">Course</label>
-                                <select class="form-select form-select-sm" name="course_id" id="course_id_mobile">
-                                    <option value="">All Courses</option>
-                                    @foreach($courses as $course)
-                                    <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
-                                        {{ $course->title }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            @if(!$isTelecaller || $isTeamLead)
-                            <div class="col-6">
-                                <label for="telecaller_id_mobile" class="form-label f-12">Telecaller</label>
-                                <select class="form-select form-select-sm" name="telecaller_id" id="telecaller_id_mobile">
-                                    <option value="">All Telecallers</option>
-                                    @foreach($telecallers as $telecaller)
-                                    <option value="{{ $telecaller->id }}" {{ request('telecaller_id') == $telecaller->id ? 'selected' : '' }}>
-                                        {{ $telecaller->name }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            @endif
-                            <div class="col-12 mt-2">
-                                <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary btn-sm flex-fill">
-                                        <i class="ti ti-filter me-1"></i> Filter
-                                    </button>
-                                    <a href="{{ route('leads.index') }}" class="btn btn-outline-secondary btn-sm flex-fill">
-                                        <i class="ti ti-x me-1"></i> Clear
-                                    </a>
-                                </div>
+                                    @endfor
+                            </select>
+                        </div>
+
+                        <!-- Telecaller (conditional) -->
+                        @if(!$isTelecaller || $isTeamLead)
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <label for="telecaller_id" class="form-label">Telecaller</label>
+                            <select class="form-select form-select-sm" name="telecaller_id" id="telecaller_id">
+                                <option value="">All Telecallers</option>
+                                @foreach($telecallers as $telecaller)
+                                <option value="{{ $telecaller->id }}" {{ request('telecaller_id') == $telecaller->id ? 'selected' : '' }}>
+                                    {{ $telecaller->name }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endif
+
+                        <!-- Action Buttons -->
+                        <div class="col-12 col-lg-2">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="submit" class="btn btn-primary btn-sm flex-fill flex-lg-grow-0">
+                                    <i class="ti ti-filter me-1"></i> Filter
+                                </button>
+                                <a href="{{ route('leads.index') }}" class="btn btn-outline-secondary btn-sm flex-fill flex-lg-grow-0">
+                                    <i class="ti ti-x me-1"></i> Clear
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -204,7 +144,7 @@
         </div>
     </div>
 </div>
-<!-- [ Date Filter ] end -->
+<!-- [ Filter Section ] end -->
 
 <!-- [ Main Content ] start -->
 <div class="row">
@@ -215,7 +155,7 @@
                 <div class="d-none d-md-flex justify-content-between align-items-center">
                     <h5 class="mb-0">All Leads</h5>
                     <div class="d-flex gap-2">
-                        @if(!$isTelecaller || $isTeamLead)
+                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_team_lead())
                         <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
                             onclick="show_ajax_modal('{{ route('leads.add') }}', 'Add New Lead')">
                             <i class="ti ti-plus"></i> Add Lead
@@ -240,7 +180,7 @@
                 <div class="d-md-none">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">All Leads</h5>
-                        @if(!$isTelecaller || $isTeamLead)
+                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_team_lead())
                         <a href="javascript:void(0);" class="btn btn-primary btn-sm"
                             onclick="show_ajax_modal('{{ route('leads.add') }}', 'Add New Lead')">
                             <i class="ti ti-plus"></i> Add
@@ -248,7 +188,7 @@
                         @endif
                     </div>
 
-                    @if(!$isTelecaller || $isTeamLead)
+                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_team_lead())
                     <div class="row g-2">
                         <div class="col-6">
                             <a href="javascript:void(0);" class="btn btn-outline-primary btn-sm w-100"
@@ -285,7 +225,9 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Actions</th>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                     <th>Registration Details</th>
+                                    @endif
                                     <th>Name</th>
                                     <th>Profile</th>
                                     <th>Phone</th>
@@ -315,6 +257,7 @@
                                                 title="View Lead">
                                                 <i class="ti ti-eye"></i>
                                             </a>
+                                            @if(\App\Helpers\PermissionHelper::has_lead_action_permission())
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
                                                 onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
                                                 title="Edit Lead">
@@ -370,7 +313,10 @@
                                             </a>
                                             @endif
                                         </div>
+
+                                        @endif
                                     </td>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                     <td class="text-center">
                                         @if($lead->studentDetails)
                                         <div class="d-flex flex-column gap-1">
@@ -385,76 +331,77 @@
                                                 {{ ucfirst($lead->studentDetails->status) }}
                                             </span>
                                             @endif
-                                            <a href="{{ route('leads.registration-details', $lead->id) }}" 
-                                               class="btn btn-sm btn-outline-primary mt-1" 
-                                               title="View Registration Details">
+                                            <a href="{{ route('leads.registration-details', $lead->id) }}"
+                                                class="btn btn-sm btn-outline-primary mt-1"
+                                                title="View Registration Details">
                                                 <i class="ti ti-eye me-1"></i>View Details
                                             </a>
                                         </div>
                                         @else
-                                            @if($lead->course_id == 1)
-                                                <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open NIOS Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 2)
-                                                <a href="{{ route('public.lead.bosse.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open BOSSE Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 3)
-                                                <a href="{{ route('public.lead.medical-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Medical Coding Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 4)
-                                                <a href="{{ route('public.lead.hospital-admin.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Hospital Administration Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 5)
-                                                <a href="{{ route('public.lead.eschool.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open E-School Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 6)
-                                                <a href="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Eduthanzeel Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 7)
-                                                <a href="{{ route('public.lead.ttc.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open TTC Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 8)
-                                                <a href="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Hotel Management Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 9)
-                                                <a href="{{ route('public.lead.ugpg.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open UG/PG Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 10)
-                                                <a href="{{ route('public.lead.python.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Python Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 11)
-                                                <a href="{{ route('public.lead.digital-marketing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Digital Marketing Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 12)
-                                                <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open AI Automation Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 13)
-                                                <a href="{{ route('public.lead.web-dev.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Web Development & Designing Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 14)
-                                                <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Vibe Coding Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @elseif($lead->course_id == 15)
-                                                <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Graphic Designing Registration Form">
-                                                    <i class="ti ti-external-link"></i>
-                                                </a>
-                                            @endif
+                                        @if($lead->course_id == 1)
+                                        <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open NIOS Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 2)
+                                        <a href="{{ route('public.lead.bosse.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open BOSSE Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 3)
+                                        <a href="{{ route('public.lead.medical-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Medical Coding Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 4)
+                                        <a href="{{ route('public.lead.hospital-admin.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Hospital Administration Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 5)
+                                        <a href="{{ route('public.lead.eschool.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open E-School Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 6)
+                                        <a href="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Eduthanzeel Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 7)
+                                        <a href="{{ route('public.lead.ttc.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open TTC Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 8)
+                                        <a href="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Hotel Management Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 9)
+                                        <a href="{{ route('public.lead.ugpg.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open UG/PG Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 10)
+                                        <a href="{{ route('public.lead.python.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Python Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 11)
+                                        <a href="{{ route('public.lead.digital-marketing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Digital Marketing Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 12)
+                                        <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open AI Automation Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 13)
+                                        <a href="{{ route('public.lead.web-dev.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Web Development & Designing Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 14)
+                                        <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Vibe Coding Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @elseif($lead->course_id == 15)
+                                        <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Graphic Designing Registration Form">
+                                            <i class="ti ti-external-link"></i>
+                                        </a>
+                                        @endif
                                         @endif
                                     </td>
+                                    @endif
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avtar avtar-s rounded-circle bg-light-primary me-2 d-flex align-items-center justify-content-center">
@@ -772,11 +719,13 @@
                                             </div>
                                         </div>
                                         <div class="mt-2">
-                                            <a href="{{ route('leads.registration-details', $lead->id) }}" 
-                                               class="btn btn-sm btn-outline-primary" 
-                                               title="View Registration Details">
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                            <a href="{{ route('leads.registration-details', $lead->id) }}"
+                                                class="btn btn-sm btn-outline-primary"
+                                                title="View Registration Details">
                                                 <i class="ti ti-eye me-1"></i>View Details
                                             </a>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -831,6 +780,7 @@
                                     </a>
                                     <br>
                                     <hr><br>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                     @if($lead->course_id == 1)
                                     <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open NIOS Registration Form">
                                         <i class="ti ti-external-link f-12"></i>
@@ -891,6 +841,7 @@
                                     <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Graphic Designing Registration Form">
                                         <i class="ti ti-external-link f-12"></i>
                                     </a>
+                                    @endif
                                     @endif
                                 </div>
                             </div>
@@ -1113,6 +1064,5 @@
     });
 
     // Function to show registration details in a modal
-    
 </script>
 @endpush

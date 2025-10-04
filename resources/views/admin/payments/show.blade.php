@@ -128,6 +128,7 @@
                         <div class="col-12">
                             <h6>Payment Actions</h6>
                             <div class="d-flex gap-2">
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_finance())
                                 <form action="{{ route('admin.payments.approve', $payment->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to approve this payment?')">
@@ -140,6 +141,7 @@
                                         <i class="fas fa-times"></i> Reject Payment
                                     </button>
                                 </form>
+                                @endif
                             </div>
                         </div>
                     </div>

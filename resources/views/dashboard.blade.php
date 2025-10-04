@@ -29,7 +29,12 @@
     <div class="col-6 col-md-4 col-lg-3 col-xl-2">
         <div class="card h-100">
             <div class="card-body">
-                <h6 class="mb-2 f-w-400 text-muted">Total Leads</h6>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="mb-0 f-w-400 text-muted">Total Leads</h6>
+                    <a href="{{ route('leads.index') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="ti ti-external-link f-12"></i>
+                    </a>
+                </div>
                 <h4 class="mb-2">{{ $totalLeads ?? 0 }}</h4>
                 <div class="d-flex align-items-center">
                     <span class="badge bg-light-primary border border-primary me-2">
@@ -43,7 +48,12 @@
     <div class="col-6 col-md-4 col-lg-3 col-xl-3">
         <div class="card h-100">
             <div class="card-body">
-                <h6 class="mb-2 f-w-400 text-muted">Active Leads</h6>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="mb-0 f-w-400 text-muted">Active Leads</h6>
+                    <a href="{{ route('leads.index') }}" class="btn btn-sm btn-outline-success">
+                        <i class="ti ti-external-link f-12"></i>
+                    </a>
+                </div>
                 <h4 class="mb-2">{{ $totalLeads - ($weeklyStats['convertedLeads'] ?? 0) }}</h4>
                 <div class="d-flex align-items-center">
                     <span class="badge bg-light-success border border-success me-2">
@@ -57,7 +67,12 @@
     <div class="col-6 col-md-4 col-lg-3 col-xl-3">
         <div class="card h-100">
             <div class="card-body">
-                <h6 class="mb-2 f-w-400 text-muted">Converted</h6>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="mb-0 f-w-400 text-muted">Converted</h6>
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-sm btn-outline-warning">
+                        <i class="ti ti-external-link f-12"></i>
+                    </a>
+                </div>
                 <h4 class="mb-2">{{ $weeklyStats['convertedLeads'] ?? 0 }}</h4>
                 <div class="d-flex align-items-center">
                     <span class="badge bg-light-warning border border-warning me-2">
@@ -84,16 +99,42 @@
         </div>
     </div>
     @endif
+    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
     <div class="col-6 col-md-4 col-lg-3 col-xl-2">
         <div class="card h-100">
             <div class="card-body">
-                <h6 class="mb-2 f-w-400 text-muted">Total Telecallers</h6>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="mb-0 f-w-400 text-muted">Total Telecallers</h6>
+                    <a href="{{ route('leads.index') }}" class="btn btn-sm btn-outline-info">
+                        <i class="ti ti-external-link f-12"></i>
+                    </a>
+                </div>
                 <h4 class="mb-2">{{ $totalTelecallers ?? 0 }}</h4>
                 <div class="d-flex align-items-center">
                     <span class="badge bg-light-info border border-info me-2">
                         <i class="ti ti-phone"></i> Active
                     </span>
                     <small class="text-muted">Lead access</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="mb-0 f-w-400 text-muted">Today's Leads</h6>
+                    <a href="{{ route('leads.index', ['date_from' => now()->format('Y-m-d'), 'date_to' => now()->format('Y-m-d')]) }}" class="btn btn-sm btn-outline-success">
+                        <i class="ti ti-external-link f-12"></i>
+                    </a>
+                </div>
+                <h4 class="mb-2">{{ $todaysLeads->count() ?? 0 }}</h4>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-light-success border border-success me-2">
+                        <i class="ti ti-calendar"></i> {{ now()->format('M d') }}
+                    </span>
+                    <small class="text-muted">Created today</small>
                 </div>
             </div>
         </div>
@@ -189,6 +230,102 @@
                         <div class="text-muted">
                             <i class="ti ti-inbox f-48 mb-3 d-block"></i>
                             <p class="mb-0">No recent leads found</p>
+                        </div>
+                    </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Leads Section -->
+    <div class="col-12">
+        <h5 class="mb-3">Today's Leads ({{ now()->format('M d, Y') }})</h5>
+        <div class="card tbl-card">
+            <div class="card-body">
+                <!-- Desktop Table View -->
+                <div class="d-none d-md-block">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-borderless mb-0">
+                            <thead>
+                                <tr>
+                                    <th>NAME</th>
+                                    <th>PHONE</th>
+                                    <th>STATUS</th>
+                                    <th>SOURCE</th>
+                                    <th>TEAM MEMBER</th>
+                                    <th class="text-end">CREATED TIME</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($todaysLeads ?? [] as $lead)
+                                <tr>
+                                    <td><a href="#" class="text-muted">{{ $lead->title }}</a></td>
+                                    <td>{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</td>
+                                    <td>
+                                        <span class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus->id) }} f-10 m-r-5"></i>
+                                            {{ $lead->leadStatus->title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $lead->leadSource->title ?? 'N/A' }}</td>
+                                    <td>{{ $lead->telecaller->name ?? 'N/A' }}</td>
+                                    <td class="text-end">{{ $lead->created_at->format('H:i A') }}</td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="ti ti-calendar f-48 mb-3 d-block"></i>
+                                        <p class="mb-0">No leads created today</p>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="d-md-none">
+                    @forelse($todaysLeads ?? [] as $lead)
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avtar avtar-s rounded-circle bg-light-primary me-3 d-flex align-items-center justify-content-center">
+                                    <span class="f-16 fw-bold text-primary">{{ strtoupper(substr($lead->title, 0, 1)) }}</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fw-bold">{{ $lead->title }}</h6>
+                                    <small class="text-muted">{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">{{ $lead->created_at->format('H:i A') }}</small>
+                                </div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Status</small>
+                                    <span class="d-flex align-items-center gap-1">
+                                        <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus->id) }} f-10"></i>
+                                        <span class="fw-medium">{{ $lead->leadStatus->title }}</span>
+                                    </span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Source</small>
+                                    <span class="fw-medium">{{ $lead->leadSource->title ?? 'N/A' }}</span>
+                                </div>
+                                <div class="col-12">
+                                    <small class="text-muted d-block">Team Member</small>
+                                    <span class="fw-medium">{{ $lead->telecaller->name ?? 'N/A' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="ti ti-calendar f-48 mb-3 d-block"></i>
+                            <p class="mb-0">No leads created today</p>
                         </div>
                     </div>
                     @endforelse
