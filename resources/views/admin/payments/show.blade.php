@@ -12,12 +12,23 @@
                         <h4 class="mb-0">Payment Details</h4>
                         <div>
                             @if($payment->status == 'Approved')
-                                <a href="{{ route('admin.payments.tax-invoice', $payment->id) }}" class="btn btn-warning me-2" target="_blank">
-                                    <i class="fas fa-file-invoice"></i> Tax Invoice
-                                </a>
-                                <a href="{{ route('admin.payments.tax-invoice-pdf', $payment->id) }}" class="btn btn-danger me-2" target="_blank">
-                                    <i class="fas fa-file-pdf"></i> View PDF
-                                </a>
+                                @if($firstPayment && $payment->id == $firstPayment->id)
+                                    <!-- Show Tax Invoice for first payment -->
+                                    <a href="{{ route('admin.payments.tax-invoice', $payment->id) }}" class="btn btn-warning me-2" target="_blank">
+                                        <i class="fas fa-file-invoice"></i> Tax Invoice
+                                    </a>
+                                    <a href="{{ route('admin.payments.tax-invoice-pdf', $payment->id) }}" class="btn btn-danger me-2" target="_blank">
+                                        <i class="fas fa-file-pdf"></i> View PDF
+                                    </a>
+                                @else
+                                    <!-- Show Payment Receipt for other payments -->
+                                    <a href="{{ route('admin.payments.payment-receipt', $payment->id) }}" class="btn btn-warning me-2" target="_blank">
+                                        <i class="fas fa-receipt"></i> Payment Receipt
+                                    </a>
+                                    <a href="{{ route('admin.payments.payment-receipt-pdf', $payment->id) }}" class="btn btn-danger me-2" target="_blank">
+                                        <i class="fas fa-file-pdf"></i> View PDF
+                                    </a>
+                                @endif
                             @endif
                             <a href="{{ route('admin.payments.index', $payment->invoice_id) }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Back to Payments
@@ -129,18 +140,21 @@
                             <h6>Payment Actions</h6>
                             <div class="d-flex gap-2">
                                 @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_finance())
-                                <form action="{{ route('admin.payments.approve', $payment->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to approve this payment?')">
-                                        <i class="fas fa-check"></i> Approve Payment
-                                    </button>
-                                </form>
-                                <form action="{{ route('admin.payments.reject', $payment->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this payment?')">
-                                        <i class="fas fa-times"></i> Reject Payment
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-success approve-payment-btn" 
+                                        data-payment-id="{{ $payment->id }}"
+                                        data-amount="{{ $payment->amount_paid }}"
+                                        data-previous-balance="{{ $payment->invoice->total_amount - $payment->previous_balance }}"
+                                        data-payment-type="{{ $payment->payment_type }}"
+                                        data-transaction-id="{{ $payment->transaction_id }}"
+                                        data-file-upload="{{ $payment->file_upload }}">
+                                    <i class="fas fa-check"></i> Approve Payment
+                                </button>
+                                <button type="button" class="btn btn-danger reject-payment-btn" 
+                                        data-payment-id="{{ $payment->id }}"
+                                        data-amount="{{ $payment->amount_paid }}"
+                                        data-payment-type="{{ $payment->payment_type }}">
+                                    <i class="fas fa-times"></i> Reject Payment
+                                </button>
                                 @endif
                             </div>
                         </div>
@@ -151,4 +165,203 @@
         </div>
     </div>
 </div>
+
+<!-- Payment Approval Modal -->
+<div class="modal fade" id="approvePaymentModal" tabindex="-1" aria-labelledby="approvePaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="approvePaymentModalLabel">Approve Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Please review the payment details before approving:</strong>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Amount:</strong>
+                    </div>
+                    <div class="col-6" id="approveAmount">
+                        <!-- Amount will be populated here -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Previous Balance:</strong>
+                    </div>
+                    <div class="col-6" id="approvePreviousBalance">
+                        <!-- Previous balance will be populated here -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Payment Type:</strong>
+                    </div>
+                    <div class="col-6" id="approvePaymentType">
+                        <!-- Payment type will be populated here -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Transaction ID:</strong>
+                    </div>
+                    <div class="col-6" id="approveTransactionId">
+                        <!-- Transaction ID will be populated here -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Receipt/Proof:</strong>
+                    </div>
+                    <div class="col-6" id="approveFile">
+                        <!-- File will be populated here -->
+                    </div>
+                </div>
+                <hr>
+                <p class="text-muted">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Once approved, this payment will be added to the invoice total and cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="approvePaymentForm" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check me-2"></i>Approve Payment
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Rejection Modal -->
+<div class="modal fade" id="rejectPaymentModal" tabindex="-1" aria-labelledby="rejectPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectPaymentModalLabel">Reject Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Are you sure you want to reject this payment?</strong>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Amount:</strong>
+                    </div>
+                    <div class="col-6" id="rejectAmount">
+                        <!-- Amount will be populated here -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Payment Type:</strong>
+                    </div>
+                    <div class="col-6" id="rejectPaymentType">
+                        <!-- Payment type will be populated here -->
+                    </div>
+                </div>
+                <hr>
+                <p class="text-muted">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Rejected payments will not be added to the invoice total.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="rejectPaymentForm" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-times me-2"></i>Reject Payment
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle approve payment button clicks
+        document.querySelectorAll('.approve-payment-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const paymentId = this.getAttribute('data-payment-id');
+                const amount = this.getAttribute('data-amount');
+                const previousBalance = this.getAttribute('data-previous-balance');
+                const paymentType = this.getAttribute('data-payment-type');
+                const transactionId = this.getAttribute('data-transaction-id');
+                const fileUpload = this.getAttribute('data-file-upload');
+
+                showApproveModal(paymentId, amount, previousBalance, paymentType, transactionId, fileUpload);
+            });
+        });
+
+        // Handle reject payment button clicks
+        document.querySelectorAll('.reject-payment-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const paymentId = this.getAttribute('data-payment-id');
+                const amount = this.getAttribute('data-amount');
+                const paymentType = this.getAttribute('data-payment-type');
+
+                showRejectModal(paymentId, amount, paymentType);
+            });
+        });
+    });
+
+    // Show approve payment modal
+    function showApproveModal(paymentId, amount, previousBalance, paymentType, transactionId, fileUpload) {
+        document.getElementById('approveAmount').textContent = '₹' + parseFloat(amount).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        document.getElementById('approvePreviousBalance').textContent = '₹' + parseFloat(previousBalance).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        document.getElementById('approvePaymentType').textContent = paymentType;
+        document.getElementById('approveTransactionId').textContent = transactionId || 'N/A';
+
+        // Handle file display
+        const fileElement = document.getElementById('approveFile');
+        if (fileUpload && fileUpload !== '') {
+            const fileName = fileUpload.split('/').pop(); // Get filename from path
+            const fileUrl = '{{ route("admin.payments.view", ":id") }}'.replace(':id', paymentId);
+            fileElement.innerHTML = `<a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-eye me-1"></i>View ${fileName}
+        </a>`;
+        } else {
+            fileElement.innerHTML = '<span class="text-muted">No file uploaded</span>';
+        }
+
+        document.getElementById('approvePaymentForm').action = '{{ route("admin.payments.approve", ":id") }}'.replace(':id', paymentId);
+
+        const modal = new bootstrap.Modal(document.getElementById('approvePaymentModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.show();
+    }
+
+    // Show reject payment modal
+    function showRejectModal(paymentId, amount, paymentType) {
+        document.getElementById('rejectAmount').textContent = '₹' + parseFloat(amount).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        document.getElementById('rejectPaymentType').textContent = paymentType;
+        document.getElementById('rejectPaymentForm').action = '{{ route("admin.payments.reject", ":id") }}'.replace(':id', paymentId);
+
+        const modal = new bootstrap.Modal(document.getElementById('rejectPaymentModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.show();
+    }
+</script>
 @endsection

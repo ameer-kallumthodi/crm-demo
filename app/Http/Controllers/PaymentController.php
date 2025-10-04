@@ -215,7 +215,13 @@ class PaymentController extends Controller
         // Check permissions
         $this->checkInvoiceAccess($payment->invoice);
 
-        return view('admin.payments.show', compact('payment'));
+        // Find the first payment (oldest approved payment) for tax invoice
+        $firstPayment = Payment::where('invoice_id', $payment->invoice_id)
+            ->where('status', 'Approved')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        return view('admin.payments.show', compact('payment', 'firstPayment'));
     }
 
     /**
