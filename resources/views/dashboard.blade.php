@@ -139,7 +139,9 @@
             </div>
         </div>
     </div>
-
+    <br>
+    <hr>
+    <br>
     <div class="col-12 col-xl-8">
         <div class="d-flex align-items-center justify-content-between mb-3">
             <h5 class="mb-0">Lead Analytics</h5>
