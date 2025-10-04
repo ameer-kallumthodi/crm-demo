@@ -337,6 +337,13 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/reports/voxbay-call-logs/export/excel', [App\Http\Controllers\VoxbayReportController::class, 'exportExcel'])->name('reports.voxbay-call-logs.export.excel');
         Route::get('/reports/voxbay-call-logs/export/pdf', [App\Http\Controllers\VoxbayReportController::class, 'exportPdf'])->name('reports.voxbay-call-logs.export.pdf');
 
+        // Course Reports routes
+        Route::get('/reports/course-summary', [App\Http\Controllers\CourseReportController::class, 'index'])->name('reports.course-summary');
+        Route::get('/reports/course/{courseId}/leads', [App\Http\Controllers\CourseReportController::class, 'courseLeads'])->name('reports.course-leads');
+        Route::get('/reports/course/{courseId}/converted-leads', [App\Http\Controllers\CourseReportController::class, 'courseConvertedLeads'])->name('reports.course-converted-leads');
+        Route::get('/reports/course-summary/export/excel', [App\Http\Controllers\CourseReportController::class, 'exportCourseSummaryExcel'])->name('reports.course-summary.excel');
+        Route::get('/reports/course-summary/export/pdf', [App\Http\Controllers\CourseReportController::class, 'exportCourseSummaryPdf'])->name('reports.course-summary.pdf');
+
         // Export routes
         Route::get('/reports/lead-status/export/excel', [App\Http\Controllers\LeadReportController::class, 'exportLeadStatusExcel'])->name('reports.lead-status.excel');
         Route::get('/reports/lead-status/export/pdf', [App\Http\Controllers\LeadReportController::class, 'exportLeadStatusPdf'])->name('reports.lead-status.pdf');

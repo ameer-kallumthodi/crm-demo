@@ -101,6 +101,7 @@ class PermissionHelper
             'profile/index',
             'admin/converted-leads/index',
             'admin/notifications/index',
+            'admin/reports/course-summary',
         ];
         return in_array($permission, $permissions);
     }

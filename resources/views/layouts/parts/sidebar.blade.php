@@ -207,6 +207,16 @@
                         <span class="pc-mtext">Team-Wise Report</span>
                     </a>
                 </li>
+                @if(has_permission('admin/reports/course-summary'))
+                <li class="pc-item {{ request()->routeIs('admin.reports.course-summary*') || request()->routeIs('admin.reports.course-leads*') || request()->routeIs('admin.reports.course-converted-leads*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.course-summary') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-book"></i>
+                        </span>
+                        <span class="pc-mtext">Course Reports</span>
+                    </a>
+                </li>
+                @endif
                 @endif
                 
                 {{-- Notifications Section --}}
