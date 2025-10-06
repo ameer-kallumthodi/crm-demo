@@ -102,6 +102,11 @@ class ConvertedLead extends Model
         return $this->hasOne(ConvertedStudentDetail::class);
     }
 
+    public function idCards()
+    {
+        return $this->hasMany(ConvertedLeadIdCard::class, 'converted_lead_id');
+    }
+
     public function niosStudentDetails()
     {
         return $this->hasOne(ConvertedStudentDetail::class)->where('course_id', 1);

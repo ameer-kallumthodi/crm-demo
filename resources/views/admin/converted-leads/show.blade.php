@@ -138,6 +138,90 @@
                             </div>
                         </div>
                     </div>
+
+                    @if($convertedLead->leadDetail)
+                    <div class="col-12 mt-4">
+                        <hr>
+                        <h6 class="text-primary mb-3">Lead Details</h6>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Father's Name</label>
+                                <p class="fw-bold">{{ $convertedLead->leadDetail->father_name ?? 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Mother's Name</label>
+                                <p class="fw-bold">{{ $convertedLead->leadDetail->mother_name ?? 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Date of Birth</label>
+                                <p class="fw-bold">{{ $convertedLead->leadDetail->date_of_birth ? $convertedLead->leadDetail->date_of_birth->format('d M Y') : 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Second Language</label>
+                                <p class="fw-bold">{{ $convertedLead->leadDetail->second_language ?? 'N/A' }}</p>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Personal Phone</label>
+                                <p class="fw-bold">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->personal_code, $convertedLead->leadDetail->personal_number) }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Parent Phone</label>
+                                <p class="fw-bold">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">WhatsApp</label>
+                                <p class="fw-bold">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}</p>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Batch</label>
+                                <p class="fw-bold">{{ optional($convertedLead->leadDetail->batch)->title ?? 'N/A' }}</p>
+                            </div>
+
+                            <div class="col-12">
+                                <h6 class="text-primary mt-2">Uploaded Documents</h6>
+                            </div>
+                            @php
+                                $doc = $convertedLead->leadDetail;
+                                $files = [
+                                    'passport_photo' => 'Passport Photo',
+                                    'adhar_front' => 'Aadhar Front',
+                                    'adhar_back' => 'Aadhar Back',
+                                    'signature' => 'Signature',
+                                    'birth_certificate' => 'Birth Certificate',
+                                    'sslc_certificate' => 'SSLC Certificate',
+                                    'plustwo_certificate' => 'Plus Two Certificate',
+                                ];
+                            @endphp
+                            @foreach($files as $field => $label)
+                                @if(!empty($doc->$field))
+                                    <div class="col-md-3">
+                                        <label class="form-label text-muted">{{ $label }}</label>
+                                        @php
+                                            $fileUrl = asset('storage/' . $doc->$field);
+                                            $isPdf = \Illuminate\Support\Str::endsWith(strtolower($doc->$field), '.pdf');
+                                        @endphp
+                                        <div class="card p-2">
+                                            @if($isPdf)
+                                                <div class="text-center mb-2">
+                                                    <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                                                </div>
+                                                <a href="{{ $fileUrl }}" target="_blank" class="btn btn-sm btn-outline-danger w-100">
+                                                    <i class="fas fa-eye me-1"></i> View PDF
+                                                </a>
+                                            @else
+                                                <a href="{{ $fileUrl }}" target="_blank" class="d-block text-center">
+                                                    <img src="{{ $fileUrl }}" alt="{{ $label }}" style="max-width: 100%; max-height: 140px; object-fit: contain;" onerror="this.onerror=null;this.src='{{ asset('assets/img/file.png') }}';">
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
             </div>

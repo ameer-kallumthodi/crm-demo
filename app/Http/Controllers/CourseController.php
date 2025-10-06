@@ -28,14 +28,16 @@ class CourseController extends Controller
             'title' => 'required|string|max:255',
             'code' => 'nullable|string|max:50',
             'amount' => 'required|numeric|min:0',
-            'is_active' => 'boolean',
+            'hod_number' => 'nullable|string|max:20',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $course = Course::create([
             'title' => $request->title,
             'code' => $request->code,
             'amount' => $request->amount,
-            'is_active' => $request->input('is_active', 0) == 1,
+            'hod_number' => $request->hod_number,
+            'is_active' => $request->has('is_active') ? 1 : 0,
         ]);
 
         return response()->json([
@@ -94,14 +96,18 @@ class CourseController extends Controller
         try {
             $request->validate([
                 'title' => 'required|string|max:255',
+                'code' => 'nullable|string|max:50',
                 'amount' => 'required|numeric|min:0',
-                'is_active' => 'boolean',
+                'hod_number' => 'nullable|string|max:20',
+                'is_active' => 'nullable|boolean',
             ]);
 
             $course = Course::create([
                 'title' => $request->title,
+                'code' => $request->code,
                 'amount' => $request->amount,
-                'is_active' => $request->input('is_active', 0) == 1,
+                'hod_number' => $request->hod_number,
+                'is_active' => $request->has('is_active') ? 1 : 0,
             ]);
 
             // For AJAX requests, return JSON response
@@ -164,7 +170,8 @@ class CourseController extends Controller
                 'title' => 'required|string|max:255',
                 'code' => 'nullable|string|max:50',
                 'amount' => 'required|numeric|min:0',
-                'is_active' => 'boolean',
+                'hod_number' => 'nullable|string|max:20',
+                'is_active' => 'nullable|boolean',
             ]);
 
             $course = Course::findOrFail($id);
@@ -172,7 +179,8 @@ class CourseController extends Controller
                 'title' => $request->title,
                 'code' => $request->code,
                 'amount' => $request->amount,
-                'is_active' => $request->input('is_active', 0) == 1,
+                'hod_number' => $request->hod_number,
+                'is_active' => $request->has('is_active') ? 1 : 0,
             ]);
 
             // For AJAX requests, return JSON response

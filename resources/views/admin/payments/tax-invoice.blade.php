@@ -93,8 +93,24 @@
                             <tbody>
                                 <tr>
                                     <td class="table-cell">1</td>
-                                    <td class="table-cell" style="font-weight: bold !important;">Payment for {{ $payment->invoice->course->title }}</td>
-                                    <td class="table-cell">{{ $payment->invoice->course->code ?? 'N/A' }}</td>
+                                    <td class="table-cell" style="font-weight: bold !important;">
+                                        @if($payment->invoice->invoice_type === 'course')
+                                            Payment for {{ $payment->invoice->course->title ?? 'N/A' }}
+                                        @elseif($payment->invoice->invoice_type === 'e-service')
+                                            Payment for {{ $payment->invoice->service_name ?? 'N/A' }}
+                                        @elseif($payment->invoice->invoice_type === 'batch_change')
+                                            Payment for Batch Change - {{ $payment->invoice->batch->title ?? 'N/A' }} ({{ $payment->invoice->batch->course->title ?? 'N/A' }})
+                                        @else
+                                            Payment
+                                        @endif
+                                    </td>
+                                    <td class="table-cell">
+                                        @if($payment->invoice->invoice_type === 'course')
+                                            {{ $payment->invoice->course->code ?? 'N/A' }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
                                     <td class="table-cell">1</td>
                                     <td class="table-cell">₹{{ number_format($payment->invoice->total_amount / 1.18, 2) }}</td>
                                     <td class="table-cell">₹{{ number_format(($payment->invoice->total_amount / 1.18) * 0.18, 2) }} (18%)</td>

@@ -12,13 +12,17 @@ class Invoice extends Model
 
     protected $fillable = [
         'invoice_number',
+        'invoice_type',
         'course_id',
+        'batch_id',
         'student_id',
         'total_amount',
         'paid_amount',
         'status',
         'invoice_date',
         'previous_balance',
+        'service_name',
+        'service_amount',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -28,6 +32,7 @@ class Invoice extends Model
         'total_amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'previous_balance' => 'decimal:2',
+        'service_amount' => 'decimal:2',
         'invoice_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -38,6 +43,11 @@ class Invoice extends Model
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class);
     }
 
     public function student()

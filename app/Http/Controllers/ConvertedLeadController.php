@@ -8,6 +8,10 @@ use App\Models\Lead;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
 use Mpdf\Mpdf;
+use Illuminate\Support\Facades\Storage;
+use App\Models\ConvertedLeadIdCard;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\IdCardNotification;
 
 class ConvertedLeadController extends Controller
 {
@@ -82,6 +86,7 @@ class ConvertedLeadController extends Controller
     {
         $convertedLead = ConvertedLead::with([
             'lead',
+            'leadDetail',
             'course',
             'academicAssistant',
             'createdBy'
@@ -204,6 +209,104 @@ class ConvertedLeadController extends Controller
         // Stream to browser
         return response($mpdf->Output($filename, 'I'))
             ->header('Content-Type', 'application/pdf');
+    }
+
+    public function generateAndStoreIdCard($id)
+    {
+        $convertedLead = ConvertedLead::with(['lead','leadDetail','course','academicAssistant','createdBy'])
+            ->findOrFail($id);
+
+        // Check if ID card was already generated recently (within last 30 seconds)
+        $recentIdCard = ConvertedLeadIdCard::where('converted_lead_id', $id)
+            ->where('generated_at', '>', now()->subSeconds(30))
+            ->first();
+            
+        if ($recentIdCard) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ID card was already generated recently. Please wait a moment before generating again.',
+            ], 429);
+        }
+
+        // Create circular image if passport photo exists
+        $circularImagePath = null;
+        if ($convertedLead->leadDetail && $convertedLead->leadDetail->passport_photo) {
+            $circularImagePath = $this->createCircularImage($convertedLead->leadDetail->passport_photo);
+        }
+
+        $html = view('admin.converted-leads.id-card-pdf', compact('convertedLead', 'circularImagePath'))->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_top' => 0,
+            'margin_bottom' => 0,
+            'margin_left' => 0,
+            'margin_right' => 0,
+        ]);
+
+        $mpdf->WriteHTML($html);
+
+        $safeName = preg_replace('/[^A-Za-z0-9_-]+/', '_', $convertedLead->name);
+        $fileName = 'id_card_' . $safeName . '_' . $convertedLead->id . '_' . time() . '.pdf';
+        $relativePath = 'id_cards/' . $fileName;
+
+        // Ensure directory exists
+        if (!Storage::disk('public')->exists('id_cards')) {
+            Storage::disk('public')->makeDirectory('id_cards');
+        }
+
+        // Save PDF to storage/app/public/id_cards
+        $pdfContent = $mpdf->Output($fileName, 'S');
+        Storage::disk('public')->put($relativePath, $pdfContent);
+
+        // Create DB record (upsert latest per converted lead)
+        $idCardRecord = ConvertedLeadIdCard::updateOrCreate(
+            ['converted_lead_id' => $convertedLead->id],
+            [
+                'file_path' => 'storage/' . $relativePath,
+                'file_name' => $fileName,
+                'generated_at' => now(),
+                'generated_by' => AuthHelper::getCurrentUserId(),
+            ]
+        );
+
+        // Send email to student with ID card attachment
+        try {
+            if ($convertedLead->email) {
+                Mail::to($convertedLead->email)->send(new IdCardNotification(
+                    $convertedLead->name,
+                    $convertedLead->course ? $convertedLead->course->title : 'N/A',
+                    $idCardRecord->file_path
+                ));
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send ID card email: ' . $e->getMessage());
+            // Continue execution even if email fails
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'ID Card generated, stored, and sent to student email successfully.',
+        ]);
+    }
+
+    public function viewStoredIdCard($id)
+    {
+        $convertedLead = ConvertedLead::findOrFail($id);
+        $record = ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+        if (!$record) {
+            return redirect()->back()->with('message_danger', 'ID Card not generated yet.');
+        }
+
+        $absolute = public_path($record->file_path);
+        if (!file_exists($absolute)) {
+            return redirect()->back()->with('message_danger', 'Stored ID Card file missing.');
+        }
+
+        return response()->file($absolute, [
+            'Content-Type' => 'application/pdf'
+        ]);
     }
 
     /**

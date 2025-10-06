@@ -6,6 +6,7 @@ use App\Models\Board;
 use Illuminate\Http\Request;
 use App\Helpers\RoleHelper;
 use App\Helpers\AuthHelper;
+use Illuminate\Support\Facades\Schema;
 
 class BoardController extends Controller
 {
@@ -29,7 +30,7 @@ class BoardController extends Controller
             'title' => 'required|string|max:255',
             'code' => 'required|string|max:10|unique:boards,code',
             'description' => 'nullable|string',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $board = Board::create([
@@ -60,22 +61,43 @@ class BoardController extends Controller
     public function destroy(Board $board)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return response()->json(['error' => 'Access denied.'], 403);
+            if (request()->expectsJson()) {
+                return response()->json(['error' => 'Access denied.'], 403);
+            }
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        // Check if board is being used by any leads or converted leads
-        if ($board->leads()->count() > 0 || $board->convertedLeads()->count() > 0) {
-            return response()->json([
-                'error' => 'Cannot delete board. It is being used by existing leads or converted leads.'
-            ], 422);
+        $hasLeadBoard = Schema::hasColumn('leads', 'board_id');
+        $hasConvertedLeadBoard = Schema::hasColumn('converted_leads', 'board_id');
+
+        $hasRelatedLeads = false;
+        $hasRelatedConvertedLeads = false;
+
+        if ($hasLeadBoard) {
+            $hasRelatedLeads = $board->leads()->count() > 0;
+        }
+        if ($hasConvertedLeadBoard) {
+            $hasRelatedConvertedLeads = $board->convertedLeads()->count() > 0;
+        }
+
+        if ($hasRelatedLeads || $hasRelatedConvertedLeads) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'error' => 'Cannot delete board. It is being used by existing leads or converted leads.'
+                ], 422);
+            }
+            return redirect()->route('admin.boards.index')->with('message_danger', 'Cannot delete board. It has assigned leads or converted leads.');
         }
 
         $board->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Board deleted successfully.'
-        ]);
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Board deleted successfully.'
+            ]);
+        }
+        return redirect()->route('admin.boards.index')->with('message_success', 'Board deleted successfully!');
     }
 
     public function ajax_add()
@@ -93,23 +115,32 @@ class BoardController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:boards,code',
-            'description' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
+        try {
+            // Normalize checkbox to boolean before validation
+            $request->merge([
+                'is_active' => $request->has('is_active') ? 1 : 0,
+            ]);
 
-        Board::create([
-            'title' => $request->title,
-            'code' => strtoupper($request->code),
-            'description' => $request->description,
-            'is_active' => $request->has('is_active'),
-            'created_by' => AuthHelper::getCurrentUserId(),
-            'updated_by' => AuthHelper::getCurrentUserId(),
-        ]);
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'code' => 'required|string|max:10|unique:boards,code',
+                'description' => 'nullable|string',
+                'is_active' => 'nullable|boolean',
+            ]);
 
-        return redirect()->route('admin.boards.index')->with('message_success', 'Board created successfully!');
+            $board = Board::create([
+                'title' => $request->title,
+                'code' => strtoupper($request->code),
+                'description' => $request->description,
+                'is_active' => $request->has('is_active'),
+                'created_by' => AuthHelper::getCurrentUserId(),
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            return redirect()->route('admin.boards.index')->with('message_success', 'Board created successfully!');
+        } catch (\Throwable $e) {
+            return back()->withInput()->with('message_danger', 'Failed to create board: ' . $e->getMessage());
+        }
     }
 
     public function ajax_edit($id)
@@ -128,39 +159,98 @@ class BoardController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:boards,code,' . $id,
-            'description' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
+        try {
+            // Normalize checkbox to boolean before validation
+            $request->merge([
+                'is_active' => $request->has('is_active') ? 1 : 0,
+            ]);
 
-        $board = Board::findOrFail($id);
-        $board->update([
-            'title' => $request->title,
-            'code' => strtoupper($request->code),
-            'description' => $request->description,
-            'is_active' => $request->has('is_active'),
-            'updated_by' => AuthHelper::getCurrentUserId(),
-        ]);
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'code' => 'required|string|max:10|unique:boards,code,' . $id,
+                'description' => 'nullable|string',
+                'is_active' => 'nullable|boolean',
+            ]);
 
-        return redirect()->route('admin.boards.index')->with('message_success', 'Board updated successfully!');
+            $board = Board::findOrFail($id);
+            $board->update([
+                'title' => $request->title,
+                'code' => strtoupper($request->code),
+                'description' => $request->description,
+                'is_active' => $request->has('is_active'),
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            return redirect()->route('admin.boards.index')->with('message_success', 'Board updated successfully!');
+        } catch (\Throwable $e) {
+            return back()->withInput()->with('message_danger', 'Failed to update board: ' . $e->getMessage());
+        }
     }
 
     public function delete($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
+            }
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
+        \Log::info('[BoardController@delete] Attempting delete', ['id' => $id]);
+
+        try {
         $board = Board::findOrFail($id);
-        
-        // Check if board has leads or converted leads
-        if ($board->leads()->count() > 0 || $board->convertedLeads()->count() > 0) {
-            return redirect()->route('admin.boards.index')->with('message_danger', 'Cannot delete board. It has assigned leads or converted leads.');
+
+        $hasLeadBoard = Schema::hasColumn('leads', 'board_id');
+        $hasConvertedLeadBoard = Schema::hasColumn('converted_leads', 'board_id');
+
+        $hasRelatedLeads = false;
+        $hasRelatedConvertedLeads = false;
+
+        if ($hasLeadBoard) {
+            $hasRelatedLeads = $board->leads()->count() > 0;
+        }
+        if ($hasConvertedLeadBoard) {
+            $hasRelatedConvertedLeads = $board->convertedLeads()->count() > 0;
         }
 
-        $board->delete();
-        return redirect()->route('admin.boards.index')->with('message_success', 'Board deleted successfully!');
+        if ($hasRelatedLeads || $hasRelatedConvertedLeads) {
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Cannot delete board. It has assigned leads or converted leads.'
+                    ], 422);
+                }
+                return redirect()->route('admin.boards.index')->with('message_danger', 'Cannot delete board. It has assigned leads or converted leads.');
+            }
+
+            $board->delete();
+            \Log::info('[BoardController@delete] Board deleted', ['id' => $id]);
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Board deleted successfully!'
+                ]);
+            }
+            return redirect()->route('admin.boards.index')->with('message_success', 'Board deleted successfully!');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Board not found.'
+                ], 404);
+            }
+            return redirect()->route('admin.boards.index')->with('message_danger', 'Board not found.');
+        } catch (\Throwable $e) {
+            \Log::error('[BoardController@delete] Error deleting board: ' . $e->getMessage(), ['id' => $id]);
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while deleting the board. Please try again.'
+                ], 500);
+            }
+            return redirect()->route('admin.boards.index')->with('message_danger', 'An error occurred while deleting the board. Please try again.');
+        }
     }
 }

@@ -70,7 +70,18 @@
                             <h6 class="mb-2" style="color: #000; font-weight: bold;font-size: 12px !important;"><strong>Payment Details:</strong></h6>
                             <p class="mb-1" style="font-size: 12px !important;">Invoice No.: {{ $payment->invoice->invoice_number }}</p>
                             <p class="mb-1" style="font-size: 12px !important;">Payment Date: {{ $payment->created_at->format('d-m-Y') }}</p>
-                            <p class="mb-0" style="font-size: 12px !important;">Payment ID: #{{ $payment->id }}</p>
+                            <p class="mb-1" style="font-size: 12px !important;">Payment ID: #{{ $payment->id }}</p>
+                            <p class="mb-0" style="font-size: 12px !important;">
+                                @if($payment->invoice->invoice_type === 'course')
+                                    Type: Course - {{ $payment->invoice->course->title ?? 'N/A' }}
+                                @elseif($payment->invoice->invoice_type === 'e-service')
+                                    Type: E-Service - {{ $payment->invoice->service_name ?? 'N/A' }}
+                                @elseif($payment->invoice->invoice_type === 'batch_change')
+                                    Type: Batch Change - {{ $payment->invoice->batch->title ?? 'N/A' }} ({{ $payment->invoice->batch->course->title ?? 'N/A' }})
+                                @else
+                                    Type: N/A
+                                @endif
+                            </p>
                         </div>
                     </div>
 

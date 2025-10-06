@@ -193,17 +193,37 @@
             cancelButtonText: 'Cancel',
             reverseButtons: true,
             preConfirm: () => {
+                const params = new URLSearchParams();
+                params.append('_method', 'DELETE');
+
                 return fetch(delete_url, {
-                    method: 'DELETE',
+                    method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: params
+                }).then(async response => {
+                    let data = {};
+                    try {
+                        data = await response.json();
+                    } catch (e) {
+                        // non-JSON response
                     }
-                }).then(response => response.json());
+                    if (!response.ok || (data && data.success === false)) {
+                        const msg = (data && (data.message || data.error)) || 'Delete failed.';
+                        throw new Error(msg);
+                    }
+                    return data;
+                }).catch(error => {
+                    Swal.showValidationMessage(error.message || 'Delete failed.');
+                });
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                Swal.fire('Deleted!', 'Lead has been deleted.', 'success').then(() => {
+                Swal.fire('Deleted!', 'Item has been deleted.', 'success').then(() => {
                     location.reload();
                 });
             }

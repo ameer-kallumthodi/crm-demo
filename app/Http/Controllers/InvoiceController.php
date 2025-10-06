@@ -23,7 +23,7 @@ class InvoiceController extends Controller
         // Check permissions
         $this->checkStudentAccess($student);
         
-        $invoices = Invoice::with(['course', 'payments'])
+        $invoices = Invoice::with(['course', 'batch', 'payments'])
             ->where('student_id', $studentId)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -44,7 +44,7 @@ class InvoiceController extends Controller
      */
     public function show($id)
     {
-        $invoice = Invoice::with(['course', 'student.lead', 'payments' => function($query) {
+        $invoice = Invoice::with(['course', 'batch', 'student.lead', 'payments' => function($query) {
             $query->with('createdBy')->orderBy('created_at', 'desc');
         }])
             ->findOrFail($id);
@@ -66,7 +66,7 @@ class InvoiceController extends Controller
      */
     public function create($studentId)
     {
-        $student = ConvertedLead::with(['course'])->findOrFail($studentId);
+        $student = ConvertedLead::with(['course', 'batch'])->findOrFail($studentId);
         
         // Check permissions
         $this->checkStudentAccess($student);
@@ -82,13 +82,32 @@ class InvoiceController extends Controller
      */
     public function store(Request $request, $studentId)
     {
+        \Log::info('[InvoiceController@store] Incoming invoice create', [
+            'student_id' => $studentId,
+            'payload' => $request->all()
+        ]);
+
+        // Normalize/override totals per type and guard fields
+        if ($request->invoice_type === 'batch_change') {
+            $request->merge(['total_amount' => 2000]);
+        } elseif ($request->invoice_type === 'e-service' && $request->filled('service_amount')) {
+            $request->merge(['total_amount' => $request->service_amount]);
+        }
+
         $validator = Validator::make($request->all(), [
-            'course_id' => 'required|exists:courses,id',
+            'invoice_type' => 'required|in:course,e-service,batch_change',
+            'course_id' => 'nullable|required_if:invoice_type,course|exists:courses,id',
+            'batch_id' => 'nullable|required_if:invoice_type,batch_change|exists:batches,id',
+            'service_name' => 'nullable|required_if:invoice_type,e-service|string|max:255',
+            'service_amount' => 'nullable|required_if:invoice_type,e-service|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
             'invoice_date' => 'required|date',
         ]);
 
         if ($validator->fails()) {
+            \Log::warning('[InvoiceController@store] Validation failed', [
+                'errors' => $validator->errors()->toArray()
+            ]);
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
@@ -96,25 +115,50 @@ class InvoiceController extends Controller
 
         try {
             $student = ConvertedLead::findOrFail($studentId);
-            $course = Course::findOrFail($request->course_id);
             
             // Generate invoice number
             $invoiceNumber = $this->generateInvoiceNumber();
             
-            $invoice = Invoice::create([
+            $invoiceData = [
                 'invoice_number' => $invoiceNumber,
-                'course_id' => $request->course_id,
+                'invoice_type' => $request->invoice_type,
                 'student_id' => $studentId,
                 'total_amount' => $request->total_amount,
                 'invoice_date' => $request->invoice_date,
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
+            ];
+
+            // Add type-specific fields
+            if ($request->invoice_type === 'course') {
+                $invoiceData['course_id'] = $request->course_id;
+            } elseif ($request->invoice_type === 'batch_change') {
+                $invoiceData['batch_id'] = $request->batch_id;
+                $invoiceData['total_amount'] = 2000; // Fixed amount for batch change
+            } elseif ($request->invoice_type === 'e-service') {
+                $invoiceData['service_name'] = $request->service_name;
+                $invoiceData['service_amount'] = $request->service_amount;
+            }
+            
+            $invoice = Invoice::create($invoiceData);
+
+            // Handle batch transfer for batch_change invoices
+            if ($request->invoice_type === 'batch_change' && $request->batch_id) {
+                $this->transferStudentBatch($studentId, $request->batch_id);
+            }
+
+            \Log::info('[InvoiceController@store] Invoice created', [
+                'invoice_id' => $invoice->id,
+                'invoice_type' => $invoice->invoice_type
             ]);
 
             return redirect()->route('admin.invoices.show', $invoice->id)
                 ->with('message_success', 'Invoice created successfully!');
 
         } catch (\Exception $e) {
+            \Log::error('[InvoiceController@store] Invoice create failed: ' . $e->getMessage(), [
+                'payload' => $request->all()
+            ]);
             return redirect()->back()
                 ->with('message_danger', 'An error occurred while creating the invoice. Please try again.')
                 ->withInput();
@@ -227,6 +271,40 @@ class InvoiceController extends Controller
                 
             default:
                 abort(403, 'Access denied.');
+        }
+    }
+
+    /**
+     * Transfer student to a new batch
+     */
+    private function transferStudentBatch($studentId, $batchId)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Update converted_leads table
+            $convertedLead = ConvertedLead::findOrFail($studentId);
+            $convertedLead->update(['batch_id' => $batchId]);
+
+            // Update lead_details table via the lead relationship
+            if ($convertedLead->lead && $convertedLead->lead->leadDetails) {
+                $convertedLead->lead->leadDetails->update(['batch_id' => $batchId]);
+            }
+
+            DB::commit();
+            
+            \Log::info('Student batch transferred successfully', [
+                'student_id' => $studentId,
+                'new_batch_id' => $batchId
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Failed to transfer student batch: ' . $e->getMessage(), [
+                'student_id' => $studentId,
+                'batch_id' => $batchId
+            ]);
+            throw $e;
         }
     }
 }

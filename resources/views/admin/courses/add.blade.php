@@ -41,6 +41,15 @@
 
             <div class="col-md-6">
                 <div class="mb-3">
+                    <label class="form-label" for="hod_number">HOD Number</label>
+                    <input type="text" name="hod_number" class="form-control" 
+                           id="hod_number" placeholder="Enter HOD Number">
+                    <div class="invalid-feedback" id="hod_number-error"></div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
                     <div class="form-check mt-4">
                         <input type="hidden" name="is_active" value="0">
                         <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" checked>

@@ -73,7 +73,7 @@
                                             <i class="ti ti-edit"></i>
                                         </a>
                                         <a href="javascript:void(0);" class="btn btn-sm btn-danger"
-                                            onclick="delete_modal('{{ route('admin.boards.delete', $board->id) }}')" title="Delete">
+                                            onclick="delete_modal('{{ route('admin.boards.destroy', $board->id) }}')" title="Delete">
                                             <i class="ti ti-trash"></i>
                                         </a>
                                     </div>

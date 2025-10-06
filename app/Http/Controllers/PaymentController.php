@@ -17,7 +17,7 @@ class PaymentController extends Controller
      */
     public function index(Request $request, $invoiceId)
     {
-        $invoice = Invoice::with(['course', 'student.lead'])->findOrFail($invoiceId);
+        $invoice = Invoice::with(['course', 'batch', 'student.lead'])->findOrFail($invoiceId);
         
         // Check permissions
         $this->checkInvoiceAccess($invoice);
@@ -41,7 +41,7 @@ class PaymentController extends Controller
      */
     public function create($invoiceId)
     {
-        $invoice = Invoice::with(['course', 'student.lead'])->findOrFail($invoiceId);
+        $invoice = Invoice::with(['course', 'batch', 'student.lead'])->findOrFail($invoiceId);
         
         // Check permissions
         $this->checkInvoiceAccess($invoice);
@@ -209,7 +209,7 @@ class PaymentController extends Controller
      */
     public function show($id)
     {
-        $payment = Payment::with(['invoice.course', 'invoice.student.lead', 'createdBy'])
+        $payment = Payment::with(['invoice.course', 'invoice.batch', 'invoice.student.lead', 'createdBy'])
             ->findOrFail($id);
         
         // Check permissions
@@ -271,12 +271,18 @@ class PaymentController extends Controller
      */
     public function taxInvoice($id)
     {
-        $payment = Payment::with(['invoice.student', 'invoice.course'])
+        $payment = Payment::with(['invoice.student', 'invoice.course', 'invoice.batch'])
             ->findOrFail($id);
         
         // Check permissions
         $this->checkInvoiceAccess($payment->invoice);
         
+        // Allow tax invoice only for course-type invoices
+        if ($payment->invoice->invoice_type !== 'course') {
+            return redirect()->back()
+                ->with('message_danger', 'Tax invoice is available only for course invoices.');
+        }
+
         // Check if payment is approved
         if ($payment->status !== 'Approved') {
             return redirect()->back()
@@ -295,12 +301,18 @@ class PaymentController extends Controller
      */
     public function taxInvoicePdf($id)
     {
-        $payment = Payment::with(['invoice.student', 'invoice.course'])
+        $payment = Payment::with(['invoice.student', 'invoice.course', 'invoice.batch'])
             ->findOrFail($id);
         
         // Check permissions
         $this->checkInvoiceAccess($payment->invoice);
         
+        // Allow tax invoice only for course-type invoices
+        if ($payment->invoice->invoice_type !== 'course') {
+            return redirect()->back()
+                ->with('message_danger', 'Tax invoice is available only for course invoices.');
+        }
+
         // Check if payment is approved
         if ($payment->status !== 'Approved') {
             return redirect()->back()
@@ -341,7 +353,7 @@ class PaymentController extends Controller
      */
     public function paymentReceipt($id)
     {
-        $payment = Payment::with(['invoice.student', 'invoice.course'])
+        $payment = Payment::with(['invoice.student', 'invoice.course', 'invoice.batch'])
             ->findOrFail($id);
         
         // Check permissions
@@ -364,7 +376,7 @@ class PaymentController extends Controller
      */
     public function paymentReceiptPdf($id)
     {
-        $payment = Payment::with(['invoice.student', 'invoice.course'])
+        $payment = Payment::with(['invoice.student', 'invoice.course', 'invoice.batch'])
             ->findOrFail($id);
         
         // Check permissions

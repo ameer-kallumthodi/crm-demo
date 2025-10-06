@@ -51,8 +51,18 @@
                                     <td>{{ $invoice->student->code }} {{ $invoice->student->phone }}</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Course:</strong></td>
-                                    <td>{{ $invoice->course->title }}</td>
+                                    <td><strong>Type:</strong></td>
+                                    <td>
+                                        @if($invoice->invoice_type === 'course')
+                                            Course: {{ $invoice->course->title ?? 'N/A' }}
+                                        @elseif($invoice->invoice_type === 'e-service')
+                                            E-Service: {{ $invoice->service_name ?? 'N/A' }}
+                                        @elseif($invoice->invoice_type === 'batch_change')
+                                            Batch Change: {{ $invoice->batch->title ?? 'N/A' }} ({{ $invoice->batch->course->title ?? 'N/A' }})
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
                                 </tr>
                             </table>
                         </div>

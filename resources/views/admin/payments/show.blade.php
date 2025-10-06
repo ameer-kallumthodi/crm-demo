@@ -12,8 +12,8 @@
                         <h4 class="mb-0">Payment Details</h4>
                         <div>
                             @if($payment->status == 'Approved')
-                                @if($firstPayment && $payment->id == $firstPayment->id)
-                                    <!-- Show Tax Invoice for first payment -->
+                                @if($payment->invoice->invoice_type === 'course' && $firstPayment && $payment->id == $firstPayment->id)
+                                    <!-- Tax Invoice only for course invoices, first approved payment -->
                                     <a href="{{ route('admin.payments.tax-invoice', $payment->id) }}" class="btn btn-warning me-2" target="_blank">
                                         <i class="fas fa-file-invoice"></i> Tax Invoice
                                     </a>
@@ -21,7 +21,7 @@
                                         <i class="fas fa-file-pdf"></i> View PDF
                                     </a>
                                 @else
-                                    <!-- Show Payment Receipt for other payments -->
+                                    <!-- Receipt for all payments, and for non-course types -->
                                     <a href="{{ route('admin.payments.payment-receipt', $payment->id) }}" class="btn btn-warning me-2" target="_blank">
                                         <i class="fas fa-receipt"></i> Payment Receipt
                                     </a>
@@ -95,8 +95,18 @@
                                     <td>{{ $payment->invoice->student->code }} {{ $payment->invoice->student->phone }}</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Course:</strong></td>
-                                    <td>{{ $payment->invoice->course->title }}</td>
+                                    <td><strong>Type:</strong></td>
+                                    <td>
+                                        @if($payment->invoice->invoice_type === 'course')
+                                            Course: {{ $payment->invoice->course->title ?? 'N/A' }}
+                                        @elseif($payment->invoice->invoice_type === 'e-service')
+                                            E-Service: {{ $payment->invoice->service_name ?? 'N/A' }}
+                                        @elseif($payment->invoice->invoice_type === 'batch_change')
+                                            Batch Change: {{ $payment->invoice->batch->title ?? 'N/A' }} ({{ $payment->invoice->batch->course->title ?? 'N/A' }})
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Total Amount:</strong></td>

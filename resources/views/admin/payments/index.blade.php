@@ -113,8 +113,8 @@
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             @if($payment->status == 'Approved')
-                                                @if($firstPayment && $payment->id == $firstPayment->id)
-                                                    <!-- Show Tax Invoice for first payment -->
+                                                @if($payment->invoice->invoice_type === 'course' && $firstPayment && $payment->id == $firstPayment->id)
+                                                    <!-- Tax Invoice only for course invoices, first approved payment -->
                                                     <a href="{{ route('admin.payments.tax-invoice', $payment->id) }}" class="btn btn-sm btn-warning" title="Tax Invoice" target="_blank">
                                                         <i class="fas fa-file-invoice"></i>
                                                     </a>
@@ -122,7 +122,7 @@
                                                         <i class="fas fa-file-pdf"></i>
                                                     </a>
                                                 @else
-                                                    <!-- Show Payment Receipt for other payments -->
+                                                    <!-- Receipt for all payments, and for non-course types -->
                                                     <a href="{{ route('admin.payments.payment-receipt', $payment->id) }}" class="btn btn-sm btn-warning" title="Payment Receipt" target="_blank">
                                                         <i class="fas fa-receipt"></i>
                                                     </a>

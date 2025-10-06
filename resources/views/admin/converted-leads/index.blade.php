@@ -141,9 +141,21 @@
                                                 <i class="ti ti-edit"></i>
                                             </button>
                                             @if($convertedLead->register_number)
-                                            <a href="{{ route('admin.converted-leads.id-card-pdf', $convertedLead->id) }}" class="btn btn-sm btn-warning" title="Generate ID Card PDF" target="_blank">
-                                                <i class="ti ti-id"></i>
-                                            </a>
+                                                @php
+                                                    $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                                @endphp
+                                                @if($idCard)
+                                                    <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-warning" title="View ID Card" target="_blank">
+                                                        <i class="ti ti-id"></i>
+                                                    </a>
+                                                @else
+                                                    <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
+                                                            <i class="ti ti-id"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             @endif
                                             @endif
                                         </div>
@@ -287,6 +299,18 @@
 <!-- [ Main Content ] end -->
 @endsection
 
+@push('styles')
+<style>
+.spin {
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
     $(document).ready(function() {
@@ -323,6 +347,53 @@
             const url = $(this).data('url');
             const title = $(this).data('title');
             show_small_modal(url, title);
+        });
+
+        // Handle ID card generation form submission
+        $(document).off('submit', '.id-card-generate-form').on('submit', '.id-card-generate-form', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            
+            const form = $(this);
+            const button = form.find('button[type="submit"]');
+            
+            // Prevent multiple submissions
+            if (button.prop('disabled')) {
+                return false;
+            }
+            
+            const originalText = button.html();
+            const loadingText = button.data('loading-text');
+            
+            // Show loading state
+            button.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i> ' + loadingText);
+            
+            // Submit form via AJAX
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        toast_success(response.message);
+                        // Reload page to show updated button
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error generating ID card:', xhr);
+                    toast_error('Error generating ID card. Please try again.');
+                    // Reset button
+                    button.prop('disabled', false).html(originalText);
+                }
+            });
+            
+            return false;
         });
     });
 </script>

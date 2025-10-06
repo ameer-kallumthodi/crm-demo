@@ -80,7 +80,8 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Invoice #</th>
-                                    <th>Course</th>
+                                    <th>Type</th>
+                                    <th>Details</th>
                                     <th>Total Amount</th>
                                     <th>Paid Amount</th>
                                     <th>Pending Amount</th>
@@ -94,7 +95,24 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $invoice->invoice_number }}</td>
-                                    <td>{{ $invoice->course->title }}</td>
+                                    <td>
+                                        @if($invoice->invoice_type == 'course')
+                                            <span class="badge bg-primary">Course</span>
+                                        @elseif($invoice->invoice_type == 'e-service')
+                                            <span class="badge bg-info">E-Service</span>
+                                        @elseif($invoice->invoice_type == 'batch_change')
+                                            <span class="badge bg-warning">Batch Change</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($invoice->invoice_type == 'course')
+                                            {{ $invoice->course->title }}
+                                        @elseif($invoice->invoice_type == 'e-service')
+                                            {{ $invoice->service_name }}
+                                        @elseif($invoice->invoice_type == 'batch_change')
+                                            {{ $invoice->batch->title ?? 'N/A' }} ({{ $invoice->batch->course->title ?? 'N/A' }})
+                                        @endif
+                                    </td>
                                     <td>₹{{ number_format($invoice->total_amount, 2) }}</td>
                                     <td>₹{{ number_format($invoice->paid_amount, 2) }}</td>
                                     <td>₹{{ number_format($invoice->pending_amount, 2) }}</td>
@@ -127,7 +145,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="9" class="text-center">No invoices found for this student.</td>
+                                    <td colspan="10" class="text-center">No invoices found for this student.</td>
                                 </tr>
                                 @endforelse
                             </tbody>

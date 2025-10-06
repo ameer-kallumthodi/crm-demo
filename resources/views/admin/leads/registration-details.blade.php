@@ -43,6 +43,41 @@
 
 @if($studentDetail)
 
+<!-- Action Buttons -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Registration Status</h6>
+                        <span class="badge bg-{{ $studentDetail->status === 'approved' ? 'success' : ($studentDetail->status === 'rejected' ? 'danger' : 'warning') }} fs-6">
+                            {{ ucfirst($studentDetail->status ?? 'pending') }}
+                        </span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('leads.index') }}" class="btn btn-outline-secondary">
+                            <i class="ti ti-arrow-left me-2"></i>Back to Leads
+                        </a>
+                        @if(!is_telecaller()) {{-- Only admin can approve/reject --}}
+                            @if($studentDetail->status !== 'approved')
+                            <button class="btn btn-success" onclick="show_small_modal('{{ route('leads.approve-modal', $lead->id) }}','Approve Registration')">
+                                <i class="ti ti-check me-2"></i>Approve
+                            </button>
+                            @endif
+                            @if($studentDetail->status !== 'rejected')
+                            <button class="btn btn-danger" onclick="show_small_modal('{{ route('leads.reject-modal', $lead->id) }}','Reject Registration')">
+                                <i class="ti ti-x me-2"></i>Reject
+                            </button>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row registration-details-container">
     <!-- Lead Information Card -->
     <div class="col-lg-4">
@@ -395,7 +430,7 @@
                                                 @if($studentDetail->sslc_verified_at)
                                                 <small class="text-muted d-block">
                                                     Verified by: {{ $studentDetail->sslcVerifiedBy->name ?? 'Unknown' }}<br>
-                                                    Date: {{ $studentDetail->sslc_verified_at->format('M d, Y H:i') }}
+                                                    Date: {{ $studentDetail->sslc_verified_at->format('M d, Y h:i A') }}
                                                 </small>
                                                 @endif
                                             </div>
@@ -437,7 +472,7 @@
                                                 @if($verifiedAt)
                                                 <small class="text-muted d-block">
                                                     Verified by: {{ $verifiedBy->name ?? 'Unknown' }}<br>
-                                                    Date: {{ $verifiedAt->format('M d, Y H:i') }}
+                                                    Date: {{ $verifiedAt->format('M d, Y h:i A') }}
                                                 </small>
                                                 @endif
                                             </div>
@@ -473,7 +508,7 @@
                                                 @if($studentDetail->ug_verified_at)
                                                 <small class="text-muted d-block">
                                                     Verified by: {{ $studentDetail->ugVerifiedBy->name ?? 'Unknown' }}<br>
-                                                    Date: {{ $studentDetail->ug_verified_at->format('M d, Y H:i') }}
+                                                    Date: {{ $studentDetail->ug_verified_at->format('M d, Y h:i A') }}
                                                 </small>
                                                 @endif
                                             </div>
@@ -510,7 +545,7 @@
                                                 @if($studentDetail->birth_certificate_verified_at)
                                                 <small class="text-muted d-block">
                                                     Verified by: {{ $studentDetail->birthCertificateVerifiedBy->name ?? 'Unknown' }}<br>
-                                                    Date: {{ $studentDetail->birth_certificate_verified_at->format('M d, Y H:i') }}
+                                                    Date: {{ $studentDetail->birth_certificate_verified_at->format('M d, Y h:i A') }}
                                                 </small>
                                                 @endif
                                                 @else
@@ -548,7 +583,7 @@
                                                 @if($studentDetail->passport_photo_verified_at)
                                                 <small class="text-muted d-block">
                                                     Verified by: {{ $studentDetail->passportPhotoVerifiedBy->name ?? 'Unknown' }}<br>
-                                                    Date: {{ $studentDetail->passport_photo_verified_at->format('M d, Y H:i') }}
+                                                    Date: {{ $studentDetail->passport_photo_verified_at->format('M d, Y h:i A') }}
                                                 </small>
                                                 @endif
                                             </div>
@@ -582,7 +617,7 @@
                                                 @if($studentDetail->adhar_front_verified_at)
                                                 <small class="text-muted d-block">
                                                     Verified by: {{ $studentDetail->adharFrontVerifiedBy->name ?? 'Unknown' }}<br>
-                                                    Date: {{ $studentDetail->adhar_front_verified_at->format('M d, Y H:i') }}
+                                                    Date: {{ $studentDetail->adhar_front_verified_at->format('M d, Y h:i A') }}
                                                 </small>
                                                 @endif
                                             </div>
@@ -616,7 +651,7 @@
                                                 @if($studentDetail->adhar_back_verified_at)
                                                 <small class="text-muted d-block">
                                                     Verified by: {{ $studentDetail->adharBackVerifiedBy->name ?? 'Unknown' }}<br>
-                                                    Date: {{ $studentDetail->adhar_back_verified_at->format('M d, Y H:i') }}
+                                                    Date: {{ $studentDetail->adhar_back_verified_at->format('M d, Y h:i A') }}
                                                 </small>
                                                 @endif
                                             </div>
@@ -650,7 +685,7 @@
                                                 @if($studentDetail->signature_verified_at)
                                                 <small class="text-muted d-block">
                                                     Verified by: {{ $studentDetail->signatureVerifiedBy->name ?? 'Unknown' }}<br>
-                                                    Date: {{ $studentDetail->signature_verified_at->format('M d, Y H:i') }}
+                                                    Date: {{ $studentDetail->signature_verified_at->format('M d, Y h:i A') }}
                                                 </small>
                                                 @endif
                                             </div>
@@ -684,41 +719,19 @@
                     </div>
                 </div>
                 @endif
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Action Buttons -->
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-1">Registration Status</h6>
-                        <span class="badge bg-{{ $studentDetail->status === 'approved' ? 'success' : ($studentDetail->status === 'rejected' ? 'danger' : 'warning') }} fs-6">
-                            {{ ucfirst($studentDetail->status ?? 'pending') }}
-                        </span>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('leads.index') }}" class="btn btn-outline-secondary">
-                            <i class="ti ti-arrow-left me-2"></i>Back to Leads
-                        </a>
-                        @if(!is_telecaller()) {{-- Only admin can approve/reject --}}
-                            @if($studentDetail->status !== 'approved')
-                            <button class="btn btn-success" onclick="updateStatus('approved')">
-                                <i class="ti ti-check me-2"></i>Approve
-                            </button>
-                            @endif
-                            @if($studentDetail->status !== 'rejected')
-                            <button class="btn btn-danger" onclick="updateStatus('rejected')">
-                                <i class="ti ti-x me-2"></i>Reject
-                            </button>
-                            @endif
-                        @endif
+                @if($studentDetail->status === 'rejected' && $studentDetail->admin_remarks)
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="alert alert-danger">
+                            <h6 class="alert-heading">
+                                <i class="ti ti-alert-circle me-2"></i>Rejection Remark
+                            </h6>
+                            <p class="mb-0">{{ $studentDetail->admin_remarks }}</p>
+                        </div>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
     </div>

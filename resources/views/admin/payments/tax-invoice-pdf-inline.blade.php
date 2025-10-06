@@ -87,8 +87,24 @@
                 <tbody>
                     <tr>
                         <td style="padding: 8px; border: 1px solid #ddd; font-size: 10px;">1</td>
-                        <td style="padding: 8px; border: 1px solid #ddd; font-size: 10px; font-weight: bold;">{{ $payment->invoice->course->title ?? '' }}</td>
-                        <td style="padding: 8px; border: 1px solid #ddd; font-size: 10px;">{{ $payment->invoice->course->code ?? '' }}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd; font-size: 10px; font-weight: bold;">
+                            @if($payment->invoice->invoice_type === 'course')
+                                {{ $payment->invoice->course->title ?? 'N/A' }}
+                            @elseif($payment->invoice->invoice_type === 'e-service')
+                                {{ $payment->invoice->service_name ?? 'N/A' }}
+                            @elseif($payment->invoice->invoice_type === 'batch_change')
+                                Batch Change - {{ $payment->invoice->batch->title ?? 'N/A' }} ({{ $payment->invoice->batch->course->title ?? 'N/A' }})
+                            @else
+                                N/A
+                            @endif
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd; font-size: 10px;">
+                            @if($payment->invoice->invoice_type === 'course')
+                                {{ $payment->invoice->course->code ?? 'N/A' }}
+                            @else
+                                N/A
+                            @endif
+                        </td>
                         <td style="padding: 8px; border: 1px solid #ddd; font-size: 10px;">1</td>
                         <td style="padding: 8px; border: 1px solid #ddd; font-size: 10px;"><span class="rupee">₹</span> {{ number_format($payment->invoice->total_amount / 1.18, 2) }}</td>
                         <td style="padding: 8px; border: 1px solid #ddd; font-size: 10px;"><span class="rupee">₹</span> {{ number_format(($payment->invoice->total_amount / 1.18) * 0.18, 2) }} (18%)</td>

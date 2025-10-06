@@ -34,6 +34,18 @@
                                     <td>{{ $invoice->invoice_number }}</td>
                                 </tr>
                                 <tr>
+                                    <td><strong>Type:</strong></td>
+                                    <td>
+                                        @if($invoice->invoice_type == 'course')
+                                            <span class="badge bg-primary">Course</span>
+                                        @elseif($invoice->invoice_type == 'e-service')
+                                            <span class="badge bg-info">E-Service</span>
+                                        @elseif($invoice->invoice_type == 'batch_change')
+                                            <span class="badge bg-warning">Batch Change</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td><strong>Invoice Date:</strong></td>
                                     <td>{{ $invoice->invoice_date->format('M d, Y') }}</td>
                                 </tr>
@@ -78,10 +90,22 @@
                                     <td><strong>Email:</strong></td>
                                     <td>{{ $invoice->student->email ?? 'N/A' }}</td>
                                 </tr>
+                                @if($invoice->invoice_type == 'course')
                                 <tr>
                                     <td><strong>Course:</strong></td>
                                     <td>{{ $invoice->course->title }}</td>
                                 </tr>
+                                @elseif($invoice->invoice_type == 'e-service')
+                                <tr>
+                                    <td><strong>Service:</strong></td>
+                                    <td>{{ $invoice->service_name }}</td>
+                                </tr>
+                                @elseif($invoice->invoice_type == 'batch_change')
+                                <tr>
+                                    <td><strong>New Batch:</strong></td>
+                                    <td>{{ $invoice->batch->title ?? 'N/A' }} ({{ $invoice->batch->course->title ?? 'N/A' }})</td>
+                                </tr>
+                                @endif
                                 <tr>
                                     <td><strong>Batch:</strong></td>
                                     <td>{{ $invoice->student->batch->title ?? 'N/A' }}</td>
@@ -151,8 +175,8 @@
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                     @if($payment->status == 'Approved')
-                                                        @if($firstPayment && $payment->id == $firstPayment->id)
-                                                            <!-- Show Tax Invoice for first payment -->
+                                                        @if($invoice->invoice_type === 'course' && $firstPayment && $payment->id == $firstPayment->id)
+                                                            <!-- Tax Invoice only for course invoices, first approved payment -->
                                                             <a href="{{ route('admin.payments.tax-invoice', $payment->id) }}" class="btn btn-sm btn-warning" title="Tax Invoice" target="_blank">
                                                                 <i class="fas fa-file-invoice"></i>
                                                             </a>
@@ -160,7 +184,7 @@
                                                                 <i class="fas fa-file-pdf"></i>
                                                             </a>
                                                         @else
-                                                            <!-- Show Payment Receipt for other payments -->
+                                                            <!-- Receipt for all payments, and for non-course types -->
                                                             <a href="{{ route('admin.payments.payment-receipt', $payment->id) }}" class="btn btn-sm btn-warning" title="Payment Receipt" target="_blank">
                                                                 <i class="fas fa-receipt"></i>
                                                             </a>

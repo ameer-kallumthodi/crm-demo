@@ -165,6 +165,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     Route::post('/leads/{lead}/convert', [LeadController::class, 'convertSubmit'])->name('leads.convert.submit');
     Route::get('leads/{lead}/call-logs', [VoxbayCallLogController::class, 'list'])->name('leads.call-logs');
     Route::get('/leads/{lead}/registration-details', [LeadController::class, 'getLeadRegistrationDetails'])->name('leads.registration-details');
+    Route::get('/leads/{lead}/approve-modal', [LeadController::class, 'showApproveModal'])->name('leads.approve-modal');
+    Route::get('/leads/{lead}/reject-modal', [LeadController::class, 'showRejectModal'])->name('leads.reject-modal');
+    Route::post('/leads/{lead}/registration-status', [LeadController::class, 'updateRegistrationStatus'])->name('leads.update-registration-status');
     
     // Generic lead routes (must come after specific routes)
     Route::get('leads/{lead}', [LeadController::class, 'show'])->name('leads.show');
@@ -217,7 +220,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/lead-sources-edit/{id}', [LeadSourceController::class, 'ajax_edit'])->name('lead-sources.edit');
         Route::post('/lead-sources-submit', [LeadSourceController::class, 'submit'])->name('lead-sources.submit');
         Route::put('/lead-sources-update/{leadSource}', [LeadSourceController::class, 'update'])->name('lead-sources.update');
-        Route::get('/lead-sources-delete/{id}', [LeadSourceController::class, 'delete'])->name('lead-sources.delete');
+        Route::delete('/lead-sources-delete/{id}', [LeadSourceController::class, 'delete'])->name('lead-sources.delete');
 
 
         Route::resource('countries', CountryController::class);
@@ -225,28 +228,28 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/countries-edit/{id}', [CountryController::class, 'ajax_edit'])->name('countries.edit');
         Route::post('/countries-submit', [CountryController::class, 'submit'])->name('countries.submit');
         Route::put('/countries-update/{id}', [CountryController::class, 'update'])->name('countries.update');
-        Route::get('/countries-delete/{id}', [CountryController::class, 'delete'])->name('countries.delete');
+        Route::delete('/countries-delete/{id}', [CountryController::class, 'delete'])->name('countries.delete');
 
+        Route::delete('/boards-delete/{id}', [App\Http\Controllers\BoardController::class, 'delete'])->name('boards.delete');
         Route::resource('boards', App\Http\Controllers\BoardController::class);
         Route::get('/boards-add', [App\Http\Controllers\BoardController::class, 'ajax_add'])->name('boards.add');
         Route::get('/boards-edit/{id}', [App\Http\Controllers\BoardController::class, 'ajax_edit'])->name('boards.edit');
         Route::post('/boards-submit', [App\Http\Controllers\BoardController::class, 'submit'])->name('boards.submit');
         Route::put('/boards-update/{id}', [App\Http\Controllers\BoardController::class, 'update'])->name('boards.update');
-        Route::get('/boards-delete/{id}', [App\Http\Controllers\BoardController::class, 'delete'])->name('boards.delete');
 
+        Route::delete('/batches-delete/{id}', [App\Http\Controllers\BatchController::class, 'delete'])->name('batches.delete');
         Route::resource('batches', App\Http\Controllers\BatchController::class);
         Route::get('/batches-add', [App\Http\Controllers\BatchController::class, 'ajax_add'])->name('batches.add');
         Route::get('/batches-edit/{id}', [App\Http\Controllers\BatchController::class, 'ajax_edit'])->name('batches.edit');
         Route::post('/batches-submit', [App\Http\Controllers\BatchController::class, 'submit'])->name('batches.submit');
         Route::put('/batches-update/{id}', [App\Http\Controllers\BatchController::class, 'update'])->name('batches.update');
-        Route::get('/batches-delete/{id}', [App\Http\Controllers\BatchController::class, 'delete'])->name('batches.delete');
 
         Route::resource('courses', CourseController::class);
         Route::get('/courses-add', [CourseController::class, 'ajax_add'])->name('courses.add');
         Route::get('/courses-edit/{id}', [CourseController::class, 'ajax_edit'])->name('courses.edit');
         Route::post('/courses-submit', [CourseController::class, 'submit'])->name('courses.submit');
         Route::put('/courses-update/{id}', [CourseController::class, 'update'])->name('courses.update');
-        Route::get('/courses-delete/{id}', [CourseController::class, 'delete'])->name('courses.delete');
+        Route::delete('/courses-delete/{id}', [CourseController::class, 'delete'])->name('courses.delete');
 
         Route::delete('/subjects-delete/{id}', [App\Http\Controllers\SubjectController::class, 'delete'])->name('subjects.delete');
         Route::resource('subjects', App\Http\Controllers\SubjectController::class);
@@ -260,7 +263,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/teams-edit/{id}', [TeamController::class, 'ajax_edit'])->name('teams.edit');
         Route::post('/teams-submit', [TeamController::class, 'submit'])->name('teams.submit');
         Route::put('/teams-update/{id}', [TeamController::class, 'update'])->name('teams.update');
-        Route::get('/teams-delete/{id}', [TeamController::class, 'delete'])->name('teams.delete');
+        Route::delete('/teams-delete/{id}', [TeamController::class, 'delete'])->name('teams.delete');
         Route::get('/teams-members/{id}', [TeamController::class, 'members'])->name('teams.members');
         Route::post('/teams-remove-member', [TeamController::class, 'removeMember'])->name('teams.remove-member');
         Route::post('/teams-add-member', [TeamController::class, 'addMember'])->name('teams.add-member');
@@ -270,7 +273,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/telecallers-edit/{id}', [TelecallerController::class, 'ajax_edit'])->name('telecallers.edit');
         Route::post('/telecallers-submit', [TelecallerController::class, 'submit'])->name('telecallers.submit');
         Route::put('/telecallers-update/{id}', [TelecallerController::class, 'update'])->name('telecallers.update');
-        Route::get('/telecallers-delete/{id}', [TelecallerController::class, 'delete'])->name('telecallers.delete');
+        Route::delete('/telecallers-delete/{id}', [TelecallerController::class, 'delete'])->name('telecallers.delete');
         Route::get('/telecallers-change-password/{id}', [TelecallerController::class, 'changePassword'])->name('telecallers.change-password');
         Route::post('/telecallers-update-password/{id}', [TelecallerController::class, 'updatePassword'])->name('telecallers.update-password');
 
@@ -280,7 +283,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/admission-counsellors-edit/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'ajax_edit'])->name('admission-counsellors.edit');
         Route::post('/admission-counsellors-submit', [App\Http\Controllers\AdmissionCounsellorController::class, 'submit'])->name('admission-counsellors.submit');
         Route::put('/admission-counsellors-update/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'update'])->name('admission-counsellors.update');
-        Route::get('/admission-counsellors-delete/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'delete'])->name('admission-counsellors.delete');
+        Route::delete('/admission-counsellors-delete/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'delete'])->name('admission-counsellors.delete');
         Route::get('/admission-counsellors-change-password/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'changePassword'])->name('admission-counsellors.change-password');
         Route::post('/admission-counsellors-update-password/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'updatePassword'])->name('admission-counsellors.update-password');
 
@@ -290,7 +293,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/academic-assistants-edit/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'ajax_edit'])->name('academic-assistants.edit');
         Route::post('/academic-assistants-submit', [App\Http\Controllers\AcademicAssistantController::class, 'submit'])->name('academic-assistants.submit');
         Route::put('/academic-assistants-update/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'update'])->name('academic-assistants.update');
-        Route::get('/academic-assistants-delete/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'delete'])->name('academic-assistants.delete');
+        Route::delete('/academic-assistants-delete/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'delete'])->name('academic-assistants.delete');
         Route::get('/academic-assistants-change-password/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'changePassword'])->name('academic-assistants.change-password');
         Route::post('/academic-assistants-update-password/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'updatePassword'])->name('academic-assistants.update-password');
 
@@ -300,7 +303,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/finance-edit/{id}', [App\Http\Controllers\FinanceController::class, 'ajax_edit'])->name('finance.edit');
         Route::post('/finance-submit', [App\Http\Controllers\FinanceController::class, 'submit'])->name('finance.submit');
         Route::put('/finance-update/{id}', [App\Http\Controllers\FinanceController::class, 'update'])->name('finance.update');
-        Route::get('/finance-delete/{id}', [App\Http\Controllers\FinanceController::class, 'delete'])->name('finance.delete');
+        Route::delete('/finance-delete/{id}', [App\Http\Controllers\FinanceController::class, 'delete'])->name('finance.delete');
         Route::get('/finance-change-password/{id}', [App\Http\Controllers\FinanceController::class, 'changePassword'])->name('finance.change-password');
         Route::post('/finance-update-password/{id}', [App\Http\Controllers\FinanceController::class, 'updatePassword'])->name('finance.update-password');
 
@@ -310,7 +313,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/post-sales-edit/{id}', [App\Http\Controllers\PostSalesController::class, 'ajax_edit'])->name('post-sales.edit');
         Route::post('/post-sales-submit', [App\Http\Controllers\PostSalesController::class, 'submit'])->name('post-sales.submit');
         Route::put('/post-sales-update/{id}', [App\Http\Controllers\PostSalesController::class, 'update'])->name('post-sales.update');
-        Route::get('/post-sales-delete/{id}', [App\Http\Controllers\PostSalesController::class, 'delete'])->name('post-sales.delete');
+        Route::delete('/post-sales-delete/{id}', [App\Http\Controllers\PostSalesController::class, 'delete'])->name('post-sales.delete');
         Route::get('/post-sales-change-password/{id}', [App\Http\Controllers\PostSalesController::class, 'changePassword'])->name('post-sales.change-password');
         Route::post('/post-sales-update-password/{id}', [App\Http\Controllers\PostSalesController::class, 'updatePassword'])->name('post-sales.update-password');
 
@@ -387,7 +390,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/admins-edit/{id}', [App\Http\Controllers\AdminController::class, 'ajax_edit'])->name('admins.edit');
         Route::post('/admins-submit', [App\Http\Controllers\AdminController::class, 'submit'])->name('admins.submit');
         Route::put('/admins-update/{id}', [App\Http\Controllers\AdminController::class, 'update'])->name('admins.update');
-        Route::get('/admins-delete/{id}', [App\Http\Controllers\AdminController::class, 'delete'])->name('admins.delete');
+        Route::delete('/admins-delete/{id}', [App\Http\Controllers\AdminController::class, 'delete'])->name('admins.delete');
         Route::delete('/admins-destroy/{id}', [App\Http\Controllers\AdminController::class, 'destroy'])->name('admins.destroy');
         Route::get('/admins-change-password/{id}', [App\Http\Controllers\AdminController::class, 'changePassword'])->name('admins.change-password');
         Route::post('/admins-update-password/{id}', [App\Http\Controllers\AdminController::class, 'updatePassword'])->name('admins.update-password');
@@ -408,6 +411,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'index'])->name('converted-leads.index');
         Route::get('/converted-leads/view/{id}', [App\Http\Controllers\ConvertedLeadController::class, 'show'])->name('converted-leads.show');
         Route::get('/converted-leads/{id}/id-card-pdf', [App\Http\Controllers\ConvertedLeadController::class, 'generateIdCardPdf'])->name('converted-leads.id-card-pdf');
+        Route::post('/converted-leads/{id}/id-card-generate', [App\Http\Controllers\ConvertedLeadController::class, 'generateAndStoreIdCard'])->name('converted-leads.id-card-generate');
+        Route::get('/converted-leads/{id}/id-card', [App\Http\Controllers\ConvertedLeadController::class, 'viewStoredIdCard'])->name('converted-leads.id-card-view');
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
         Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
 

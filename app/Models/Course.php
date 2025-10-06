@@ -14,6 +14,7 @@ class Course extends Model
         'title',
         'code',
         'amount',
+        'hod_number',
         'is_active',
     ];
 

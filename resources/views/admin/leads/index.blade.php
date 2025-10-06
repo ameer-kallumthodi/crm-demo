@@ -268,7 +268,7 @@
                                                 title="Update Status">
                                                 <i class="ti ti-arrow-up"></i>
                                             </a>
-                                            @if(!$lead->is_converted && $lead->studentDetails)
+                                            @if(!$lead->is_converted && $lead->studentDetails && (strtolower($lead->studentDetails->status ?? '') === 'approved'))
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning"
                                                 onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
                                                 title="Convert Lead">
@@ -741,7 +741,7 @@
                                         title="Update Status">
                                         <i class="ti ti-arrow-up f-12"></i>
                                     </a>
-                                    @if(!$lead->is_converted && $lead->studentDetails)
+                                    @if(!$lead->is_converted && $lead->studentDetails && (strtolower($lead->studentDetails->status ?? '') === 'approved'))
                                     <a href="javascript:void(0);" class="btn btn-sm btn-outline-success"
                                         onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
                                         title="Convert Lead">

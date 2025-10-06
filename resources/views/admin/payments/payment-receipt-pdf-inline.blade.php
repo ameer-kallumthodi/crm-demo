@@ -67,6 +67,17 @@
                     <p style="margin: 3px 0; font-size: 11px;">Invoice No.: {{ $payment->invoice->invoice_number }}</p>
                     <p style="margin: 3px 0; font-size: 11px;">Payment Date: {{ $payment->created_at->format('d-m-Y') }}</p>
                     <p style="margin: 3px 0; font-size: 11px;">Payment ID: #{{ $payment->id }}</p>
+                    <p style="margin: 3px 0; font-size: 11px;">
+                        @if($payment->invoice->invoice_type === 'course')
+                            Type: Course - {{ $payment->invoice->course->title ?? 'N/A' }}
+                        @elseif($payment->invoice->invoice_type === 'e-service')
+                            Type: E-Service - {{ $payment->invoice->service_name ?? 'N/A' }}
+                        @elseif($payment->invoice->invoice_type === 'batch_change')
+                            Type: Batch Change - {{ $payment->invoice->batch->title ?? 'N/A' }} ({{ $payment->invoice->batch->course->title ?? 'N/A' }})
+                        @else
+                            Type: N/A
+                        @endif
+                    </p>
                 </td>
             </tr>
         </table>

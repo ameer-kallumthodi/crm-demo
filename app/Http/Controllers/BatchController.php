@@ -29,7 +29,7 @@ class BatchController extends Controller
             'title' => 'required|string|max:255',
             'course_id' => 'required|exists:courses,id',
             'description' => 'nullable|string',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $batch = Batch::create([
@@ -60,22 +60,50 @@ class BatchController extends Controller
     public function destroy(Batch $batch)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return response()->json(['error' => 'Access denied.'], 403);
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
+            }
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        // Check if batch is being used by any converted leads
-        if ($batch->convertedLeads()->count() > 0) {
-            return response()->json([
-                'error' => 'Cannot delete batch. It is being used by existing converted leads.'
-            ], 422);
+        try {
+            if ($batch->convertedLeads()->count() > 0) {
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Cannot delete batch. It has assigned converted leads.'
+                    ], 422);
+                }
+                return redirect()->route('admin.batches.index')->with('message_danger', 'Cannot delete batch. It has assigned converted leads.');
+            }
+
+            $batch->delete();
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Batch deleted successfully!'
+                ]);
+            }
+            return redirect()->route('admin.batches.index')->with('message_success', 'Batch deleted successfully!');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Batch not found.'
+                ], 404);
+            }
+            return redirect()->route('admin.batches.index')->with('message_danger', 'Batch not found.');
+        } catch (\Throwable $e) {
+            \Log::error('[BatchController@destroy] Error deleting batch: ' . $e->getMessage(), ['batch_id' => $batch->id ?? null]);
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while deleting the batch. Please try again.'
+                ], 500);
+            }
+            return redirect()->route('admin.batches.index')->with('message_danger', 'An error occurred while deleting the batch. Please try again.');
         }
-
-        $batch->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Batch deleted successfully.'
-        ]);
     }
 
     public function ajax_add()
@@ -94,23 +122,32 @@ class BatchController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'course_id' => 'required|exists:courses,id',
-            'description' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
+        try {
+            // Normalize checkbox to boolean before validation
+            $request->merge([
+                'is_active' => $request->has('is_active') ? 1 : 0,
+            ]);
 
-        Batch::create([
-            'title' => $request->title,
-            'course_id' => $request->course_id,
-            'description' => $request->description,
-            'is_active' => $request->has('is_active'),
-            'created_by' => AuthHelper::getCurrentUserId(),
-            'updated_by' => AuthHelper::getCurrentUserId(),
-        ]);
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'course_id' => 'required|exists:courses,id',
+                'description' => 'nullable|string',
+                'is_active' => 'nullable|boolean',
+            ]);
 
-        return redirect()->route('admin.batches.index')->with('message_success', 'Batch created successfully!');
+            $batch = Batch::create([
+                'title' => $request->title,
+                'course_id' => $request->course_id,
+                'description' => $request->description,
+                'is_active' => $request->has('is_active'),
+                'created_by' => AuthHelper::getCurrentUserId(),
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            return redirect()->route('admin.batches.index')->with('message_success', 'Batch created successfully!');
+        } catch (\Throwable $e) {
+            return back()->withInput()->with('message_danger', 'Failed to create batch: ' . $e->getMessage());
+        }
     }
 
     public function ajax_edit($id)
@@ -130,40 +167,86 @@ class BatchController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'course_id' => 'required|exists:courses,id',
-            'description' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
+        try {
+            // Normalize checkbox to boolean before validation
+            $request->merge([
+                'is_active' => $request->has('is_active') ? 1 : 0,
+            ]);
 
-        $batch = Batch::findOrFail($id);
-        $batch->update([
-            'title' => $request->title,
-            'course_id' => $request->course_id,
-            'description' => $request->description,
-            'is_active' => $request->has('is_active'),
-            'updated_by' => AuthHelper::getCurrentUserId(),
-        ]);
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'course_id' => 'required|exists:courses,id',
+                'description' => 'nullable|string',
+                'is_active' => 'nullable|boolean',
+            ]);
 
-        return redirect()->route('admin.batches.index')->with('message_success', 'Batch updated successfully!');
+            $batch = Batch::findOrFail($id);
+            $batch->update([
+                'title' => $request->title,
+                'course_id' => $request->course_id,
+                'description' => $request->description,
+                'is_active' => $request->has('is_active'),
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            return redirect()->route('admin.batches.index')->with('message_success', 'Batch updated successfully!');
+        } catch (\Throwable $e) {
+            return back()->withInput()->with('message_danger', 'Failed to update batch: ' . $e->getMessage());
+        }
     }
 
     public function delete($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
+            }
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $batch = Batch::findOrFail($id);
-        
-        // Check if batch has converted leads
-        if ($batch->convertedLeads()->count() > 0) {
-            return redirect()->route('admin.batches.index')->with('message_danger', 'Cannot delete batch. It has assigned converted leads.');
-        }
+        \Log::info('[BatchController@delete] Attempting delete', ['id' => $id]);
 
-        $batch->delete();
-        return redirect()->route('admin.batches.index')->with('message_success', 'Batch deleted successfully!');
+        try {
+            $batch = Batch::findOrFail($id);
+
+            if ($batch->convertedLeads()->count() > 0) {
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Cannot delete batch. It has assigned converted leads.'
+                    ], 422);
+                }
+                return redirect()->route('admin.batches.index')->with('message_danger', 'Cannot delete batch. It has assigned converted leads.');
+            }
+
+            $batch->delete();
+            \Log::info('[BatchController@delete] Batch deleted', ['id' => $id]);
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Batch deleted successfully!'
+                ]);
+            }
+            return redirect()->route('admin.batches.index')->with('message_success', 'Batch deleted successfully!');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Batch not found.'
+                ], 404);
+            }
+            return redirect()->route('admin.batches.index')->with('message_danger', 'Batch not found.');
+        } catch (\Throwable $e) {
+            \Log::error('[BatchController@delete] Error deleting batch: ' . $e->getMessage(), ['id' => $id]);
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while deleting the batch. Please try again.'
+                ], 500);
+            }
+            return redirect()->route('admin.batches.index')->with('message_danger', 'An error occurred while deleting the batch. Please try again.');
+        }
     }
 
     /**

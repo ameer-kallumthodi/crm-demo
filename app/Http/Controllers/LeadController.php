@@ -1565,6 +1565,56 @@ class LeadController extends Controller
         }
     }
 
+    public function showApproveModal(Lead $lead)
+    {
+        $studentDetail = $lead->studentDetails;
+        if (!$studentDetail) {
+            return response('No registration found.', 404);
+        }
+        return view('admin.leads.partials.approve-modal', compact('lead', 'studentDetail'));
+    }
+
+    public function showRejectModal(Lead $lead)
+    {
+        $studentDetail = $lead->studentDetails;
+        if (!$studentDetail) {
+            return response('No registration found.', 404);
+        }
+        return view('admin.leads.partials.reject-modal', compact('lead', 'studentDetail'));
+    }
+
+    public function updateRegistrationStatus(Request $request, Lead $lead)
+    {
+        if (!RoleHelper::is_admin_or_super_admin()) {
+            return response()->json(['success' => false, 'message' => 'Access denied'], 403);
+        }
+
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'remark' => 'nullable|string|max:1000'
+        ]);
+
+        // Require remark if rejected
+        if ($request->status === 'rejected' && !$request->filled('remark')) {
+            return response()->json(['success' => false, 'message' => 'Remark is required for rejection.'], 422);
+        }
+
+        $studentDetail = $lead->studentDetails;
+        if (!$studentDetail) {
+            return response()->json(['success' => false, 'message' => 'Registration details not found.'], 404);
+        }
+
+        $studentDetail->status = $request->status;
+        if ($request->status === 'rejected') {
+            $studentDetail->admin_remarks = $request->remark;
+        }
+        $studentDetail->reviewed_by = AuthHelper::getCurrentUserId();
+        $studentDetail->reviewed_at = now();
+        $studentDetail->save();
+
+        return response()->json(['success' => true, 'message' => 'Status updated successfully.']);
+    }
+
     /**
      * Update document verification status
      */
@@ -1649,47 +1699,6 @@ class LeadController extends Controller
         }
     }
 
-    /**
-     * Update registration status
-     */
-    public function updateRegistrationStatus(Request $request)
-    {
-        try {
-            $request->validate([
-                'lead_id' => 'required|exists:leads,id',
-                'status' => 'required|in:approved,rejected',
-                'admin_remarks' => 'nullable|string|max:1000'
-            ]);
-
-            $lead = Lead::findOrFail($request->lead_id);
-            $studentDetail = $lead->studentDetails;
-
-            if (!$studentDetail) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No registration details found for this lead.'
-                ]);
-            }
-
-            $studentDetail->update([
-                'status' => $request->status,
-                'admin_remarks' => $request->admin_remarks,
-                'reviewed_by' => Auth::id(),
-                'reviewed_at' => now()
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Registration status updated successfully.'
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error updating registration status: ' . $e->getMessage()
-            ]);
-        }
-    }
 
 
 }
