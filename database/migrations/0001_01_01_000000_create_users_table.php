@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
+            $table->date('joining_date')->nullable();
             $table->string('password');
             $table->string('phone')->nullable();
             $table->string('ext_no', 20)->nullable()->comment('Extension number for Voxbay calling');
@@ -25,6 +26,7 @@ return new class extends Migration
             $table->unsignedBigInteger('role_id')->nullable();
             $table->boolean('is_team_lead')->default(false);
             $table->boolean('is_team_manager')->default(false);
+            $table->boolean('is_head')->default(false)->comment('Indicates if user is head of department');
             $table->string('current_role')->nullable();
             $table->unsignedBigInteger('team_id')->nullable();
             $table->boolean('is_active')->default(true);

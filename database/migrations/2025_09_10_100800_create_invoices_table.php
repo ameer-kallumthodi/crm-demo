@@ -14,13 +14,17 @@ return new class extends Migration
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_number')->unique();
-            $table->foreignId('course_id')->constrained('courses')->onDelete('cascade');
+            $table->string('invoice_type')->nullable();
+            $table->foreignId('course_id')->nullable()->constrained('courses')->onDelete('set null');
+            $table->foreignId('batch_id')->nullable()->constrained('batches')->onDelete('set null');
             $table->foreignId('student_id')->constrained('converted_leads')->onDelete('cascade');
             $table->decimal('total_amount', 10, 2);
             $table->decimal('paid_amount', 10, 2)->default(0);
             $table->enum('status', ['Not Paid', 'Partially Paid', 'Fully Paid'])->default('Not Paid');
             $table->date('invoice_date');
             $table->decimal('previous_balance', 10, 2)->default(0);
+            $table->string('service_name')->nullable();
+            $table->decimal('service_amount', 10, 2)->nullable();
             
             // Audit fields
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');

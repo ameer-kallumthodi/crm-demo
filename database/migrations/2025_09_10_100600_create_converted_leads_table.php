@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('code', 10)->nullable();
             $table->string('phone', 20);
             $table->string('email')->nullable();
+            $table->string('register_number', 50)->nullable();
+            $table->timestamp('reg_updated_at')->nullable();
+            $table->unsignedBigInteger('reg_updated_by')->nullable();
             $table->unsignedBigInteger('board_id')->nullable();
             $table->unsignedBigInteger('batch_id')->nullable();
             $table->unsignedBigInteger('course_id')->nullable();
@@ -31,6 +34,7 @@ return new class extends Migration
             $table->softDeletes();
             
             $table->foreign('lead_id')->references('id')->on('leads')->onDelete('cascade');
+            $table->foreign('reg_updated_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('deleted_by')->references('id')->on('users')->onDelete('set null');
         });
     }

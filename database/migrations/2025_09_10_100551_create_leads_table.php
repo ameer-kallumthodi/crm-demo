@@ -24,6 +24,7 @@ return new class extends Migration
             $table->text('qualification')->nullable();
             $table->unsignedBigInteger('country_id')->nullable();
             $table->string('interest_status')->nullable();
+            $table->tinyInteger('rating')->nullable()->comment('Rating from 1-10');
             $table->unsignedBigInteger('lead_status_id')->nullable();
             $table->unsignedBigInteger('lead_source_id')->nullable();
             $table->text('address')->nullable();
@@ -34,6 +35,7 @@ return new class extends Migration
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();
             $table->unsignedBigInteger('course_id')->nullable();
+            $table->unsignedBigInteger('batch_id')->nullable();
             $table->boolean('by_meta')->default(false);
             $table->string('meta_lead_id')->nullable();
             $table->boolean('is_converted')->default(false);
@@ -43,6 +45,7 @@ return new class extends Migration
             $table->softDeletes();
             
             $table->foreign('team_id')->references('id')->on('teams');
+            $table->foreign('batch_id')->references('id')->on('batches')->onDelete('set null');
             $table->foreign('deleted_by')->references('id')->on('users')->onDelete('set null');
         });
     }

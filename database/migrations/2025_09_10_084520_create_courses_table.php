@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->text('description')->nullable();
-            $table->string('duration')->nullable();
-            $table->decimal('fees', 10, 2)->nullable();
+            $table->string('code')->nullable();
+            $table->double('amount')->nullable();
+            $table->string('hod_number')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->unsignedBigInteger('deleted_by')->nullable();

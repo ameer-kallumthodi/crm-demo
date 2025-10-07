@@ -17,6 +17,8 @@ return new class extends Migration
             $table->unsignedBigInteger('lead_id');
             $table->unsignedBigInteger('lead_status_id')->nullable();
             $table->string('activity_type');
+            $table->string('reason')->nullable()->comment('Reason for status change');
+            $table->tinyInteger('rating')->nullable()->comment('Rating from 1-10');
             $table->text('description')->nullable();
             $table->date('followup_date')->nullable();
             $table->text('remarks')->nullable();

@@ -11,14 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop the existing table
-        Schema::dropIfExists('converted_student_details');
-        Schema::dropIfExists('leads_details');
-        
-        // Create the new table with lead_id instead of converted_lead_id
         Schema::create('leads_details', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('lead_id'); // Changed from converted_lead_id to lead_id
+            $table->unsignedBigInteger('lead_id');
             
             // Personal Information
             $table->string('student_name')->nullable();
@@ -55,6 +50,7 @@ return new class extends Migration
             $table->string('signature')->nullable();
             $table->string('plustwo_certificate')->nullable();
             $table->string('sslc_certificate')->nullable();
+            $table->string('ug_certificate')->nullable();
             
             // Additional Information
             $table->text('message')->nullable();
@@ -68,6 +64,35 @@ return new class extends Migration
             // Course Information
             $table->unsignedBigInteger('course_id')->nullable();
             
+            // Document verification status fields
+            $table->enum('sslc_verification_status', ['pending', 'verified'])->default('pending');
+            $table->unsignedBigInteger('sslc_verified_by')->nullable();
+            $table->timestamp('sslc_verified_at')->nullable();
+            
+            $table->enum('plustwo_verification_status', ['pending', 'verified'])->default('pending');
+            $table->unsignedBigInteger('plustwo_verified_by')->nullable();
+            $table->timestamp('plustwo_verified_at')->nullable();
+            
+            $table->enum('ug_verification_status', ['pending', 'verified'])->default('pending');
+            $table->unsignedBigInteger('ug_verified_by')->nullable();
+            $table->timestamp('ug_verified_at')->nullable();
+            
+            $table->enum('passport_photo_verification_status', ['pending', 'verified'])->default('pending');
+            $table->unsignedBigInteger('passport_photo_verified_by')->nullable();
+            $table->timestamp('passport_photo_verified_at')->nullable();
+            
+            $table->enum('adhar_front_verification_status', ['pending', 'verified'])->default('pending');
+            $table->unsignedBigInteger('adhar_front_verified_by')->nullable();
+            $table->timestamp('adhar_front_verified_at')->nullable();
+            
+            $table->enum('adhar_back_verification_status', ['pending', 'verified'])->default('pending');
+            $table->unsignedBigInteger('adhar_back_verified_by')->nullable();
+            $table->timestamp('adhar_back_verified_at')->nullable();
+            
+            $table->enum('signature_verification_status', ['pending', 'verified'])->default('pending');
+            $table->unsignedBigInteger('signature_verified_by')->nullable();
+            $table->timestamp('signature_verified_at')->nullable();
+            
             $table->timestamps();
             $table->softDeletes();
             
@@ -77,6 +102,15 @@ return new class extends Migration
             $table->foreign('batch_id')->references('id')->on('batches')->onDelete('set null');
             $table->foreign('course_id')->references('id')->on('courses')->onDelete('set null');
             $table->foreign('reviewed_by')->references('id')->on('users')->onDelete('set null');
+            
+            // Document verification foreign keys
+            $table->foreign('sslc_verified_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('plustwo_verified_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('ug_verified_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('passport_photo_verified_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('adhar_front_verified_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('adhar_back_verified_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('signature_verified_by')->references('id')->on('users')->onDelete('set null');
         });
     }
 

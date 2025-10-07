@@ -22,8 +22,11 @@ return new class extends Migration
             $table->date('date_of_birth')->nullable();
             $table->string('email')->nullable();
             $table->string('personal_number')->nullable();
+            $table->string('personal_code', 10)->nullable();
             $table->string('parents_number')->nullable();
+            $table->string('parents_code', 10)->nullable();
             $table->string('whatsapp_number')->nullable();
+            $table->string('whatsapp_code', 10)->nullable();
             
             // Academic Information
             $table->unsignedBigInteger('subject_id')->nullable();
@@ -45,6 +48,8 @@ return new class extends Migration
             $table->string('adhar_front')->nullable();
             $table->string('adhar_back')->nullable();
             $table->string('signature')->nullable();
+            $table->string('plustwo_certificate')->nullable();
+            $table->string('sslc_certificate')->nullable();
             
             // Additional Information
             $table->text('message')->nullable();
@@ -55,12 +60,17 @@ return new class extends Migration
             $table->unsignedBigInteger('reviewed_by')->nullable();
             $table->timestamp('reviewed_at')->nullable();
             
+            // Course Information
+            $table->unsignedBigInteger('course_id')->nullable();
+            
             $table->timestamps();
+            $table->softDeletes();
             
             // Foreign Keys
             $table->foreign('converted_lead_id')->references('id')->on('converted_leads')->onDelete('cascade');
             $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('set null');
             $table->foreign('batch_id')->references('id')->on('batches')->onDelete('set null');
+            $table->foreign('course_id')->references('id')->on('courses')->onDelete('set null');
             $table->foreign('reviewed_by')->references('id')->on('users')->onDelete('set null');
         });
     }

@@ -31,7 +31,7 @@
                         </div>
                         <div class="col-md-6">
                             <h6>Course Information</h6>
-                            <p><strong>Course:</strong> {{ $student->course->title }}</p>
+                            <p><strong>Course:</strong> {{ $student->course->title ?? 'N/A' }}</p>
                             <p><strong>Batch:</strong> {{ $student->batch->title ?? 'N/A' }}</p>
                             <p><strong>Academic Assistant:</strong> {{ $student->academicAssistant->name ?? 'N/A' }}</p>
                         </div>
@@ -106,7 +106,7 @@
                                     </td>
                                     <td>
                                         @if($invoice->invoice_type == 'course')
-                                            {{ $invoice->course->title }}
+                                            {{ $invoice->course->title ?? 'N/A' }}
                                         @elseif($invoice->invoice_type == 'e-service')
                                             {{ $invoice->service_name }}
                                         @elseif($invoice->invoice_type == 'batch_change')

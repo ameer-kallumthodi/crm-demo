@@ -186,10 +186,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/leads/telecallers-by-team', [LeadController::class, 'getTelecallersByTeam'])->name('leads.telecallers-by-team');
         Route::get('/batches/by-course/{courseId}', [App\Http\Controllers\BatchController::class, 'getByCourse'])->name('batches.by-course');
 
-        // Voxbay API routes
-        Route::post('/voxbay/outgoing-call', [VoxbayController::class, 'outgoingCall'])->name('voxbay.outgoing-call');
-        Route::get('/voxbay/telecaller/{id}/extension', [VoxbayController::class, 'getTelecallerExtension'])->name('voxbay.telecaller.extension');
-        Route::get('/voxbay/test-connection', [VoxbayController::class, 'testConnection'])->name('voxbay.test-connection');
+        // Voxbay API routes (duplicates removed - already defined in public routes)
 
         // Call logs API routes
         Route::get('/call-logs', [VoxbayCallLogController::class, 'ajaxList'])->name('call-logs.ajax-list');

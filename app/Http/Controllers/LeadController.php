@@ -1408,13 +1408,18 @@ class LeadController extends Controller
      */
     public function convert(Lead $lead)
     {
-        $courses = Course::where('is_active', true)->get();
         $academic_assistants = User::where('role_id', 5)->where('is_active', true)->get();
         $boards = \App\Models\Board::where('is_active', true)->get();
         $country_codes = get_country_code();
+        
+        // Load the course information if the lead has a course_id
+        $course = null;
+        if ($lead->course_id) {
+            $course = \App\Models\Course::find($lead->course_id);
+        }
 
         return view('admin.leads.convert-modal', compact(
-            'lead', 'courses', 'academic_assistants', 'boards', 'country_codes'
+            'lead', 'academic_assistants', 'boards', 'country_codes', 'course'
         ));
     }
 
@@ -1428,9 +1433,7 @@ class LeadController extends Controller
             'code' => 'required|string|max:10',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
-            'course_id' => 'required|exists:courses,id',
             'academic_assistant_id' => 'required|exists:users,id',
-            'batch_id' => 'required|exists:batches,id',
             'board_id' => 'nullable|exists:boards,id',
             'remarks' => 'nullable|string|max:1000',
             'payment_collected' => 'boolean',
@@ -1463,9 +1466,9 @@ class LeadController extends Controller
                 'code' => $request->code,
                 'phone' => $request->phone,
                 'email' => $request->email,
-                'course_id' => $request->course_id,
+                'course_id' => $lead->course_id,
+                'batch_id' => $lead->batch_id,
                 'academic_assistant_id' => $request->academic_assistant_id,
-                'batch_id' => $request->batch_id,
                 'board_id' => $request->board_id,
                 'candidate_status_id' => 1,
                 'remarks' => $request->remarks,
@@ -1479,9 +1482,12 @@ class LeadController extends Controller
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
 
-            // Auto-generate invoice
-            $invoiceController = new \App\Http\Controllers\InvoiceController();
-            $invoice = $invoiceController->autoGenerate($convertedLead->id, $request->course_id);
+            // Auto-generate invoice if lead has course_id
+            $invoice = null;
+            if ($lead->course_id) {
+                $invoiceController = new \App\Http\Controllers\InvoiceController();
+                $invoice = $invoiceController->autoGenerate($convertedLead->id, $lead->course_id);
+            }
 
             // Process payment if collected
             if ($request->payment_collected && $invoice) {

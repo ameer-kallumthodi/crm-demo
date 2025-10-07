@@ -36,28 +36,17 @@
             </div>
         </div>
 
+        @if($course && $course->title)
         <div class="col-lg-12">
             <div class="p-1">
-                <label for="modal_course_id" class="form-label">Course <span class="text-danger">*</span></label>
-                <select class="form-control" name="course_id" id="modal_course_id" required>
-                    <option value="">Select Course</option>
-                    @foreach($courses as $course)
-                        <option value="{{ $course->id }}" data-amount="{{ $course->amount }}" {{ $lead->course_id == $course->id ? 'selected' : '' }}>
-                            {{ $course->title }} - ₹{{ number_format($course->amount, 2) }}
-                        </option>
-                    @endforeach
-                </select>
+                <label class="form-label">Course Information</label>
+                <div class="form-control-plaintext bg-light p-2 rounded">
+                    <strong>{{ $course->title }}</strong> - ₹{{ number_format($course->amount, 2) }}
+                </div>
             </div>
         </div>
+        @endif
 
-        <div class="col-lg-6">
-            <div class="p-1">
-                <label for="modal_batch_id" class="form-label">Batch <span class="text-danger">*</span></label>
-                <select class="form-control" name="batch_id" id="modal_batch_id" required>
-                    <option value="">Select Course First</option>
-                </select>
-            </div>
-        </div>
 
         <div class="col-lg-6">
             <div class="p-1">
@@ -71,7 +60,7 @@
             </div>
         </div>
 
-        <div class="col-lg-12">
+        <div class="col-lg-6">
             <div class="p-1">
                 <label for="modal_academic_assistant_id" class="form-label">Academic Assistant <span class="text-danger">*</span></label>
                 <select class="form-control" name="academic_assistant_id" id="modal_academic_assistant_id" required>
@@ -91,6 +80,7 @@
         </div>
 
         <!-- Payment Collection Section -->
+        @if($course && $course->title)
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
@@ -158,6 +148,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <div class="col-12 p-2">
             <button class="btn btn-success float-end" type="button" id="convertLeadBtn">
@@ -210,13 +201,16 @@
 <script>
 $(document).ready(function() {
         // Cache jQuery objects
-        const $courseSelect = $('#modal_course_id');
         const $paymentCheckbox = $('#modal_payment_collected');
         const $paymentFields = $('#payment_fields');
         const $totalAmountDisplay = $('#modal_total_amount_display');
         const $paymentAmountInput = $('#modal_payment_amount');
-        const $batchSelect = $('#modal_batch_id');
         const $convertBtn = $('#convertLeadBtn');
+        
+        @if(!$course || !$course->title)
+        // Hide payment section if no course is available
+        $paymentCheckbox.closest('.card').hide();
+        @endif
 
     // Show/hide payment fields based on checkbox
     function togglePaymentFields() {
@@ -246,12 +240,6 @@ $(document).ready(function() {
         setTimeout(togglePaymentFields, 10);
     });
 
-    // Update total amount and load batches when course changes
-    $courseSelect.on('change', function() {
-        const selectedValue = $(this).val();
-        updateTotalAmount();
-        loadBatches(selectedValue);
-    });
 
     // Set max payment amount
     $paymentAmountInput.on('input', function() {
@@ -262,60 +250,23 @@ $(document).ready(function() {
     });
 
     function updateTotalAmount() {
-        const selectedOption = $courseSelect.find('option:selected');
-        if (selectedOption.length && selectedOption.data('amount')) {
-            const amount = parseFloat(selectedOption.data('amount'));
-            $totalAmountDisplay.val('₹' + amount.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }));
-            $paymentAmountInput.attr('max', amount);
-        } else {
-            $totalAmountDisplay.val('');
-        }
+        @if($course && $course->title)
+        // Use the course amount from the lead's course
+        const amount = {{ $course->amount }};
+        $totalAmountDisplay.val('₹' + amount.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }));
+        $paymentAmountInput.attr('max', amount);
+        @else
+        // No course information available
+        $totalAmountDisplay.val('');
+        @endif
     }
 
-    // Load batches for selected course
-    function loadBatches(courseId) {
-        if (!courseId) {
-            $batchSelect.html('<option value="">Select Course First</option>').prop('required', false);
-            return;
-        }
-        
-        // Show loading
-        $batchSelect.html('<option value="">Loading batches...</option>').prop('required', true);
-        
-        // Fetch batches for the selected course using jQuery AJAX
-        $.ajax({
-            url: `/api/batches/by-course/${courseId}`,
-            method: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                $batchSelect.html('<option value="">Select Batch</option>');
-                
-                if (data.batches && data.batches.length > 0) {
-                    $.each(data.batches, function(index, batch) {
-                        $batchSelect.append(`<option value="${batch.id}">${batch.title}</option>`);
-                    });
-                    $batchSelect.prop('required', false);
-                } else {
-                    $batchSelect.html('<option value="">Select Batch</option>').prop('required', false);
-                }
-            },
-            error: function(xhr, status, error) {
-                $batchSelect.html('<option value="">Select Batch</option>').prop('required', false);
-            }
-        });
-    }
 
     // Initialize on page load
     updateTotalAmount();
-    
-    // Load batches if course is already selected on form open
-    const selectedCourseId = $courseSelect.val();
-    if (selectedCourseId) {
-        loadBatches(selectedCourseId);
-    }
     
     // AJAX form submission
     $convertBtn.on('click', function() {
@@ -347,10 +298,6 @@ $(document).ready(function() {
         console.log('Submitting form to:', '{{ route("leads.convert.submit", $lead->id) }}');
         console.log('Form data:', Object.fromEntries(formData));
         
-        // Debug: Check specific field values
-        console.log('Course ID before submission:', $('#course_id').val());
-        console.log('Course ID element:', $('#course_id')[0]);
-        console.log('Course ID selected option:', $('#course_id option:selected').val());
         
         $.ajax({
             url: '{{ route("leads.convert.submit", $lead->id) }}',
@@ -441,9 +388,7 @@ $(document).ready(function() {
         $.each(errors, function(field, messages) {
             // Map field names to modal IDs
             const modalFieldMap = {
-                'course_id': 'modal_course_id',
-                'academic_assistant_id': 'modal_academic_assistant_id',
-                'batch_id': 'modal_batch_id'
+                'academic_assistant_id': 'modal_academic_assistant_id'
             };
             
             const fieldId = modalFieldMap[field] || field;
@@ -497,14 +442,12 @@ $(document).ready(function() {
         
         
         // Check required fields
-        const requiredFields = ['name', 'code', 'phone', 'course_id', 'academic_assistant_id', 'batch_id'];
+        const requiredFields = ['name', 'code', 'phone', 'academic_assistant_id'];
         
         requiredFields.forEach(function(field) {
             // Map field names to modal IDs
             const modalFieldMap = {
-                'course_id': 'modal_course_id',
-                'academic_assistant_id': 'modal_academic_assistant_id',
-                'batch_id': 'modal_batch_id'
+                'academic_assistant_id': 'modal_academic_assistant_id'
             };
             
             const fieldId = modalFieldMap[field] || field;
@@ -611,31 +554,6 @@ function testFunctionality() {
     console.log('Payment fields found:', $paymentFields.length > 0);
     console.log('Payment fields visible:', $paymentFields.is(':visible'));
     
-    // Test course select
-    const $courseSelect = $('#course_id');
-    console.log('Course select found:', $courseSelect.length > 0);
-    console.log('Course select value:', $courseSelect.val());
-    
-    // Test batch select
-    const $batchSelect = $('#batch_id');
-    console.log('Batch select found:', $batchSelect.length > 0);
-    console.log('Batch select disabled:', $batchSelect.prop('disabled'));
-    
-    // Test API call
-    if ($courseSelect.length && $courseSelect.val()) {
-        console.log('Testing API call...');
-        $.ajax({
-            url: `/api/batches/by-course/${$courseSelect.val()}`,
-            method: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                console.log('API response:', data);
-            },
-            error: function(xhr, status, error) {
-                console.error('API error:', error);
-            }
-        });
-    }
     
     // Test checkbox toggle
     if ($checkbox.length) {
