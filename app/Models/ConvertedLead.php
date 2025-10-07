@@ -16,12 +16,23 @@ class ConvertedLead extends Model
         'code',
         'phone',
         'email',
+        'dob',
+        'username',
+        'password',
+        'status',
+        'reg_fee',
+        'exam_fee',
+        'ref_no',
+        'enroll_no',
+        'id_card',
+        'tma',
         'register_number',
         'course_id',
         'academic_assistant_id',
         'batch_id',
         'board_id',
         'subject_id',
+        'admission_batch_id',
         'remarks',
         'created_by',
         'updated_by',
@@ -92,6 +103,12 @@ class ConvertedLead extends Model
         return $this->belongsTo(User::class, 'reg_updated_by');
     }
 
+    public function admissionBatch()
+    {
+        return $this->belongsTo(AdmissionBatch::class);
+    }
+
+
     public function invoices()
     {
         return $this->hasMany(Invoice::class, 'student_id');
@@ -131,5 +148,26 @@ class ConvertedLead extends Model
         $this->save();
         
         return parent::delete();
+    }
+
+    /**
+     * Simple encryption for password
+     */
+    public function setPasswordAttribute($value)
+    {
+        if ($value) {
+            $this->attributes['password'] = base64_encode($value);
+        }
+    }
+
+    /**
+     * Simple decryption for password
+     */
+    public function getPasswordAttribute($value)
+    {
+        if ($value) {
+            return base64_decode($value);
+        }
+        return $value;
     }
 }

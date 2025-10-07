@@ -180,11 +180,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     // Document verification route
     Route::post('leads/update-document-verification', [LeadController::class, 'updateDocumentVerification'])->name('leads.update-document-verification');
 
-    // API routes for AJAX calls
-    Route::prefix('api')->group(function () {
-        Route::get('/leads/phone', [LeadController::class, 'getByPhone']);
-        Route::get('/leads/telecallers-by-team', [LeadController::class, 'getTelecallersByTeam'])->name('leads.telecallers-by-team');
-        Route::get('/batches/by-course/{courseId}', [App\Http\Controllers\BatchController::class, 'getByCourse'])->name('batches.by-course');
+        // API routes for AJAX calls
+        Route::prefix('api')->group(function () {
+            Route::get('/leads/phone', [LeadController::class, 'getByPhone']);
+            Route::get('/leads/telecallers-by-team', [LeadController::class, 'getTelecallersByTeam'])->name('leads.telecallers-by-team');
+            Route::get('/batches/by-course/{courseId}', [App\Http\Controllers\BatchController::class, 'getByCourse'])->name('batches.by-course');
+            Route::get('/subjects/by-course/{courseId}', [App\Http\Controllers\SubjectController::class, 'getByCourse'])->name('subjects.by-course');
+            Route::get('/admission-batches/by-batch/{batchId}', [App\Http\Controllers\AdmissionBatchController::class, 'getByBatch'])->name('admission-batches.by-batch');
+            Route::get('/academic-assistants', [App\Http\Controllers\AcademicAssistantController::class, 'getAll'])->name('academic-assistants.all');
 
         // Voxbay API routes (duplicates removed - already defined in public routes)
 
@@ -240,6 +243,13 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/batches-edit/{id}', [App\Http\Controllers\BatchController::class, 'ajax_edit'])->name('batches.edit');
         Route::post('/batches-submit', [App\Http\Controllers\BatchController::class, 'submit'])->name('batches.submit');
         Route::put('/batches-update/{id}', [App\Http\Controllers\BatchController::class, 'update'])->name('batches.update');
+
+        Route::delete('/admission-batches-delete/{id}', [App\Http\Controllers\AdmissionBatchController::class, 'delete'])->name('admission-batches.delete');
+        Route::resource('admission-batches', App\Http\Controllers\AdmissionBatchController::class);
+        Route::get('/admission-batches-add', [App\Http\Controllers\AdmissionBatchController::class, 'ajax_add'])->name('admission-batches.add');
+        Route::get('/admission-batches-edit/{id}', [App\Http\Controllers\AdmissionBatchController::class, 'ajax_edit'])->name('admission-batches.edit');
+        Route::post('/admission-batches-submit', [App\Http\Controllers\AdmissionBatchController::class, 'submit'])->name('admission-batches.submit');
+        Route::put('/admission-batches-update/{id}', [App\Http\Controllers\AdmissionBatchController::class, 'update'])->name('admission-batches.update');
 
         Route::resource('courses', CourseController::class);
         Route::get('/courses-add', [CourseController::class, 'ajax_add'])->name('courses.add');
@@ -408,10 +418,12 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'index'])->name('converted-leads.index');
         Route::get('/converted-leads/view/{id}', [App\Http\Controllers\ConvertedLeadController::class, 'show'])->name('converted-leads.show');
         Route::get('/converted-leads/{id}/id-card-pdf', [App\Http\Controllers\ConvertedLeadController::class, 'generateIdCardPdf'])->name('converted-leads.id-card-pdf');
+        Route::get('/converted-leads/{id}/details-pdf', [App\Http\Controllers\ConvertedLeadController::class, 'generateDetailsPdf'])->name('converted-leads.details-pdf');
         Route::post('/converted-leads/{id}/id-card-generate', [App\Http\Controllers\ConvertedLeadController::class, 'generateAndStoreIdCard'])->name('converted-leads.id-card-generate');
         Route::get('/converted-leads/{id}/id-card', [App\Http\Controllers\ConvertedLeadController::class, 'viewStoredIdCard'])->name('converted-leads.id-card-view');
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
         Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
+        Route::post('/converted-leads/{id}/inline-update', [App\Http\Controllers\ConvertedLeadController::class, 'inlineUpdate'])->name('converted-leads.inline-update');
 
         // Invoice Routes
         Route::get('/invoices/student/{studentId}', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');

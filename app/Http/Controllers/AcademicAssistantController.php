@@ -224,4 +224,18 @@ class AcademicAssistantController extends Controller
 
         return redirect()->route('admin.academic-assistants.index')->with('message_success', 'Password updated successfully!');
     }
+
+    /**
+     * Get all academic assistants for AJAX requests
+     */
+    public function getAll()
+    {
+        $academicAssistants = User::where('role_id', 5)
+            ->where('is_active', 1)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json($academicAssistants);
+    }
 }

@@ -139,7 +139,7 @@ class BatchController extends Controller
                 'title' => $request->title,
                 'course_id' => $request->course_id,
                 'description' => $request->description,
-                'is_active' => $request->has('is_active'),
+                'is_active' => $request->is_active,
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
@@ -185,7 +185,7 @@ class BatchController extends Controller
                 'title' => $request->title,
                 'course_id' => $request->course_id,
                 'description' => $request->description,
-                'is_active' => $request->has('is_active'),
+                'is_active' => $request->is_active,
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
 

@@ -7,11 +7,14 @@ use App\Models\ConvertedLead;
 use App\Models\Lead;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Mpdf\Mpdf;
 use Illuminate\Support\Facades\Storage;
 use App\Models\ConvertedLeadIdCard;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\IdCardNotification;
+use Carbon\Carbon;
 
 class ConvertedLeadController extends Controller
 {
@@ -54,12 +57,41 @@ class ConvertedLeadController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('register_number', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('course_id')) {
             $query->where('course_id', $request->course_id);
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('reg_fee')) {
+            $query->where('reg_fee', $request->reg_fee);
+        }
+
+        if ($request->filled('exam_fee')) {
+            $query->where('exam_fee', $request->exam_fee);
+        }
+
+        if ($request->filled('id_card')) {
+            $query->where('id_card', $request->id_card);
+        }
+
+        if ($request->filled('tma')) {
+            $query->where('tma', $request->tma);
         }
 
 
@@ -76,7 +108,10 @@ class ConvertedLeadController extends Controller
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
 
-        return view('admin.converted-leads.index', compact('convertedLeads', 'courses'));
+        // Country codes for inline phone editor
+        $country_codes = get_country_code();
+
+        return view('admin.converted-leads.index', compact('convertedLeads', 'courses', 'country_codes'));
     }
 
     /**
@@ -88,6 +123,9 @@ class ConvertedLeadController extends Controller
             'lead',
             'leadDetail',
             'course',
+            'batch',
+            'admissionBatch',
+            'subject',
             'academicAssistant',
             'createdBy'
         ])->findOrFail($id);
@@ -281,7 +319,7 @@ class ConvertedLeadController extends Controller
                 ));
             }
         } catch (\Exception $e) {
-            \Log::error('Failed to send ID card email: ' . $e->getMessage());
+            Log::error('Failed to send ID card email: ' . $e->getMessage());
             // Continue execution even if email fails
         }
 
@@ -289,6 +327,48 @@ class ConvertedLeadController extends Controller
             'success' => true,
             'message' => 'ID Card generated, stored, and sent to student email successfully.',
         ]);
+    }
+
+    /**
+     * Generate a PDF of the converted lead details (without Uploaded Documents)
+     */
+    public function generateDetailsPdf($id)
+    {
+        $convertedLead = ConvertedLead::with([
+            'lead',
+            'leadDetail',
+            'course',
+            'batch',
+            'admissionBatch',
+            'subject',
+            'academicAssistant',
+            'createdBy'
+        ])->findOrFail($id);
+
+        // Lead activities (same as show page)
+        $leadActivities = \App\Models\LeadActivity::where('lead_id', $convertedLead->lead_id)
+            ->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id')
+            ->with(['leadStatus:id,title', 'createdBy:id,name'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $html = view('admin.converted-leads.pdf', compact('convertedLead', 'leadActivities'))->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_top' => 12,
+            'margin_bottom' => 12,
+            'margin_left' => 12,
+            'margin_right' => 12,
+        ]);
+
+        $mpdf->SetTitle('Converted Lead Details - #' . $convertedLead->id);
+        $mpdf->WriteHTML($html);
+
+        $filename = 'converted-lead-details-' . $convertedLead->id . '.pdf';
+        return response($mpdf->Output($filename, 'I'))
+            ->header('Content-Type', 'application/pdf');
     }
 
     public function viewStoredIdCard($id)
@@ -350,6 +430,124 @@ class ConvertedLeadController extends Controller
             'success' => true,
             'message' => 'Register number updated successfully.',
             'register_number' => $convertedLead->register_number
+        ]);
+    }
+
+    /**
+     * Inline update for converted lead fields
+     */
+    public function inlineUpdate(Request $request, $id)
+    {
+        // Check if user has permission to update
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant()) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+        
+        // Additional role-based access control
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_academic_assistant()) {
+                // Academic Assistant: Can only update converted leads assigned to them
+                if ($convertedLead->academic_assistant_id != AuthHelper::getCurrentUserId()) {
+                    return response()->json(['error' => 'Access denied. You can only update converted leads assigned to you.'], 403);
+                }
+            }
+        }
+
+        $field = $request->input('field');
+        $value = $request->input('value');
+
+        // Special case: if updating phone and code together, allow updating code via same request
+        if ($field === 'phone' && $request->filled('code')) {
+            $codeValue = $request->input('code');
+            // Validate code quickly against allowed format (numeric or +prefix)
+            $codeValidator = Validator::make(['code' => $codeValue], ['code' => 'nullable|string|max:5']);
+            if ($codeValidator->fails()) {
+                return response()->json([
+                    'error' => 'Validation failed.',
+                    'errors' => $codeValidator->errors()
+                ], 422);
+            }
+            $convertedLead->code = $codeValue;
+        }
+
+        // Define allowed fields and their validation rules
+        $allowedFields = [
+            'register_number' => 'string|max:50|unique:converted_leads,register_number,' . $id,
+            'subject_id' => 'nullable|exists:subjects,id',
+            'admission_batch_id' => 'nullable|exists:admission_batches,id',
+            'academic_assistant_id' => 'nullable|exists:users,id',
+            'username' => 'nullable|string|max:255',
+            'password' => 'nullable|string|max:255',
+            'dob' => 'nullable|date|before_or_equal:today',
+            'status' => 'nullable|string|in:Paid,Admission cancel,Active,Inactive',
+            'reg_fee' => 'nullable|string|in:Received,Not Received',
+            'exam_fee' => 'nullable|string|in:Pending,Not Paid,Paid',
+            'ref_no' => 'nullable|string|max:255',
+            'enroll_no' => 'nullable|string|max:255',
+            'id_card' => 'nullable|string|in:processing,download,not downloaded',
+            'tma' => 'nullable|string|in:Uploaded,Not Upload',
+            // phone & code inline updates
+            'phone' => 'nullable|string|max:20',
+            'code' => 'nullable|string|max:5',
+        ];
+
+        if (!array_key_exists($field, $allowedFields)) {
+            return response()->json(['error' => 'Invalid field.'], 400);
+        }
+
+        // Validate the field
+        $validator = Validator::make([$field => $value], [$field => $allowedFields[$field]]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => 'Validation failed.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Special handling for specific fields
+        if ($field === 'password' && $value) {
+            // Password will be encrypted automatically by the model's setPasswordAttribute
+        } elseif ($field === 'dob' && $value) {
+            try {
+                $value = Carbon::parse($value)->format('Y-m-d');
+            } catch (\Exception $e) {
+                return response()->json([
+                    'error' => 'Invalid date format.'
+                ], 422);
+            }
+        }
+
+        // Update the field
+        $convertedLead->{$field} = $value;
+        $convertedLead->updated_by = AuthHelper::getCurrentUserId();
+        $convertedLead->save();
+
+        // Get the updated value for response
+        $updatedValue = $convertedLead->$field;
+        
+        // Special handling for display values
+        if ($field === 'subject_id' && $updatedValue) {
+            $subject = \App\Models\Subject::find($updatedValue);
+            $updatedValue = $subject ? $subject->title : $updatedValue;
+        } elseif ($field === 'admission_batch_id' && $updatedValue) {
+            $admissionBatch = \App\Models\AdmissionBatch::find($updatedValue);
+            $updatedValue = $admissionBatch ? $admissionBatch->title : $updatedValue;
+        } elseif ($field === 'academic_assistant_id' && $updatedValue) {
+            $user = \App\Models\User::find($updatedValue);
+            $updatedValue = $user ? $user->name : $updatedValue;
+        } elseif (in_array($field, ['phone', 'code'])) {
+            // For phone/code updates, return formatted display
+            $updatedValue = \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => ucfirst(str_replace('_', ' ', $field)) . ' updated successfully.',
+            'value' => $updatedValue
         ]);
     }
 
@@ -441,7 +639,7 @@ class ConvertedLeadController extends Controller
             return $circularPath;
             
         } catch (\Exception $e) {
-            \Log::error('Error creating circular image: ' . $e->getMessage());
+            Log::error('Error creating circular image: ' . $e->getMessage());
             return null;
         }
     }

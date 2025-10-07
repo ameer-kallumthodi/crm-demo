@@ -282,4 +282,18 @@ class SubjectController extends Controller
             return redirect()->route('admin.subjects.index')->with('message_danger', 'An error occurred while deleting the subject. Please try again.');
         }
     }
+
+    /**
+     * Get subjects by course for AJAX requests
+     */
+    public function getByCourse($courseId)
+    {
+        $subjects = Subject::where('course_id', $courseId)
+            ->where('is_active', 1)
+            ->select('id', 'title')
+            ->orderBy('title')
+            ->get();
+
+        return response()->json($subjects);
+    }
 }

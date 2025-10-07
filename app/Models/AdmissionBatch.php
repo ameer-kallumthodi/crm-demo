@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Batch extends Model
+class AdmissionBatch extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'title',
         'description',
-        'course_id',
+        'batch_id',
         'is_active',
         'created_by',
         'updated_by',
@@ -42,19 +42,9 @@ class Batch extends Model
         return $this->belongsTo(User::class, 'deleted_by');
     }
 
-    public function course()
+    public function batch()
     {
-        return $this->belongsTo(Course::class);
-    }
-
-    public function convertedLeads()
-    {
-        return $this->hasMany(ConvertedLead::class);
-    }
-
-    public function admissionBatches()
-    {
-        return $this->hasMany(AdmissionBatch::class);
+        return $this->belongsTo(Batch::class);
     }
 
     /**

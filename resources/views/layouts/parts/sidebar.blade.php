@@ -5,7 +5,7 @@
             <a href="{{ route('dashboard') }}" class="b-brand text-primary">
                 <!-- ========   Change your logo from here   ============ -->
                 <img src="{{ asset('storage/logo.png') }}" class="img-fluid logo-lg" alt="logo" 
-                     style="height: 200px !important; width: 100px !important; object-fit: contain;padding: 5px !important;"
+                     style="height: 200px !important; width: auto !important; object-fit: contain; padding: 10px !important;"
                      onerror="this.src='{{ asset('assets/mantis/images/logo-dark.svg') }}'">
             </a>
         </div>
@@ -324,6 +324,16 @@
                             <i class="ti ti-calendar"></i>
                         </span>
                         <span class="pc-mtext">Batches</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/admission-batches/index'))
+                <li class="pc-item {{ request()->routeIs('admin.admission-batches.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.admission-batches.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-calendar-plus"></i>
+                        </span>
+                        <span class="pc-mtext">Admission Batches</span>
                     </a>
                 </li>
                 @endif
