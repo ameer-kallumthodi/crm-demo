@@ -136,10 +136,24 @@ class TelecallerReportController extends Controller
                 ->get();
         }
 
+        // Get leads assigned to this telecaller filtered by date range
         $tasks = Lead::where('telecaller_id', $userId)
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->with(['leadStatus', 'leadSource'])
             ->orderBy('created_at', 'desc')
             ->get();
+            
+        // Debug: Log the count of tasks found and some details
+        \Log::info("Telecaller Report - User ID: {$userId}, Date Range: {$startDate} to {$endDate}, Tasks found: " . $tasks->count());
+        if ($tasks->count() > 0) {
+            \Log::info("Sample task: " . json_encode($tasks->first()->toArray()));
+        }
+        
+        // Also check if there are any leads with telecaller_id in the database for this date range
+        $totalLeadsWithTelecaller = Lead::where('telecaller_id', $userId)
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->count();
+        \Log::info("Total leads with telecaller_id {$userId} in date range {$startDate} to {$endDate}: " . $totalLeadsWithTelecaller);
 
         $stats = $this->getTelecallerStats($userId, $startDate, $endDate);
 

@@ -558,7 +558,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                        <td colspan="9" class="text-center">No leads found for the selected date range.</td>
+                                        <td colspan="9" class="text-center">No leads assigned to this telecaller for the selected date range.</td>
                                         </tr>
                                         @endforelse
                                     </tbody>
