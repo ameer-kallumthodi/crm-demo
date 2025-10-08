@@ -13,24 +13,36 @@ return new class extends Migration
     {
         Schema::create('telecaller_sessions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('telecaller_id');
+            $table->string('session_id')->unique();
+            $table->unsignedBigInteger('user_id'); // renamed from telecaller_id
             $table->timestamp('login_time');
             $table->timestamp('logout_time')->nullable();
+            $table->enum('logout_type', ['manual', 'auto', 'system', 'session_change'])->default('manual');
+            $table->integer('total_duration_minutes')->nullable();
+            $table->integer('active_duration_minutes')->nullable();
+            $table->integer('idle_duration_minutes')->nullable();
             $table->integer('idle_time')->default(0)->comment('Idle time in seconds');
             $table->integer('tasks_completed')->default(0);
             $table->integer('tasks_pending')->default(0);
             $table->boolean('is_auto_logout')->default(false);
             $table->text('logout_reason')->nullable();
+            $table->string('ip_address')->nullable();
+            $table->text('user_agent')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
+            $table->softDeletes();
             
             // Foreign key constraint
-            $table->foreign('telecaller_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             
             // Indexes for efficient querying
-            $table->index(['telecaller_id', 'login_time']);
+            $table->index(['user_id', 'login_time']);
             $table->index(['login_time', 'logout_time']);
-            $table->index(['telecaller_id', 'created_at']);
+            $table->index(['user_id', 'created_at']);
             $table->index('is_auto_logout');
+            $table->index('session_id');
+            $table->index('is_active');
+            $table->unique(['user_id', 'session_id'], 'telecaller_sessions_user_session_unique');
         });
     }
 

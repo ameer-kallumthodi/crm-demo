@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('color')->nullable();
+            $table->tinyInteger('interest_status')->nullable()->comment('1=Hot, 2=Warm, 3=Cold');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->unsignedBigInteger('deleted_by')->nullable();

@@ -13,41 +13,45 @@ class UserRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Clear existing data and insert only the three required roles
-        UserRole::truncate();
-        
         $roles = [
             [
+                'id' => 1,
                 'title' => 'Super Admin',
                 'description' => 'Full system access with all permissions',
                 'is_active' => true,
             ],
             [
+                'id' => 2,
                 'title' => 'Admin',
                 'description' => 'Administrative access with user management',
                 'is_active' => true,
             ],
             [
+                'id' => 3,
                 'title' => 'Telecaller',
                 'description' => 'Telecaller access for lead management',
                 'is_active' => true,
             ],
             [
+                'id' => 4,
                 'title' => 'Admission Counsellor',
                 'description' => 'Admission Counsellor access for Converted lead management',
                 'is_active' => true,
             ],
             [
+                'id' => 5,
                 'title' => 'Academic Assistant',
                 'description' => 'Academic Assistant access for Converted lead management',
                 'is_active' => true,
             ],
             [
+                'id' => 6,
                 'title' => 'Finance',
                 'description' => 'Finance department access for financial management',
                 'is_active' => true,
             ],
             [
+                'id' => 7,
                 'title' => 'Post-sales',
                 'description' => 'Post-sales department access for customer support',
                 'is_active' => true,
@@ -55,7 +59,10 @@ class UserRoleSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
-            UserRole::create($role);
+            UserRole::updateOrCreate(
+                ['id' => $role['id']],
+                $role
+            );
         }
     }
 }

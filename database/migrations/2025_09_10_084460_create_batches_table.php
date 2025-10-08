@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->unsignedBigInteger('course_id')->nullable();
             
             // Audit fields
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
@@ -26,8 +27,12 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
             
+            // Foreign keys
+            $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
+            
             // Indexes
             $table->index('is_active');
+            $table->index('course_id');
         });
     }
 

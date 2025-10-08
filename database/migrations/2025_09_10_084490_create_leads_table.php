@@ -44,8 +44,15 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             
-            $table->foreign('team_id')->references('id')->on('teams');
+            $table->foreign('country_id')->references('id')->on('countries')->onDelete('set null');
+            $table->foreign('lead_status_id')->references('id')->on('lead_statuses')->onDelete('set null');
+            $table->foreign('lead_source_id')->references('id')->on('lead_sources')->onDelete('set null');
+            $table->foreign('telecaller_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('team_id')->references('id')->on('teams')->onDelete('set null');
+            $table->foreign('course_id')->references('id')->on('courses')->onDelete('set null');
             $table->foreign('batch_id')->references('id')->on('batches')->onDelete('set null');
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('deleted_by')->references('id')->on('users')->onDelete('set null');
         });
     }

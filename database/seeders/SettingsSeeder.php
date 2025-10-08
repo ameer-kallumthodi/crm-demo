@@ -14,40 +14,6 @@ class SettingsSeeder extends Seeder
     public function run(): void
     {
         $settings = [
-            // General Settings
-            [
-                'key' => 'site_name',
-                'value' => 'Base CRM',
-                'type' => 'text',
-                'description' => 'Website name',
-                'group' => 'general',
-                'is_public' => true,
-            ],
-            [
-                'key' => 'site_description',
-                'value' => 'Customer Relationship Management System',
-                'type' => 'text',
-                'description' => 'Website description',
-                'group' => 'general',
-                'is_public' => true,
-            ],
-            [
-                'key' => 'site_logo',
-                'value' => '',
-                'type' => 'file',
-                'description' => 'Website logo',
-                'group' => 'general',
-                'is_public' => true,
-            ],
-            [
-                'key' => 'site_favicon',
-                'value' => 'storage/favicon.ico',
-                'type' => 'file',
-                'description' => 'Website favicon',
-                'group' => 'general',
-                'is_public' => true,
-            ],
-            
             // Contact Settings
             [
                 'key' => 'contact_phone',
@@ -77,7 +43,7 @@ class SettingsSeeder extends Seeder
             // Email Settings
             [
                 'key' => 'email_from_name',
-                'value' => 'Base CRM',
+                'value' => 'Skillpark',
                 'type' => 'text',
                 'description' => 'Email sender name',
                 'group' => 'email',
@@ -85,7 +51,7 @@ class SettingsSeeder extends Seeder
             ],
             [
                 'key' => 'email_from_address',
-                'value' => 'noreply@basecrm.com',
+                'value' => 'support@skill-park.com',
                 'type' => 'text',
                 'description' => 'Email sender address',
                 'group' => 'email',
@@ -141,6 +107,92 @@ class SettingsSeeder extends Seeder
                 'type' => 'text',
                 'description' => 'Time format',
                 'group' => 'system',
+                'is_public' => false,
+            ],
+            
+            // Theme Settings
+            [
+                'key' => 'sidebar_color',
+                'value' => '#db0000',
+                'type' => 'color',
+                'description' => 'Sidebar background color',
+                'group' => 'theme',
+                'is_public' => false,
+            ],
+            [
+                'key' => 'topbar_color',
+                'value' => '#ffffff',
+                'type' => 'color',
+                'description' => 'Topbar background color',
+                'group' => 'theme',
+                'is_public' => false,
+            ],
+            
+            // Site Settings
+            [
+                'key' => 'site_name',
+                'value' => 'Skillpark',
+                'type' => 'text',
+                'description' => 'Website name displayed in title and header',
+                'group' => 'site',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'site_description',
+                'value' => 'CRM Management System',
+                'type' => 'text',
+                'description' => 'Website description for SEO and meta tags',
+                'group' => 'site',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'site_logo',
+                'value' => 'storage/logo.png',
+                'type' => 'file',
+                'description' => 'Website logo file path',
+                'group' => 'site',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'site_favicon',
+                'value' => 'storage/favicon.ico',
+                'type' => 'file',
+                'description' => 'Website favicon file path',
+                'group' => 'site',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'bg_image',
+                'value' => 'storage/auth-bg.jpg',
+                'type' => 'file',
+                'description' => 'Login page background image',
+                'group' => 'site',
+                'is_public' => true,
+            ],
+            
+            // Login Theme Settings
+            [
+                'key' => 'login_primary_color',
+                'value' => '#667eea',
+                'type' => 'color',
+                'description' => 'Primary color for login form',
+                'group' => 'theme',
+                'is_public' => false,
+            ],
+            [
+                'key' => 'login_secondary_color',
+                'value' => '#764ba2',
+                'type' => 'color',
+                'description' => 'Secondary color for login form',
+                'group' => 'theme',
+                'is_public' => false,
+            ],
+            [
+                'key' => 'login_form_style',
+                'value' => 'modern',
+                'type' => 'text',
+                'description' => 'Login form style',
+                'group' => 'theme',
                 'is_public' => false,
             ],
         ];

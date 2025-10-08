@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('message');
-            $table->enum('type', ['info', 'success', 'warning', 'error'])->default('info');
+            $table->enum('type', ['info', 'success', 'warning', 'error', 'auto_logout'])->default('info');
             $table->enum('target_type', ['all', 'role', 'user'])->default('all');
             $table->unsignedBigInteger('role_id');
             $table->unsignedBigInteger('user_id')->nullable(); // null = all users, specific ID = single user
