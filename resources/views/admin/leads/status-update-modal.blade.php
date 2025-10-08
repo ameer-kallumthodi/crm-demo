@@ -65,7 +65,7 @@
                 <div class="col-md-12">
                     <label class="form-label" for="followup_date">Followup Date <span class="text-danger">*</span></label>
                     <input type="date" class="form-control" name="followup_date" id="followup_date"
-                        min="{{ date('Y-m-d') }}" required>
+                        min="{{ date('Y-m-d') }}">
                 </div>
             </div>
         </div>
@@ -190,6 +190,14 @@
     $(document).ready(function() {
         let formCompleted = false;
 
+        // Debug: Check if elements exist
+        console.log('Followup section exists:', $('#followupDateSection').length > 0);
+        console.log('Followup input exists:', $('#followup_date').length > 0);
+        console.log('Status select exists:', $('#lead_status_id').length > 0);
+
+        // Initialize form state - ensure followup_date is not required initially
+        $('#followup_date').prop('required', false);
+
         // Handle status selection change
         $('#lead_status_id').on('change', function() {
             const selectedStatus = $(this).val();
@@ -197,6 +205,10 @@
             const followupDateSection = $('#followupDateSection');
             const updateStatusBtn = $('#updateStatusBtn');
             const followupInput = $('#followup_date');
+
+            console.log('Status changed to:', selectedStatus);
+            console.log('Followup section element:', followupDateSection);
+            console.log('Followup section length:', followupDateSection.length);
 
             if (selectedStatus == '6') {
                 // Show demo booking section
@@ -209,9 +221,14 @@
                 formCompleted = false;
             } else if (selectedStatus == '2') {
                 // Show followup date section
+                console.log('Showing followup section for status 2');
+                followupDateSection.css('display', 'block');
                 followupDateSection.show();
+                console.log('Followup section visible:', followupDateSection.is(':visible'));
+                console.log('Followup section display style:', followupDateSection.css('display'));
                 demoBookingSection.hide();
                 followupInput.prop('required', true); // make required
+                followupInput.attr('required', 'required'); // ensure required attribute is set
                 // Enable update button
                 updateStatusBtn.prop('disabled', false);
                 updateStatusBtn.html('Update Status');
@@ -222,6 +239,7 @@
                 followupDateSection.hide();
                 // Enable update button
                 followupInput.prop('required', false); // remove required
+                followupInput.removeAttr('required'); // ensure required attribute is removed
                 updateStatusBtn.prop('disabled', false);
                 updateStatusBtn.html('Update Status');
                 formCompleted = true;
@@ -358,6 +376,7 @@
             formCompleted = true; // Allow immediate submission since current status is 6
         } else if (initialStatus == '2') {
             $('#followupDateSection').show();
+            $('#followup_date').prop('required', true).attr('required', 'required');
             // Don't disable the button if current status is already 2
             $('#updateStatusBtn').prop('disabled', false).html('Update Status');
             formCompleted = true; // Allow immediate submission since current status is 2
@@ -378,5 +397,16 @@
                 }
             }
         });
+
+        // Debug function - can be called from browser console
+        window.testFollowupSection = function() {
+            console.log('Testing followup section...');
+            const section = $('#followupDateSection');
+            section.css('display', 'block');
+            section.show();
+            console.log('Followup section should now be visible');
+            console.log('Section display style:', section.css('display'));
+            console.log('Section is visible:', section.is(':visible'));
+        };
     });
 </script>
