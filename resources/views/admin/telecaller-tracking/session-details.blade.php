@@ -291,7 +291,7 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-bordered table-striped datatable" id="activityLogsTable">
+                            <table class="table table-bordered table-striped" id="activityLogsTable">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -346,7 +346,7 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-bordered table-striped datatable" id="idleTimesTable">
+                            <table class="table table-bordered table-striped" id="idleTimesTable">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -418,7 +418,12 @@
 <script>
 $(document).ready(function() {
     // Initialize DataTable for activity logs
-    if ($('#activityLogsTable').length && !$.fn.DataTable.isDataTable('#activityLogsTable')) {
+    if ($('#activityLogsTable').length) {
+        // Destroy existing DataTable if it exists
+        if ($.fn.DataTable.isDataTable('#activityLogsTable')) {
+            $('#activityLogsTable').DataTable().destroy();
+        }
+        
         // Check if table has actual data rows (not empty message with colspan)
         const hasDataRows = $('#activityLogsTable tbody tr').length > 0 && 
                            !$('#activityLogsTable tbody tr td[colspan]').length;
@@ -459,7 +464,12 @@ $(document).ready(function() {
     }
 
     // Initialize DataTable for idle times
-    if ($('#idleTimesTable').length && !$.fn.DataTable.isDataTable('#idleTimesTable')) {
+    if ($('#idleTimesTable').length) {
+        // Destroy existing DataTable if it exists
+        if ($.fn.DataTable.isDataTable('#idleTimesTable')) {
+            $('#idleTimesTable').DataTable().destroy();
+        }
+        
         // Check if table has actual data rows (not empty message with colspan)
         const hasDataRows = $('#idleTimesTable tbody tr').length > 0 && 
                            !$('#idleTimesTable tbody tr td[colspan]').length;

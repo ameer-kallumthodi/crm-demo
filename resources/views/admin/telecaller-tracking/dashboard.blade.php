@@ -443,7 +443,7 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-hover datatable" id="telecallersTable">
+                                        <table class="table table-hover" id="telecallersTable">
                                             <thead>
                                                 <tr>
                                                     <th>#</th>
@@ -549,7 +549,12 @@
 <script>
 $(document).ready(function() {
     // Initialize DataTable for telecallers overview
-    if ($('#telecallersTable').length && !$.fn.DataTable.isDataTable('#telecallersTable')) {
+    if ($('#telecallersTable').length) {
+        // Destroy existing DataTable if it exists
+        if ($.fn.DataTable.isDataTable('#telecallersTable')) {
+            $('#telecallersTable').DataTable().destroy();
+        }
+        
         $('#telecallersTable').DataTable({
             "processing": true,
             "serverSide": false,

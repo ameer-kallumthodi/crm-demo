@@ -139,7 +139,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover datatable mb-0 telecaller-table" id="sessionsTable">
+                            <table class="table table-hover mb-0 telecaller-table" id="sessionsTable">
                         <thead class="table-light">
                             <tr>
                                 <th class="text-center">
@@ -262,15 +262,18 @@
 @endsection
 
 @push('scripts')
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-
 <script>
 $(document).ready(function() {
-    // Initialize DataTable for telecaller reports
-    if ($('#sessionsTable').length && !$.fn.DataTable.isDataTable('#sessionsTable')) {
-        try {
+    // Add a small delay to ensure global scripts have finished loading
+    setTimeout(function() {
+        // Initialize DataTable for telecaller reports
+        if ($('#sessionsTable').length) {
+            // Destroy existing DataTable if it exists
+            if ($.fn.DataTable.isDataTable('#sessionsTable')) {
+                $('#sessionsTable').DataTable().destroy();
+            }
+            
+            try {
             $('#sessionsTable').DataTable({
                 "processing": true,
                 "serverSide": false,
@@ -297,10 +300,11 @@ $(document).ready(function() {
                     }
                 }
             });
-        } catch (error) {
-            console.error('Error initializing DataTable:', error);
+            } catch (error) {
+                console.error('Error initializing DataTable:', error);
+            }
         }
-    }
+    }, 100); // 100ms delay
 });
 
 // Print function for the print button

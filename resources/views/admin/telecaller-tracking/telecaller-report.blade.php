@@ -431,7 +431,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                            <table class="table table-bordered table-striped datatable" id="telecallerSessionsTable">
+                            <table class="table table-bordered table-striped" id="telecallerSessionsTable">
                                     <thead>
                                         <tr>
                                         <th>#</th>
@@ -521,7 +521,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped datatable" id="tasksTable">
+                                <table class="table table-bordered table-striped" id="tasksTable">
                                     <thead>
                                         <tr>
                                         <th>#</th>
@@ -581,7 +581,12 @@
 <script>
 $(document).ready(function() {
     // Initialize DataTable for sessions only if there are actual sessions
-    if ($('#telecallerSessionsTable').length && !$.fn.DataTable.isDataTable('#telecallerSessionsTable')) {
+    if ($('#telecallerSessionsTable').length) {
+        // Destroy existing DataTable if it exists
+        if ($.fn.DataTable.isDataTable('#telecallerSessionsTable')) {
+            $('#telecallerSessionsTable').DataTable().destroy();
+        }
+        
         // Check if table has actual session data (not empty message)
         var table = $('#telecallerSessionsTable');
         var rows = table.find('tbody tr');
@@ -630,7 +635,12 @@ $(document).ready(function() {
     
 
     // Initialize DataTable for tasks
-    if ($('#tasksTable').length && !$.fn.DataTable.isDataTable('#tasksTable')) {
+    if ($('#tasksTable').length) {
+        // Destroy existing DataTable if it exists
+        if ($.fn.DataTable.isDataTable('#tasksTable')) {
+            $('#tasksTable').DataTable().destroy();
+        }
+        
         try {
         $('#tasksTable').DataTable({
             "processing": true,
