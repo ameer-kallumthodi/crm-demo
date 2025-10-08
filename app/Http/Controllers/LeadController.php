@@ -1414,12 +1414,18 @@ class LeadController extends Controller
         
         // Load the course information if the lead has a course_id
         $course = null;
+        $extraAmount = 0;
         if ($lead->course_id) {
             $course = \App\Models\Course::find($lead->course_id);
+            
+            // Check if it's GMVSS (course_id = 16) and has student details with SSLC class
+            if ($lead->course_id == 16 && $lead->studentDetails && $lead->studentDetails->class == 'sslc') {
+                $extraAmount = 10000; // ₹10,000 extra for GMVSS SSLC class
+            }
         }
 
         return view('admin.leads.convert-modal', compact(
-            'lead', 'academic_assistants', 'boards', 'country_codes', 'course'
+            'lead', 'academic_assistants', 'boards', 'country_codes', 'course', 'extraAmount'
         ));
     }
 

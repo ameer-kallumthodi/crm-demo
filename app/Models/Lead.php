@@ -117,6 +117,11 @@ class Lead extends Model
         return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 1);
     }
 
+    public function gmvssStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 16);
+    }
+
     public function bosseStudentDetails()
     {
         return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 2);

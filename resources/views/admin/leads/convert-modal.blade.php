@@ -42,6 +42,12 @@
                 <label class="form-label">Course Information</label>
                 <div class="form-control-plaintext bg-light p-2 rounded">
                     <strong>{{ $course->title }}</strong> - ₹{{ number_format($course->amount, 2) }}
+                    @if($extraAmount > 0)
+                    <br><small class="text-success">
+                        <i class="fas fa-plus-circle"></i> GMVSS SSLC Extra: +₹{{ number_format($extraAmount, 2) }}
+                    </small>
+                    <br><strong class="text-primary">Total: ₹{{ number_format($course->amount + $extraAmount, 2) }}</strong>
+                    @endif
                 </div>
             </div>
         </div>
@@ -252,7 +258,13 @@ $(document).ready(function() {
     function updateTotalAmount() {
         @if($course && $course->title)
         // Use the course amount from the lead's course
-        const amount = {{ $course->amount }};
+        let amount = {{ $course->amount }};
+        
+        // Add extra amount for GMVSS SSLC class
+        @if($extraAmount > 0)
+        amount += {{ $extraAmount }};
+        @endif
+        
         $totalAmountDisplay.val('₹' + amount.toLocaleString('en-IN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2

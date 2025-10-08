@@ -45,6 +45,12 @@ Route::prefix('register')->group(function () {
     Route::get('/bosse/subjects', [App\Http\Controllers\Public\LeadBosseRegistrationController::class, 'getSubjects'])->name('public.lead.bosse.subjects');
     Route::get('/bosse/batches', [App\Http\Controllers\Public\LeadBosseRegistrationController::class, 'getBatches'])->name('public.lead.bosse.batches');
 
+    // GMVSS Registration Routes
+    Route::get('/gmvss/{leadId?}', [App\Http\Controllers\Public\LeadGmvssRegistrationController::class, 'showGmvssForm'])->name('public.lead.gmvss.register');
+    Route::post('/gmvss', [App\Http\Controllers\Public\LeadGmvssRegistrationController::class, 'store'])->name('public.lead.gmvss.store');
+    Route::get('/gmvss/subjects', [App\Http\Controllers\Public\LeadGmvssRegistrationController::class, 'getSubjects'])->name('public.lead.gmvss.subjects');
+    Route::get('/gmvss/batches', [App\Http\Controllers\Public\LeadGmvssRegistrationController::class, 'getBatches'])->name('public.lead.gmvss.batches');
+
     // Medical Coding Registration Routes
     Route::get('/medical-coding/{leadId?}', [App\Http\Controllers\Public\LeadMedicalCodingRegistrationController::class, 'showMedicalCodingForm'])->name('public.lead.medical-coding.register');
     Route::post('/medical-coding', [App\Http\Controllers\Public\LeadMedicalCodingRegistrationController::class, 'store'])->name('public.lead.medical-coding.store');

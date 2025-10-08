@@ -15,14 +15,14 @@ class CourseSeeder extends Seeder
     {
         $courses = [
             [
-                'title' => 'NIOS Seconday',
+                'title' => 'NIOS',
                 'code' => null,
                 'is_active' => 1,
                 'amount' => 10000,
                 'hod_number' => '+91 8943553164',
             ],
             [
-                'title' => 'BOSSE Seconday',
+                'title' => 'BOSSE',
                 'code' => null,
                 'is_active' => 1,
                 'amount' => 20000,
@@ -120,31 +120,10 @@ class CourseSeeder extends Seeder
                 'hod_number' => null,
             ],
             [
-                'title' => 'GMVSS Seconday',
+                'title' => 'GMVSS',
                 'code' => null,
                 'is_active' => 1,
                 'amount' => 25000,
-                'hod_number' => null,
-            ],
-            [
-                'title' => 'NIOS Higher Seconday',
-                'code' => null,
-                'is_active' => 1,
-                'amount' => 10000,
-                'hod_number' => null,
-            ],
-            [
-                'title' => 'BOSSE Higher Seconday',
-                'code' => null,
-                'is_active' => 1,
-                'amount' => 25000,
-                'hod_number' => '+91 89435 53164',
-            ],
-            [
-                'title' => 'GMVSS Higher Seconday',
-                'code' => null,
-                'is_active' => 1,
-                'amount' => 15000,
                 'hod_number' => null,
             ],
         ];

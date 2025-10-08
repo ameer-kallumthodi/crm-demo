@@ -10,6 +10,7 @@ use App\Helpers\AuthHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceController extends Controller
 {
@@ -183,6 +184,14 @@ class InvoiceController extends Controller
                 return $existingInvoice;
             }
             
+            // Calculate total amount
+            $totalAmount = $course->amount;
+            
+            // Add extra amount for GMVSS SSLC class
+            if ($courseId == 16 && $student->leadDetail && $student->leadDetail->class == 'sslc') {
+                $totalAmount += 10000; // ₹10,000 extra for GMVSS SSLC class
+            }
+            
             // Generate invoice number
             $invoiceNumber = $this->generateInvoiceNumber();
             
@@ -190,7 +199,7 @@ class InvoiceController extends Controller
                 'invoice_number' => $invoiceNumber,
                 'course_id' => $courseId,
                 'student_id' => $studentId,
-                'total_amount' => $course->amount,
+                'total_amount' => $totalAmount,
                 'invoice_date' => now()->toDateString(),
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),

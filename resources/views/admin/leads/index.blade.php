@@ -339,65 +339,181 @@
                                         </div>
                                         @else
                                         @if($lead->course_id == 1)
+                                        <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open NIOS Registration Form">
                                             <i class="ti ti-external-link"></i>
                                         </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.nios.register', $lead->id) }}" 
+                                                    title="Copy NIOS Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 2)
+                                        <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.bosse.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open BOSSE Registration Form">
                                             <i class="ti ti-external-link"></i>
                                         </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.bosse.register', $lead->id) }}" 
+                                                    title="Copy BOSSE Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 3)
+                                        <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.medical-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Medical Coding Registration Form">
                                             <i class="ti ti-external-link"></i>
                                         </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.medical-coding.register', $lead->id) }}" 
+                                                    title="Copy Medical Coding Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 4)
+                                        <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.hospital-admin.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Hospital Administration Registration Form">
                                             <i class="ti ti-external-link"></i>
                                         </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.hospital-admin.register', $lead->id) }}" 
+                                                    title="Copy Hospital Administration Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 5)
+                                        <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.eschool.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open E-School Registration Form">
                                             <i class="ti ti-external-link"></i>
                                         </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.eschool.register', $lead->id) }}" 
+                                                    title="Copy E-School Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 6)
+                                        <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Eduthanzeel Registration Form">
                                             <i class="ti ti-external-link"></i>
                                         </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" 
+                                                    title="Copy Eduthanzeel Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 7)
+                                        <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.ttc.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open TTC Registration Form">
                                             <i class="ti ti-external-link"></i>
                                         </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.ttc.register', $lead->id) }}" 
+                                                    title="Copy TTC Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 8)
+                                        <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Hotel Management Registration Form">
                                             <i class="ti ti-external-link"></i>
                                         </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" 
+                                                    title="Copy Hotel Management Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 9)
+                                        <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.ugpg.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open UG/PG Registration Form">
                                             <i class="ti ti-external-link"></i>
                                         </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.ugpg.register', $lead->id) }}" 
+                                                    title="Copy UG/PG Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 10)
+                                        <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.python.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Python Registration Form">
                                             <i class="ti ti-external-link"></i>
                                         </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.python.register', $lead->id) }}" 
+                                                    title="Copy Python Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 11)
+                                        <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.digital-marketing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Digital Marketing Registration Form">
                                             <i class="ti ti-external-link"></i>
                                         </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.digital-marketing.register', $lead->id) }}" 
+                                                    title="Copy Digital Marketing Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 12)
-                                        <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open AI Automation Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
+                                        <div class="d-flex gap-1">
+                                            <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open AI Automation Registration Form">
+                                                <i class="ti ti-external-link"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.ai-automation.register', $lead->id) }}" 
+                                                    title="Copy AI Automation Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 13)
-                                        <a href="{{ route('public.lead.web-dev.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Web Development & Designing Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
+                                        <div class="d-flex gap-1">
+                                            <a href="{{ route('public.lead.web-dev.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Web Development & Designing Registration Form">
+                                                <i class="ti ti-external-link"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.web-dev.register', $lead->id) }}" 
+                                                    title="Copy Web Development & Designing Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 14)
-                                        <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Vibe Coding Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
+                                        <div class="d-flex gap-1">
+                                            <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Vibe Coding Registration Form">
+                                                <i class="ti ti-external-link"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.vibe-coding.register', $lead->id) }}" 
+                                                    title="Copy Vibe Coding Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @elseif($lead->course_id == 15)
-                                        <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Graphic Designing Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
+                                        <div class="d-flex gap-1">
+                                            <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Graphic Designing Registration Form">
+                                                <i class="ti ti-external-link"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.graphic-designing.register', $lead->id) }}" 
+                                                    title="Copy Graphic Designing Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
+                                        @elseif($lead->course_id == 16)
+                                        <div class="d-flex gap-1">
+                                            <a href="{{ route('public.lead.gmvss.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open GMVSS Registration Form">
+                                                <i class="ti ti-external-link"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.gmvss.register', $lead->id) }}" 
+                                                    title="Copy GMVSS Registration Link">
+                                                <i class="ti ti-copy"></i>
+                                            </button>
+                                        </div>
                                         @endif
                                         @endif
                                     </td>
@@ -782,65 +898,181 @@
                                     <hr><br>
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                     @if($lead->course_id == 1)
-                                    <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open NIOS Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open NIOS Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.nios.register', $lead->id) }}" 
+                                                title="Copy NIOS Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 2)
-                                    <a href="{{ route('public.lead.bosse.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open BOSSE Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.bosse.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open BOSSE Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.bosse.register', $lead->id) }}" 
+                                                title="Copy BOSSE Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 3)
-                                    <a href="{{ route('public.lead.medical-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Medical Coding Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.medical-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Medical Coding Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.medical-coding.register', $lead->id) }}" 
+                                                title="Copy Medical Coding Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 4)
-                                    <a href="{{ route('public.lead.hospital-admin.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Hospital Administration Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.hospital-admin.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Hospital Administration Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.hospital-admin.register', $lead->id) }}" 
+                                                title="Copy Hospital Administration Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 5)
-                                    <a href="{{ route('public.lead.eschool.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open E-School Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.eschool.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open E-School Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.eschool.register', $lead->id) }}" 
+                                                title="Copy E-School Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 6)
-                                    <a href="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Eduthanzeel Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Eduthanzeel Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" 
+                                                title="Copy Eduthanzeel Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 7)
-                                    <a href="{{ route('public.lead.ttc.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open TTC Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.ttc.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open TTC Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.ttc.register', $lead->id) }}" 
+                                                title="Copy TTC Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 8)
-                                    <a href="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Hotel Management Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Hotel Management Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" 
+                                                title="Copy Hotel Management Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 9)
-                                    <a href="{{ route('public.lead.ugpg.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open UG/PG Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.ugpg.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open UG/PG Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.ugpg.register', $lead->id) }}" 
+                                                title="Copy UG/PG Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 10)
-                                    <a href="{{ route('public.lead.python.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Python Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.python.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Python Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.python.register', $lead->id) }}" 
+                                                title="Copy Python Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 11)
-                                    <a href="{{ route('public.lead.digital-marketing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Digital Marketing Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.digital-marketing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Digital Marketing Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.digital-marketing.register', $lead->id) }}" 
+                                                title="Copy Digital Marketing Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 12)
-                                    <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open AI Automation Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open AI Automation Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.ai-automation.register', $lead->id) }}" 
+                                                title="Copy AI Automation Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 13)
-                                    <a href="{{ route('public.lead.web-dev.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Web Development & Designing Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.web-dev.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Web Development & Designing Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.web-dev.register', $lead->id) }}" 
+                                                title="Copy Web Development & Designing Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 14)
-                                    <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Vibe Coding Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Vibe Coding Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.vibe-coding.register', $lead->id) }}" 
+                                                title="Copy Vibe Coding Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @elseif($lead->course_id == 15)
-                                    <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Graphic Designing Registration Form">
-                                        <i class="ti ti-external-link f-12"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Graphic Designing Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.graphic-designing.register', $lead->id) }}" 
+                                                title="Copy Graphic Designing Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
+                                    @elseif($lead->course_id == 16)
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('public.lead.gmvss.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open GMVSS Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                data-url="{{ route('public.lead.gmvss.register', $lead->id) }}" 
+                                                title="Copy GMVSS Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
                                     @endif
                                     @endif
                                 </div>
@@ -1017,6 +1249,31 @@
             margin-bottom: 0.5rem;
         }
     }
+    
+    /* Copy link button styling */
+    .copy-link-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .copy-link-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .copy-link-btn.btn-success {
+        animation: pulse 0.6s ease-in-out;
+    }
+    
+    .copy-link-btn.processing {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
 </style>
 <script>
     $(document).ready(function() {
@@ -1061,7 +1318,95 @@
 
         // Action buttons are now directly accessible without dropdown
         // All functionality is handled by onclick attributes on the buttons
+        
+        // Copy link functionality for all registration forms
+        // Remove any existing event listeners first to prevent double execution
+        $('.copy-link-btn').off('click').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Prevent double execution by checking if already processing
+            if ($(this).hasClass('processing')) {
+                return false;
+            }
+            
+            // Mark as processing
+            $(this).addClass('processing');
+            
+            const url = $(this).data('url');
+            const fullUrl = window.location.origin + url;
+            
+            // Create a temporary input element
+            const tempInput = document.createElement('input');
+            tempInput.value = fullUrl;
+            document.body.appendChild(tempInput);
+            
+            // Select and copy the text
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                document.execCommand('copy');
+                
+                // Show success feedback
+                const originalIcon = $(this).find('i').attr('class');
+                $(this).find('i').removeClass().addClass('ti ti-check');
+                $(this).removeClass('btn-outline-info btn-info').addClass('btn-success');
+                
+                // Show toast notification
+                showToast('Registration link copied to clipboard!', 'success');
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    $(this).find('i').removeClass().addClass(originalIcon);
+                    $(this).removeClass('btn-success').addClass('btn-outline-info');
+                    $(this).removeClass('processing'); // Remove processing flag
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                showToast('Failed to copy link. Please try again.', 'error');
+                $(this).removeClass('processing'); // Remove processing flag on error
+            }
+            
+            // Remove the temporary input
+            document.body.removeChild(tempInput);
+        });
     });
+
+    // Function to show toast notifications
+    function showToast(message, type = 'info') {
+        // Create toast element
+        const toast = $(`
+            <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="ti ti-${type === 'success' ? 'check' : 'alert-circle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `);
+        
+        // Add to toast container or create one
+        let toastContainer = $('.toast-container');
+        if (toastContainer.length === 0) {
+            toastContainer = $('<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>');
+            $('body').append(toastContainer);
+        }
+        
+        toastContainer.append(toast);
+        
+        // Initialize and show toast
+        const bsToast = new bootstrap.Toast(toast[0]);
+        bsToast.show();
+        
+        // Remove toast element after it's hidden
+        toast.on('hidden.bs.toast', function() {
+            $(this).remove();
+        });
+    }
 
     // Function to show registration details in a modal
 </script>

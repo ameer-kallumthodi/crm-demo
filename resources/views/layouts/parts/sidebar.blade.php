@@ -5,7 +5,7 @@
             <a href="{{ route('dashboard') }}" class="b-brand text-primary">
                 <!-- ========   Change your logo from here   ============ -->
                 <img src="{{ asset('storage/logo.png') }}" class="img-fluid logo-lg" alt="logo" 
-                     style="height: 200px !important; width: auto !important; object-fit: contain; padding: 10px !important;"
+                     style="height: 200px !important; width: 100px !important; object-fit: contain; padding: 10px !important;"
                      onerror="this.src='{{ asset('assets/mantis/images/logo-dark.svg') }}'">
             </a>
         </div>

@@ -30,6 +30,7 @@ class LeadDetail extends Model
         'batch_id',
         'class',
         'second_language',
+        'passed_year',
         'street',
         'locality',
         'post_office',
