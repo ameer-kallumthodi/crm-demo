@@ -168,10 +168,12 @@
                             onclick="show_large_modal('{{ route('admin.leads.bulk-reassign') }}', 'Bulk Reassign Leads')">
                             <i class="ti ti-users"></i> Bulk Reassign
                         </a>
+                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
                         <a href="javascript:void(0);" class="btn btn-outline-danger btn-sm px-3"
                             onclick="show_ajax_modal('{{ route('admin.leads.bulk-delete') }}', 'Bulk Delete Leads')">
                             <i class="ti ti-trash"></i> Bulk Delete
                         </a>
+                        @endif
                         @endif
                     </div>
                 </div>
@@ -202,12 +204,14 @@
                                 <i class="ti ti-users me-1"></i> Reassign
                             </a>
                         </div>
+                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
                         <div class="col-6">
                             <a href="javascript:void(0);" class="btn btn-outline-danger btn-sm w-100"
                                 onclick="show_ajax_modal('{{ route('admin.leads.bulk-delete') }}', 'Bulk Delete Leads')">
                                 <i class="ti ti-trash me-1"></i> Delete
                             </a>
                         </div>
+                        @endif
                         <div class="col-6">
                             <!-- Empty space for better layout -->
                         </div>
@@ -305,7 +309,7 @@
                                                 title="View Call Logs">
                                                 <i class="ti ti-phone-call"></i>
                                             </a>
-                                            @if(!$isTelecaller || $isTeamLead)
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
                                                 onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}')"
                                                 title="Delete Lead">
@@ -660,7 +664,7 @@
                                         title="Edit Lead">
                                         <i class="ti ti-edit f-12"></i>
                                     </a>
-                                    @if(!$isTelecaller || $isTeamLead)
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
                                     <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
                                         onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}')"
                                         title="Delete Lead">

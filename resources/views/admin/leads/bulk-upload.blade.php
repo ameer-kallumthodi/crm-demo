@@ -79,7 +79,7 @@
                     <select class="form-select" name="lead_status_id" id="lead_status_id" required>
                         <option value="">Select Lead Status</option>
                         @foreach($leadStatuses as $status)
-                            <option value="{{ $status->id }}">{{ $status->title }}</option>
+                            <option value="{{ $status->id }}" {{ $status->id == 1 ? 'selected' : '' }}>{{ $status->title }}</option>
                         @endforeach
                     </select>
                 </div>

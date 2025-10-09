@@ -210,6 +210,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
             Route::post('/log-activity', [App\Http\Controllers\TelecallerTrackingController::class, 'logActivity'])->name('telecaller-tracking.log-activity');
             Route::get('/current-session', [App\Http\Controllers\TelecallerTrackingController::class, 'getCurrentSession'])->name('telecaller-tracking.current-session');
             Route::post('/auto-logout', [App\Http\Controllers\TelecallerTrackingController::class, 'autoLogout'])->name('telecaller-tracking.auto-logout');
+            Route::post('/working-hours-logout', [App\Http\Controllers\TelecallerTrackingController::class, 'workingHoursLogout'])->name('telecaller-tracking.working-hours-logout');
         });
     });
 

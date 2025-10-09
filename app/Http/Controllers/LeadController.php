@@ -768,11 +768,27 @@ class LeadController extends Controller
 
     public function bulkUploadView()
     {
+        $currentUser = AuthHelper::getCurrentUser();
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        
         $leadStatuses = LeadStatus::where('is_active', true)->get();
         $leadSources = LeadSource::where('is_active', true)->get();
         $courses = Course::where('is_active', true)->get();
-        $teams = Team::where('is_active', true)->get();
-        $telecallers = User::where('role_id', 3)->where('is_active', true)->get();
+        
+        // Filter teams and telecallers based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team
+            $userTeamId = $currentUser->team_id;
+            $teams = Team::where('id', $userTeamId)->where('is_active', true)->get();
+            $telecallers = User::where('role_id', 3)
+                              ->where('team_id', $userTeamId)
+                              ->where('is_active', true)
+                              ->get();
+        } else {
+            // Admin/Super Admin: Show all teams and telecallers
+            $teams = Team::where('is_active', true)->get();
+            $telecallers = User::where('role_id', 3)->where('is_active', true)->get();
+        }
         
         return view('admin.leads.bulk-upload', compact(
             'leadStatuses', 'leadSources', 'courses', 'teams', 'telecallers'

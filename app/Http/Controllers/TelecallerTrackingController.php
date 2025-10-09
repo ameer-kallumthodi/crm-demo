@@ -19,11 +19,18 @@ class TelecallerTrackingController extends Controller
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
         
-        // Get the current active session
+        // Get the current active session - try both session_id and user_id
         $session = TelecallerSession::where('user_id', $userId)
             ->where('session_id', $sessionId)
             ->where('is_active', true)
             ->first();
+
+        // If no session found with exact session_id, try to find any active session for this user
+        if (!$session) {
+            $session = TelecallerSession::where('user_id', $userId)
+                ->where('is_active', true)
+                ->first();
+        }
 
         if (!$session) {
             return response()->json(['error' => 'No active session found'], 400);
@@ -65,11 +72,18 @@ class TelecallerTrackingController extends Controller
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
         
-        // Get the current active session
+        // Get the current active session - try both session_id and user_id
         $session = TelecallerSession::where('user_id', $userId)
             ->where('session_id', $sessionId)
             ->where('is_active', true)
             ->first();
+
+        // If no session found with exact session_id, try to find any active session for this user
+        if (!$session) {
+            $session = TelecallerSession::where('user_id', $userId)
+                ->where('is_active', true)
+                ->first();
+        }
 
         if (!$session) {
             return response()->json(['error' => 'No active session found'], 400);
@@ -105,11 +119,18 @@ class TelecallerTrackingController extends Controller
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
         
-        // Get the current active session
+        // Get the current active session - try both session_id and user_id
         $session = TelecallerSession::where('user_id', $userId)
             ->where('session_id', $sessionId)
             ->where('is_active', true)
             ->first();
+
+        // If no session found with exact session_id, try to find any active session for this user
+        if (!$session) {
+            $session = TelecallerSession::where('user_id', $userId)
+                ->where('is_active', true)
+                ->first();
+        }
 
         if (!$session) {
             return response()->json(['error' => 'No active session found'], 400);
@@ -157,11 +178,18 @@ class TelecallerTrackingController extends Controller
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
         
-        // Get the current active session
+        // Get the current active session - try both session_id and user_id
         $session = TelecallerSession::where('user_id', $userId)
             ->where('session_id', $sessionId)
             ->where('is_active', true)
             ->first();
+
+        // If no session found with exact session_id, try to find any active session for this user
+        if (!$session) {
+            $session = TelecallerSession::where('user_id', $userId)
+                ->where('is_active', true)
+                ->first();
+        }
 
         if (!$session) {
             return response()->json(['error' => 'No active session found'], 400);
@@ -194,11 +222,20 @@ class TelecallerTrackingController extends Controller
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
         
+        // Get the current active session - try both session_id and user_id
         $session = TelecallerSession::where('user_id', $userId)
             ->where('session_id', $sessionId)
             ->where('is_active', true)
             ->with(['idleTimes', 'activityLogs'])
             ->first();
+
+        // If no session found with exact session_id, try to find any active session for this user
+        if (!$session) {
+            $session = TelecallerSession::where('user_id', $userId)
+                ->where('is_active', true)
+                ->with(['idleTimes', 'activityLogs'])
+                ->first();
+        }
 
         if (!$session) {
             return response()->json(['error' => 'No active session found'], 404);
@@ -225,11 +262,18 @@ class TelecallerTrackingController extends Controller
                 return response()->json(['error' => 'User not authenticated'], 401);
             }
 
-            // Get the current active session
+            // Get the current active session - try both session_id and user_id
             $session = TelecallerSession::where('user_id', $userId)
                 ->where('session_id', $sessionId)
                 ->where('is_active', true)
                 ->first();
+
+            // If no session found with exact session_id, try to find any active session for this user
+            if (!$session) {
+                $session = TelecallerSession::where('user_id', $userId)
+                    ->where('is_active', true)
+                    ->first();
+            }
 
             if ($session) {
                 // End the session
@@ -250,10 +294,58 @@ class TelecallerTrackingController extends Controller
                 'message' => 'Auto-logout completed successfully'
             ]);
         } catch (\Exception $e) {
-            \Log::error('Auto-logout error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Auto-logout error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'error' => 'Auto-logout failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Handle working hours logout
+     */
+    public function workingHoursLogout(Request $request)
+    {
+        try {
+            $userId = AuthHelper::getUserId();
+            $sessionId = session()->getId();
+
+            if (!$userId) {
+                return response()->json(['error' => 'User not authenticated'], 401);
+            }
+
+            // Get the current active session - try both session_id and user_id
+            $session = TelecallerSession::where('user_id', $userId)
+                ->where('session_id', $sessionId)
+                ->where('is_active', true)
+                ->first();
+
+            // If no session found with exact session_id, try to find any active session for this user
+            if (!$session) {
+                $session = TelecallerSession::where('user_id', $userId)
+                    ->where('is_active', true)
+                    ->first();
+            }
+
+            if ($session) {
+                // End the session with working hours logout type
+                $session->endSession('working_hours');
+            }
+
+            // Destroy the session completely
+            session()->invalidate();
+            session()->regenerateToken();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Working hours logout completed successfully'
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Working hours logout error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Working hours logout failed: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -5,7 +5,7 @@
 
 class TelecallerTracking {
     constructor() {
-        this.idleThreshold = 60 * 60 * 1000; // 1 hour in milliseconds
+        this.idleThreshold = 20 * 60 * 1000; // 20 minutes in milliseconds
         this.logoutThreshold = 20 * 1000; // 20 seconds for auto-logout
         this.syncInterval = 30 * 1000; // 30 seconds
         this.isIdle = false;
@@ -26,14 +26,21 @@ class TelecallerTracking {
     init() {
         console.log('TelecallerTracking: Initializing...');
         console.log('User role ID:', window.userRoleId);
+        console.log('Device type:', this.isMobile() ? 'Mobile' : 'Desktop');
         
         // Only initialize for telecallers (role_id = 3)
         if (this.isTelecaller()) {
-            console.log('TelecallerTracking: User is telecaller, starting tracking...');
-            this.startTracking();
-            this.setupEventListeners();
-            this.startSyncTimer();
-            this.trackPageVisit(); // Track initial page visit
+            // Check if current time is within working hours
+            if (this.isWithinWorkingHours()) {
+                console.log('TelecallerTracking: User is telecaller and within working hours, starting tracking...');
+                this.startTracking();
+                this.setupEventListeners();
+                this.startSyncTimer();
+                this.trackPageVisit(); // Track initial page visit
+            } else {
+                console.log('TelecallerTracking: User is telecaller but outside working hours, auto-logout...');
+                this.performWorkingHoursLogout();
+            }
         } else {
             console.log('TelecallerTracking: User is not telecaller, skipping tracking');
         }
@@ -43,6 +50,158 @@ class TelecallerTracking {
         // Check if current user is a telecaller
         // This should match your role system
         return window.userRoleId === 3;
+    }
+
+    isMobile() {
+        // Enhanced mobile detection
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+               (navigator.maxTouchPoints && navigator.maxTouchPoints > 2) ||
+               window.innerWidth <= 768;
+    }
+
+    isWithinWorkingHours() {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentTimeMinutes = (currentHour * 60) + currentMinute;
+        
+        // Working hours: 9:30 AM (570 minutes) to 7:30 PM (1140 minutes)
+        const workStartMinutes = (9 * 60) + 30; // 9:30 AM = 570 minutes
+        const workEndMinutes = (19 * 60) + 30;  // 7:30 PM = 1140 minutes
+        
+        return currentTimeMinutes >= workStartMinutes && currentTimeMinutes <= workEndMinutes;
+    }
+
+    performWorkingHoursLogout() {
+        console.log('Auto-logout due to working hours (9:30 AM - 7:30 PM)');
+        
+        // Stop tracking immediately
+        this.stopTracking();
+        
+        // Send working hours logout to backend
+        fetch('/api/telecaller-tracking/working-hours-logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                reason: 'working_hours',
+                current_time: new Date().toISOString()
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Working hours logout response:', data);
+            // Clear any stored data
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Show working hours logout modal
+            this.showWorkingHoursLogoutModal();
+        })
+        .catch(error => {
+            console.error('Error during working hours logout:', error);
+            // Force redirect even if API call fails
+            localStorage.clear();
+            sessionStorage.clear();
+            this.showWorkingHoursLogoutModal();
+        });
+    }
+
+    showWorkingHoursLogoutModal() {
+        // Use SweetAlert2 for working hours logout modal
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Outside Working Hours',
+                html: `
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <i class="ti ti-clock" style="font-size: 3rem; color: #ffc107;"></i>
+                        </div>
+                        <p class="mb-3">You are outside working hours.</p>
+                        <p class="text-muted small">Working hours are from 9:30 AM to 7:30 PM.</p>
+                        <p class="text-muted small">Please log in during working hours.</p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: false,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ffc107',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                customClass: {
+                    popup: 'swal2-popup-custom',
+                    title: 'swal2-title-custom',
+                    content: 'swal2-content-custom',
+                    confirmButton: 'swal2-confirm-custom'
+                },
+                didOpen: () => {
+                    // Add custom styling
+                    const popup = document.querySelector('.swal2-popup');
+                    if (popup) {
+                        popup.style.borderRadius = '12px';
+                        popup.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to root URL
+                    window.location.href = window.location.origin;
+                }
+            });
+        } else {
+            // Fallback modal if SweetAlert2 is not available
+            this.showFallbackModal('Outside Working Hours', 'You are outside working hours (9:30 AM - 7:30 PM). Please log in during working hours.');
+        }
+    }
+
+    showFallbackModal(title, message) {
+        // Create a custom modal if SweetAlert2 is not available
+        const modalHtml = `
+            <div id="fallback-modal" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">
+                <div style="
+                    background: white;
+                    border-radius: 12px;
+                    padding: 30px;
+                    max-width: 400px;
+                    width: 90%;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                ">
+                    <div style="margin-bottom: 20px;">
+                        <i class="ti ti-clock-off" style="font-size: 3rem; color: #dc3545;"></i>
+                    </div>
+                    <h3 style="margin-bottom: 15px; color: #333;">${title}</h3>
+                    <p style="margin-bottom: 20px; color: #666;">${message}</p>
+                    <button onclick="document.getElementById('fallback-modal').remove(); window.location.href = window.location.origin;" 
+                            style="
+                                background: #dc3545;
+                                color: white;
+                                border: none;
+                                padding: 10px 20px;
+                                border-radius: 5px;
+                                cursor: pointer;
+                                font-size: 16px;
+                            ">
+                        OK
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
 
     startTracking() {
@@ -77,9 +236,12 @@ class TelecallerTracking {
             document.addEventListener(event, () => this.handleActivity('scroll'), true);
         });
 
-        // Touch events for mobile
-        ['touchstart', 'touchmove', 'touchend'].forEach(event => {
-            document.addEventListener(event, () => this.handleActivity('touch'), true);
+        // Touch events for mobile - enhanced support
+        ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach(event => {
+            document.addEventListener(event, (e) => {
+                // Handle touch events properly for mobile
+                this.handleActivity('touch');
+            }, { passive: true });
         });
 
         // Page visibility change
@@ -147,7 +309,7 @@ class TelecallerTracking {
             this.startIdleTime();
         }, this.idleThreshold);
         
-        console.log('Activity timer reset - will check for idle in 1 hour');
+        console.log('Activity timer reset - will check for idle in 20 minutes');
     }
 
     startIdleTime() {
@@ -549,7 +711,7 @@ class TelecallerTracking {
                             <i class="ti ti-clock-off" style="font-size: 3rem; color: #dc3545;"></i>
                         </div>
                         <p class="mb-3">You have been automatically logged out due to inactivity.</p>
-                        <p class="text-muted small">For security reasons, your session has expired after 1 hour of inactivity.</p>
+                        <p class="text-muted small">For security reasons, your session has expired after 20 minutes of inactivity.</p>
                     </div>
                 `,
                 icon: 'warning',
@@ -574,14 +736,13 @@ class TelecallerTracking {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Redirect to login page
-                    window.location.href = '/';
+                    // Redirect to root URL
+                    window.location.href = window.location.origin;
                 }
             });
         } else {
-            // Fallback to regular alert if SweetAlert2 is not available
-            alert('You have been automatically logged out due to inactivity.');
-            window.location.href = '/';
+            // Fallback modal if SweetAlert2 is not available
+            this.showFallbackModal('Session Expired', 'You have been automatically logged out due to inactivity.');
         }
     }
 

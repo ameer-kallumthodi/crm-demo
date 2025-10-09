@@ -19,6 +19,7 @@ class TelecallerSession extends Model
         'total_duration_minutes',
         'active_duration_minutes',
         'idle_duration_minutes',
+        'working_hours_minutes',
         'ip_address',
         'user_agent',
         'is_active'
@@ -66,6 +67,46 @@ class TelecallerSession extends Model
     }
 
     /**
+     * Calculate working hours duration (only time within 9:30 AM - 7:30 PM)
+     */
+    public function calculateWorkingHoursDuration()
+    {
+        $startTime = $this->logout_time ? $this->logout_time : now();
+        $loginTime = $this->login_time;
+        
+        $workingMinutes = 0;
+        $current = $loginTime->copy();
+        
+        while ($current->lt($startTime)) {
+            $dayStart = $current->copy()->setTime(9, 30, 0); // 9:30 AM
+            $dayEnd = $current->copy()->setTime(19, 30, 0);  // 7:30 PM
+            
+            // If login time is before working hours, start from working hours
+            if ($current->lt($dayStart)) {
+                $current = $dayStart;
+            }
+            
+            // If logout time is after working hours, end at working hours
+            $sessionEnd = $current->copy()->addDay();
+            if ($sessionEnd->gt($startTime)) {
+                $sessionEnd = $startTime;
+            }
+            if ($sessionEnd->gt($dayEnd)) {
+                $sessionEnd = $dayEnd;
+            }
+            
+            // Add working minutes for this day
+            if ($current->lt($sessionEnd)) {
+                $workingMinutes += $current->diffInMinutes($sessionEnd);
+            }
+            
+            $current->addDay();
+        }
+        
+        return $workingMinutes;
+    }
+
+    /**
      * Calculate active duration (excluding idle time).
      */
     public function calculateActiveDuration()
@@ -95,6 +136,7 @@ class TelecallerSession extends Model
             'total_duration_minutes' => $this->calculateTotalDuration(),
             'active_duration_minutes' => $this->calculateActiveDuration(),
             'idle_duration_minutes' => $this->idleTimes()->sum('idle_duration_seconds') / 60,
+            'working_hours_minutes' => $this->calculateWorkingHoursDuration(),
         ]);
     }
 
