@@ -1,3 +1,8 @@
+@php
+    $isEduThanzeel = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 6);
+    $isESchool = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 5);
+@endphp
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,17 +35,21 @@
                     <table style="border-collapse: collapse;">
                         <tr>
                             <td style="vertical-align: top; padding-right: 15px;">
-                                @if(file_exists(public_path('storage/logo.png')))
+                                @if($isEduThanzeel && file_exists(public_path('storage/eduthanzeel.png')))
+                                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('storage/eduthanzeel.png'))) }}" alt="Company Logo" style="height: 90px; width: auto; margin-top: 25px !important;">
+                                @elseif($isESchool && file_exists(public_path('storage/eschool.png')))
+                                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('storage/eschool.png'))) }}" alt="Company Logo" style="height: 90px; width: auto; margin-top: 25px !important;">
+                                @elseif(file_exists(public_path('storage/logo.png')))
                                     <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('storage/logo.png'))) }}" alt="Company Logo" style="height: 90px; width: auto; margin-top: 25px !important;">
                                 @else
-                                    <div style="height: 80px; width: 80px; background-color: #f0f0f0; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666; margin-top: 25px !important;">SKILL PARK</div>
+                                    <div style="height: 80px; width: 80px; background-color: #f0f0f0; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666; margin-top: 25px !important;">{{ $isEduThanzeel ? 'EDUTHANZEEL' : ($isESchool ? 'E-school' : 'SKILL PARK') }}</div>
                                 @endif
                             </td>
                         </tr>
                     </table>
                 </td>
                 <td style="width: 50%; vertical-align: top; text-align: right; font-size: 10px; line-height: 1.4;">
-                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">SKILL PARK</div>
+                        <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">{{ $isEduThanzeel ? 'EDUTHANZEEL' : ($isESchool ? 'E-school' : 'SKILL PARK') }}</div>
                     <p style="margin: 2px 0;">PALATHINGAL, ULLANAM P.O,</p>
                     <p style="margin: 2px 0;">676303</p>
                     <p style="margin: 2px 0;">REG.OFFICE 2/421A, PANTHARANGADI PO</p>
@@ -52,7 +61,7 @@
         </table>
 
         <!-- Tax Invoice Title -->
-        <div style="text-align: center; color: #a276f3; font-weight: bold; font-size: 18px; border-top: 3px solid #a276f3; border-bottom: 3px solid #a276f3; padding: 10px 0;">Tax Invoice</div>
+                        <div style="text-align: center; color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; font-weight: bold; font-size: 18px; border-top: 3px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; border-bottom: 3px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; padding: 10px 0;">Tax Invoice</div>
 
         <!-- Bill To and Invoice Details -->
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
@@ -73,15 +82,15 @@
         <!-- Itemized Table -->
         <div style="margin-bottom: 20px;">
             <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                <thead style="background-color: #a276f3; color: white;">
+                <thead style="background-color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; color: white;">
                     <tr>
-                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid #a276f3;">#</th>
-                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid #a276f3;">Item name</th>
-                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid #a276f3;">HSN/SAC</th>
-                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid #a276f3;">Quantity</th>
-                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid #a276f3;">Price/Unit</th>
-                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid #a276f3;">GST</th>
-                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid #a276f3;">Amount</th>
+                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};">#</th>
+                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};">Item name</th>
+                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};">HSN/SAC</th>
+                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};">Quantity</th>
+                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};">Price/Unit</th>
+                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};">GST</th>
+                        <th style="padding: 10px 8px; text-align: left; font-weight: bold; font-size: 10px; border: 1px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};">Amount</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -129,7 +138,7 @@
 
                     <!-- Tax Type Section -->
                     <div style="padding: 12px; margin-bottom: 15px;">
-                        <h6 style="background-color: #a276f3; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Tax Details</h6>
+                        <h6 style="background-color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Tax Details</h6>
                         <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
                             <thead>
                                 <tr>
@@ -158,19 +167,19 @@
 
                     <!-- Invoice Amount In Words -->
                     <div style="padding: 12px; margin-bottom: 15px;">
-                        <h6 style="background-color: #a276f3; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Invoice Amount In Words</h6>
+                        <h6 style="background-color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Invoice Amount In Words</h6>
                         <p style="margin: 4px 0; font-size: 10px;">{{ $payment->total_amount_in_words }} Rupees only</p>
                     </div>
 
                     <!-- Terms and Conditions -->
                     <div style="padding: 12px; margin-bottom: 15px;">
-                        <h6 style="background-color: #a276f3; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Terms and Conditions</h6>
+                        <h6 style="background-color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Terms and Conditions</h6>
                         <p style="margin: 4px 0; font-size: 10px;">THIS AMOUNT IS NON REFUNDABLE</p>
                     </div>
 
                     <!-- Bank Details -->
                     <div style="padding: 12px; margin-bottom: 15px;">
-                        <h6 style="background-color: #a276f3; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Bank Details</h6>
+                        <h6 style="background-color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Bank Details</h6>
                         <p style="margin: 4px 0; font-size: 10px;">Name: AXIS BANK, KALLAI ROAD, KOZHIKODE</p>
                         <p style="margin: 4px 0; font-size: 10px;">Account No.: 921020041902527</p>
                         <p style="margin: 4px 0; font-size: 10px;">IFSC code: UTIB0001908</p>
@@ -183,7 +192,7 @@
                     
                     <!-- Amounts Section -->
                     <div style="padding: 12px; margin-bottom: 15px;">
-                        <h6 style="background-color: #a276f3; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Amounts</h6>
+                        <h6 style="background-color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Amounts</h6>
                         <table style="width: 100%; border-collapse: collapse;">
                             <tr>
                                 <td style="padding: 4px 0; font-size: 10px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Sub Total</td>
@@ -214,7 +223,7 @@
 
                     <!-- Signature Section -->
                     <div style="text-align: center; margin-top: 60px;">
-                        <p style="font-size: 10px; margin: 3px 0;">For: SKILL PARK</p>
+                        <p style="font-size: 10px; margin: 3px 0;">For: {{ $isEduThanzeel ? 'EDUTHANZEEL' : ($isESchool ? 'E-school' : 'SKILL PARK') }}</p>
                         <div style="height: 60px; margin: 10px 0; display: flex; align-items: center; justify-content: center;">
                             @if(file_exists(storage_path('app/public/accounts-sign.png')))
                                 <img src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/accounts-sign.png'))) }}" alt="Signature" style="max-height: 60px; max-width: 150px; object-fit: contain;">

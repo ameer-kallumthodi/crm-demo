@@ -1457,8 +1457,8 @@ class LeadController extends Controller
             'board_id' => 'nullable|exists:boards,id',
             'remarks' => 'nullable|string|max:1000',
             'payment_collected' => 'boolean',
-            'payment_amount' => 'required_if:payment_collected,true|numeric|min:0.01',
-            'payment_type' => 'required_if:payment_collected,true|in:Cash,Online,Bank,Cheque,Card,Other',
+            'payment_amount' => 'required_if:payment_collected,1|required_if:payment_collected,true|required_if:payment_collected,"1"|nullable|numeric|min:0.01',
+            'payment_type' => 'required_if:payment_collected,1|required_if:payment_collected,true|required_if:payment_collected,"1"|nullable|in:Cash,Online,Bank,Cheque,Card,Other',
             'transaction_id' => 'nullable|string|max:255',
             'payment_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);

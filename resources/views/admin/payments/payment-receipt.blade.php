@@ -1,3 +1,8 @@
+@php
+    $isEduThanzeel = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 6);
+    $isESchool = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 5);
+@endphp
+
 @extends('layouts.mantis')
 
 @section('title', 'Payment Receipt - Payment #' . $payment->id)
@@ -20,14 +25,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body invoice-container" style="border-top: 3px solid #a276f3; border-bottom: 3px solid #a276f3; padding: 30px;">
+                <div class="card-body invoice-container" style="border-top: 3px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; border-bottom: 3px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; padding: 30px;">
                     <!-- Invoice Header -->
                     <div class="row mb-4">
                         <div class="col-6">
                             <!-- Company Logo and Info -->
                             <div class="d-flex align-items-center mb-3">
-                                <img src="{{ asset('storage/logo.png') }}" alt="Company Logo" class="company-logo" 
-                                     onerror="this.src='{{ asset('assets/mantis/images/logo-dark.svg') }}'">
+                                <img src="{{ $isEduThanzeel ? asset('storage/eduthanzeel.png') : ($isESchool ? asset('storage/eschool.png') : asset('storage/logo.png')) }}" alt="Company Logo" class="company-logo">
                             </div>
                             
                             <!-- Company Address -->
@@ -36,7 +40,7 @@
                         <div class="col-6 text-end">
                             <!-- Company Name (Right Side) -->
                             <div class="mb-3">
-                                <h3 class="mb-0 company-name">SKILL PARK</h3>
+                                <h3 class="mb-0 company-name">{{ $isEduThanzeel ? 'EDUTHANZEEL' : ($isESchool ? 'E-school' : 'SKILL PARK') }}</h3>
                             </div>
                             
                             <!-- Company Address (Right Side) -->
@@ -54,7 +58,7 @@
                     <!-- Payment Receipt Title -->
                     <div class="row mb-4">
                         <div class="col-12 text-center">
-                            <h3 class="mb-0" style="color: #a276f3; font-weight: bold; border-top: 2px solid #a276f3; border-bottom: 2px solid #a276f3; padding: 10px 0;">Payment Receipt</h3>
+                            <h3 class="mb-0" style="color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; font-weight: bold; border-top: 2px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; border-bottom: 2px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; padding: 10px 0;">Payment Receipt</h3>
                         </div>
                     </div>
 
@@ -122,7 +126,7 @@
                         <div class="col-6"></div>
                         <div class="col-6 text-center">
                             <div class="border-top pt-3">
-                                <p class="mb-1"><strong>For: SKILL PARK</strong></p>
+                                <p class="mb-1"><strong>For: {{ $isEduThanzeel ? 'EDUTHANZEEL' : ($isESchool ? 'E-school' : 'SKILL PARK') }}</strong></p>
                                 <div class="mt-3" style="height: 60px; display: flex; align-items: center; justify-content: center;">
                                     @if(file_exists(storage_path('app/public/accounts-sign.png')))
                                         <img src="{{ asset('storage/accounts-sign.png') }}" alt="Signature" style="max-height: 60px; max-width: 150px; object-fit: contain;">
@@ -158,8 +162,8 @@
     font-family: Arial, sans-serif;
     background-color: white;
     padding: 30px;
-    border-top: 3px solid #a276f3;
-    border-bottom: 3px solid #a276f3;
+    border-top: 3px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};
+    border-bottom: 3px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};
 }
 
 .company-logo {
@@ -188,13 +192,13 @@
 }
 
 .invoice-title {
-    color: #a276f3;
+    color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};
     font-weight: bold;
     text-align: center;
 }
 
 .section-header {
-    background-color: #a276f3;
+    background-color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};
     color: white;
     padding: 8px;
     margin: -12px -12px 12px -12px;
@@ -209,7 +213,7 @@
 }
 
 .table-header {
-    background-color: #a276f3;
+    background-color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }};
     color: white !important;
 }
 .table-header > tr > .table-cell {

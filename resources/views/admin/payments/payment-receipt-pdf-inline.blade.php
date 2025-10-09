@@ -1,3 +1,8 @@
+@php
+    $isEduThanzeel = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 6);
+    $isESchool = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 5);
+@endphp
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,17 +35,21 @@
                     <table style="border-collapse: collapse;">
                         <tr>
                             <td style="vertical-align: top; padding-right: 15px;">
-                                @if(file_exists(public_path('storage/logo.png')))
+                                @if($isEduThanzeel && file_exists(public_path('storage/eduthanzeel.png')))
+                                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('storage/eduthanzeel.png'))) }}" alt="Company Logo" style="height: 90px; width: auto; margin-top: 25px !important;">
+                                @elseif($isESchool && file_exists(public_path('storage/eschool.png')))
+                                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('storage/eschool.png'))) }}" alt="Company Logo" style="height: 90px; width: auto; margin-top: 25px !important;">
+                                @elseif(file_exists(public_path('storage/logo.png')))
                                     <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('storage/logo.png'))) }}" alt="Company Logo" style="height: 90px; width: auto; margin-top: 25px !important;">
                                 @else
-                                    <div style="height: 80px; width: 80px; background-color: #f0f0f0; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666; margin-top: 25px !important;">SKILL PARK</div>
+                                    <div style="height: 80px; width: 80px; background-color: #f0f0f0; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666; margin-top: 25px !important;">{{ $isEduThanzeel ? 'EDUTHANZEEL' : ($isESchool ? 'E-school' : 'SKILL PARK') }}</div>
                                 @endif
                             </td>
                         </tr>
                     </table>
                 </td>
                 <td style="width: 50%; vertical-align: top; text-align: right; font-size: 10px; line-height: 1.4;">
-                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">SKILL PARK</div>
+                        <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">{{ $isEduThanzeel ? 'EDUTHANZEEL' : ($isESchool ? 'E-school' : 'SKILL PARK') }}</div>
                     <p style="margin: 2px 0;">PALATHINGAL, ULLANAM P.O,</p>
                     <p style="margin: 2px 0;">676303</p>
                     <p style="margin: 2px 0;">REG.OFFICE 2/421A, PANTHARANGADI PO</p>
@@ -52,7 +61,7 @@
         </table>
 
         <!-- Payment Receipt Title -->
-        <div style="text-align: center; color: #a276f3; font-weight: bold; font-size: 18px; border-top: 3px solid #a276f3; border-bottom: 3px solid #a276f3; padding: 10px 0;">Payment Receipt</div>
+                        <div style="text-align: center; color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; font-weight: bold; font-size: 18px; border-top: 3px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; border-bottom: 3px solid {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; padding: 10px 0;">Payment Receipt</div>
 
         <!-- Bill To and Payment Details -->
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
@@ -90,7 +99,7 @@
 
                     <!-- Payment Amount In Words -->
                     <div style="padding: 12px; margin-bottom: 15px;">
-                        <h6 style="background-color: #a276f3; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Payment Amount In Words</h6>
+                        <h6 style="background-color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Payment Amount In Words</h6>
                         <p style="margin: 4px 0; font-size: 10px;">{{ $payment->amount_in_words }} Rupees only</p>
                     </div>
 
@@ -100,7 +109,7 @@
                     
                     <!-- Payment Summary Section -->
                     <div style="padding: 12px; margin-bottom: 15px;">
-                        <h6 style="background-color: #a276f3; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Payment Summary</h6>
+                        <h6 style="background-color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Payment Summary</h6>
                         <table style="width: 100%; border-collapse: collapse;">
                             <tr>
                                 <td style="padding: 4px 0; font-size: 10px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Total Amount</td>
@@ -119,7 +128,7 @@
 
                     <!-- Signature Section -->
                     <div style="text-align: center; margin-top: 60px;">
-                        <p style="font-size: 10px; margin: 3px 0;">For: SKILL PARK</p>
+                        <p style="font-size: 10px; margin: 3px 0;">For: {{ $isEduThanzeel ? 'EDUTHANZEEL' : ($isESchool ? 'E-school' : 'SKILL PARK') }}</p>
                         <div style="height: 60px; margin: 10px 0; display: flex; align-items: center; justify-content: center;">
                             @if(file_exists(storage_path('app/public/accounts-sign.png')))
                                 <img src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/accounts-sign.png'))) }}" alt="Signature" style="max-height: 60px; max-width: 150px; object-fit: contain;">
