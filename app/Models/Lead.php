@@ -35,6 +35,7 @@ class Lead extends Model
         'deleted_by',
         'course_id',
         'batch_id',
+        'university_id',
         'by_meta',
         'meta_lead_id',
         'followup_date',
@@ -75,6 +76,11 @@ class Lead extends Model
     public function batch()
     {
         return $this->belongsTo(Batch::class, 'batch_id');
+    }
+
+    public function university()
+    {
+        return $this->belongsTo(University::class, 'university_id');
     }
 
     public function telecaller()

@@ -7,6 +7,7 @@ use App\Http\Controllers\LeadController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LeadStatusController;
 use App\Http\Controllers\LeadSourceController;
+use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\TeamController;
@@ -228,6 +229,12 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::put('/lead-sources-update/{leadSource}', [LeadSourceController::class, 'update'])->name('lead-sources.update');
         Route::delete('/lead-sources-delete/{id}', [LeadSourceController::class, 'delete'])->name('lead-sources.delete');
 
+        Route::resource('universities', UniversityController::class);
+        Route::get('/universities-add', [UniversityController::class, 'ajax_add'])->name('universities.add');
+        Route::get('/universities-edit/{id}', [UniversityController::class, 'ajax_edit'])->name('universities.edit');
+        Route::post('/universities-submit', [UniversityController::class, 'submit'])->name('universities.submit');
+        Route::put('/universities-update/{university}', [UniversityController::class, 'update'])->name('universities.update');
+        Route::delete('/universities-delete/{id}', [UniversityController::class, 'delete'])->name('universities.delete');
 
         Route::resource('countries', CountryController::class);
         Route::get('/countries-add', [CountryController::class, 'ajax_add'])->name('countries.add');

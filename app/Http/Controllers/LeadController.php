@@ -420,7 +420,6 @@ class LeadController extends Controller
         $data['interest_status'] = $interestStatus; // Override with lead status interest_status
         $data['created_by'] = AuthHelper::getCurrentUserId();
         $data['updated_by'] = AuthHelper::getCurrentUserId();
-        $data['is_converted'] = $request->lead_status_id == 4 ? true : false;
 
         $lead = Lead::create($data);
 
@@ -729,7 +728,6 @@ class LeadController extends Controller
             $data['interest_status'] = $leadStatus ? $leadStatus->interest_status : null;
             
             $data['updated_by'] = AuthHelper::getCurrentUserId();
-            $data['is_converted'] = $request->lead_status_id == 4 ? true : false;
 
             if ($lead->update($data)) {
                 if (request()->ajax()) {

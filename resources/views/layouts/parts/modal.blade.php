@@ -192,6 +192,8 @@
             confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'Cancel',
             reverseButtons: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
             preConfirm: () => {
                 const params = new URLSearchParams();
                 params.append('_method', 'DELETE');

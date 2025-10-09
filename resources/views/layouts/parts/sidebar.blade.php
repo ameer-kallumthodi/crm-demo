@@ -273,7 +273,7 @@
                 @endif
                 
                 {{-- Master Data Section --}}
-                @if(has_permission('admin/courses/index') || has_permission('admin/countries/index') || has_permission('admin/teams/index') || has_permission('admin/subjects/index') || has_permission('admin/course-documents/index'))
+                @if(has_permission('admin/courses/index') || has_permission('admin/countries/index') || has_permission('admin/teams/index') || has_permission('admin/subjects/index') || has_permission('admin/course-documents/index') || has_permission('admin/universities/index'))
                 <li class="pc-item pc-caption">
                     <label>Master Data</label>
                 </li>
@@ -344,6 +344,16 @@
                             <i class="ti ti-users"></i>
                         </span>
                         <span class="pc-mtext">Teams</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/universities/index'))
+                <li class="pc-item {{ request()->routeIs('admin.universities.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.universities.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-school"></i>
+                        </span>
+                        <span class="pc-mtext">Universities</span>
                     </a>
                 </li>
                 @endif

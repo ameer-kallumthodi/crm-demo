@@ -28,6 +28,7 @@ class ConvertedLead extends Model
         'tma',
         'register_number',
         'course_id',
+        'university_id',
         'academic_assistant_id',
         'batch_id',
         'board_id',
@@ -61,6 +62,11 @@ class ConvertedLead extends Model
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function university()
+    {
+        return $this->belongsTo(University::class);
     }
 
     public function batch()
