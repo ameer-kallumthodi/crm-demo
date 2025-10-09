@@ -13,7 +13,8 @@ class University extends Model
     protected $fillable = [
         'title',
         'description',
-        'amount',
+        'ug_amount',
+        'pg_amount',
         'is_active',
     ];
 

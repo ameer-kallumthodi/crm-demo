@@ -212,6 +212,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
             Route::post('/auto-logout', [App\Http\Controllers\TelecallerTrackingController::class, 'autoLogout'])->name('telecaller-tracking.auto-logout');
             Route::post('/working-hours-logout', [App\Http\Controllers\TelecallerTrackingController::class, 'workingHoursLogout'])->name('telecaller-tracking.working-hours-logout');
         });
+        
+        // API routes for universities
+        Route::get('/api/universities/{id}', [UniversityController::class, 'getUniversityData']);
     });
 
     // Admin routes

@@ -132,7 +132,7 @@ class BoardController extends Controller
                 'title' => $request->title,
                 'code' => strtoupper($request->code),
                 'description' => $request->description,
-                'is_active' => $request->has('is_active'),
+                'is_active' => $request->boolean('is_active'),
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
@@ -177,7 +177,7 @@ class BoardController extends Controller
                 'title' => $request->title,
                 'code' => strtoupper($request->code),
                 'description' => $request->description,
-                'is_active' => $request->has('is_active'),
+                'is_active' => $request->boolean('is_active'),
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
 

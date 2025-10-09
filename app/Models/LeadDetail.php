@@ -15,6 +15,8 @@ class LeadDetail extends Model
     protected $fillable = [
         'lead_id',
         'course_id',
+        'university_id',
+        'course_type',
         'student_name',
         'father_name',
         'mother_name',
@@ -107,6 +109,11 @@ class LeadDetail extends Model
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function university()
+    {
+        return $this->belongsTo(University::class);
     }
 
     public function reviewedBy()

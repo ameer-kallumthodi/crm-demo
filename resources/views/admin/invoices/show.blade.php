@@ -93,7 +93,22 @@
                                 @if($invoice->invoice_type == 'course')
                                 <tr>
                                     <td><strong>Course:</strong></td>
-                                    <td>{{ $invoice->course->title }}</td>
+                                    <td>
+                                        @if($invoice->course_id == 9 && $invoice->student->leadDetail)
+                                            @php
+                                                $studentDetail = $invoice->student->leadDetail;
+                                                $university = $studentDetail->university;
+                                                $courseType = $studentDetail->course_type;
+                                            @endphp
+                                            @if($university && $courseType)
+                                                {{ $university->title }} - {{ $courseType }}
+                                            @else
+                                                {{ $invoice->course->title }}
+                                            @endif
+                                        @else
+                                            {{ $invoice->course->title }}
+                                        @endif
+                                    </td>
                                 </tr>
                                 @elseif($invoice->invoice_type == 'e-service')
                                 <tr>

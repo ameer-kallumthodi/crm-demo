@@ -98,11 +98,38 @@
                                     <td><strong>Type:</strong></td>
                                     <td>
                                         @if($payment->invoice->invoice_type === 'course')
-                                            Course: {{ $payment->invoice->course->title ?? 'N/A' }}
+                                            <span class="badge bg-primary">Course</span>
                                         @elseif($payment->invoice->invoice_type === 'e-service')
-                                            E-Service: {{ $payment->invoice->service_name ?? 'N/A' }}
+                                            <span class="badge bg-info">E-Service</span>
                                         @elseif($payment->invoice->invoice_type === 'batch_change')
-                                            Batch Change: {{ $payment->invoice->batch->title ?? 'N/A' }} ({{ $payment->invoice->batch->course->title ?? 'N/A' }})
+                                            <span class="badge bg-warning">Batch Change</span>
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Details:</strong></td>
+                                    <td>
+                                        @if($payment->invoice->invoice_type === 'course')
+                                            @if($payment->invoice->course_id == 9 && $payment->invoice->student->leadDetail)
+                                                @php
+                                                    $studentDetail = $payment->invoice->student->leadDetail;
+                                                    $university = $studentDetail->university;
+                                                    $courseType = $studentDetail->course_type;
+                                                @endphp
+                                                @if($university && $courseType)
+                                                    {{ $university->title }} - {{ $courseType }}
+                                                @else
+                                                    {{ $payment->invoice->course->title ?? 'N/A' }}
+                                                @endif
+                                            @else
+                                                {{ $payment->invoice->course->title ?? 'N/A' }}
+                                            @endif
+                                        @elseif($payment->invoice->invoice_type === 'e-service')
+                                            {{ $payment->invoice->service_name ?? 'N/A' }}
+                                        @elseif($payment->invoice->invoice_type === 'batch_change')
+                                            {{ $payment->invoice->batch->title ?? 'N/A' }} ({{ $payment->invoice->batch->course->title ?? 'N/A' }})
                                         @else
                                             N/A
                                         @endif

@@ -98,7 +98,20 @@
                         <td style="padding: 8px; border: 1px solid #ddd; font-size: 10px;">1</td>
                         <td style="padding: 8px; border: 1px solid #ddd; font-size: 10px; font-weight: bold;">
                             @if($payment->invoice->invoice_type === 'course')
-                                {{ $payment->invoice->course->title ?? 'N/A' }}
+                                @if($payment->invoice->course_id == 9 && $payment->invoice->student->leadDetail)
+                                    @php
+                                        $studentDetail = $payment->invoice->student->leadDetail;
+                                        $university = $studentDetail->university;
+                                        $courseType = $studentDetail->course_type;
+                                    @endphp
+                                    @if($university && $courseType)
+                                        {{ $university->title }} - {{ $courseType }}
+                                    @else
+                                        {{ $payment->invoice->course->title ?? 'N/A' }}
+                                    @endif
+                                @else
+                                    {{ $payment->invoice->course->title ?? 'N/A' }}
+                                @endif
                             @elseif($payment->invoice->invoice_type === 'e-service')
                                 {{ $payment->invoice->service_name ?? 'N/A' }}
                             @elseif($payment->invoice->invoice_type === 'batch_change')

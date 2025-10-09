@@ -28,14 +28,16 @@ class UniversityController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'amount' => 'required|numeric|min:0',
+            'ug_amount' => 'required|numeric|min:0',
+            'pg_amount' => 'required|numeric|min:0',
             'is_active' => 'boolean',
         ]);
 
         $university = University::create([
             'title' => $request->title,
             'description' => $request->description,
-            'amount' => $request->amount,
+            'ug_amount' => $request->ug_amount,
+            'pg_amount' => $request->pg_amount,
             'is_active' => $request->boolean('is_active'),
         ]);
 
@@ -67,14 +69,16 @@ class UniversityController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'amount' => 'required|numeric|min:0',
+            'ug_amount' => 'required|numeric|min:0',
+            'pg_amount' => 'required|numeric|min:0',
             'is_active' => 'boolean',
         ]);
 
         $university->update([
             'title' => $request->title,
             'description' => $request->description,
-            'amount' => $request->amount,
+            'ug_amount' => $request->ug_amount,
+            'pg_amount' => $request->pg_amount,
             'is_active' => $request->boolean('is_active'),
         ]);
         
@@ -131,14 +135,16 @@ class UniversityController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'amount' => 'required|numeric|min:0',
+            'ug_amount' => 'required|numeric|min:0',
+            'pg_amount' => 'required|numeric|min:0',
             'is_active' => 'boolean',
         ]);
 
         $university = University::create([
             'title' => $request->title,
             'description' => $request->description,
-            'amount' => $request->amount,
+            'ug_amount' => $request->ug_amount,
+            'pg_amount' => $request->pg_amount,
             'is_active' => $request->boolean('is_active'),
         ]);
 
@@ -194,5 +200,28 @@ class UniversityController extends Controller
         }
 
         return redirect()->route('admin.universities.index')->with('message_success', 'University deleted successfully!');
+    }
+    
+    public function getUniversityData($id)
+    {
+        try {
+            $university = University::findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'university' => [
+                    'id' => $university->id,
+                    'title' => $university->title,
+                    'ug_amount' => $university->ug_amount,
+                    'pg_amount' => $university->pg_amount,
+                    'is_active' => $university->is_active
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'University not found'
+            ], 404);
+        }
     }
 }

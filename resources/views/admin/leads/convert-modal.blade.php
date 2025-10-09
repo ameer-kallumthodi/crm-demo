@@ -42,7 +42,21 @@
                 <label class="form-label">Course Information</label>
                 <div class="form-control-plaintext bg-light p-2 rounded">
                     <strong>{{ $course->title }}</strong> - ₹{{ number_format($course->amount, 2) }}
-                    @if($extraAmount > 0)
+                    
+                    @if($course->id == 9 && $courseType && $university)
+                    <br><small class="text-info">
+                        <i class="fas fa-university"></i> University: <strong>{{ $university->title }}</strong>
+                    </small>
+                    <br><small class="text-info">
+                        <i class="fas fa-graduation-cap"></i> Course Type: <strong>{{ $courseType }}</strong>
+                    </small>
+                    @if($universityAmount > 0)
+                    <br><small class="text-info">
+                        <i class="fas fa-rupee-sign"></i> {{ $courseType }} Course Fee: ₹{{ number_format($universityAmount, 2) }}
+                    </small>
+                    <br><strong class="text-primary">Total: ₹{{ number_format($course->amount + $universityAmount, 2) }}</strong>
+                    @endif
+                    @elseif($extraAmount > 0)
                     <br><small class="text-success">
                         <i class="fas fa-plus-circle"></i> GMVSS SSLC Extra: +₹{{ number_format($extraAmount, 2) }}
                     </small>
@@ -260,8 +274,11 @@ $(document).ready(function() {
         // Use the course amount from the lead's course
         let amount = {{ $course->amount }};
         
+        // Add university amount for UG/PG course (course_id = 9)
+        @if($course->id == 9 && $universityAmount > 0)
+        amount += {{ $universityAmount }};
+        @elseif($extraAmount > 0)
         // Add extra amount for GMVSS SSLC class
-        @if($extraAmount > 0)
         amount += {{ $extraAmount }};
         @endif
         

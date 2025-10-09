@@ -104,7 +104,7 @@ class CountryController extends Controller
             'title' => $request->title,
             'code' => strtoupper($request->code),
             'phone_code' => $request->phone_code,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->boolean('is_active'),
         ]);
 
         return redirect()->route('admin.countries.index')->with('message_success', 'Country created successfully!');
@@ -138,7 +138,7 @@ class CountryController extends Controller
             'title' => $request->title,
             'code' => strtoupper($request->code),
             'phone_code' => $request->phone_code,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->boolean('is_active'),
         ]);
 
         return redirect()->route('admin.countries.index')->with('message_success', 'Country updated successfully!');

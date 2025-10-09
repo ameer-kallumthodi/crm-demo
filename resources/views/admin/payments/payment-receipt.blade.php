@@ -77,7 +77,20 @@
                             <p class="mb-1" style="font-size: 12px !important;">Payment ID: #{{ $payment->id }}</p>
                             <p class="mb-0" style="font-size: 12px !important;">
                                 @if($payment->invoice->invoice_type === 'course')
-                                    Type: Course - {{ $payment->invoice->course->title ?? 'N/A' }}
+                                    @if($payment->invoice->course_id == 9 && $payment->invoice->student->leadDetail)
+                                        @php
+                                            $studentDetail = $payment->invoice->student->leadDetail;
+                                            $university = $studentDetail->university;
+                                            $courseType = $studentDetail->course_type;
+                                        @endphp
+                                        @if($university && $courseType)
+                                            Type: {{ $university->title }} - {{ $courseType }}
+                                        @else
+                                            Type: Course - {{ $payment->invoice->course->title ?? 'N/A' }}
+                                        @endif
+                                    @else
+                                        Type: Course - {{ $payment->invoice->course->title ?? 'N/A' }}
+                                    @endif
                                 @elseif($payment->invoice->invoice_type === 'e-service')
                                     Type: E-Service - {{ $payment->invoice->service_name ?? 'N/A' }}
                                 @elseif($payment->invoice->invoice_type === 'batch_change')

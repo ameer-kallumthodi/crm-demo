@@ -130,5 +130,15 @@
 $(document).ready(function() {
     // DataTable is now initialized globally via initializeTables() function
 });
+
+// Function to refresh admin table
+function refreshAdminTable() {
+    if ($.fn.DataTable.isDataTable('#adminsTable')) {
+        $('#adminsTable').DataTable().ajax.reload(null, false);
+    } else {
+        // If not using AJAX DataTable, reload the page
+        location.reload();
+    }
+}
 </script>
 @endpush

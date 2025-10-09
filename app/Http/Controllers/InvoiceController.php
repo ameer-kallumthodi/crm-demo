@@ -187,8 +187,24 @@ class InvoiceController extends Controller
             // Calculate total amount
             $totalAmount = $course->amount;
             
+            // Add university amount for UG/PG course (course_id = 9)
+            if ($courseId == 9 && $student->leadDetail) {
+                $courseType = $student->leadDetail->course_type;
+                $universityId = $student->leadDetail->university_id;
+                
+                if ($universityId && $courseType) {
+                    $university = \App\Models\University::find($universityId);
+                    if ($university) {
+                        if ($courseType === 'UG') {
+                            $totalAmount += $university->ug_amount ?? 0;
+                        } elseif ($courseType === 'PG') {
+                            $totalAmount += $university->pg_amount ?? 0;
+                        }
+                    }
+                }
+            }
             // Add extra amount for GMVSS SSLC class
-            if ($courseId == 16 && $student->leadDetail && $student->leadDetail->class == 'sslc') {
+            elseif ($courseId == 16 && $student->leadDetail && $student->leadDetail->class == 'sslc') {
                 $totalAmount += 10000; // ₹10,000 extra for GMVSS SSLC class
             }
             

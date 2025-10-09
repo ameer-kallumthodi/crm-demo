@@ -44,7 +44,8 @@
                                 <th>#</th>
                                 <th>Title</th>
                                 <th>Description</th>
-                                <th>Amount</th>
+                                <th>UG Amount</th>
+                                <th>PG Amount</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -59,7 +60,10 @@
                                 </td>
                                 <td>{{ $university->description ?? '-' }}</td>
                                 <td>
-                                    <span class="text-success fw-bold">₹{{ number_format($university->amount, 2) }}</span>
+                                    <span class="text-primary fw-bold">₹{{ number_format($university->ug_amount, 2) }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-success fw-bold">₹{{ number_format($university->pg_amount, 2) }}</span>
                                 </td>
                                 <td>
                                     <span class="badge {{ $university->is_active ? 'bg-success' : 'bg-danger' }}">

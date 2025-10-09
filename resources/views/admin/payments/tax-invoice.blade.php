@@ -99,7 +99,20 @@
                                     <td class="table-cell">1</td>
                                     <td class="table-cell" style="font-weight: bold !important;">
                                         @if($payment->invoice->invoice_type === 'course')
-                                            Payment for {{ $payment->invoice->course->title ?? 'N/A' }}
+                                            @if($payment->invoice->course_id == 9 && $payment->invoice->student->leadDetail)
+                                                @php
+                                                    $studentDetail = $payment->invoice->student->leadDetail;
+                                                    $university = $studentDetail->university;
+                                                    $courseType = $studentDetail->course_type;
+                                                @endphp
+                                                @if($university && $courseType)
+                                                    Payment for {{ $university->title }} - {{ $courseType }}
+                                                @else
+                                                    Payment for {{ $payment->invoice->course->title ?? 'N/A' }}
+                                                @endif
+                                            @else
+                                                Payment for {{ $payment->invoice->course->title ?? 'N/A' }}
+                                            @endif
                                         @elseif($payment->invoice->invoice_type === 'e-service')
                                             Payment for {{ $payment->invoice->service_name ?? 'N/A' }}
                                         @elseif($payment->invoice->invoice_type === 'batch_change')

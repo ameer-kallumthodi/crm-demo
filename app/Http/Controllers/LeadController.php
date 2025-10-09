@@ -1429,6 +1429,10 @@ class LeadController extends Controller
         // Load the course information if the lead has a course_id
         $course = null;
         $extraAmount = 0;
+        $universityAmount = 0;
+        $courseType = null;
+        $university = null;
+        
         if ($lead->course_id) {
             $course = \App\Models\Course::find($lead->course_id);
             
@@ -1436,10 +1440,27 @@ class LeadController extends Controller
             if ($lead->course_id == 16 && $lead->studentDetails && $lead->studentDetails->class == 'sslc') {
                 $extraAmount = 10000; // ₹10,000 extra for GMVSS SSLC class
             }
+            
+            // Check if it's UG/PG course (course_id = 9) and has student details with course_type and university
+            if ($lead->course_id == 9 && $lead->studentDetails) {
+                $courseType = $lead->studentDetails->course_type;
+                $universityId = $lead->studentDetails->university_id;
+                
+                if ($universityId) {
+                    $university = \App\Models\University::find($universityId);
+                    if ($university) {
+                        if ($courseType === 'UG') {
+                            $universityAmount = $university->ug_amount ?? 0;
+                        } elseif ($courseType === 'PG') {
+                            $universityAmount = $university->pg_amount ?? 0;
+                        }
+                    }
+                }
+            }
         }
 
         return view('admin.leads.convert-modal', compact(
-            'lead', 'academic_assistants', 'boards', 'country_codes', 'course', 'extraAmount'
+            'lead', 'academic_assistants', 'boards', 'country_codes', 'course', 'extraAmount', 'universityAmount', 'courseType', 'university'
         ));
     }
 

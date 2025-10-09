@@ -61,11 +61,7 @@
         .logo-container { display: flex; justify-content: center; align-items: center; }
         .skill-park-logo { max-height: 100px; max-width: 200px; object-fit: contain; opacity: 0.9; transition: all 0.3s ease; }
         .skill-park-logo:hover { opacity: 1; transform: scale(1.05); }
-        .ug-pg-option { background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 20px; margin-bottom: 20px; cursor: pointer; transition: all 0.3s ease; }
-        .ug-pg-option:hover { border-color: #829b99; background: #f0f4ff; }
-        .ug-pg-option.selected { border-color: #829b99; background: #e3f2fd; }
-        .ug-pg-option h5 { margin-bottom: 10px; color: #333; }
-        .ug-pg-option p { margin-bottom: 0; color: #666; }
+        .form-control.is-invalid { border-color: #dc3545; }
         @media (max-width: 768px) {
             .wizard-container { padding: 10px; }
             .wizard-body { padding: 30px 20px; }
@@ -145,25 +141,58 @@
                 <div class="form-step active" id="formStep1">
                     <h4 class="mb-4"><i class="fas fa-user me-2"></i>Personal Information</h4>
                     
-                    <!-- UG/PG Selection -->
+                    <!-- University Selection -->
                     <div class="form-group">
-                        <label class="form-label">Course Type <span class="required">*</span></label>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="ug-pg-option" onclick="selectCourseType('UG')">
-                                    <h5><i class="fas fa-user-graduate me-2"></i>Under Graduate (UG)</h5>
-                                    <p>Requires SSLC and Plus Two certificates</p>
+                        <label class="form-label">University <span class="required">*</span></label>
+                        <select class="form-control" name="university_id" id="university_id" required>
+                            <option value="">Select University</option>
+                            @foreach($universities as $university)
+                                <option value="{{ $university->id }}">{{ $university->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <!-- UG/PG Selection -->
+                <div class="form-group">
+                    <label class="form-label">Course Type <span class="required">*</span></label>
+                    <select class="form-control" name="course_type" id="course_type" required>
+                        <option value="">Select Course Type</option>
+                        <option value="UG">Under Graduate (UG)</option>
+                        <option value="PG">Post Graduate (PG)</option>
+                    </select>
+                    <small class="form-text text-muted">
+                        <strong>UG:</strong> Requires SSLC and Plus Two certificates<br>
+                        <strong>PG:</strong> Requires SSLC, Plus Two, and UG degree certificates
+                    </small>
+                </div>
+                
+                <!-- University Amount Display -->
+                <div class="form-group" id="university_amount_display" style="display: none;">
+                    <label class="form-label">University Fee</label>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="text-center">
+                                        <h6 class="text-muted mb-1">UG Amount</h6>
+                                        <h4 class="text-primary mb-0" id="ug_amount_display">₹0</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="text-center">
+                                        <h6 class="text-muted mb-1">PG Amount</h6>
+                                        <h4 class="text-success mb-0" id="pg_amount_display">₹0</h4>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="ug-pg-option" onclick="selectCourseType('PG')">
-                                    <h5><i class="fas fa-graduation-cap me-2"></i>Post Graduate (PG)</h5>
-                                    <p>Requires SSLC, Plus Two, and UG degree certificates</p>
-                                </div>
+                            <hr>
+                            <div class="text-center">
+                                <h6 class="text-muted mb-1">Selected Course Fee</h6>
+                                <h3 class="text-info mb-0" id="selected_amount_display">₹0</h3>
                             </div>
                         </div>
-                        <input type="hidden" name="course_type" id="course_type" required>
                     </div>
+                </div>
                     
                     <div class="row">
                         <div class="col-md-6">
@@ -431,7 +460,7 @@
                         <i class="fas fa-arrow-left me-2"></i>Previous
                     </button>
                     <div class="ms-auto">
-                        <button type="button" class="btn btn-primary btn-wizard" id="nextBtn" onclick="changeStep(1)" style="display: inline-block;">
+                        <button type="button" class="btn btn-primary btn-wizard" id="nextBtn" style="display: inline-block;">
                             Next<i class="fas fa-arrow-right ms-2"></i>
                         </button>
                         <button type="submit" class="btn btn-success btn-wizard" id="submitBtn" style="display: none;">
@@ -449,15 +478,14 @@
         const totalSteps = 3;
         const STORAGE_KEY = 'ugpg_form_data';
 
-        function selectCourseType(type) {
-            document.querySelectorAll('.ug-pg-option').forEach(option => option.classList.remove('selected'));
-            event.currentTarget.classList.add('selected');
-            document.getElementById('course_type').value = type;
+        // Handle Course Type selection change
+        function handleCourseTypeChange() {
+            const courseType = document.getElementById('course_type').value;
             
             // Show/hide UG certificate field based on selection
             const ugRow = document.getElementById('ug_certificate_row');
             const ugInput = document.getElementById('ug_certificate');
-            if (type === 'PG') {
+            if (courseType === 'PG') {
                 ugRow.style.display = 'block';
                 ugInput.required = true;
             } else {
@@ -466,7 +494,46 @@
                 ugInput.value = '';
                 document.getElementById('ug_certificate_preview').innerHTML = '';
             }
+            
+            // Update university amount display
+            updateUniversityAmountDisplay();
         }
+        
+        // Update university amount display
+        function updateUniversityAmountDisplay() {
+            const universityId = document.getElementById('university_id').value;
+            const courseType = document.getElementById('course_type').value;
+            const amountDisplay = document.getElementById('university_amount_display');
+            
+            if (universityId && courseType) {
+                // Show the amount display
+                amountDisplay.style.display = 'block';
+                
+                // Fetch university data and update amounts
+                fetch(`/api/universities/${universityId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const university = data.university;
+                            
+                            // Update UG and PG amounts
+                            document.getElementById('ug_amount_display').textContent = `₹${university.ug_amount || 0}`;
+                            document.getElementById('pg_amount_display').textContent = `₹${university.pg_amount || 0}`;
+                            
+                            // Update selected course amount
+                            const selectedAmount = courseType === 'UG' ? university.ug_amount : university.pg_amount;
+                            document.getElementById('selected_amount_display').textContent = `₹${selectedAmount || 0}`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching university data:', error);
+                    });
+            } else {
+                // Hide the amount display
+                amountDisplay.style.display = 'none';
+            }
+        }
+        
 
         function loadSavedData() {
             const savedData = localStorage.getItem(STORAGE_KEY);
@@ -517,6 +584,34 @@
             setupAutoSave();
             updateStepDisplay();
             
+            // Add change event listener to Course Type select
+            document.getElementById('course_type').addEventListener('change', function() {
+                handleCourseTypeChange();
+                // Remove error styling when user makes a selection
+                this.classList.remove('is-invalid');
+            });
+            
+            // Add change event listener to University select
+            document.getElementById('university_id').addEventListener('change', function() {
+                updateUniversityAmountDisplay();
+                // Remove error styling when user makes a selection
+                this.classList.remove('is-invalid');
+            });
+            
+            // Add click event listener to next button to ensure validation
+            document.getElementById('nextBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Next button clicked, validating step:', currentStep);
+                console.log('Course type value:', document.getElementById('course_type').value);
+                
+                if (!validateCurrentStep()) {
+                    console.log('Validation failed, staying on current step');
+                    return false;
+                }
+                console.log('Validation passed, moving to next step');
+                changeStep(1);
+            });
+            
             const pinCodeInput = document.querySelector('input[name="pin_code"]');
             if (pinCodeInput) {
                 pinCodeInput.addEventListener('input', function(e) {
@@ -560,9 +655,15 @@
 
         function changeStep(direction) {
             const nextStep = currentStep + direction;
-            if (direction > 0 && !validateCurrentStep()) {
-                return;
+            
+            // Always validate before moving to next step
+            if (direction > 0) {
+                if (!validateCurrentStep()) {
+                    console.log('Validation failed, cannot proceed to next step');
+                    return false;
+                }
             }
+            
             if (nextStep >= 1 && nextStep <= totalSteps) {
                 currentStep = nextStep;
                 updateStepDisplay();
@@ -572,6 +673,31 @@
         function validateCurrentStep() {
             const currentStepElement = document.getElementById(`formStep${currentStep}`);
             const requiredFields = currentStepElement.querySelectorAll('[required]');
+            
+            // Validate all required fields in current step
+            for (let field of requiredFields) {
+                if (!field.value || field.value.trim() === '') {
+                    field.classList.add('is-invalid');
+                    showAlert(`Please fill in the required field: ${field.name}`, 'warning');
+                    return false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            }
+            
+            // Validate Course Type selection for step 1
+            if (currentStep === 1) {
+                const courseType = document.getElementById('course_type').value;
+                if (!courseType) {
+                    // Add error styling to Course Type select
+                    document.getElementById('course_type').classList.add('is-invalid');
+                    showAlert('Please select a Course Type (UG or PG)', 'warning');
+                    return false;
+                } else {
+                    // Remove error styling when valid
+                    document.getElementById('course_type').classList.remove('is-invalid');
+                }
+            }
             
             if (currentStep === 3) {
                 const fileFieldNames = {

@@ -16,10 +16,17 @@
                 </div>
             </div>
 
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="amount">Amount <span class="text-danger">*</span></label>
-                    <input type="number" name="amount" class="form-control" id="amount" step="0.01" min="0" placeholder="Enter Amount" required>
+                    <label class="form-label" for="ug_amount">UG Amount <span class="text-danger">*</span></label>
+                    <input type="number" name="ug_amount" class="form-control" id="ug_amount" step="0.01" min="0" placeholder="Enter UG Amount" required>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label" for="pg_amount">PG Amount <span class="text-danger">*</span></label>
+                    <input type="number" name="pg_amount" class="form-control" id="pg_amount" step="0.01" min="0" placeholder="Enter PG Amount" required>
                 </div>
             </div>
 

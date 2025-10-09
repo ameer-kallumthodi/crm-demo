@@ -95,10 +95,15 @@ function addAdmin() {
             const modal = bootstrap.Modal.getInstance(document.querySelector('#ajaxModal'));
             modal.hide();
             
-            // Reload the page to show updated data
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
+            // Refresh the admin table data without full page reload
+            if (typeof refreshAdminTable === 'function') {
+                refreshAdminTable();
+            } else {
+                // Fallback to page reload if refresh function doesn't exist
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
         } else {
             // Show error message
             toast_danger(data.message);

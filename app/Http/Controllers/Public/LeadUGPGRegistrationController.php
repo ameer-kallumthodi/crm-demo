@@ -33,10 +33,13 @@ class LeadUGPGRegistrationController extends Controller
         // Get UG/PG course batches (course_id = 9)
         $batches = Batch::where('course_id', 9)->where('is_active', true)->get();
         
+        // Get active universities
+        $universities = \App\Models\University::where('is_active', true)->get();
+        
         // Get country codes
         $countryCodes = \App\Helpers\CountriesHelper::get_country_code();
         
-        return view('public.ugpg-registration', compact('subjects', 'batches', 'lead', 'countryCodes'));
+        return view('public.ugpg-registration', compact('subjects', 'batches', 'universities', 'lead', 'countryCodes'));
     }
     
     public function store(Request $request)
@@ -44,6 +47,7 @@ class LeadUGPGRegistrationController extends Controller
         $request->validate([
             'lead_id' => 'required|exists:leads,id',
             'course_type' => 'required|in:UG,PG',
+            'university_id' => 'required|exists:universities,id',
             'student_name' => 'required|string|max:255',
             'father_name' => 'required|string|max:255',
             'mother_name' => 'required|string|max:255',
@@ -75,6 +79,8 @@ class LeadUGPGRegistrationController extends Controller
             'lead_id.exists' => 'Invalid lead.',
             'course_type.required' => 'Course type is required.',
             'course_type.in' => 'Course type must be either UG or PG.',
+            'university_id.required' => 'University selection is required.',
+            'university_id.exists' => 'Selected university is invalid.',
             'student_name.required' => 'Student name is required.',
             'father_name.required' => 'Father name is required.',
             'mother_name.required' => 'Mother name is required.',
@@ -158,6 +164,7 @@ class LeadUGPGRegistrationController extends Controller
             $studentDetail = LeadDetail::create([
                 'lead_id' => $request->lead_id,
                 'course_id' => 9, // UG/PG course ID
+                'university_id' => $request->university_id,
                 'course_type' => $request->course_type, // Store UG or PG
                 'student_name' => $request->student_name,
                 'father_name' => $request->father_name,

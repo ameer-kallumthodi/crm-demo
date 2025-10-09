@@ -107,7 +107,7 @@ class CourseController extends Controller
                 'code' => $request->code,
                 'amount' => $request->amount,
                 'hod_number' => $request->hod_number,
-                'is_active' => $request->has('is_active') ? 1 : 0,
+                'is_active' => $request->boolean('is_active'),
             ]);
 
             // For AJAX requests, return JSON response
@@ -180,7 +180,7 @@ class CourseController extends Controller
                 'code' => $request->code,
                 'amount' => $request->amount,
                 'hod_number' => $request->hod_number,
-                'is_active' => $request->has('is_active') ? 1 : 0,
+                'is_active' => $request->boolean('is_active'),
             ]);
 
             // For AJAX requests, return JSON response

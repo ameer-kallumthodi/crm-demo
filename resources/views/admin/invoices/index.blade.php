@@ -31,7 +31,22 @@
                         </div>
                         <div class="col-md-6">
                             <h6>Course Information</h6>
-                            <p><strong>Course:</strong> {{ $student->course->title ?? 'N/A' }}</p>
+                            <p><strong>Course:</strong> 
+                                @if($student->course_id == 9 && $student->leadDetail)
+                                    @php
+                                        $studentDetail = $student->leadDetail;
+                                        $university = $studentDetail->university;
+                                        $courseType = $studentDetail->course_type;
+                                    @endphp
+                                    @if($university && $courseType)
+                                        {{ $university->title }} - {{ $courseType }}
+                                    @else
+                                        {{ $student->course->title ?? 'N/A' }}
+                                    @endif
+                                @else
+                                    {{ $student->course->title ?? 'N/A' }}
+                                @endif
+                            </p>
                             <p><strong>Batch:</strong> {{ $student->batch->title ?? 'N/A' }}</p>
                             <p><strong>Academic Assistant:</strong> {{ $student->academicAssistant->name ?? 'N/A' }}</p>
                         </div>
@@ -106,7 +121,20 @@
                                     </td>
                                     <td>
                                         @if($invoice->invoice_type == 'course')
-                                            {{ $invoice->course->title ?? 'N/A' }}
+                                            @if($invoice->course_id == 9 && $invoice->student->leadDetail)
+                                                @php
+                                                    $studentDetail = $invoice->student->leadDetail;
+                                                    $university = $studentDetail->university;
+                                                    $courseType = $studentDetail->course_type;
+                                                @endphp
+                                                @if($university && $courseType)
+                                                    {{ $university->title }} - {{ $courseType }}
+                                                @else
+                                                    {{ $invoice->course->title ?? 'N/A' }}
+                                                @endif
+                                            @else
+                                                {{ $invoice->course->title ?? 'N/A' }}
+                                            @endif
                                         @elseif($invoice->invoice_type == 'e-service')
                                             {{ $invoice->service_name }}
                                         @elseif($invoice->invoice_type == 'batch_change')
