@@ -26,12 +26,17 @@ return new class extends Migration
             $table->string('tma')->nullable();
             $table->timestamps();
             $table->softDeletes(); // Add soft deletes support
+            $table->unsignedBigInteger('deleted_by')->nullable()->after('deleted_at');
             
-            // Foreign key constraint
+            // Foreign key constraints
             $table->foreign('converted_lead_id')
                 ->references('id')
                 ->on('converted_leads')
                 ->onDelete('cascade');
+            $table->foreign('deleted_by')
+                ->references('id')
+                ->on('users')
+                ->onDelete('set null');
         });
 
         // Backfill data from converted_leads table
