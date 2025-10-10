@@ -139,24 +139,13 @@ $(document).ready(function() {
 
     // AJAX to fetch leads
     $('#from_telecaller_id, #lead_source_id, #lead_from_date, #lead_to_date, #lead_status_id').on('change', function() {
-        console.log('Form field changed:', $(this).attr('id'), $(this).val());
-        
         var leadSourceId = $('#lead_source_id').val();
         var leadStatusId = $('#lead_status_id').val();
         var teleCallerId = $('#from_telecaller_id').val();
         var leadFromDate = $('#lead_from_date').val();
         var leadToDate = $('#lead_to_date').val();
-        
-        console.log('Form values:', {
-            leadSourceId: leadSourceId,
-            leadStatusId: leadStatusId,
-            teleCallerId: teleCallerId,
-            leadFromDate: leadFromDate,
-            leadToDate: leadToDate
-        });
 
         if (leadSourceId && teleCallerId && leadFromDate && leadToDate && leadStatusId) {
-            console.log('Making AJAX request to:', '{{ route("admin.leads.get-by-source-reassign") }}');
             $.ajax({
                 url: '{{ route("admin.leads.get-by-source-reassign") }}',
                 type: 'POST',
@@ -171,15 +160,12 @@ $(document).ready(function() {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
-                    console.log('AJAX Success:', response);
                     $('#lead_table_body').html(response);
                     $('#check_all').prop('checked', false);
                     toggleSubmitButton();
                 },
                 error: function(xhr) {
-                    console.log('AJAX Error:', xhr.responseText);
-                    console.log('Status:', xhr.status);
-                    console.log('Response:', xhr.responseJSON);
+                    console.log('Error fetching leads:', xhr.responseText);
                 }
             });
         } else {
