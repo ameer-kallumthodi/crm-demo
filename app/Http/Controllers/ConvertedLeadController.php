@@ -23,7 +23,7 @@ class ConvertedLeadController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy']);
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'studentDetails']);
 
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
@@ -79,19 +79,27 @@ class ConvertedLeadController extends Controller
         }
 
         if ($request->filled('reg_fee')) {
-            $query->where('reg_fee', $request->reg_fee);
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('reg_fee', $request->reg_fee);
+            });
         }
 
         if ($request->filled('exam_fee')) {
-            $query->where('exam_fee', $request->exam_fee);
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('exam_fee', $request->exam_fee);
+            });
         }
 
         if ($request->filled('id_card')) {
-            $query->where('id_card', $request->id_card);
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('id_card', $request->id_card);
+            });
         }
 
         if ($request->filled('tma')) {
-            $query->where('tma', $request->tma);
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('tma', $request->tma);
+            });
         }
 
 
@@ -115,6 +123,277 @@ class ConvertedLeadController extends Controller
     }
 
     /**
+     * Display NIOS converted leads (course_id = 1)
+     */
+    public function niosIndex(Request $request)
+    {
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'batch', 'admissionBatch', 'subject', 'studentDetails'])
+            ->where('course_id', 1);
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereIn('created_by', $teamMemberIds);
+                } else {
+                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Can see all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->where('created_by', AuthHelper::getCurrentUserId());
+            }
+        }
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('register_number', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('reg_fee')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('reg_fee', $request->reg_fee);
+            });
+        }
+
+        if ($request->filled('exam_fee')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('exam_fee', $request->exam_fee);
+            });
+        }
+
+        if ($request->filled('id_card')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('id_card', $request->id_card);
+            });
+        }
+
+        if ($request->filled('tma')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('tma', $request->tma);
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
+
+        // Get filter data
+        $courses = \App\Models\Course::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 1)->where('is_active', 1)->get();
+        $country_codes = get_country_code();
+
+        return view('admin.converted-leads.nios-index', compact('convertedLeads', 'courses', 'batches', 'country_codes'));
+    }
+
+    /**
+     * Display BOSSE converted leads (course_id = 2)
+     */
+    public function bosseIndex(Request $request)
+    {
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'batch', 'admissionBatch', 'subject', 'studentDetails'])
+            ->where('course_id', 2);
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereIn('created_by', $teamMemberIds);
+                } else {
+                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Can see all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->where('created_by', AuthHelper::getCurrentUserId());
+            }
+        }
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('register_number', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('reg_fee')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('reg_fee', $request->reg_fee);
+            });
+        }
+
+        if ($request->filled('exam_fee')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('exam_fee', $request->exam_fee);
+            });
+        }
+
+        if ($request->filled('id_card')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('id_card', $request->id_card);
+            });
+        }
+
+        if ($request->filled('tma')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('tma', $request->tma);
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
+
+        // Get filter data
+        $courses = \App\Models\Course::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 2)->where('is_active', 1)->get();
+        $country_codes = get_country_code();
+
+        return view('admin.converted-leads.bosse-index', compact('convertedLeads', 'courses', 'batches', 'country_codes'));
+    }
+
+    /**
+     * Display GMVSS converted leads (course_id = 16)
+     */
+    public function gmvssIndex(Request $request)
+    {
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'batch', 'admissionBatch', 'subject', 'studentDetails'])
+            ->where('course_id', 16);
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_team_lead()) {
+                // Team leads can see all converted leads
+            } elseif (RoleHelper::is_academic_assistant()) {
+                // Academic assistants can only see their own converted leads
+                $query->where('academic_assistant_id', $currentUser->id);
+            } else {
+                // Other users can only see their own converted leads
+                $query->where('created_by', $currentUser->id);
+            }
+        }
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('register_number', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('reg_fee')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('reg_fee', $request->reg_fee);
+            });
+        }
+
+        if ($request->filled('exam_fee')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('exam_fee', $request->exam_fee);
+            });
+        }
+
+        if ($request->filled('id_card')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('id_card', $request->id_card);
+            });
+        }
+
+        if ($request->filled('tma')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('tma', $request->tma);
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(20);
+        $courses = \App\Models\Course::all();
+        $batches = \App\Models\Batch::where('course_id', 16)->get();
+        $country_codes = \App\Models\Country::all();
+
+        return view('admin.converted-leads.gmvss-index', compact('convertedLeads', 'courses', 'batches', 'country_codes'));
+    }
+
+    /**
      * Display the specified converted lead
      */
     public function show($id)
@@ -127,7 +406,8 @@ class ConvertedLeadController extends Controller
             'admissionBatch',
             'subject',
             'academicAssistant',
-            'createdBy'
+            'createdBy',
+            'studentDetails'
         ])->findOrFail($id);
 
         // Apply role-based access control
@@ -186,7 +466,8 @@ class ConvertedLeadController extends Controller
             'leadDetail',
             'course',
             'academicAssistant',
-            'createdBy'
+            'createdBy',
+            'studentDetails'
         ])->findOrFail($id);
 
         // Role-based access (same logic as you had)
@@ -251,7 +532,7 @@ class ConvertedLeadController extends Controller
 
     public function generateAndStoreIdCard($id)
     {
-        $convertedLead = ConvertedLead::with(['lead','leadDetail','course','academicAssistant','createdBy'])
+        $convertedLead = ConvertedLead::with(['lead','leadDetail','course','academicAssistant','createdBy','studentDetails'])
             ->findOrFail($id);
 
         // Check if ID card was already generated recently (within last 30 seconds)
@@ -342,7 +623,8 @@ class ConvertedLeadController extends Controller
             'admissionBatch',
             'subject',
             'academicAssistant',
-            'createdBy'
+            'createdBy',
+            'studentDetails'
         ])->findOrFail($id);
 
         // Lead activities (same as show page)
@@ -489,6 +771,13 @@ class ConvertedLeadController extends Controller
             'enroll_no' => 'nullable|string|max:255',
             'id_card' => 'nullable|string|in:processing,download,not downloaded',
             'tma' => 'nullable|string|in:Uploaded,Not Upload',
+            'registration_number' => 'nullable|string|max:255',
+            'enrollment_number' => 'nullable|string|max:255',
+            'registration_link_id' => 'nullable|exists:registration_links,id',
+            'certificate_status' => 'nullable|string|in:In Progress,Online Result Not Arrived,One Result Arrived,Certificate Arrived,Not Received,No Admission',
+            'certificate_received_date' => 'nullable|date',
+            'certificate_issued_date' => 'nullable|date',
+            'remarks' => 'nullable|string|max:1000',
             // phone & code inline updates
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:5',
@@ -521,10 +810,26 @@ class ConvertedLeadController extends Controller
             }
         }
 
-        // Update the field
-        $convertedLead->{$field} = $value;
-        $convertedLead->updated_by = AuthHelper::getCurrentUserId();
-        $convertedLead->save();
+        // Handle fields that are now in ConvertedStudentDetail
+        $studentDetailFields = ['reg_fee', 'exam_fee', 'enroll_no', 'id_card', 'tma', 'registration_number', 'enrollment_number', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks'];
+        
+        if (in_array($field, $studentDetailFields)) {
+            // Update in ConvertedStudentDetail
+            $studentDetail = $convertedLead->studentDetails;
+            if (!$studentDetail) {
+                // Create student detail if it doesn't exist
+                $studentDetail = $convertedLead->studentDetails()->create([
+                    'converted_lead_id' => $convertedLead->id,
+                ]);
+            }
+            $studentDetail->{$field} = $value;
+            $studentDetail->save();
+        } else {
+            // Update in ConvertedLead
+            $convertedLead->{$field} = $value;
+            $convertedLead->updated_by = AuthHelper::getCurrentUserId();
+            $convertedLead->save();
+        }
 
         // Get the updated value for response
         $updatedValue = $convertedLead->$field;
@@ -542,6 +847,11 @@ class ConvertedLeadController extends Controller
         } elseif (in_array($field, ['phone', 'code'])) {
             // For phone/code updates, return formatted display
             $updatedValue = \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone);
+        } elseif ($field === 'registration_link_id' && $updatedValue) {
+            $registrationLink = \App\Models\RegistrationLink::find($updatedValue);
+            $updatedValue = $registrationLink ? $registrationLink->title : $updatedValue;
+        } elseif (in_array($field, ['certificate_received_date', 'certificate_issued_date']) && $updatedValue) {
+            $updatedValue = \Carbon\Carbon::parse($updatedValue)->format('d/m/Y');
         }
 
         return response()->json([

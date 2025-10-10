@@ -237,6 +237,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/universities-add', [UniversityController::class, 'ajax_add'])->name('universities.add');
         Route::get('/universities-edit/{id}', [UniversityController::class, 'ajax_edit'])->name('universities.edit');
         Route::post('/universities-submit', [UniversityController::class, 'submit'])->name('universities.submit');
+        
+        // Registration Links Routes
+        Route::resource('registration-links', App\Http\Controllers\RegistrationLinkController::class);
+        Route::get('/registration-links-add', [App\Http\Controllers\RegistrationLinkController::class, 'ajax_add'])->name('registration-links.add');
+        Route::get('/registration-links-edit/{id}', [App\Http\Controllers\RegistrationLinkController::class, 'ajax_edit'])->name('registration-links.edit');
+        Route::post('/registration-links-submit', [App\Http\Controllers\RegistrationLinkController::class, 'submit'])->name('registration-links.submit');
+        Route::put('/registration-links-update/{registrationLink}', [App\Http\Controllers\RegistrationLinkController::class, 'update_registration_link'])->name('registration-links.update');
+        Route::delete('/registration-links-delete/{id}', [App\Http\Controllers\RegistrationLinkController::class, 'delete'])->name('registration-links.delete');
         Route::put('/universities-update/{university}', [UniversityController::class, 'update'])->name('universities.update');
         Route::delete('/universities-delete/{id}', [UniversityController::class, 'delete'])->name('universities.delete');
 
@@ -330,6 +338,26 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::delete('/finance-delete/{id}', [App\Http\Controllers\FinanceController::class, 'delete'])->name('finance.delete');
         Route::get('/finance-change-password/{id}', [App\Http\Controllers\FinanceController::class, 'changePassword'])->name('finance.change-password');
         Route::post('/finance-update-password/{id}', [App\Http\Controllers\FinanceController::class, 'updatePassword'])->name('finance.update-password');
+
+        // Support Team routes (role_id = 8)
+        Route::resource('support-team', App\Http\Controllers\SupportTeamController::class);
+        Route::get('/support-team-add', [App\Http\Controllers\SupportTeamController::class, 'ajax_add'])->name('support-team.add');
+        Route::get('/support-team-edit/{id}', [App\Http\Controllers\SupportTeamController::class, 'ajax_edit'])->name('support-team.edit');
+        Route::post('/support-team-submit', [App\Http\Controllers\SupportTeamController::class, 'submit'])->name('support-team.submit');
+        Route::put('/support-team-update/{id}', [App\Http\Controllers\SupportTeamController::class, 'update'])->name('support-team.update');
+        Route::delete('/support-team-delete/{id}', [App\Http\Controllers\SupportTeamController::class, 'delete'])->name('support-team.delete');
+        Route::get('/support-team-change-password/{id}', [App\Http\Controllers\SupportTeamController::class, 'changePassword'])->name('support-team.change-password');
+        Route::post('/support-team-update-password/{id}', [App\Http\Controllers\SupportTeamController::class, 'updatePassword'])->name('support-team.update-password');
+
+        // Mentor routes (role_id = 9)
+        Route::resource('mentor', App\Http\Controllers\MentorController::class);
+        Route::get('/mentor-add', [App\Http\Controllers\MentorController::class, 'ajax_add'])->name('mentor.add');
+        Route::get('/mentor-edit/{id}', [App\Http\Controllers\MentorController::class, 'ajax_edit'])->name('mentor.edit');
+        Route::post('/mentor-submit', [App\Http\Controllers\MentorController::class, 'submit'])->name('mentor.submit');
+        Route::put('/mentor-update/{id}', [App\Http\Controllers\MentorController::class, 'update'])->name('mentor.update');
+        Route::delete('/mentor-delete/{id}', [App\Http\Controllers\MentorController::class, 'delete'])->name('mentor.delete');
+        Route::get('/mentor-change-password/{id}', [App\Http\Controllers\MentorController::class, 'changePassword'])->name('mentor.change-password');
+        Route::post('/mentor-update-password/{id}', [App\Http\Controllers\MentorController::class, 'updatePassword'])->name('mentor.update-password');
 
         // Post-sales routes (role_id = 7)
         Route::resource('post-sales', App\Http\Controllers\PostSalesController::class);
@@ -438,6 +466,15 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/converted-leads/{id}/details-pdf', [App\Http\Controllers\ConvertedLeadController::class, 'generateDetailsPdf'])->name('converted-leads.details-pdf');
         Route::post('/converted-leads/{id}/id-card-generate', [App\Http\Controllers\ConvertedLeadController::class, 'generateAndStoreIdCard'])->name('converted-leads.id-card-generate');
         Route::get('/converted-leads/{id}/id-card', [App\Http\Controllers\ConvertedLeadController::class, 'viewStoredIdCard'])->name('converted-leads.id-card-view');
+        
+        // NIOS Converted Leads Routes
+        Route::get('/nios-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'niosIndex'])->name('nios-converted-leads.index');
+        
+        // BOSSE Converted Leads Routes
+        Route::get('/bosse-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'bosseIndex'])->name('bosse-converted-leads.index');
+        
+        // GMVSS Converted Leads Routes
+        Route::get('/gmvss-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'gmvssIndex'])->name('gmvss-converted-leads.index');
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
         Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
         Route::post('/converted-leads/{id}/inline-update', [App\Http\Controllers\ConvertedLeadController::class, 'inlineUpdate'])->name('converted-leads.inline-update');

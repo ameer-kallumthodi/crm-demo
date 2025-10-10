@@ -14,6 +14,7 @@ class AdmissionBatch extends Model
         'title',
         'description',
         'batch_id',
+        'mentor_id',
         'is_active',
         'created_by',
         'updated_by',
@@ -45,6 +46,11 @@ class AdmissionBatch extends Model
     public function batch()
     {
         return $this->belongsTo(Batch::class);
+    }
+
+    public function mentor()
+    {
+        return $this->belongsTo(User::class, 'mentor_id')->where('role_id', 9);
     }
 
     /**

@@ -23,6 +23,18 @@
 
         <div class="col-lg-6">
             <div class="p-1">
+                <label for="mentor_id" class="form-label">Mentor</label>
+                <select class="form-control" name="mentor_id" id="mentor_id">
+                    <option value="">Select Mentor (Optional)</option>
+                    @foreach($mentors as $mentor)
+                        <option value="{{ $mentor->id }}" {{ $edit_data->mentor_id == $mentor->id ? 'selected' : '' }}>{{ $mentor->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="p-1">
                 <label for="is_active" class="form-label">Status</label>
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {{ $edit_data->is_active ? 'checked' : '' }}>

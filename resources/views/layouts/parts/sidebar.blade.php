@@ -104,6 +104,26 @@
                     </a>
                 </li>
                 @endif
+                @if(has_permission('admin/support-team/index'))
+                <li class="pc-item {{ request()->routeIs('admin.support-team.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.support-team.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-headset"></i>
+                        </span>
+                        <span class="pc-mtext">Support Team</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/mentor/index'))
+                <li class="pc-item {{ request()->routeIs('admin.mentor.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.mentor.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-user-check"></i>
+                        </span>
+                        <span class="pc-mtext">Mentor</span>
+                    </a>
+                </li>
+                @endif
                 @if(has_permission('admin/post-sales/index'))
                 <li class="pc-item {{ request()->routeIs('admin.post-sales.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.post-sales.index') }}" class="pc-link">
@@ -273,7 +293,7 @@
                 @endif
                 
                 {{-- Master Data Section --}}
-                @if(has_permission('admin/courses/index') || has_permission('admin/countries/index') || has_permission('admin/teams/index') || has_permission('admin/subjects/index') || has_permission('admin/course-documents/index') || has_permission('admin/universities/index'))
+                @if(has_permission('admin/courses/index') || has_permission('admin/countries/index') || has_permission('admin/teams/index') || has_permission('admin/subjects/index') || has_permission('admin/course-documents/index') || has_permission('admin/universities/index') || has_permission('admin/registration-links/index'))
                 <li class="pc-item pc-caption">
                     <label>Master Data</label>
                 </li>
@@ -354,6 +374,16 @@
                             <i class="ti ti-school"></i>
                         </span>
                         <span class="pc-mtext">Universities</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/registration-links/index'))
+                <li class="pc-item {{ request()->routeIs('admin.registration-links.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.registration-links.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-link"></i>
+                        </span>
+                        <span class="pc-mtext">Registration Links</span>
                     </a>
                 </li>
                 @endif

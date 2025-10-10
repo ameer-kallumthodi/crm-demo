@@ -56,6 +56,18 @@ class UserRoleSeeder extends Seeder
                 'description' => 'Post-sales department access for customer support',
                 'is_active' => true,
             ],
+            [
+                'id' => 8,
+                'title' => 'Support Team',
+                'description' => 'Support Team access for customer support and assistance',
+                'is_active' => true,
+            ],
+            [
+                'id' => 9,
+                'title' => 'Mentor',
+                'description' => 'Mentor access for guidance and mentoring',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($roles as $role) {

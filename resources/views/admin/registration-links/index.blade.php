@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'Admission Batch Management')
+@section('title', 'Registration Links')
 
 @section('content')
 <!-- [ breadcrumb ] start -->
@@ -9,14 +9,13 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Admission Batch Management</h5>
+                    <h5 class="m-b-10">Registration Links Management</h5>
                 </div>
             </div>
             <div class="col-md-6">
                 <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item">Settings</li>
-                    <li class="breadcrumb-item">Admission Batches</li>
+                    <li class="breadcrumb-item">Registration Links</li>
                 </ul>
             </div>
         </div>
@@ -30,9 +29,9 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Admission Batch List</h5>
+                    <h5 class="mb-0">Registration Links List</h5>
                     <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
-                        onclick="show_small_modal('{{ route('admin.admission-batches.add') }}', 'Add Admission Batch')">
+                        onclick="show_small_modal('{{ route('admin.registration-links.add') }}', 'Add Registration Link')">
                         <i class="ti ti-plus"></i> Add New
                     </a>
                 </div>
@@ -44,38 +43,26 @@
                             <tr>
                                 <th>#</th>
                                 <th>Title</th>
-                                <th>Batch</th>
-                                <th>Mentor</th>
-                                <th>Description</th>
-                                <th>Status</th>
                                 <th>Created At</th>
+                                <th>Updated At</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($admissionBatches as $index => $admissionBatch)
+                            @foreach($registrationLinks as $index => $registrationLink)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $admissionBatch->title }}</td>
-                                <td>{{ $admissionBatch->batch->title ?? 'N/A' }}</td>
-                                <td>{{ $admissionBatch->mentor->name ?? 'No Mentor Assigned' }}</td>
-                                <td>{{ $admissionBatch->description ?? 'N/A' }}</td>
-                                <td>
-                                    @if($admissionBatch->is_active)
-                                        <span class="badge bg-success">Active</span>
-                                    @else
-                                        <span class="badge bg-danger">Inactive</span>
-                                    @endif
-                                </td>
-                                <td>{{ $admissionBatch->created_at->format('M d, Y') }}</td>
+                                <td>{{ $registrationLink->title }}</td>
+                                <td>{{ $registrationLink->created_at->format('M d, Y') }}</td>
+                                <td>{{ $registrationLink->updated_at->format('M d, Y') }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a href="javascript:void(0);" class="btn btn-sm btn-info"
-                                            onclick="show_small_modal('{{ route('admin.admission-batches.edit', $admissionBatch->id) }}', 'Edit Admission Batch')">
+                                            onclick="show_small_modal('{{ route('admin.registration-links.edit', $registrationLink->id) }}', 'Edit Registration Link')">
                                             <i class="ti ti-edit"></i>
                                         </a>
                                         <a href="javascript:void(0);" class="btn btn-sm btn-danger"
-                                            onclick="delete_modal('{{ route('admin.admission-batches.destroy', $admissionBatch->id) }}')" title="Delete">
+                                            onclick="delete_modal('{{ route('admin.registration-links.delete', $registrationLink->id) }}')" title="Delete">
                                             <i class="ti ti-trash"></i>
                                         </a>
                                     </div>
@@ -90,4 +77,5 @@
     </div>
 </div>
 <!-- [ Main Content ] end -->
+
 @endsection

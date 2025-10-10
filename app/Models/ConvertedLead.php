@@ -20,12 +20,7 @@ class ConvertedLead extends Model
         'username',
         'password',
         'status',
-        'reg_fee',
-        'exam_fee',
         'ref_no',
-        'enroll_no',
-        'id_card',
-        'tma',
         'register_number',
         'course_id',
         'university_id',
@@ -122,7 +117,7 @@ class ConvertedLead extends Model
 
     public function studentDetails()
     {
-        return $this->hasOne(ConvertedStudentDetail::class);
+        return $this->hasOne(ConvertedStudentDetail::class, 'converted_lead_id');
     }
 
     public function idCards()
@@ -175,5 +170,71 @@ class ConvertedLead extends Model
             return base64_decode($value);
         }
         return $value;
+    }
+
+    /**
+     * Proxy methods to access fields from ConvertedStudentDetail
+     */
+    public function getRegFeeAttribute()
+    {
+        return $this->studentDetails?->reg_fee;
+    }
+
+    public function getExamFeeAttribute()
+    {
+        return $this->studentDetails?->exam_fee;
+    }
+
+    public function getEnrollNoAttribute()
+    {
+        return $this->studentDetails?->enroll_no;
+    }
+
+    public function getIdCardAttribute()
+    {
+        return $this->studentDetails?->id_card;
+    }
+
+    public function getTmaAttribute()
+    {
+        return $this->studentDetails?->tma;
+    }
+
+    /**
+     * Setter methods to update fields in ConvertedStudentDetail
+     */
+    public function setRegFeeAttribute($value)
+    {
+        if ($this->studentDetails) {
+            $this->studentDetails->update(['reg_fee' => $value]);
+        }
+    }
+
+    public function setExamFeeAttribute($value)
+    {
+        if ($this->studentDetails) {
+            $this->studentDetails->update(['exam_fee' => $value]);
+        }
+    }
+
+    public function setEnrollNoAttribute($value)
+    {
+        if ($this->studentDetails) {
+            $this->studentDetails->update(['enroll_no' => $value]);
+        }
+    }
+
+    public function setIdCardAttribute($value)
+    {
+        if ($this->studentDetails) {
+            $this->studentDetails->update(['id_card' => $value]);
+        }
+    }
+
+    public function setTmaAttribute($value)
+    {
+        if ($this->studentDetails) {
+            $this->studentDetails->update(['tma' => $value]);
+        }
     }
 }

@@ -1404,8 +1404,17 @@ class LeadController extends Controller
      */
     public function getLeadsBySourceReassign(Request $request)
     {
+        // Debug: Log the request data
+        \Log::info('Bulk Reassign Request Data:', $request->all());
+        
+        // Simple test to see if method is called
+        if (empty($request->lead_source_id) || empty($request->tele_caller_id) || empty($request->lead_status_id) || empty($request->from_date) || empty($request->to_date)) {
+            return response()->json(['error' => 'Missing required parameters'], 400);
+        }
+        
         $fromDate = date('Y-m-d H:i:s', strtotime($request->from_date . ' 00:00:00'));
         $toDate = date('Y-m-d H:i:s', strtotime($request->to_date . ' 23:59:59'));
+        
         $leads = Lead::where('lead_source_id', $request->lead_source_id)
                     ->where('telecaller_id', $request->tele_caller_id)
                     ->where('lead_status_id', $request->lead_status_id)
@@ -1413,6 +1422,12 @@ class LeadController extends Controller
                     ->where('created_at', '<=', $toDate)
                     ->with(['leadStatus', 'leadSource', 'telecaller', 'course'])
                     ->get();
+        
+        // Debug: Log the query results
+        \Log::info('Bulk Reassign Query Results:', [
+            'leads_count' => $leads->count(),
+            'leads' => $leads->toArray()
+        ]);
         
         return view('admin.leads.partials.leads-table-rows-reassign', compact('leads'));
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdmissionBatch;
 use App\Models\Batch;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Helpers\RoleHelper;
 use App\Helpers\AuthHelper;
@@ -16,7 +17,7 @@ class AdmissionBatchController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $admissionBatches = AdmissionBatch::with(['batch', 'createdBy', 'updatedBy'])->orderBy('created_at', 'desc')->get();
+        $admissionBatches = AdmissionBatch::with(['batch', 'mentor', 'createdBy', 'updatedBy'])->orderBy('created_at', 'desc')->get();
         return view('admin.admission-batches.index', compact('admissionBatches'));
     }
 
@@ -29,6 +30,7 @@ class AdmissionBatchController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'batch_id' => 'required|exists:batches,id',
+            'mentor_id' => 'nullable|exists:users,id',
             'description' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);
@@ -36,6 +38,7 @@ class AdmissionBatchController extends Controller
         $admissionBatch = AdmissionBatch::create([
             'title' => $request->title,
             'batch_id' => $request->batch_id,
+            'mentor_id' => $request->mentor_id,
             'description' => $request->description,
             'is_active' => $request->has('is_active'),
             'created_by' => AuthHelper::getCurrentUserId(),
@@ -85,7 +88,8 @@ class AdmissionBatchController extends Controller
         }
 
         $batches = Batch::where('is_active', true)->get();
-        return view('admin.admission-batches.add', compact('batches'));
+        $mentors = User::where('role_id', 9)->where('is_active', true)->get();
+        return view('admin.admission-batches.add', compact('batches', 'mentors'));
     }
 
     public function submit(Request $request)
@@ -110,6 +114,7 @@ class AdmissionBatchController extends Controller
             $admissionBatch = AdmissionBatch::create([
                 'title' => $request->title,
                 'batch_id' => $request->batch_id,
+                'mentor_id' => $request->mentor_id,
                 'description' => $request->description,
                 'is_active' => $request->is_active,
                 'created_by' => AuthHelper::getCurrentUserId(),
@@ -130,7 +135,8 @@ class AdmissionBatchController extends Controller
 
         $edit_data = AdmissionBatch::findOrFail($id);
         $batches = Batch::where('is_active', true)->get();
-        return view('admin.admission-batches.edit', compact('edit_data', 'batches'));
+        $mentors = User::where('role_id', 9)->where('is_active', true)->get();
+        return view('admin.admission-batches.edit', compact('edit_data', 'batches', 'mentors'));
     }
 
     public function update(Request $request, $id)
@@ -148,6 +154,7 @@ class AdmissionBatchController extends Controller
             $request->validate([
                 'title' => 'required|string|max:255',
                 'batch_id' => 'required|exists:batches,id',
+                'mentor_id' => 'nullable|exists:users,id',
                 'description' => 'nullable|string',
                 'is_active' => 'nullable|boolean',
             ]);
@@ -156,6 +163,7 @@ class AdmissionBatchController extends Controller
             $admissionBatch->update([
                 'title' => $request->title,
                 'batch_id' => $request->batch_id,
+                'mentor_id' => $request->mentor_id,
                 'description' => $request->description,
                 'is_active' => $request->is_active,
                 'updated_by' => AuthHelper::getCurrentUserId(),
