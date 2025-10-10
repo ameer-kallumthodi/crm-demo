@@ -313,7 +313,7 @@ class ConvertedLeadController extends Controller
      */
     public function gmvssIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'batch', 'admissionBatch', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'batch', 'admissionBatch', 'subject', 'studentDetails.registrationLink'])
             ->where('course_id', 16);
 
         // Apply role-based filtering
@@ -388,9 +388,10 @@ class ConvertedLeadController extends Controller
         $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(20);
         $courses = \App\Models\Course::all();
         $batches = \App\Models\Batch::where('course_id', 16)->get();
-        $country_codes = \App\Models\Country::all();
+        $country_codes = get_country_code();
+        $registration_links = \App\Models\RegistrationLink::all();
 
-        return view('admin.converted-leads.gmvss-index', compact('convertedLeads', 'courses', 'batches', 'country_codes'));
+        return view('admin.converted-leads.gmvss-index', compact('convertedLeads', 'courses', 'batches', 'country_codes', 'registration_links'));
     }
 
     /**
@@ -407,7 +408,7 @@ class ConvertedLeadController extends Controller
             'subject',
             'academicAssistant',
             'createdBy',
-            'studentDetails'
+            'studentDetails.registrationLink'
         ])->findOrFail($id);
 
         // Apply role-based access control
@@ -832,7 +833,12 @@ class ConvertedLeadController extends Controller
         }
 
         // Get the updated value for response
-        $updatedValue = $convertedLead->$field;
+        if (in_array($field, $studentDetailFields)) {
+            // For student detail fields, get the value from the relationship
+            $updatedValue = $convertedLead->studentDetails ? $convertedLead->studentDetails->$field : $value;
+        } else {
+            $updatedValue = $convertedLead->$field;
+        }
         
         // Special handling for display values
         if ($field === 'subject_id' && $updatedValue) {
@@ -851,7 +857,7 @@ class ConvertedLeadController extends Controller
             $registrationLink = \App\Models\RegistrationLink::find($updatedValue);
             $updatedValue = $registrationLink ? $registrationLink->title : $updatedValue;
         } elseif (in_array($field, ['certificate_received_date', 'certificate_issued_date']) && $updatedValue) {
-            $updatedValue = \Carbon\Carbon::parse($updatedValue)->format('d/m/Y');
+            $updatedValue = \Carbon\Carbon::parse($updatedValue)->format('d-m-Y');
         }
 
         return response()->json([

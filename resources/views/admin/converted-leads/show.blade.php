@@ -165,10 +165,10 @@
                             </div>
                             @php
                                 $statusBadge = $convertedLead->status === 'Paid' ? 'success' : ($convertedLead->status === 'Admission cancel' ? 'danger' : 'secondary');
-                                $regFeeBadge = $convertedLead->reg_fee === 'Received' ? 'success' : ($convertedLead->reg_fee ? 'warning' : 'secondary');
-                                $examFeeBadge = $convertedLead->exam_fee === 'Paid' ? 'success' : ($convertedLead->exam_fee === 'Pending' ? 'warning' : ($convertedLead->exam_fee ? 'danger' : 'secondary'));
-                                $idCardBadge = $convertedLead->id_card === 'download' ? 'success' : ($convertedLead->id_card === 'processing' ? 'warning' : ($convertedLead->id_card ? 'secondary' : 'secondary'));
-                                $tmaBadge = $convertedLead->tma === 'Uploaded' ? 'success' : ($convertedLead->tma ? 'secondary' : 'secondary');
+                                $regFeeBadge = $convertedLead->studentDetails?->reg_fee === 'Received' ? 'success' : ($convertedLead->studentDetails?->reg_fee ? 'warning' : 'secondary');
+                                $examFeeBadge = $convertedLead->studentDetails?->exam_fee === 'Paid' ? 'success' : ($convertedLead->studentDetails?->exam_fee === 'Pending' ? 'warning' : ($convertedLead->studentDetails?->exam_fee ? 'danger' : 'secondary'));
+                                $idCardBadge = $convertedLead->studentDetails?->id_card === 'download' ? 'success' : ($convertedLead->studentDetails?->id_card === 'processing' ? 'warning' : ($convertedLead->studentDetails?->id_card ? 'secondary' : 'secondary'));
+                                $tmaBadge = $convertedLead->studentDetails?->tma === 'Uploaded' ? 'success' : ($convertedLead->studentDetails?->tma ? 'secondary' : 'secondary');
                             @endphp
                             <div class="col-md-3">
                                 <label class="form-label text-muted">Username</label>
@@ -184,15 +184,15 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-muted">ID Card</label>
-                                <p class="fw-bold"><span class="badge bg-{{ $idCardBadge }} text-uppercase">{{ $convertedLead->id_card ?? 'N/A' }}</span></p>
+                                <p class="fw-bold"><span class="badge bg-{{ $idCardBadge }} text-uppercase">{{ $convertedLead->studentDetails?->id_card ?? 'N/A' }}</span></p>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-muted">REG. FEE</label>
-                                <p class="fw-bold"><span class="badge bg-{{ $regFeeBadge }}">{{ $convertedLead->reg_fee ?? 'N/A' }}</span></p>
+                                <p class="fw-bold"><span class="badge bg-{{ $regFeeBadge }}">{{ $convertedLead->studentDetails?->reg_fee ?? 'N/A' }}</span></p>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-muted">EXAM FEE</label>
-                                <p class="fw-bold"><span class="badge bg-{{ $examFeeBadge }}">{{ $convertedLead->exam_fee ?? 'N/A' }}</span></p>
+                                <p class="fw-bold"><span class="badge bg-{{ $examFeeBadge }}">{{ $convertedLead->studentDetails?->exam_fee ?? 'N/A' }}</span></p>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-muted">Ref No</label>
@@ -200,14 +200,70 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-muted">Enroll No</label>
-                                <p class="fw-bold"><span class="badge bg-light text-dark border">{{ $convertedLead->enroll_no ?? 'N/A' }}</span></p>
+                                <p class="fw-bold"><span class="badge bg-light text-dark border">{{ $convertedLead->studentDetails?->enroll_no ?? 'N/A' }}</span></p>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-muted">TMA</label>
-                                <p class="fw-bold"><span class="badge bg-{{ $tmaBadge }}">{{ $convertedLead->tma ?? 'N/A' }}</span></p>
+                                <p class="fw-bold"><span class="badge bg-{{ $tmaBadge }}">{{ $convertedLead->studentDetails?->tma ?? 'N/A' }}</span></p>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Course-Specific Information -->
+                    @if($convertedLead->studentDetails)
+                    <div class="col-12">
+                        <hr>
+                        <h6 class="text-primary mb-3 d-flex align-items-center gap-2"><i class="ti ti-school"></i> Course-Specific Information</h6>
+                        <div class="row g-3">
+                            @if($convertedLead->course_id == 16) {{-- GMVSS --}}
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted">Registration Link</label>
+                                    <p class="fw-bold">{{ $convertedLead->studentDetails->registrationLink?->title ?? 'N/A' }}</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted">Certificate Status</label>
+                                    <p class="fw-bold"><span class="badge bg-info">{{ $convertedLead->studentDetails->certificate_status ?? 'N/A' }}</span></p>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted">Certificate Received Date</label>
+                                    <p class="fw-bold">{{ $convertedLead->studentDetails->certificate_received_date ? $convertedLead->studentDetails->certificate_received_date->format('d-m-Y') : 'N/A' }}</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted">Certificate Issued Date</label>
+                                    <p class="fw-bold">{{ $convertedLead->studentDetails->certificate_issued_date ? $convertedLead->studentDetails->certificate_issued_date->format('d-m-Y') : 'N/A' }}</p>
+                                </div>
+                            @endif
+                            
+                            @if($convertedLead->studentDetails->registration_number)
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Registration Number</label>
+                                <p class="fw-bold">{{ $convertedLead->studentDetails->registration_number }}</p>
+                            </div>
+                            @endif
+                            
+                            @if($convertedLead->studentDetails->enrollment_number)
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Enrollment Number</label>
+                                <p class="fw-bold">{{ $convertedLead->studentDetails->enrollment_number }}</p>
+                            </div>
+                            @endif
+                            
+                            @if($convertedLead->studentDetails->converted_date)
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Converted Date</label>
+                                <p class="fw-bold">{{ $convertedLead->studentDetails->converted_date->format('d-m-Y') }}</p>
+                            </div>
+                            @endif
+                            
+                            @if($convertedLead->studentDetails->remarks)
+                            <div class="col-12">
+                                <label class="form-label text-muted">Remarks</label>
+                                <p class="fw-bold">{{ $convertedLead->studentDetails->remarks }}</p>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
 
                     @if($convertedLead->leadDetail)
                     <div class="col-12 mt-4">

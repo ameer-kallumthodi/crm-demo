@@ -40,6 +40,9 @@
                     <a href="{{ route('admin.bosse-converted-leads.index') }}" class="btn btn-outline-warning">
                         <i class="ti ti-graduation-cap"></i> BOSSE Converted Leads
                     </a>
+                    <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
+                        <i class="ti ti-certificate"></i> GMVSS Converted Leads
+                    </a>
                 </div>
             </div>
         </div>
@@ -188,6 +191,7 @@
                                     <th>MAIL</th>
                                     <th>ID CARD</th>
                                     <th>TMA</th>
+                                    <th>Remarks</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -369,7 +373,17 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="btn-group" role="group">
+                                        <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="" role="group">
                                             <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
                                                 <i class="ti ti-eye"></i>
                                             </a>

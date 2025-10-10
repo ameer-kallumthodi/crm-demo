@@ -221,21 +221,36 @@
                                     <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>
-                                        <div class="btn-group" role="group">
+                                        <div class="" role="group">
                                             <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
                                                 <i class="ti ti-eye"></i>
                                             </a>
                                             <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice">
                                                 <i class="ti ti-receipt"></i>
                                             </a>
-                                            @if($convertedLead->course_id == 1)
-                                                <a href="{{ route('admin.nios-converted-leads.index') }}" class="btn btn-sm btn-outline-success" title="View NIOS Details">
-                                                    <i class="ti ti-school"></i>
-                                                </a>
-                                            @elseif($convertedLead->course_id == 2)
-                                                <a href="{{ route('admin.bosse-converted-leads.index') }}" class="btn btn-sm btn-outline-warning" title="View BOSSE Details">
-                                                    <i class="ti ti-graduation-cap"></i>
-                                                </a>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                            <button type="button" class="btn btn-sm btn-info update-register-btn" title="Update Register Number"
+                                                data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
+                                                data-title="Update Register Number">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @if($convertedLead->register_number)
+                                                @php
+                                                    $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                                @endphp
+                                                @if($idCard)
+                                                    <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-warning" title="View ID Card" target="_blank">
+                                                        <i class="ti ti-id"></i>
+                                                    </a>
+                                                @else
+                                                    <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
+                                                            <i class="ti ti-id"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            @endif
                                             @endif
                                         </div>
                                     </td>
@@ -279,18 +294,35 @@
                                                 <i class="ti ti-receipt me-2"></i>View Invoice
                                             </a>
                                         </li>
-                                        @if($convertedLead->course_id == 1)
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                         <li>
-                                            <a class="dropdown-item" href="{{ route('admin.nios-converted-leads.index') }}">
-                                                <i class="ti ti-school me-2"></i>View NIOS Details
-                                            </a>
+                                            <button type="button" class="dropdown-item update-register-btn" 
+                                                data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
+                                                data-title="Update Register Number">
+                                                <i class="ti ti-edit me-2"></i>Update Register Number
+                                            </button>
                                         </li>
-                                        @elseif($convertedLead->course_id == 2)
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('admin.bosse-converted-leads.index') }}">
-                                                <i class="ti ti-graduation-cap me-2"></i>View BOSSE Details
-                                            </a>
-                                        </li>
+                                        @if($convertedLead->register_number)
+                                            @php
+                                                $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                            @endphp
+                                            @if($idCard)
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" target="_blank">
+                                                        <i class="ti ti-id me-2"></i>View ID Card
+                                                    </a>
+                                                </li>
+                                            @else
+                                                <li>
+                                                    <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
+                                                        @csrf
+                                                        <button type="submit" class="dropdown-item" data-loading-text="Generating...">
+                                                            <i class="ti ti-id me-2"></i>Generate ID Card
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            @endif
+                                        @endif
                                         @endif
                                     </ul>
                                 </div>
@@ -338,16 +370,29 @@
                                     class="btn btn-sm btn-success">
                                     <i class="ti ti-receipt me-1"></i>View Invoice
                                 </a>
-                                @if($convertedLead->course_id == 1)
-                                <a href="{{ route('admin.nios-converted-leads.index') }}"
-                                    class="btn btn-sm btn-outline-success">
-                                    <i class="ti ti-school me-1"></i>NIOS Details
-                                </a>
-                                @elseif($convertedLead->course_id == 2)
-                                <a href="{{ route('admin.bosse-converted-leads.index') }}"
-                                    class="btn btn-sm btn-outline-warning">
-                                    <i class="ti ti-graduation-cap me-1"></i>BOSSE Details
-                                </a>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                <button type="button" class="btn btn-sm btn-info update-register-btn" title="Update Register Number"
+                                    data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
+                                    data-title="Update Register Number">
+                                    <i class="ti ti-edit me-1"></i>Update Register
+                                </button>
+                                @if($convertedLead->register_number)
+                                    @php
+                                        $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                    @endphp
+                                    @if($idCard)
+                                        <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-warning" title="View ID Card" target="_blank">
+                                            <i class="ti ti-id me-1"></i>View ID Card
+                                        </a>
+                                    @else
+                                        <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
+                                                <i class="ti ti-id me-1"></i>Generate ID Card
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endif
                                 @endif
                             </div>
                         </div>
@@ -586,6 +631,54 @@
         $('#batch_id').on('change', function() {
             const bid = $(this).val();
             loadAdmissionBatchesByBatch(bid, '');
+        });
+
+        // Handle update register number button clicks
+        $('.update-register-btn').on('click', function(e) {
+            e.preventDefault();
+            const url = $(this).data('url');
+            const title = $(this).data('title');
+            show_small_modal(url, title);
+        });
+
+        // Handle ID card generation form submission
+        $(document).off('submit', '.id-card-generate-form').on('submit', '.id-card-generate-form', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            
+            const $form = $(this);
+            const $button = $form.find('button[type="submit"]');
+            const originalText = $button.text();
+            const loadingText = $button.data('loading-text') || 'Generating...';
+            
+            $button.prop('disabled', true).text(loadingText);
+            
+            $.ajax({
+                url: $form.attr('action'),
+                method: 'POST',
+                data: $form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        show_alert('success', response.message || 'ID Card generated successfully!');
+                        // Reload the page to show updated buttons
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        show_alert('error', response.message || 'Failed to generate ID Card');
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Failed to generate ID Card';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    show_alert('error', errorMessage);
+                },
+                complete: function() {
+                    $button.prop('disabled', false).text(originalText);
+                }
+            });
         });
     });
 </script>

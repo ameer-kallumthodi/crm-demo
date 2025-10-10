@@ -197,35 +197,68 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>{{ $session->login_time->format('M d, Y g:i:s A') }}</td>
+                                <td>
+                                    @php
+                                        $loginTime = $session->login_time;
+                                        if ($loginTime) {
+                                            $formattedTime = $loginTime->setTimezone('Asia/Kolkata')->format('M d, Y g:i:s A');
+                                        } else {
+                                            $formattedTime = 'N/A';
+                                        }
+                                    @endphp
+                                    {{ $formattedTime }}
+                                </td>
                                 <td>
                                     @if($session->logout_time)
-                                        {{ $session->logout_time->format('M d, Y g:i:s A') }}
+                                        @php
+                                            $logoutTime = $session->logout_time;
+                                            $formattedLogoutTime = $logoutTime->setTimezone('Asia/Kolkata')->format('M d, Y g:i:s A');
+                                        @endphp
+                                        {{ $formattedLogoutTime }}
                                     @else
                                         <span class="badge bg-success">Active</span>
                                     @endif
                                 </td>
                                 <td>
                                     @php
-                                        $totalMinutes = $session->total_duration_minutes ?: $session->calculateTotalDuration() / 60;
-                                        $hours = floor($totalMinutes / 60);
-                                        $minutes = floor($totalMinutes % 60);
-                                        $seconds = floor(($totalMinutes % 1) * 60);
+                                        // Calculate total duration more accurately
+                                        if ($session->logout_time) {
+                                            $totalSeconds = $session->login_time->diffInSeconds($session->logout_time);
+                                        } else {
+                                            $totalSeconds = $session->login_time->diffInSeconds(now());
+                                        }
+                                        $hours = floor($totalSeconds / 3600);
+                                        $minutes = floor(($totalSeconds % 3600) / 60);
+                                        $seconds = $totalSeconds % 60;
                                     @endphp
                                     {{ $hours }}h {{ $minutes }}m {{ $seconds }}s
                                 </td>
                                 <td>
                                     @php
-                                        $activeMinutes = $session->active_duration_minutes ?: $session->calculateActiveDuration() / 60;
-                                        $hours = floor($activeMinutes / 60);
-                                        $minutes = floor($activeMinutes % 60);
-                                        $seconds = floor(($activeMinutes % 1) * 60);
-                                    @endphp
-                                    {{ $hours }}h {{ $minutes }}m {{ $seconds }}s
-                                </td>
-                                <td>
-                                    @php
+                                        // Calculate active duration (total duration - idle time)
+                                        $totalDurationSeconds = $session->logout_time ? 
+                                            $session->login_time->diffInSeconds($session->logout_time) : 
+                                            $session->login_time->diffInSeconds(now());
+                                        
                                         $idleSeconds = $session->idleTimes()->sum('idle_duration_seconds');
+                                        $activeSeconds = max(0, $totalDurationSeconds - $idleSeconds);
+                                        
+                                        $hours = floor($activeSeconds / 3600);
+                                        $minutes = floor(($activeSeconds % 3600) / 60);
+                                        $seconds = $activeSeconds % 60;
+                                    @endphp
+                                    {{ $hours }}h {{ $minutes }}m {{ $seconds }}s
+                                </td>
+                                <td>
+                                    @php
+                                        // Calculate idle time more accurately
+                                        $idleSeconds = $session->idleTimes()->sum('idle_duration_seconds');
+                                        
+                                        // If no idle time recorded, try to calculate from session data
+                                        if ($idleSeconds == 0 && $session->idle_duration_minutes) {
+                                            $idleSeconds = $session->idle_duration_minutes * 60;
+                                        }
+                                        
                                         $hours = floor($idleSeconds / 3600);
                                         $minutes = floor(($idleSeconds % 3600) / 60);
                                         $seconds = $idleSeconds % 60;
