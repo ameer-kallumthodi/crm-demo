@@ -38,10 +38,28 @@
                         <i class="ti ti-school"></i> NIOS Converted Leads
                     </a>
                     <a href="{{ route('admin.bosse-converted-leads.index') }}" class="btn btn-warning active">
-                        <i class="ti ti-graduation-cap"></i> BOSSE Converted Leads
+                        <i class="ti ti-school-2"></i> BOSSE Converted Leads
+                    </a>
+                    <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-outline-info">
+                        <i class="ti ti-building"></i> Hotel Management Converted Leads
                     </a>
                     <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
                         <i class="ti ti-certificate"></i> GMVSS Converted Leads
+                    </a>
+                    <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-code"></i> AI with Python Converted Leads
+                    </a>
+                    <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-robot"></i> AI Automation Converted Leads
+                    </a>
+                    <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-world"></i> Web Development & Designing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-desktop"></i> Vibe Coding Converted Leads
                     </a>
                 </div>
             </div>
@@ -60,7 +78,7 @@
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
                             <input type="text" class="form-control" id="search" name="search"
-                                value="{{ request('search') }}" placeholder="Name, Phone, Email">
+                                value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="batch_id" class="form-label">Batch</label>
@@ -104,37 +122,13 @@
                             <label for="reg_fee" class="form-label">REG. FEE</label>
                             <select class="form-select" id="reg_fee" name="reg_fee">
                                 <option value="">All</option>
-                                <option value="Received" {{ request('reg_fee')==='Received' ? 'selected' : '' }}>Received</option>
-                                <option value="Not Received" {{ request('reg_fee')==='Not Received' ? 'selected' : '' }}>Not Received</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="exam_fee" class="form-label">EXAM FEE</label>
-                            <select class="form-select" id="exam_fee" name="exam_fee">
-                                <option value="">All</option>
-                                <option value="Pending" {{ request('exam_fee')==='Pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="Not Paid" {{ request('exam_fee')==='Not Paid' ? 'selected' : '' }}>Not Paid</option>
-                                <option value="Paid" {{ request('exam_fee')==='Paid' ? 'selected' : '' }}>Paid</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="id_card" class="form-label">ID CARD</label>
-                            <select class="form-select" id="id_card" name="id_card">
-                                <option value="">All</option>
-                                <option value="processing" {{ request('id_card')==='processing' ? 'selected' : '' }}>processing</option>
-                                <option value="download" {{ request('id_card')==='download' ? 'selected' : '' }}>download</option>
-                                <option value="not downloaded" {{ request('id_card')==='not downloaded' ? 'selected' : '' }}>not downloaded</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="tma" class="form-label">TMA</label>
-                            <select class="form-select" id="tma" name="tma">
-                                <option value="">All</option>
-                                <option value="Uploaded" {{ request('tma')==='Uploaded' ? 'selected' : '' }}>Uploaded</option>
-                                <option value="Not Upload" {{ request('tma')==='Not Upload' ? 'selected' : '' }}>Not Upload</option>
+                                <option value="Handover -1" {{ request('reg_fee')==='Handover -1' ? 'selected' : '' }}>Handover -1</option>
+                                <option value="Handover - 2" {{ request('reg_fee')==='Handover - 2' ? 'selected' : '' }}>Handover - 2</option>
+                                <option value="Handover - 3" {{ request('reg_fee')==='Handover - 3' ? 'selected' : '' }}>Handover - 3</option>
+                                <option value="Handover - 4" {{ request('reg_fee')==='Handover - 4' ? 'selected' : '' }}>Handover - 4</option>
+                                <option value="Handover - 5" {{ request('reg_fee')==='Handover - 5' ? 'selected' : '' }}>Handover - 5</option>
+                                <option value="Paid" {{ request('reg_fee')==='Paid' ? 'selected' : '' }}>Paid</option>
+                                <option value="Admission cancel" {{ request('reg_fee')==='Admission cancel' ? 'selected' : '' }}>Admission cancel</option>
                             </select>
                         </div>
 
@@ -171,26 +165,22 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
+                                    <th>Converted Date</th>
                                     <th>Register Number</th>
-                                    <th>Date</th>
-                                    <th>DOB</th>
                                     <th>Name</th>
-                                    <th>Subject</th>
-                                    <th>Mobile</th>
-                                    <th>Course</th>
+                                    <th>DOB</th>
+                                    <th>Phone</th>
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
-                                    <th>Registered Person</th>
-                                    <th>Username</th>
-                                    <th>Password</th>
-                                    <th>Status</th>
-                                    <th>REG. FEE</th>
-                                    <th>EXAM FEE</th>
-                                    <th>Ref No</th>
-                                    <th>Enroll No</th>
-                                    <th>MAIL</th>
-                                    <th>ID CARD</th>
-                                    <th>TMA</th>
+                                    <th>Registration Fee</th>
+                                    <th>Course</th>
+                                    <th>Application Number</th>
+                                    <th>Board Registration Number</th>
+                                    <th>Mail</th>
+                                    <th>ST</th>
+                                    <th>PHY</th>
+                                    <th>CHE</th>
+                                    <th>BIO</th>
                                     <th>Remarks</th>
                                     <th>Actions</th>
                                 </tr>
@@ -199,6 +189,7 @@
                                 @forelse($convertedLeads as $index => $convertedLead)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
+                                    <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="register_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->register_number }}">
                                             @if($convertedLead->register_number)
@@ -206,20 +197,6 @@
                                             @else
                                             <span class="display-value text-muted">Not Set</span>
                                             @endif
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>{{ $convertedLead->created_at->format('M d, Y') }}</td>
-                                    <td>
-                                        <div class="inline-edit" data-field="dob" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->dob }}">
-                                            @php
-                                                $dobDisplay = $convertedLead->dob ? (strtotime($convertedLead->dob) ? date('d-m-Y', strtotime($convertedLead->dob)) : $convertedLead->dob) : 'N/A';
-                                            @endphp
-                                            <span class="display-value">{{ $dobDisplay }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -239,8 +216,11 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="subject_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->subject_id }}">
-                                            <span class="display-value">{{ $convertedLead->subject ? $convertedLead->subject->title : 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="dob" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->dob }}">
+                                            @php
+                                                $dobDisplay = $convertedLead->dob ? (strtotime($convertedLead->dob) ? date('d-m-Y', strtotime($convertedLead->dob)) : $convertedLead->dob) : 'N/A';
+                                            @endphp
+                                            <span class="display-value">{{ $dobDisplay }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -257,9 +237,8 @@
                                             </button>
                                             @endif
                                         </div>
-                                        <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}"></div>
+                                        <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}">                                        </div>
                                     </td>
-                                    <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
                                     <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
@@ -272,8 +251,19 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="academic_assistant_id" data-id="{{ $convertedLead->id }}" data-current-id="{{ $convertedLead->academic_assistant_id }}">
-                                            <span class="display-value">{{ $convertedLead->academicAssistant ? $convertedLead->academicAssistant->name : 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="reg_fee" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->reg_fee }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->reg_fee ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
+                                    <td>
+                                        <div class="inline-edit" data-field="application_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->application_number }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->application_number ?? 'N/A' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -282,8 +272,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="username" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->username }}">
-                                            <span class="display-value">{{ $convertedLead->username ?? 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="board_registration_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->board_registration_number }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->board_registration_number ?? 'N/A' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -292,58 +282,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="password" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->password }}">
-                                            <span class="display-value">{{ $convertedLead->password ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->status }}">
-                                            <span class="display-value">{{ $convertedLead->status ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="reg_fee" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->reg_fee }}">
-                                            <span class="display-value">{{ $convertedLead->reg_fee ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="exam_fee" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->exam_fee }}">
-                                            <span class="display-value">{{ $convertedLead->exam_fee ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="ref_no" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->ref_no }}">
-                                            <span class="display-value">{{ $convertedLead->ref_no ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="enroll_no" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->enroll_no }}">
-                                            <span class="display-value">{{ $convertedLead->enroll_no ?? 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
+                                            <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -353,8 +293,8 @@
                                     </td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>
-                                        <div class="inline-edit" data-field="id_card" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->id_card }}">
-                                            <span class="display-value">{{ $convertedLead->id_card ?? 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="st" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->st }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->st ?? '0' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -363,8 +303,28 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="tma" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->tma }}">
-                                            <span class="display-value">{{ $convertedLead->tma ?? 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="phy" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->phy }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->phy ?? '0' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="che" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->che }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->che ?? '0' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="bio" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->bio }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->bio ?? '0' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -374,7 +334,7 @@
                                     </td>
                                     <td>
                                         <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? 'N/A' }}</span>
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -419,7 +379,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="22" class="text-center">No BOSSE converted leads found</td>
+                                    <td colspan="20" class="text-center">No BOSSE converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -506,7 +466,7 @@
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
-                                    <span class="fw-medium">{{ $convertedLead->created_at->format('M d, Y') }}</span>
+                                    <span class="fw-medium">{{ $convertedLead->created_at->format('d-m-Y') }}</span>
                                 </div>
                             </div>
                             
@@ -885,6 +845,8 @@
                 success: function(response) {
                     if (response.success) {
                         container.find('.display-value').text(response.value || value);
+                        // Update the data-current attribute with the new value
+                        container.data('current', response.value || value);
                         if (field === 'phone') {
                             const codeVal = extra.code || '';
                             container.siblings('.inline-code-value').data('current', codeVal);
@@ -895,8 +857,18 @@
                     }
                 },
                 error: function(xhr) {
-                    const error = xhr.responseJSON?.error || 'Update failed';
-                    toast_error(error);
+                    let errorMessage = 'Update failed';
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.error) {
+                            errorMessage = xhr.responseJSON.error;
+                        } else if (xhr.responseJSON.errors) {
+                            // Handle validation errors - show user-friendly messages
+                            const errors = xhr.responseJSON.errors;
+                            const fieldErrors = Object.values(errors).flat();
+                            errorMessage = fieldErrors.join(', ');
+                        }
+                    }
+                    toast_error(errorMessage);
                 },
                 complete: function() {
                     btn.data('busy', false);
@@ -927,6 +899,23 @@
                         <div class="btn-group mt-1">
                             <button class="btn btn-success btn-sm save-edit">Save</button>
                             <button class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Handle number fields with max 20
+            if (['st', 'phy', 'che', 'bio'].includes(field)) {
+                const inputType = 'number';
+                const displayValue = currentValue === 'N/A' ? '' : currentValue;
+                const commonAttrs = 'autocomplete="off" autocapitalize="off" spellcheck="false" name="inline-temp" min="0" max="20"';
+                const valueAttr = `value="${displayValue}"`;
+                return `
+                    <div class="edit-form">
+                        <input type="${inputType}" ${valueAttr} ${commonAttrs} class="form-control form-control-sm" oninput="if(this.value > 20) this.value = 20; if(this.value < 0) this.value = 0;">
+                        <div class="btn-group mt-1">
+                            <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                            <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
                         </div>
                     </div>
                 `;
@@ -997,9 +986,14 @@
                     options += `<option value="Inactive" ${selectedValue === 'Inactive' ? 'selected' : ''}>Inactive</option>`;
                     break;
                 case 'reg_fee':
-                    options = '<option value="">Select REG. FEE</option>';
-                    options += `<option value="Received" ${selectedValue === 'Received' ? 'selected' : ''}>Received</option>`;
-                    options += `<option value="Not Received" ${selectedValue === 'Not Received' ? 'selected' : ''}>Not Received</option>`;
+                    options = '<option value="">Select Registration Fee</option>';
+                    options += `<option value="Handover -1" ${selectedValue === 'Handover -1' ? 'selected' : ''}>Handover -1</option>`;
+                    options += `<option value="Handover - 2" ${selectedValue === 'Handover - 2' ? 'selected' : ''}>Handover - 2</option>`;
+                    options += `<option value="Handover - 3" ${selectedValue === 'Handover - 3' ? 'selected' : ''}>Handover - 3</option>`;
+                    options += `<option value="Handover - 4" ${selectedValue === 'Handover - 4' ? 'selected' : ''}>Handover - 4</option>`;
+                    options += `<option value="Handover - 5" ${selectedValue === 'Handover - 5' ? 'selected' : ''}>Handover - 5</option>`;
+                    options += `<option value="Paid" ${selectedValue === 'Paid' ? 'selected' : ''}>Paid</option>`;
+                    options += `<option value="Admission cancel" ${selectedValue === 'Admission cancel' ? 'selected' : ''}>Admission cancel</option>`;
                     break;
                 case 'exam_fee':
                     options = '<option value="">Select EXAM FEE</option>';

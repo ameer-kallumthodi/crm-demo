@@ -473,8 +473,16 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // BOSSE Converted Leads Routes
         Route::get('/bosse-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'bosseIndex'])->name('bosse-converted-leads.index');
         
+        // Hotel Management Converted Leads Routes
+        Route::get('/hotel-management-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'hotelManagementIndex'])->name('hotel-management-converted-leads.index');
+        
         // GMVSS Converted Leads Routes
         Route::get('/gmvss-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'gmvssIndex'])->name('gmvss-converted-leads.index');
+        Route::get('/ai-python-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'aiPythonIndex'])->name('ai-python-converted-leads.index');
+        Route::get('/digital-marketing-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'digitalMarketingIndex'])->name('digital-marketing-converted-leads.index');
+        Route::get('/ai-automation-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'aiAutomationIndex'])->name('ai-automation-converted-leads.index');
+        Route::get('/web-development-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'webDevIndex'])->name('web-development-converted-leads.index');
+        Route::get('/vibe-coding-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'vibeCodingIndex'])->name('vibe-coding-converted-leads.index');
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
         Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
         Route::post('/converted-leads/{id}/inline-update', [App\Http\Controllers\ConvertedLeadController::class, 'inlineUpdate'])->name('converted-leads.inline-update');

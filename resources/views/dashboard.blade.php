@@ -105,7 +105,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <h6 class="mb-0 f-w-400 text-muted">Total Telecallers</h6>
-                    <a href="{{ route('leads.index') }}" class="btn btn-sm btn-outline-info">
+                    <a href="{{ route('admin.telecallers.index') }}" class="btn btn-sm btn-outline-info">
                         <i class="ti ti-external-link f-12"></i>
                     </a>
                 </div>

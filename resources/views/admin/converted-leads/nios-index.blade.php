@@ -38,10 +38,28 @@
                         <i class="ti ti-school"></i> NIOS Converted Leads
                     </a>
                     <a href="{{ route('admin.bosse-converted-leads.index') }}" class="btn btn-outline-warning">
-                        <i class="ti ti-graduation-cap"></i> BOSSE Converted Leads
+                        <i class="ti ti-school-2"></i> BOSSE Converted Leads
+                    </a>
+                    <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-outline-info">
+                        <i class="ti ti-building"></i> Hotel Management Converted Leads
                     </a>
                     <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
                         <i class="ti ti-certificate"></i> GMVSS Converted Leads
+                    </a>
+                    <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-code"></i> AI with Python Converted Leads
+                    </a>
+                    <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-robot"></i> AI Automation Converted Leads
+                    </a>
+                    <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-world"></i> Web Development & Designing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-desktop"></i> Vibe Coding Converted Leads
                     </a>
                 </div>
             </div>
@@ -60,7 +78,7 @@
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
                             <input type="text" class="form-control" id="search" name="search"
-                                value="{{ request('search') }}" placeholder="Name, Phone, Email">
+                                value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="batch_id" class="form-label">Batch</label>
@@ -104,8 +122,13 @@
                             <label for="reg_fee" class="form-label">REG. FEE</label>
                             <select class="form-select" id="reg_fee" name="reg_fee">
                                 <option value="">All</option>
-                                <option value="Received" {{ request('reg_fee')==='Received' ? 'selected' : '' }}>Received</option>
-                                <option value="Not Received" {{ request('reg_fee')==='Not Received' ? 'selected' : '' }}>Not Received</option>
+                                <option value="Handover -1" {{ request('reg_fee')==='Handover -1' ? 'selected' : '' }}>Handover -1</option>
+                                <option value="Handover - 2" {{ request('reg_fee')==='Handover - 2' ? 'selected' : '' }}>Handover - 2</option>
+                                <option value="Handover - 3" {{ request('reg_fee')==='Handover - 3' ? 'selected' : '' }}>Handover - 3</option>
+                                <option value="Handover - 4" {{ request('reg_fee')==='Handover - 4' ? 'selected' : '' }}>Handover - 4</option>
+                                <option value="Handover - 5" {{ request('reg_fee')==='Handover - 5' ? 'selected' : '' }}>Handover - 5</option>
+                                <option value="Paid" {{ request('reg_fee')==='Paid' ? 'selected' : '' }}>Paid</option>
+                                <option value="Admission cancel" {{ request('reg_fee')==='Admission cancel' ? 'selected' : '' }}>Admission cancel</option>
                             </select>
                         </div>
 
@@ -172,13 +195,13 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Register Number</th>
-                                    <th>Date</th>
+                                    <th>Converted Date</th>
                                     <th>DOB</th>
                                     <th>Name</th>
                                     <th>Subject</th>
                                     <th>Mobile</th>
-                                    <th>Course</th>
                                     <th>Batch</th>
+                                    <th>Course</th>
                                     <th>Admission Batch</th>
                                     <th>Registered Person</th>
                                     <th>Username</th>
@@ -213,7 +236,7 @@
                                             @endif
                                         </div>
                                     </td>
-                                    <td>{{ $convertedLead->created_at->format('M d, Y') }}</td>
+                                    <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="dob" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->dob }}">
                                             @php
@@ -259,8 +282,8 @@
                                         </div>
                                         <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}"></div>
                                     </td>
-                                    <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
                                     <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
+                                    <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
                                             <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
@@ -467,11 +490,25 @@
                                             </a>
                                         </li>
                                         @if($convertedLead->register_number)
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('admin.converted-leads.id-card-pdf', $convertedLead->id) }}" target="_blank">
-                                                <i class="ti ti-id me-2"></i>Generate ID Card PDF
-                                            </a>
-                                        </li>
+                                            @php
+                                                $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                            @endphp
+                                            @if($idCard)
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" target="_blank">
+                                                        <i class="ti ti-id me-2"></i>View ID Card
+                                                    </a>
+                                                </li>
+                                            @else
+                                                <li>
+                                                    <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
+                                                        @csrf
+                                                        <button type="submit" class="dropdown-item" data-loading-text="Generating...">
+                                                            <i class="ti ti-id me-2"></i>Generate ID Card
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            @endif
                                         @endif
                                         @endif
                                     </ul>
@@ -506,7 +543,7 @@
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
-                                    <span class="fw-medium">{{ $convertedLead->created_at->format('M d, Y') }}</span>
+                                    <span class="fw-medium">{{ $convertedLead->created_at->format('d-m-Y') }}</span>
                                 </div>
                             </div>
                             
@@ -529,10 +566,22 @@
                                     <i class="ti ti-edit me-1"></i>Update Register
                                 </button>
                                 @if($convertedLead->register_number)
-                                <a href="{{ route('admin.converted-leads.id-card-pdf', $convertedLead->id) }}"
-                                    class="btn btn-sm btn-warning" target="_blank">
-                                    <i class="ti ti-id me-1"></i>ID Card PDF
-                                </a>
+                                    @php
+                                        $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                    @endphp
+                                    @if($idCard)
+                                        <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}"
+                                            class="btn btn-sm btn-warning" target="_blank">
+                                            <i class="ti ti-id me-1"></i>View ID Card
+                                        </a>
+                                    @else
+                                        <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
+                                                <i class="ti ti-id me-1"></i>Generate ID Card
+                                            </button>
+                                        </form>
+                                    @endif
                                 @endif
                                 @endif
                             </div>
@@ -885,6 +934,8 @@
                 success: function(response) {
                     if (response.success) {
                         container.find('.display-value').text(response.value || value);
+                        // Update the data-current attribute with the new value
+                        container.data('current', response.value || value);
                         if (field === 'phone') {
                             const codeVal = extra.code || '';
                             container.siblings('.inline-code-value').data('current', codeVal);
@@ -895,8 +946,18 @@
                     }
                 },
                 error: function(xhr) {
-                    const error = xhr.responseJSON?.error || 'Update failed';
-                    toast_error(error);
+                    let errorMessage = 'Update failed';
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.error) {
+                            errorMessage = xhr.responseJSON.error;
+                        } else if (xhr.responseJSON.errors) {
+                            // Handle validation errors
+                            const errors = xhr.responseJSON.errors;
+                            const fieldErrors = Object.values(errors).flat();
+                            errorMessage = fieldErrors.join(', ');
+                        }
+                    }
+                    toast_error(errorMessage);
                 },
                 complete: function() {
                     btn.data('busy', false);
@@ -997,9 +1058,14 @@
                     options += `<option value="Inactive" ${selectedValue === 'Inactive' ? 'selected' : ''}>Inactive</option>`;
                     break;
                 case 'reg_fee':
-                    options = '<option value="">Select REG. FEE</option>';
-                    options += `<option value="Received" ${selectedValue === 'Received' ? 'selected' : ''}>Received</option>`;
-                    options += `<option value="Not Received" ${selectedValue === 'Not Received' ? 'selected' : ''}>Not Received</option>`;
+                    options = '<option value="">Select Registration Fee</option>';
+                    options += `<option value="Handover -1" ${selectedValue === 'Handover -1' ? 'selected' : ''}>Handover -1</option>`;
+                    options += `<option value="Handover - 2" ${selectedValue === 'Handover - 2' ? 'selected' : ''}>Handover - 2</option>`;
+                    options += `<option value="Handover - 3" ${selectedValue === 'Handover - 3' ? 'selected' : ''}>Handover - 3</option>`;
+                    options += `<option value="Handover - 4" ${selectedValue === 'Handover - 4' ? 'selected' : ''}>Handover - 4</option>`;
+                    options += `<option value="Handover - 5" ${selectedValue === 'Handover - 5' ? 'selected' : ''}>Handover - 5</option>`;
+                    options += `<option value="Paid" ${selectedValue === 'Paid' ? 'selected' : ''}>Paid</option>`;
+                    options += `<option value="Admission cancel" ${selectedValue === 'Admission cancel' ? 'selected' : ''}>Admission cancel</option>`;
                     break;
                 case 'exam_fee':
                     options = '<option value="">Select EXAM FEE</option>';

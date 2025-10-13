@@ -443,6 +443,28 @@
         return icons[type] || 'bell';
     }
 
+    // Global show_alert function for compatibility
+    function show_alert(type, message) {
+        switch(type) {
+            case 'success':
+                toast_success(message);
+                break;
+            case 'error':
+            case 'danger':
+                toast_error(message);
+                break;
+            case 'warning':
+                toast_warning(message);
+                break;
+            case 'info':
+            case 'primary':
+                toast_primary(message);
+                break;
+            default:
+                toast_primary(message);
+        }
+    }
+
     // Load notifications when page loads
     document.addEventListener('DOMContentLoaded', function() {
         // Only load notifications for non-admin users

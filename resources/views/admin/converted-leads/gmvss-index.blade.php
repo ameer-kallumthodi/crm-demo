@@ -38,10 +38,28 @@
                         <i class="ti ti-school"></i> NIOS Converted Leads
                     </a>
                     <a href="{{ route('admin.bosse-converted-leads.index') }}" class="btn btn-outline-warning">
-                        <i class="ti ti-graduation-cap"></i> BOSSE Converted Leads
+                        <i class="ti ti-school-2"></i> BOSSE Converted Leads
+                    </a>
+                    <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-outline-info">
+                        <i class="ti ti-building"></i> Hotel Management Converted Leads
                     </a>
                     <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-info active">
                         <i class="ti ti-certificate"></i> GMVSS Converted Leads
+                    </a>
+                    <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-code"></i> AI with Python Converted Leads
+                    </a>
+                    <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-robot"></i> AI Automation Converted Leads
+                    </a>
+                    <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-world"></i> Web Development & Designing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-desktop"></i> Vibe Coding Converted Leads
                     </a>
                 </div>
             </div>
@@ -60,7 +78,7 @@
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
                             <input type="text" class="form-control" id="search" name="search"
-                                value="{{ request('search') }}" placeholder="Name, Phone, Email">
+                                value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="batch_id" class="form-label">Batch</label>
@@ -101,40 +119,27 @@
                         </div>
 
                         <div class="col-12 col-sm-6 col-md-2">
-                            <label for="reg_fee" class="form-label">REG. FEE</label>
-                            <select class="form-select" id="reg_fee" name="reg_fee">
+                            <label for="registration_link_id" class="form-label">Registration Link</label>
+                            <select class="form-select" id="registration_link_id" name="registration_link_id">
                                 <option value="">All</option>
-                                <option value="Received" {{ request('reg_fee')==='Received' ? 'selected' : '' }}>Received</option>
-                                <option value="Not Received" {{ request('reg_fee')==='Not Received' ? 'selected' : '' }}>Not Received</option>
+                                @foreach($registration_links as $link)
+                                <option value="{{ $link->id }}" {{ request('registration_link_id') == $link->id ? 'selected' : '' }}>
+                                    {{ $link->title }}
+                                </option>
+                                @endforeach
                             </select>
                         </div>
 
                         <div class="col-12 col-sm-6 col-md-2">
-                            <label for="exam_fee" class="form-label">EXAM FEE</label>
-                            <select class="form-select" id="exam_fee" name="exam_fee">
+                            <label for="certificate_status" class="form-label">Certificate</label>
+                            <select class="form-select" id="certificate_status" name="certificate_status">
                                 <option value="">All</option>
-                                <option value="Pending" {{ request('exam_fee')==='Pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="Not Paid" {{ request('exam_fee')==='Not Paid' ? 'selected' : '' }}>Not Paid</option>
-                                <option value="Paid" {{ request('exam_fee')==='Paid' ? 'selected' : '' }}>Paid</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="id_card" class="form-label">ID CARD</label>
-                            <select class="form-select" id="id_card" name="id_card">
-                                <option value="">All</option>
-                                <option value="processing" {{ request('id_card')==='processing' ? 'selected' : '' }}>processing</option>
-                                <option value="download" {{ request('id_card')==='download' ? 'selected' : '' }}>download</option>
-                                <option value="not downloaded" {{ request('id_card')==='not downloaded' ? 'selected' : '' }}>not downloaded</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="tma" class="form-label">TMA</label>
-                            <select class="form-select" id="tma" name="tma">
-                                <option value="">All</option>
-                                <option value="Uploaded" {{ request('tma')==='Uploaded' ? 'selected' : '' }}>Uploaded</option>
-                                <option value="Not Upload" {{ request('tma')==='Not Upload' ? 'selected' : '' }}>Not Upload</option>
+                                <option value="In Progress" {{ request('certificate_status')==='In Progress' ? 'selected' : '' }}>In Progress</option>
+                                <option value="Online Result Not Arrived" {{ request('certificate_status')==='Online Result Not Arrived' ? 'selected' : '' }}>Online Result Not Arrived</option>
+                                <option value="One Result Arrived" {{ request('certificate_status')==='One Result Arrived' ? 'selected' : '' }}>One Result Arrived</option>
+                                <option value="Certificate Arrived" {{ request('certificate_status')==='Certificate Arrived' ? 'selected' : '' }}>Certificate Arrived</option>
+                                <option value="Not Received" {{ request('certificate_status')==='Not Received' ? 'selected' : '' }}>Not Received</option>
+                                <option value="No Admission" {{ request('certificate_status')==='No Admission' ? 'selected' : '' }}>No Admission</option>
                             </select>
                         </div>
 
@@ -175,9 +180,11 @@
                                     <th>Converted Date</th>
                                     <th>Name</th>
                                     <th>Phone</th>
+                                    <th>Batch</th>
+                                    <th>Admission Batch</th>
                                     <th>Mail</th>
                                     <th>Course</th>
-                                    <th>Session</th>
+                                    <th>Passed Year</th>
                                     <th>Enrollment Number</th>
                                     <th>Registration Link</th>
                                     <th>Certificate</th>
@@ -205,7 +212,7 @@
                                             @endif
                                         </div>
                                     </td>
-                                    <td>{{ $convertedLead->created_at->format('M d, Y') }}</td>
+                                    <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avtar avtar-s rounded-circle bg-light-success me-2 d-flex align-items-center justify-content-center">
@@ -228,9 +235,20 @@
                                         </div>
                                         <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}"></div>
                                     </td>
+                                    <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
+                                    <td>
+                                        <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
+                                            <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
-                                    <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
+                                    <td>{{ $convertedLead->lead?->studentDetails?->passed_year ?? 'N/A' }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="enroll_no" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->enroll_no }}">
                                             <span class="display-value">{{ $convertedLead->enroll_no ?? 'N/A' }}</span>
@@ -331,7 +349,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="15" class="text-center">No GMVSS converted leads found</td>
+                                    <td colspan="17" class="text-center">No GMVSS converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -418,7 +436,7 @@
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
-                                    <span class="fw-medium">{{ $convertedLead->created_at->format('M d, Y') }}</span>
+                                    <span class="fw-medium">{{ $convertedLead->created_at->format('d-m-Y') }}</span>
                                 </div>
                             </div>
                             

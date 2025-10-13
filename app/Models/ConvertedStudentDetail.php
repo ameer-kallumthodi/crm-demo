@@ -25,6 +25,18 @@ class ConvertedStudentDetail extends Model
         'certificate_received_date',
         'certificate_issued_date',
         'remarks',
+        // BOSSE specific fields
+        'application_number',
+        'board_registration_number',
+        'st',
+        'phy',
+        'che',
+        'bio',
+        // Hotel Management specific fields
+        'app',
+        'group',
+        'interview',
+        'howmany_interview',
     ];
 
     protected $casts = [
@@ -34,6 +46,13 @@ class ConvertedStudentDetail extends Model
         'converted_date' => 'date',
         'certificate_received_date' => 'date',
         'certificate_issued_date' => 'date',
+        // BOSSE specific fields
+        'st' => 'integer',
+        'phy' => 'integer',
+        'che' => 'integer',
+        'bio' => 'integer',
+        // Hotel Management specific fields
+        'howmany_interview' => 'integer',
     ];
 
     // Relationships
