@@ -331,7 +331,7 @@
                 <li class="pc-item {{ request()->routeIs('admin.sub-courses.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.sub-courses.index') }}" class="pc-link">
                         <span class="pc-micon">
-                            <i class="ti ti-layer-group"></i>
+                            <i class="ti ti-book"></i>
                         </span>
                         <span class="pc-mtext">Sub Courses</span>
                     </a>
