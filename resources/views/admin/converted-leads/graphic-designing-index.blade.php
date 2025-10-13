@@ -83,6 +83,9 @@
                     <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-primary active">
                         <i class="ti ti-palette"></i> Graphic Designing Converted Leads
                     </a>
+                    <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-school"></i> Eduthanzeel Converted Leads
+                    </a>
                 </div>
             </div>
         </div>

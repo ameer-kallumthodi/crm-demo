@@ -60,7 +60,7 @@
                 @endif
                 
                 {{-- User Management Section --}}
-                @if(has_permission('admin/telecallers/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index'))
+                @if(has_permission('admin/telecallers/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index') || has_permission('admin/teachers/index'))
                 <li class="pc-item pc-caption">
                     <label>User Management</label>
                 </li>
@@ -71,6 +71,16 @@
                             <i class="ti ti-phone"></i>
                         </span>
                         <span class="pc-mtext">Telecallers</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/teachers/index'))
+                <li class="pc-item {{ request()->routeIs('admin.teachers.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.teachers.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-school"></i>
+                        </span>
+                        <span class="pc-mtext">Teachers</span>
                     </a>
                 </li>
                 @endif

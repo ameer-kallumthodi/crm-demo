@@ -37,6 +37,8 @@ class ConvertedStudentDetail extends Model
         'group',
         'interview',
         'howmany_interview',
+        'teacher_id',
+        'screening',
     ];
 
     protected $casts = [
@@ -46,6 +48,7 @@ class ConvertedStudentDetail extends Model
         'converted_date' => 'date',
         'certificate_received_date' => 'date',
         'certificate_issued_date' => 'date',
+        'screening' => 'date',
         // BOSSE specific fields
         'st' => 'integer',
         'phy' => 'integer',
@@ -69,5 +72,10 @@ class ConvertedStudentDetail extends Model
     public function registrationLink()
     {
         return $this->belongsTo(RegistrationLink::class);
+    }
+
+    public function teacher()
+    {
+        return $this->belongsTo(User::class, 'teacher_id');
     }
 }

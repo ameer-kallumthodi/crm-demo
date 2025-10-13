@@ -120,6 +120,11 @@ class ConvertedLead extends Model
         return $this->hasOne(ConvertedStudentDetail::class, 'converted_lead_id');
     }
 
+    public function teacher()
+    {
+        return $this->hasOneThrough(User::class, ConvertedStudentDetail::class, 'converted_lead_id', 'id', 'id', 'teacher_id');
+    }
+
     public function idCards()
     {
         return $this->hasMany(ConvertedLeadIdCard::class, 'converted_lead_id');

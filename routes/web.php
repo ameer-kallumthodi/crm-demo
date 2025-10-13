@@ -12,6 +12,7 @@ use App\Http\Controllers\CountryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TelecallerController;
+use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ConvertedLeadController;
@@ -309,6 +310,13 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/telecallers-change-password/{id}', [TelecallerController::class, 'changePassword'])->name('telecallers.change-password');
         Route::post('/telecallers-update-password/{id}', [TelecallerController::class, 'updatePassword'])->name('telecallers.update-password');
 
+        // Teacher routes (role_id = 10)
+        Route::resource('teachers', App\Http\Controllers\TeacherController::class);
+        Route::get('/teachers-add', [App\Http\Controllers\TeacherController::class, 'ajax_add'])->name('teachers.add');
+        Route::get('/teachers-edit/{id}', [App\Http\Controllers\TeacherController::class, 'ajax_edit'])->name('teachers.edit');
+        Route::post('/teachers-submit', [App\Http\Controllers\TeacherController::class, 'submit'])->name('teachers.submit');
+        Route::put('/teachers-update/{id}', [App\Http\Controllers\TeacherController::class, 'updateForm'])->name('teachers.update-form');
+
         // Admission Counsellor routes (role_id = 4)
         Route::resource('admission-counsellors', App\Http\Controllers\AdmissionCounsellorController::class);
         Route::get('/admission-counsellors-add', [App\Http\Controllers\AdmissionCounsellorController::class, 'ajax_add'])->name('admission-counsellors.add');
@@ -484,6 +492,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/web-development-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'webDevIndex'])->name('web-development-converted-leads.index');
         Route::get('/vibe-coding-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'vibeCodingIndex'])->name('vibe-coding-converted-leads.index');
         Route::get('/graphic-designing-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'graphicDesigningIndex'])->name('graphic-designing-converted-leads.index');
+        Route::get('/eduthanzeel-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'eduthanzeelIndex'])->name('eduthanzeel-converted-leads.index');
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
         Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
         Route::post('/converted-leads/{id}/inline-update', [App\Http\Controllers\ConvertedLeadController::class, 'inlineUpdate'])->name('converted-leads.inline-update');

@@ -1042,6 +1042,81 @@ class ConvertedLeadController extends Controller
         return view('admin.converted-leads.graphic-designing-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
     }
 
+    public function eduthanzeelIndex(Request $request)
+    {
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'studentDetails', 'teacher'])
+            ->where('course_id', 6);
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereIn('created_by', $teamMemberIds);
+                } else {
+                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Can see all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->where('created_by', AuthHelper::getCurrentUserId());
+            }
+        }
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('register_number', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('class_status')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('class_status', $request->class_status);
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        // Get all results for DataTable
+        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
+
+        // Get filter data
+        $courses = \App\Models\Course::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 6)->where('is_active', 1)->get();
+        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $teachers = \App\Models\User::where('role_id', 10)->where('is_active', 1)->get();
+        $country_codes = get_country_code();
+
+        return view('admin.converted-leads.eduthanzeel-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'teachers', 'country_codes'));
+    }
+
     /**
      * Display the specified converted lead
      */
@@ -1412,7 +1487,7 @@ class ConvertedLeadController extends Controller
 
         // Define allowed fields and their validation rules
         $allowedFields = [
-            'register_number' => 'string|max:50|unique:converted_leads,register_number,' . $id,
+            'register_number' => 'nullable|string|max:50',
             'subject_id' => 'nullable|exists:subjects,id',
             'admission_batch_id' => 'nullable|exists:admission_batches,id',
             'academic_assistant_id' => 'nullable|exists:users,id',
@@ -1453,8 +1528,11 @@ class ConvertedLeadController extends Controller
             'class_ending_date' => 'nullable|date',
             'whatsapp_group_status' => 'nullable|string|in:sent link,task complete',
             'class_time' => 'nullable|date_format:H:i',
-            'class_status' => 'nullable|string|in:Running,Cancel,complete',
+            'class_status' => 'nullable|string|in:Running,Cancel,complete,completed,drop out,ongoing',
             'complete_cancel_date' => 'nullable|date',
+            // Eduthanzeel specific fields
+            'teacher_id' => 'nullable|exists:users,id',
+            'screening' => 'nullable|date',
             // phone & code inline updates
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:5',
@@ -1462,6 +1540,26 @@ class ConvertedLeadController extends Controller
 
         if (!array_key_exists($field, $allowedFields)) {
             return response()->json(['error' => 'Invalid field.'], 400);
+        }
+
+        // Special handling for register_number validation
+        if ($field === 'register_number') {
+            // If the value is empty or null, allow it
+            if (empty($value) || $value === '-' || $value === 'N/A') {
+                $value = null;
+            } else {
+                // Check if the register number already exists for another record
+                $existingRecord = ConvertedLead::where('register_number', $value)
+                    ->where('id', '!=', $id)
+                    ->first();
+                
+                if ($existingRecord) {
+                    return response()->json([
+                        'error' => 'Register number has already been taken.',
+                        'errors' => ['register_number' => ['Register number has already been taken.']]
+                    ], 422);
+                }
+            }
         }
 
         // Validate the field
@@ -1502,7 +1600,7 @@ class ConvertedLeadController extends Controller
         }
 
         // Handle fields that are now in ConvertedStudentDetail
-        $studentDetailFields = ['reg_fee', 'exam_fee', 'enroll_no', 'id_card', 'tma', 'registration_number', 'enrollment_number', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks', 'application_number', 'board_registration_number', 'st', 'phy', 'che', 'bio', 'app', 'group', 'interview', 'howmany_interview', 'call_status', 'class_information', 'orientation_class_status', 'class_starting_date', 'class_ending_date', 'whatsapp_group_status', 'class_time', 'class_status', 'complete_cancel_date'];
+        $studentDetailFields = ['reg_fee', 'exam_fee', 'enroll_no', 'id_card', 'tma', 'registration_number', 'enrollment_number', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks', 'application_number', 'board_registration_number', 'st', 'phy', 'che', 'bio', 'app', 'group', 'interview', 'howmany_interview', 'call_status', 'class_information', 'orientation_class_status', 'class_starting_date', 'class_ending_date', 'whatsapp_group_status', 'class_time', 'class_status', 'complete_cancel_date', 'teacher_id', 'screening'];
         
         if (in_array($field, $studentDetailFields)) {
             // Update in ConvertedStudentDetail
@@ -1546,10 +1644,16 @@ class ConvertedLeadController extends Controller
         } elseif ($field === 'registration_link_id' && $updatedValue) {
             $registrationLink = \App\Models\RegistrationLink::find($updatedValue);
             $updatedValue = $registrationLink ? $registrationLink->title : $updatedValue;
-        } elseif (in_array($field, ['certificate_received_date', 'certificate_issued_date', 'class_starting_date', 'class_ending_date', 'complete_cancel_date']) && $updatedValue) {
+        } elseif (in_array($field, ['certificate_received_date', 'certificate_issued_date', 'class_starting_date', 'class_ending_date', 'complete_cancel_date', 'screening']) && $updatedValue) {
             $updatedValue = \Carbon\Carbon::parse($updatedValue)->format('d-m-Y');
         } elseif ($field === 'class_time' && $updatedValue) {
             $updatedValue = \Carbon\Carbon::parse($updatedValue)->format('h:i A');
+        } elseif ($field === 'teacher_id' && $updatedValue) {
+            $teacher = \App\Models\User::find($updatedValue);
+            $updatedValue = $teacher ? $teacher->name : $updatedValue;
+        } elseif ($field === 'register_number') {
+            // For register_number, return the value or '-' if empty
+            $updatedValue = $updatedValue ?: '-';
         }
 
         return response()->json([

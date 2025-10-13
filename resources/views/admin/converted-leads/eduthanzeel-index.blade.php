@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'AI with Python Converted Leads')
+@section('title', 'Eduthanzeel Converted Leads')
 
 @section('content')
 <style>
@@ -28,14 +28,14 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">AI with Python Converted Leads Management</h5>
+                    <h5 class="m-b-10">Eduthanzeel Converted Leads Management</h5>
                 </div>
             </div>
             <div class="col-md-6">
                 <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                    <li class="breadcrumb-item">AI with Python</li>
+                    <li class="breadcrumb-item">Eduthanzeel</li>
                 </ul>
             </div>
         </div>
@@ -65,7 +65,7 @@
                     <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
                         <i class="ti ti-certificate"></i> GMVSS Converted Leads
                     </a>
-                    <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-primary active">
+                    <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-code"></i> AI with Python Converted Leads
                     </a>
                     <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
@@ -83,7 +83,7 @@
                     <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-palette"></i> Graphic Designing Converted Leads
                     </a>
-                    <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-primary active">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
                     </a>
                 </div>
@@ -98,7 +98,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.ai-python-converted-leads.index') }}" id="filterForm">
+                <form method="GET" action="{{ route('admin.eduthanzeel-converted-leads.index') }}" id="filterForm">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
@@ -143,58 +143,30 @@
                             </select>
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
-                            <label for="call_status" class="form-label">Call Status</label>
-                            <select class="form-select" id="call_status" name="call_status">
-                                <option value="">All</option>
-                                <option value="Call Not Answered" {{ request('call_status')==='Call Not Answered' ? 'selected' : '' }}>Call Not Answered</option>
-                                <option value="Switched Off" {{ request('call_status')==='Switched Off' ? 'selected' : '' }}>Switched Off</option>
-                                <option value="Line Busy" {{ request('call_status')==='Line Busy' ? 'selected' : '' }}>Line Busy</option>
-                                <option value="Student Asks to Call Later" {{ request('call_status')==='Student Asks to Call Later' ? 'selected' : '' }}>Student Asks to Call Later</option>
-                                <option value="Lack of Interest in Conversation" {{ request('call_status')==='Lack of Interest in Conversation' ? 'selected' : '' }}>Lack of Interest in Conversation</option>
-                                <option value="Wrong Contact" {{ request('call_status')==='Wrong Contact' ? 'selected' : '' }}>Wrong Contact</option>
-                                <option value="Inconsistent Responses" {{ request('call_status')==='Inconsistent Responses' ? 'selected' : '' }}>Inconsistent Responses</option>
-                                <option value="Task Complete" {{ request('call_status')==='Task Complete' ? 'selected' : '' }}>Task Complete</option>
-                                <option value="Admission cancel" {{ request('call_status')==='Admission cancel' ? 'selected' : '' }}>Admission cancel</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="class_information" class="form-label">Class Information</label>
-                            <select class="form-select" id="class_information" name="class_information">
-                                <option value="">All</option>
-                                <option value="phone call" {{ request('class_information')==='phone call' ? 'selected' : '' }}>Phone Call</option>
-                                <option value="whatsapp" {{ request('class_information')==='whatsapp' ? 'selected' : '' }}>WhatsApp</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="orientation_class_status" class="form-label">Orientation Class Status</label>
-                            <select class="form-select" id="orientation_class_status" name="orientation_class_status">
-                                <option value="">All</option>
-                                <option value="Participated" {{ request('orientation_class_status')==='Participated' ? 'selected' : '' }}>Participated</option>
-                                <option value="Did not participated" {{ request('orientation_class_status')==='Did not participated' ? 'selected' : '' }}>Did not participated</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="whatsapp_group_status" class="form-label">WhatsApp Group Status</label>
-                            <select class="form-select" id="whatsapp_group_status" name="whatsapp_group_status">
-                                <option value="">All</option>
-                                <option value="sent link" {{ request('whatsapp_group_status')==='sent link' ? 'selected' : '' }}>Sent Link</option>
-                                <option value="task complete" {{ request('whatsapp_group_status')==='task complete' ? 'selected' : '' }}>Task Complete</option>
+                            <label for="teacher_id" class="form-label">Teacher</label>
+                            <select class="form-select" id="teacher_id" name="teacher_id">
+                                <option value="">All Teachers</option>
+                                @foreach($teachers as $teacher)
+                                <option value="{{ $teacher->id }}" {{ request('teacher_id') == $teacher->id ? 'selected' : '' }}>
+                                    {{ $teacher->name }}
+                                </option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="class_status" class="form-label">Class Status</label>
                             <select class="form-select" id="class_status" name="class_status">
                                 <option value="">All</option>
-                                <option value="Running" {{ request('class_status')==='Running' ? 'selected' : '' }}>Running</option>
-                                <option value="Cancel" {{ request('class_status')==='Cancel' ? 'selected' : '' }}>Cancel</option>
-                                <option value="complete" {{ request('class_status')==='complete' ? 'selected' : '' }}>Complete</option>
+                                <option value="completed" {{ request('class_status')==='completed' ? 'selected' : '' }}>Completed</option>
+                                <option value="drop out" {{ request('class_status')==='drop out' ? 'selected' : '' }}>Drop Out</option>
+                                <option value="ongoing" {{ request('class_status')==='ongoing' ? 'selected' : '' }}>Ongoing</option>
                             </select>
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-secondary">
                                 <i class="ti ti-refresh"></i> Clear
                             </a>
                         </div>
@@ -211,13 +183,13 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5>AI with Python Converted Leads</h5>
+                <h5>Eduthanzeel Converted Leads</h5>
             </div>
             <div class="card-body">
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover data_table_basic" id="aiPythonTable">
+                        <table class="table table-hover data_table_basic" id="eduthanzeelTable">
                         <thead>
                             <tr>
                                 <th>SL No</th>
@@ -228,16 +200,10 @@
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
                                 <th>Email</th>
-                                <th>Call Status</th>
-                                <th>Class Information</th>
-                                <th>Orientation Class Status</th>
-                                <th>Class Starting Date</th>
-                                <th>Class Ending Date</th>
-                                <th>WhatsApp Group Status</th>
+                                <th>Teacher</th>
                                 <th>Class Time</th>
+                                <th>Screening</th>
                                 <th>Class Status</th>
-                                <th>Complete/Cancel Date</th>
-                                <th>Remarks</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -247,8 +213,8 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                 <td>
-                                    <div class="inline-edit" data-field="registration_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->registration_number }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->registration_number ?? '-' }}</span>
+                                    <div class="inline-edit" data-field="register_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->register_number }}">
+                                        <span class="display-value">{{ $convertedLead->register_number ?: '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -279,10 +245,10 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>{{ $convertedLead->email ?? '-' }}</td>
+                                <td>{{ $convertedLead->email ?: '-' }}</td>
                                 <td>
-                                    <div class="inline-edit" data-field="call_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->call_status }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->call_status ?? '-' }}</span>
+                                    <div class="inline-edit" data-field="teacher_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->teacher_id }}">
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->teacher ? $convertedLead->studentDetails->teacher->name : '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -291,57 +257,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="inline-edit" data-field="class_information" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_information }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->class_information ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="orientation_class_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->orientation_class_status }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->orientation_class_status ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="class_starting_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_starting_date }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->class_starting_date ? \Carbon\Carbon::parse($convertedLead->studentDetails->class_starting_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="class_ending_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_ending_date }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->class_ending_date ? \Carbon\Carbon::parse($convertedLead->studentDetails->class_ending_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="whatsapp_group_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->whatsapp_group_status }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->whatsapp_group_status ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="class_time" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_time }}">
+                                    <div class="inline-edit" data-field="class_time" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_time ? \Carbon\Carbon::parse($convertedLead->studentDetails->class_time)->format('h:i A') : '' }}">
                                         <span class="display-value">{{ $convertedLead->studentDetails?->class_time ? \Carbon\Carbon::parse($convertedLead->studentDetails->class_time)->format('h:i A') : '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
@@ -351,28 +267,18 @@
                                     </div>
                                 </td>
                                 <td>
+                                    <div class="inline-edit" data-field="screening" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->screening ? \Carbon\Carbon::parse($convertedLead->studentDetails->screening)->format('d-m-Y') : '' }}">
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->screening ? \Carbon\Carbon::parse($convertedLead->studentDetails->screening)->format('d-m-Y') : '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
                                     <div class="inline-edit" data-field="class_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_status }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->class_status ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="complete_cancel_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->complete_cancel_date }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->complete_cancel_date ? \Carbon\Carbon::parse($convertedLead->studentDetails->complete_cancel_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? '-' }}</span>
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->class_status ?: '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -398,7 +304,7 @@
                                             <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-info" title="View ID Card" target="_blank">
                                                 <i class="ti ti-id"></i>
                                             </a>
-                                        @else
+                                        @elseif($convertedLead->register_number)
                                             <form class="d-inline" action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="POST" class="id-card-generate-form">
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
@@ -411,7 +317,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="19" class="text-center">No AI with Python converted leads found</td>
+                                <td colspan="13" class="text-center">No Eduthanzeel converted leads found</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -430,8 +336,8 @@
                                     <span class="f-16 fw-bold text-primary">{{ strtoupper(substr($convertedLead->name, 0, 1)) }}</span>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-1 fw-bold">{{ $convertedLead->name }}</h6>
-                                    <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
+                                    <h6 class="mb-1">{{ $convertedLead->name }}</h6>
+                                    <small class="text-muted">{{ $convertedLead->register_number ?: 'No Registration Number' }}</small>
                                 </div>
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -463,8 +369,8 @@
                                     <span class="fw-medium">{{ $convertedLead->email ?? 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block">Call Status</small>
-                                    <span class="fw-medium">{{ $convertedLead->studentDetails?->call_status ?? 'N/A' }}</span>
+                                    <small class="text-muted d-block">Teacher</small>
+                                    <span class="fw-medium">{{ $convertedLead->studentDetails?->teacher ? $convertedLead->studentDetails->teacher->name : 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Class Status</small>
@@ -472,7 +378,7 @@
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Registration Number</small>
-                                    <span class="fw-medium">{{ $convertedLead->studentDetails?->registration_number ?? 'N/A' }}</span>
+                                    <span class="fw-medium">{{ $convertedLead->register_number ?? 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
@@ -490,14 +396,32 @@
                                     class="btn btn-sm btn-success">
                                     <i class="ti ti-receipt me-1"></i>View Invoice
                                 </a>
+                                
+                                <!-- ID Card Generation/View Buttons -->
+                                @php
+                                    $idCardRecord = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                @endphp
+                                
+                                @if($idCardRecord)
+                                    <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-info" title="View ID Card" target="_blank">
+                                        <i class="ti ti-id me-1"></i>View ID Card
+                                    </a>
+                                @elseif($convertedLead->register_number)
+                                    <form class="d-inline" action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="POST" class="id-card-generate-form">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
+                                            <i class="ti ti-id me-1"></i>Generate ID Card
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     </div>
                     @empty
                     <div class="text-center py-5">
                         <div class="text-muted">
-                            <i class="ti ti-code f-48 mb-3 d-block"></i>
-                            <h5>No AI with Python converted leads found</h5>
+                            <i class="ti ti-school f-48 mb-3 d-block"></i>
+                            <h5>No Eduthanzeel converted leads found</h5>
                             <p>Try adjusting your filters or check back later.</p>
                         </div>
                     </div>
@@ -576,12 +500,12 @@
     font-size: 11px;
 }
 
-#aiPythonTable thead th,
-#aiPythonTable tbody td {
+#eduthanzeelTable thead th,
+#eduthanzeelTable tbody td {
     white-space: nowrap;
 }
 
-#aiPythonTable thead th {
+#eduthanzeelTable thead th {
     position: sticky;
     top: 0;
     z-index: 5;
@@ -589,11 +513,11 @@
     box-shadow: inset 0 -1px 0 #e9ecef;
 }
 
-#aiPythonTable tbody tr:hover {
+#eduthanzeelTable tbody tr:hover {
     background: #fafbff;
 }
 
-#aiPythonTable td .display-value {
+#eduthanzeelTable td .display-value {
     display: inline-block;
     max-width: 220px;
     overflow: hidden;
@@ -602,8 +526,8 @@
     vertical-align: middle;
 }
 
-#aiPythonTable .btn-group .btn { margin-right: 4px; }
-#aiPythonTable .btn-group .btn:last-child { margin-right: 0; }
+#eduthanzeelTable .btn-group .btn { margin-right: 4px; }
+#eduthanzeelTable .btn-group .btn:last-child { margin-right: 0; }
 </style>
 @endpush
 
@@ -671,15 +595,17 @@
             if (field === 'phone') {
                 const currentCode = container.siblings('.inline-code-value').data('current') || '';
                 editForm = createPhoneField(currentCode, currentValue);
-            } else if (['call_status', 'class_information', 'orientation_class_status', 'whatsapp_group_status', 'class_status'].includes(field)) {
+            } else if (['class_status'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
-            } else if (['class_starting_date', 'class_ending_date', 'complete_cancel_date'].includes(field)) {
+            } else if (['screening'].includes(field)) {
                 editForm = createDateField(field, currentValue);
             } else if (field === 'class_time') {
                 editForm = createTimeField(field, currentValue);
             } else if (field === 'admission_batch_id') {
                 const batchId = container.data('batch-id');
                 editForm = createAdmissionBatchField(batchId, currentValue);
+            } else if (field === 'teacher_id') {
+                editForm = createTeacherField(field, currentValue);
             } else {
                 editForm = createInputField(field, currentValue);
             }
@@ -794,13 +720,9 @@
 
         function createDateField(field, currentValue) {
             const value = (currentValue && currentValue !== '-') ? currentValue : '';
-            // For class starting and ending dates, allow future dates
-            const maxDate = (field === 'class_starting_date' || field === 'class_ending_date') ? '' : new Date().toISOString().split('T')[0];
-            const maxAttr = maxDate ? `max="${maxDate}"` : '';
-            
             return `
                 <div class="edit-form">
-                    <input type="date" ${maxAttr} value="${value}" class="form-control form-control-sm">
+                    <input type="date" value="${value}" class="form-control form-control-sm">
                     <div class="btn-group mt-1">
                         <button class="btn btn-success btn-sm save-edit">Save</button>
                         <button class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
@@ -891,46 +813,36 @@
             `;
         }
 
+        function createTeacherField(field, currentValue) {
+            let options = `
+                <option value="">Select Teacher</option>
+                @foreach($teachers as $teacher)
+                <option value="{{ $teacher->id }}" ${String(currentValue) === '{{ $teacher->id }}' ? 'selected' : ''}>{{ $teacher->name }}</option>
+                @endforeach
+            `;
+            
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm">
+                        ${options}
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
         function createSelectField(field, currentValue) {
             let options = '';
             
-            if (field === 'call_status') {
-                options = `
-                    <option value="">Select Call Status</option>
-                    <option value="Call Not Answered" ${currentValue === 'Call Not Answered' ? 'selected' : ''}>Call Not Answered</option>
-                    <option value="Switched Off" ${currentValue === 'Switched Off' ? 'selected' : ''}>Switched Off</option>
-                    <option value="Line Busy" ${currentValue === 'Line Busy' ? 'selected' : ''}>Line Busy</option>
-                    <option value="Student Asks to Call Later" ${currentValue === 'Student Asks to Call Later' ? 'selected' : ''}>Student Asks to Call Later</option>
-                    <option value="Lack of Interest in Conversation" ${currentValue === 'Lack of Interest in Conversation' ? 'selected' : ''}>Lack of Interest in Conversation</option>
-                    <option value="Wrong Contact" ${currentValue === 'Wrong Contact' ? 'selected' : ''}>Wrong Contact</option>
-                    <option value="Inconsistent Responses" ${currentValue === 'Inconsistent Responses' ? 'selected' : ''}>Inconsistent Responses</option>
-                    <option value="Task Complete" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
-                    <option value="Admission cancel" ${currentValue === 'Admission cancel' ? 'selected' : ''}>Admission cancel</option>
-                `;
-            } else if (field === 'class_information') {
-                options = `
-                    <option value="">Select Class Information</option>
-                    <option value="phone call" ${currentValue === 'phone call' ? 'selected' : ''}>Phone Call</option>
-                    <option value="whatsapp" ${currentValue === 'whatsapp' ? 'selected' : ''}>WhatsApp</option>
-                `;
-            } else if (field === 'orientation_class_status') {
-                options = `
-                    <option value="">Select Orientation Class Status</option>
-                    <option value="Participated" ${currentValue === 'Participated' ? 'selected' : ''}>Participated</option>
-                    <option value="Did not participated" ${currentValue === 'Did not participated' ? 'selected' : ''}>Did not participated</option>
-                `;
-            } else if (field === 'whatsapp_group_status') {
-                options = `
-                    <option value="">Select WhatsApp Group Status</option>
-                    <option value="sent link" ${currentValue === 'sent link' ? 'selected' : ''}>Sent Link</option>
-                    <option value="task complete" ${currentValue === 'task complete' ? 'selected' : ''}>Task Complete</option>
-                `;
-            } else if (field === 'class_status') {
+            if (field === 'class_status') {
                 options = `
                     <option value="">Select Class Status</option>
-                    <option value="Running" ${currentValue === 'Running' ? 'selected' : ''}>Running</option>
-                    <option value="Cancel" ${currentValue === 'Cancel' ? 'selected' : ''}>Cancel</option>
-                    <option value="complete" ${currentValue === 'complete' ? 'selected' : ''}>Complete</option>
+                    <option value="completed" ${currentValue === 'completed' ? 'selected' : ''}>Completed</option>
+                    <option value="drop out" ${currentValue === 'drop out' ? 'selected' : ''}>Drop Out</option>
+                    <option value="ongoing" ${currentValue === 'ongoing' ? 'selected' : ''}>Ongoing</option>
                 `;
             }
             

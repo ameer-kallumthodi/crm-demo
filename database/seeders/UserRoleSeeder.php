@@ -68,6 +68,12 @@ class UserRoleSeeder extends Seeder
                 'description' => 'Mentor access for guidance and mentoring',
                 'is_active' => true,
             ],
+            [
+                'id' => 10,
+                'title' => 'Teacher',
+                'description' => 'Teacher access for teaching and student management',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($roles as $role) {
