@@ -3,6 +3,25 @@
 @section('title', 'NIOS Converted Leads')
 
 @section('content')
+<style>
+    .table td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    .table td .btn-group {
+        white-space: nowrap;
+    }
+    .table td .inline-edit {
+        white-space: nowrap;
+    }
+    .table td .display-value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+        display: inline-block;
+    }
+</style>
 <!-- [ breadcrumb ] start -->
 <div class="page-header">
     <div class="page-block">
