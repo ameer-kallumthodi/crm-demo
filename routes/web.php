@@ -284,6 +284,13 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::put('/courses-update/{id}', [CourseController::class, 'update'])->name('courses.update');
         Route::delete('/courses-delete/{id}', [CourseController::class, 'delete'])->name('courses.delete');
 
+        // Sub Courses Routes (Course-like modal pattern)
+        Route::resource('sub-courses', App\Http\Controllers\SubCourseController::class)->except(['create', 'edit', 'update', 'store']);
+        Route::get('/sub-courses-add', [App\Http\Controllers\SubCourseController::class, 'ajax_add'])->name('sub-courses.add');
+        Route::get('/sub-courses-edit/{id}', [App\Http\Controllers\SubCourseController::class, 'ajax_edit'])->name('sub-courses.edit');
+        Route::post('/sub-courses-submit', [App\Http\Controllers\SubCourseController::class, 'submit'])->name('sub-courses.submit');
+        Route::put('/sub-courses-update/{id}', [App\Http\Controllers\SubCourseController::class, 'updateForm'])->name('sub-courses.updateForm');
+
         Route::delete('/subjects-delete/{id}', [App\Http\Controllers\SubjectController::class, 'delete'])->name('subjects.delete');
         Route::resource('subjects', App\Http\Controllers\SubjectController::class);
         Route::get('/subjects-add', [App\Http\Controllers\SubjectController::class, 'ajax_add'])->name('subjects.add');
@@ -493,6 +500,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/vibe-coding-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'vibeCodingIndex'])->name('vibe-coding-converted-leads.index');
         Route::get('/graphic-designing-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'graphicDesigningIndex'])->name('graphic-designing-converted-leads.index');
         Route::get('/eduthanzeel-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'eduthanzeelIndex'])->name('eduthanzeel-converted-leads.index');
+        Route::get('/e-school-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'eschoolIndex'])->name('e-school-converted-leads.index');
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
         Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
         Route::post('/converted-leads/{id}/inline-update', [App\Http\Controllers\ConvertedLeadController::class, 'inlineUpdate'])->name('converted-leads.inline-update');

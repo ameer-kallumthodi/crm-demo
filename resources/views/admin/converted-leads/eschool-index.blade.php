@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'AI Automation Converted Leads')
+@section('title', 'E-School Converted Leads')
 
 @section('content')
 <style>
@@ -28,14 +28,14 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">AI Automation Converted Leads Management</h5>
+                    <h5 class="m-b-10">E-School Converted Leads Management</h5>
                 </div>
             </div>
             <div class="col-md-6">
                 <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                    <li class="breadcrumb-item">AI Automation</li>
+                    <li class="breadcrumb-item">E-School</li>
                 </ul>
             </div>
         </div>
@@ -71,7 +71,7 @@
                     <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
                     </a>
-                    <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-primary active">
+                    <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-robot"></i> AI Automation Converted Leads
                     </a>
                     <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
@@ -86,7 +86,7 @@
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
                     </a>
-                    <a href="{{ route('admin.e-school-converted-leads.index') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.e-school-converted-leads.index') }}" class="btn btn-primary active">
                         <i class="ti ti-device-laptop"></i> E-School Converted Leads
                     </a>
                 </div>
@@ -101,104 +101,91 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.ai-automation-converted-leads.index') }}" id="filterForm">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-12 col-sm-6 col-md-2">
+                <form id="filterForm" method="GET" action="{{ route('admin.e-school-converted-leads.index') }}">
+                    <div class="row g-3">
+                        <div class="col-md-3">
                             <label for="search" class="form-label">Search</label>
-                            <input type="text" class="form-control" id="search" name="search"
-                                value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   placeholder="Name, Phone, Email, Register No" value="{{ request('search') }}">
                         </div>
-                        <div class="col-12 col-sm-6 col-md-2">
+                        <div class="col-md-3">
                             <label for="batch_id" class="form-label">Batch</label>
                             <select class="form-select" id="batch_id" name="batch_id">
                                 <option value="">All Batches</option>
                                 @foreach($batches as $batch)
-                                <option value="{{ $batch->id }}" {{ request('batch_id') == $batch->id ? 'selected' : '' }}>
-                                    {{ $batch->title }}
-                                </option>
+                                    <option value="{{ $batch->id }}" {{ request('batch_id') == $batch->id ? 'selected' : '' }}>
+                                        {{ $batch->title }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-12 col-sm-6 col-md-2">
+                        <div class="col-md-3">
                             <label for="admission_batch_id" class="form-label">Admission Batch</label>
                             <select class="form-select" id="admission_batch_id" name="admission_batch_id" data-selected="{{ request('admission_batch_id') }}">
                                 <option value="">All Admission Batches</option>
+                                @foreach($admission_batches as $admission_batch)
+                                    <option value="{{ $admission_batch->id }}" {{ request('admission_batch_id') == $admission_batch->id ? 'selected' : '' }}>
+                                        {{ $admission_batch->title }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="date_from" class="form-label">From Date</label>
-                            <input type="date" class="form-control" id="date_from" name="date_from"
-                                value="{{ request('date_from') }}">
-                        </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="date_to" class="form-label">To Date</label>
-                            <input type="date" class="form-control" id="date_to" name="date_to"
-                                value="{{ request('date_to') }}">
-                        </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="">All</option>
-                                <option value="Paid" {{ request('status')==='Paid' ? 'selected' : '' }}>Paid</option>
-                                <option value="Admission cancel" {{ request('status')==='Admission cancel' ? 'selected' : '' }}>Admission cancel</option>
-                                <option value="Active" {{ request('status')==='Active' ? 'selected' : '' }}>Active</option>
-                                <option value="Inactive" {{ request('status')==='Inactive' ? 'selected' : '' }}>Inactive</option>
+                        <div class="col-md-3">
+                            <label for="sub_course_id" class="form-label">Sub Course</label>
+                            <select class="form-select" id="sub_course_id" name="sub_course_id">
+                                <option value="">All Sub Courses</option>
+                                @foreach($sub_courses as $sub_course)
+                                    <option value="{{ $sub_course->id }}" {{ request('sub_course_id') == $sub_course->id ? 'selected' : '' }}>
+                                        {{ $sub_course->title }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="call_status" class="form-label">Call Status</label>
-                            <select class="form-select" id="call_status" name="call_status">
-                                <option value="">All</option>
-                                <option value="Call Not Answered" {{ request('call_status')==='Call Not Answered' ? 'selected' : '' }}>Call Not Answered</option>
-                                <option value="Switched Off" {{ request('call_status')==='Switched Off' ? 'selected' : '' }}>Switched Off</option>
-                                <option value="Line Busy" {{ request('call_status')==='Line Busy' ? 'selected' : '' }}>Line Busy</option>
-                                <option value="Student Asks to Call Later" {{ request('call_status')==='Student Asks to Call Later' ? 'selected' : '' }}>Student Asks to Call Later</option>
-                                <option value="Lack of Interest in Conversation" {{ request('call_status')==='Lack of Interest in Conversation' ? 'selected' : '' }}>Lack of Interest in Conversation</option>
-                                <option value="Wrong Contact" {{ request('call_status')==='Wrong Contact' ? 'selected' : '' }}>Wrong Contact</option>
-                                <option value="Inconsistent Responses" {{ request('call_status')==='Inconsistent Responses' ? 'selected' : '' }}>Inconsistent Responses</option>
-                                <option value="Task Complete" {{ request('call_status')==='Task Complete' ? 'selected' : '' }}>Task Complete</option>
-                                <option value="Admission cancel" {{ request('call_status')==='Admission cancel' ? 'selected' : '' }}>Admission cancel</option>
+                        <div class="col-md-3">
+                            <label for="subject_id" class="form-label">Subject</label>
+                            <select class="form-select" id="subject_id" name="subject_id">
+                                <option value="">All Subjects</option>
+                                @foreach($subjects as $subject)
+                                    <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>
+                                        {{ $subject->title }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="class_information" class="form-label">Class Information</label>
-                            <select class="form-select" id="class_information" name="class_information">
-                                <option value="">All</option>
-                                <option value="phone call" {{ request('class_information')==='phone call' ? 'selected' : '' }}>Phone Call</option>
-                                <option value="whatsapp" {{ request('class_information')==='whatsapp' ? 'selected' : '' }}>WhatsApp</option>
+                        <div class="col-md-3">
+                            <label for="teacher_id" class="form-label">Teacher</label>
+                            <select class="form-select" id="teacher_id" name="teacher_id">
+                                <option value="">All Teachers</option>
+                                @foreach($teachers as $teacher)
+                                    <option value="{{ $teacher->id }}" {{ request('teacher_id') == $teacher->id ? 'selected' : '' }}>
+                                        {{ $teacher->name }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="orientation_class_status" class="form-label">Orientation Class Status</label>
-                            <select class="form-select" id="orientation_class_status" name="orientation_class_status">
-                                <option value="">All</option>
-                                <option value="Participated" {{ request('orientation_class_status')==='Participated' ? 'selected' : '' }}>Participated</option>
-                                <option value="Did not participated" {{ request('orientation_class_status')==='Did not participated' ? 'selected' : '' }}>Did not participated</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="whatsapp_group_status" class="form-label">WhatsApp Group Status</label>
-                            <select class="form-select" id="whatsapp_group_status" name="whatsapp_group_status">
-                                <option value="">All</option>
-                                <option value="sent link" {{ request('whatsapp_group_status')==='sent link' ? 'selected' : '' }}>Sent Link</option>
-                                <option value="task complete" {{ request('whatsapp_group_status')==='task complete' ? 'selected' : '' }}>Task Complete</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-sm-6 col-md-2">
+                        <div class="col-md-3">
                             <label for="class_status" class="form-label">Class Status</label>
                             <select class="form-select" id="class_status" name="class_status">
                                 <option value="">All</option>
-                                <option value="Running" {{ request('class_status')==='Running' ? 'selected' : '' }}>Running</option>
-                                <option value="Cancel" {{ request('class_status')==='Cancel' ? 'selected' : '' }}>Cancel</option>
-                                <option value="complete" {{ request('class_status')==='complete' ? 'selected' : '' }}>Complete</option>
+                                <option value="ongoing" {{ request('class_status') == 'ongoing' ? 'selected' : '' }}>Ongoing</option>
+                                <option value="completed" {{ request('class_status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                                <option value="dropout" {{ request('class_status') == 'dropout' ? 'selected' : '' }}>Dropout</option>
                             </select>
                         </div>
-                        <div class="col-12 col-sm-6 col-md-2">
+                        <div class="col-md-3">
+                            <label for="date_from" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_to" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request('date_to') }}">
+                        </div>
+                        <div class="col-md-12">
                             <button type="submit" class="btn btn-primary">
-                                <i class="ti ti-search"></i> Filter
+                                <i class="ti ti-filter"></i> Filter
                             </button>
-                            <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-secondary">
-                                <i class="ti ti-refresh"></i> Clear
+                            <a href="{{ route('admin.e-school-converted-leads.index') }}" class="btn btn-secondary">
+                                <i class="ti ti-x"></i> Clear
                             </a>
                         </div>
                     </div>
@@ -214,33 +201,27 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5>AI Automation Converted Leads</h5>
+                <h5>E-School Converted Leads</h5>
             </div>
             <div class="card-body">
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover data_table_basic" id="aiAutomationTable">
+                        <table class="table table-hover data_table_basic" id="eschoolTable">
                         <thead>
                             <tr>
                                 <th>SL No</th>
                                 <th>Converted Date</th>
                                 <th>Registration Number</th>
-                                <th>Name</th>
                                 <th>Phone</th>
+                                <th>Teacher</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
-                                <th>Email</th>
-                                <th>Call Status</th>
-                                <th>Class Information</th>
-                                <th>Orientation Class Status</th>
-                                <th>Class Starting Date</th>
-                                <th>Class Ending Date</th>
-                                <th>WhatsApp Group Status</th>
+                                <th>Sub Course</th>
+                                <th>Subject</th>
+                                <th>Screening</th>
                                 <th>Class Time</th>
                                 <th>Class Status</th>
-                                <th>Complete/Cancel Date</th>
-                                <th>Remarks</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -250,8 +231,8 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                 <td>
-                                    <div class="inline-edit" data-field="registration_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->registration_number }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->registration_number ?? '-' }}</span>
+                                    <div class="inline-edit" data-field="register_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->register_number }}">
+                                        <span class="display-value">{{ $convertedLead->register_number ?: '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -259,33 +240,10 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>{{ $convertedLead->name }}</td>
                                 <td>
                                     <div class="inline-edit" data-field="phone" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->phone }}">
-                                        <span class="display-value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                    <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}"></div>
-                                </td>
-                                <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
-                                <td>
-                                    <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
-                                        <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>{{ $convertedLead->email ?? '-' }}</td>
-                                <td>
-                                    <div class="inline-edit" data-field="call_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->call_status }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->call_status ?? '-' }}</span>
+                                        <span class="display-value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) ?: '-' }}</span>
+                                        <span class="inline-code-value d-none" data-current="{{ $convertedLead->code }}"></span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -294,8 +252,19 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="inline-edit" data-field="class_information" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_information }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->class_information ?? '-' }}</span>
+                                    <div class="inline-edit" data-field="teacher_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->teacher_id }}">
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->teacher?->name ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>{{ $convertedLead->batch?->title ?: '-' }}</td>
+                                <td>
+                                    <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->admission_batch_id }}" data-batch-id="{{ $convertedLead->batch_id }}">
+                                        <span class="display-value">{{ $convertedLead->admissionBatch?->title ?: '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -304,8 +273,8 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="inline-edit" data-field="orientation_class_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->orientation_class_status }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->orientation_class_status ?? '-' }}</span>
+                                    <div class="inline-edit" data-field="sub_course_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->sub_course_id }}">
+                                        <span class="display-value">{{ $convertedLead->subCourse?->title ?: '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -314,8 +283,8 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="inline-edit" data-field="class_starting_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_starting_date }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->class_starting_date ? \Carbon\Carbon::parse($convertedLead->studentDetails->class_starting_date)->format('d-m-Y') : '-' }}</span>
+                                    <div class="inline-edit" data-field="subject_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->subject_id }}">
+                                        <span class="display-value">{{ $convertedLead->subject?->title ?: '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -324,18 +293,8 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="inline-edit" data-field="class_ending_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_ending_date }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->class_ending_date ? \Carbon\Carbon::parse($convertedLead->studentDetails->class_ending_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="whatsapp_group_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->whatsapp_group_status }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->whatsapp_group_status ?? '-' }}</span>
+                                    <div class="inline-edit" data-field="screening" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->screening }}">
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->screening ? $convertedLead->studentDetails->screening->format('d-m-Y') : '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -355,7 +314,7 @@
                                 </td>
                                 <td>
                                     <div class="inline-edit" data-field="class_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_status }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->class_status ?? '-' }}</span>
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->class_status ?: '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -363,78 +322,36 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="inline-edit" data-field="complete_cancel_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->complete_cancel_date }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->complete_cancel_date ? \Carbon\Carbon::parse($convertedLead->studentDetails->complete_cancel_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="" role="group">
-                                        <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" 
+                                           class="btn btn-sm btn-info" title="View Details">
                                             <i class="ti ti-eye"></i>
                                         </a>
-                                        <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice">
-                                            <i class="ti ti-receipt"></i>
-                                        </a>
-                                        
-                                        <!-- ID Card Generation/View Buttons -->
-                                        @php
-                                            $idCardRecord = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
-                                        @endphp
-                                        
-                                        @if($idCardRecord)
-                                            <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-info" title="View ID Card" target="_blank">
-                                                <i class="ti ti-id"></i>
-                                            </a>
-                                        @else
-                                            <form class="d-inline" action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="POST" class="id-card-generate-form">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
-                                                    <i class="ti ti-id"></i>
-                                                </button>
-                                            </form>
-                                        @endif
                                     </div>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="19" class="text-center">No AI Automation converted leads found</td>
+                                <td colspan="13" class="text-center">No E-School converted leads found.</td>
                             </tr>
                             @endforelse
                         </tbody>
-                        </table>
-                    </div>
+                    </table>
                 </div>
-                
+
                 <!-- Mobile Card View -->
                 <div class="d-lg-none">
                     @forelse($convertedLeads as $index => $convertedLead)
                     <div class="card mb-3">
                         <div class="card-body">
-                            <!-- Lead Header -->
-                            <div class="d-flex align-items-center mb-3">
+                            <div class="d-flex align-items-start">
                                 <div class="avtar avtar-s rounded-circle bg-light-primary me-3 d-flex align-items-center justify-content-center">
                                     <span class="f-16 fw-bold text-primary">{{ strtoupper(substr($convertedLead->name, 0, 1)) }}</span>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-1 fw-bold">{{ $convertedLead->name }}</h6>
-                                    <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
+                                    <h6 class="mb-1">{{ $convertedLead->name }}</h6>
+                                    <small class="text-muted">{{ $convertedLead->register_number ?: 'No Registration Number' }}</small>
                                 </div>
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -446,36 +363,38 @@
                                                 <i class="ti ti-eye me-2"></i>View Details
                                             </a>
                                         </li>
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('admin.invoices.index', $convertedLead->id) }}">
-                                                <i class="ti ti-receipt me-2"></i>View Invoice
-                                            </a>
-                                        </li>
                                     </ul>
                                 </div>
                             </div>
                             
-                            <!-- Lead Details -->
-                            <div class="row g-2 mb-3">
+                            <div class="row mt-3">
                                 <div class="col-6">
                                     <small class="text-muted d-block">Phone</small>
-                                    <span class="fw-medium">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</span>
+                                    <span class="fw-medium">{{ $convertedLead->phone ?: 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block">Email</small>
-                                    <span class="fw-medium">{{ $convertedLead->email ?? 'N/A' }}</span>
+                                    <small class="text-muted d-block">Teacher</small>
+                                    <span class="fw-medium">{{ $convertedLead->studentDetails?->teacher?->name ?: 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block">Call Status</small>
-                                    <span class="fw-medium">{{ $convertedLead->studentDetails?->call_status ?? 'N/A' }}</span>
+                                    <small class="text-muted d-block">Batch</small>
+                                    <span class="fw-medium">{{ $convertedLead->batch?->title ?: 'N/A' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Sub Course</small>
+                                    <span class="fw-medium">{{ $convertedLead->subCourse?->title ?: 'N/A' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Subject</small>
+                                    <span class="fw-medium">{{ $convertedLead->subject?->title ?: 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Class Status</small>
-                                    <span class="fw-medium">{{ $convertedLead->studentDetails?->class_status ?? 'N/A' }}</span>
+                                    <span class="fw-medium">{{ $convertedLead->studentDetails?->class_status ?: 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Registration Number</small>
-                                    <span class="fw-medium">{{ $convertedLead->studentDetails?->registration_number ?? 'N/A' }}</span>
+                                    <span class="fw-medium">{{ $convertedLead->register_number ?? 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
@@ -486,23 +405,16 @@
                             <!-- Action Buttons -->
                             <div class="d-flex gap-2 flex-wrap">
                                 <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}"
-                                    class="btn btn-sm btn-primary">
+                                   class="btn btn-sm btn-info">
                                     <i class="ti ti-eye me-1"></i>View Details
-                                </a>
-                                <a href="{{ route('admin.invoices.index', $convertedLead->id) }}"
-                                    class="btn btn-sm btn-success">
-                                    <i class="ti ti-receipt me-1"></i>View Invoice
                                 </a>
                             </div>
                         </div>
                     </div>
                     @empty
-                    <div class="text-center py-5">
-                        <div class="text-muted">
-                            <i class="ti ti-robot f-48 mb-3 d-block"></i>
-                            <h5>No AI Automation converted leads found</h5>
-                            <p>Try adjusting your filters or check back later.</p>
-                        </div>
+                    <div class="text-center py-4">
+                        <i class="ti ti-inbox f-48 text-muted"></i>
+                        <p class="text-muted mt-2">No E-School converted leads found.</p>
                     </div>
                     @endforelse
                 </div>
@@ -512,79 +424,54 @@
 </div>
 <!-- [ Main Content ] end -->
 
+<!-- Country Codes JSON for JavaScript -->
+<script type="application/json" id="country-codes-json">
+{!! json_encode($country_codes) !!}
+</script>
 @endsection
-
-<script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 
 @push('styles')
 <style>
-.spin {
-    animation: spin 1s linear infinite;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 .inline-edit {
     position: relative;
-    overflow: visible;
 }
 
 .inline-edit .edit-form {
-    display: none;
     position: absolute;
     top: 0;
     left: -8px;
-    z-index: 10;
     background: white;
     border: 1px solid #ddd;
     border-radius: 4px;
-    padding: 10px;
+    padding: 8px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     min-width: 320px;
     max-width: 440px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-}
-
-.inline-edit.editing .edit-form {
-    display: block;
-}
-
-.inline-edit.editing .display-value {
-    display: none;
 }
 
 .inline-edit .edit-form input,
 .inline-edit .edit-form select {
     width: 100%;
-    padding: 4px 8px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    font-size: 12px;
-}
-
-.inline-edit .edit-form input:focus,
-.inline-edit .edit-form select:focus {
-    border-color: #7366ff;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(115,102,255,0.15);
+    margin-bottom: 4px;
 }
 
 .inline-edit .edit-form .btn-group {
-    margin-top: 5px;
+    display: flex;
+    gap: 4px;
 }
 
 .inline-edit .edit-form .btn {
-    padding: 2px 8px;
+    flex: 1;
     font-size: 11px;
 }
 
-#aiAutomationTable thead th,
-#aiAutomationTable tbody td {
+#eschoolTable thead th,
+#eschoolTable tbody td {
     white-space: nowrap;
 }
 
-#aiAutomationTable thead th {
+#eschoolTable thead th {
     position: sticky;
     top: 0;
     z-index: 5;
@@ -592,11 +479,11 @@
     box-shadow: inset 0 -1px 0 #e9ecef;
 }
 
-#aiAutomationTable tbody tr:hover {
+#eschoolTable tbody tr:hover {
     background: #fafbff;
 }
 
-#aiAutomationTable td .display-value {
+#eschoolTable td .display-value {
     display: inline-block;
     max-width: 220px;
     overflow: hidden;
@@ -605,8 +492,8 @@
     vertical-align: middle;
 }
 
-#aiAutomationTable .btn-group .btn { margin-right: 4px; }
-#aiAutomationTable .btn-group .btn:last-child { margin-right: 0; }
+#eschoolTable .btn-group .btn { margin-right: 4px; }
+#eschoolTable .btn-group .btn:last-child { margin-right: 0; }
 </style>
 @endpush
 
@@ -674,15 +561,17 @@
             if (field === 'phone') {
                 const currentCode = container.siblings('.inline-code-value').data('current') || '';
                 editForm = createPhoneField(currentCode, currentValue);
-            } else if (['call_status', 'class_information', 'orientation_class_status', 'whatsapp_group_status', 'class_status'].includes(field)) {
+            } else if (['class_status'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
-            } else if (['class_starting_date', 'class_ending_date', 'complete_cancel_date'].includes(field)) {
+            } else if (['screening'].includes(field)) {
                 editForm = createDateField(field, currentValue);
             } else if (field === 'class_time') {
                 editForm = createTimeField(field, currentValue);
             } else if (field === 'admission_batch_id') {
                 const batchId = container.data('batch-id');
                 editForm = createAdmissionBatchField(batchId, currentValue);
+            } else if (['teacher_id', 'sub_course_id', 'subject_id'].includes(field)) {
+                editForm = createSelectField(field, currentValue);
             } else {
                 editForm = createInputField(field, currentValue);
             }
@@ -695,6 +584,12 @@
                 const batchId = container.data('batch-id');
                 const $select = container.find('select');
                 loadAdmissionBatchesForEdit($select, batchId, currentValue);
+            }
+            
+            // Load options for select fields
+            if (['teacher_id', 'sub_course_id', 'subject_id', 'class_status'].includes(field)) {
+                const $select = container.find('select');
+                loadSelectOptions($select, field, currentValue);
             }
             
             container.find('input, select').first().focus();
@@ -797,13 +692,9 @@
 
         function createDateField(field, currentValue) {
             const value = (currentValue && currentValue !== '-') ? currentValue : '';
-            // For class starting and ending dates, allow future dates
-            const maxDate = (field === 'class_starting_date' || field === 'class_ending_date') ? '' : new Date().toISOString().split('T')[0];
-            const maxAttr = maxDate ? `max="${maxDate}"` : '';
-            
             return `
                 <div class="edit-form">
-                    <input type="date" ${maxAttr} value="${value}" class="form-control form-control-sm">
+                    <input type="date" value="${value}" class="form-control form-control-sm">
                     <div class="btn-group mt-1">
                         <button class="btn btn-success btn-sm save-edit">Save</button>
                         <button class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
@@ -820,6 +711,20 @@
                     <div class="btn-group mt-1">
                         <button class="btn btn-success btn-sm save-edit">Save</button>
                         <button class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createSelectField(field, currentValue) {
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm" data-field="${field}">
+                        <option value="">Select ${field.replace('_', ' ')}</option>
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
                     </div>
                 </div>
             `;
@@ -857,6 +762,35 @@
             });
         }
 
+        function loadSelectOptions($select, field, currentValue) {
+            let options = `<option value="">Select ${field.replace('_', ' ')}</option>`;
+            
+            if (field === 'teacher_id') {
+                @foreach($teachers as $teacher)
+                    const selected{{ $teacher->id }} = String(currentValue) === '{{ $teacher->id }}' ? 'selected' : '';
+                    options += `<option value="{{ $teacher->id }}" ${selected{{ $teacher->id }}}>{{ $teacher->name }}</option>`;
+                @endforeach
+            } else if (field === 'sub_course_id') {
+                @foreach($sub_courses as $sub_course)
+                    const selected{{ $sub_course->id }} = String(currentValue) === '{{ $sub_course->id }}' ? 'selected' : '';
+                    options += `<option value="{{ $sub_course->id }}" ${selected{{ $sub_course->id }}}>{{ $sub_course->title }}</option>`;
+                @endforeach
+            } else if (field === 'subject_id') {
+                @foreach($subjects as $subject)
+                    const selected{{ $subject->id }} = String(currentValue) === '{{ $subject->id }}' ? 'selected' : '';
+                    options += `<option value="{{ $subject->id }}" ${selected{{ $subject->id }}}>{{ $subject->title }}</option>`;
+                @endforeach
+            } else if (field === 'class_status') {
+                const statuses = ['ongoing', 'completed', 'dropout'];
+                statuses.forEach(function(status) {
+                    const selected = String(currentValue) === status ? 'selected' : '';
+                    options += `<option value="${status}" ${selected}>${status.charAt(0).toUpperCase() + status.slice(1)}</option>`;
+                });
+            }
+            
+            $select.html(options);
+        }
+
         function createPhoneField(currentCode, currentPhone) {
             const codeOptionsEl = document.getElementById('country-codes-json');
             let codeOptions = {};
@@ -878,12 +812,10 @@
                 <div class="edit-form">
                     <div class="row g-1">
                         <div class="col-5">
-                            <select class="form-select form-select-sm" name="code">
-                                ${buildOptions(currentCode)}
-                            </select>
+                            <select name="code" class="form-select form-select-sm">${buildOptions(currentCode)}</select>
                         </div>
                         <div class="col-7">
-                            <input type="text" value="${safePhone}" class="form-control form-control-sm" placeholder="Phone number">
+                            <input type="text" value="${safePhone}" class="form-control form-control-sm" placeholder="Phone">
                         </div>
                     </div>
                     <div class="btn-group mt-1">
@@ -893,102 +825,6 @@
                 </div>
             `;
         }
-
-        function createSelectField(field, currentValue) {
-            let options = '';
-            
-            if (field === 'call_status') {
-                options = `
-                    <option value="">Select Call Status</option>
-                    <option value="Call Not Answered" ${currentValue === 'Call Not Answered' ? 'selected' : ''}>Call Not Answered</option>
-                    <option value="Switched Off" ${currentValue === 'Switched Off' ? 'selected' : ''}>Switched Off</option>
-                    <option value="Line Busy" ${currentValue === 'Line Busy' ? 'selected' : ''}>Line Busy</option>
-                    <option value="Student Asks to Call Later" ${currentValue === 'Student Asks to Call Later' ? 'selected' : ''}>Student Asks to Call Later</option>
-                    <option value="Lack of Interest in Conversation" ${currentValue === 'Lack of Interest in Conversation' ? 'selected' : ''}>Lack of Interest in Conversation</option>
-                    <option value="Wrong Contact" ${currentValue === 'Wrong Contact' ? 'selected' : ''}>Wrong Contact</option>
-                    <option value="Inconsistent Responses" ${currentValue === 'Inconsistent Responses' ? 'selected' : ''}>Inconsistent Responses</option>
-                    <option value="Task Complete" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
-                    <option value="Admission cancel" ${currentValue === 'Admission cancel' ? 'selected' : ''}>Admission cancel</option>
-                `;
-            } else if (field === 'class_information') {
-                options = `
-                    <option value="">Select Class Information</option>
-                    <option value="phone call" ${currentValue === 'phone call' ? 'selected' : ''}>Phone Call</option>
-                    <option value="whatsapp" ${currentValue === 'whatsapp' ? 'selected' : ''}>WhatsApp</option>
-                `;
-            } else if (field === 'orientation_class_status') {
-                options = `
-                    <option value="">Select Orientation Class Status</option>
-                    <option value="Participated" ${currentValue === 'Participated' ? 'selected' : ''}>Participated</option>
-                    <option value="Did not participated" ${currentValue === 'Did not participated' ? 'selected' : ''}>Did not participated</option>
-                `;
-            } else if (field === 'whatsapp_group_status') {
-                options = `
-                    <option value="">Select WhatsApp Group Status</option>
-                    <option value="sent link" ${currentValue === 'sent link' ? 'selected' : ''}>Sent Link</option>
-                    <option value="task complete" ${currentValue === 'task complete' ? 'selected' : ''}>Task Complete</option>
-                `;
-            } else if (field === 'class_status') {
-                options = `
-                    <option value="">Select Class Status</option>
-                    <option value="Running" ${currentValue === 'Running' ? 'selected' : ''}>Running</option>
-                    <option value="Cancel" ${currentValue === 'Cancel' ? 'selected' : ''}>Cancel</option>
-                    <option value="complete" ${currentValue === 'complete' ? 'selected' : ''}>Complete</option>
-                `;
-            }
-            
-            return `
-                <div class="edit-form">
-                    <select class="form-select form-select-sm">
-                        ${options}
-                    </select>
-                    <div class="btn-group mt-1">
-                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Handle ID card generation form submission
-        $(document).off('submit', '.id-card-generate-form').on('submit', '.id-card-generate-form', function(e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            
-            const $form = $(this);
-            const $button = $form.find('button[type="submit"]');
-            const originalText = $button.text();
-            const loadingText = $button.data('loading-text') || 'Generating...';
-            
-            $button.prop('disabled', true).text(loadingText);
-            
-            $.ajax({
-                url: $form.attr('action'),
-                method: 'POST',
-                data: $form.serialize(),
-                success: function(response) {
-                    if (response.success) {
-                        show_alert('success', response.message || 'ID Card generated successfully!');
-                        // Reload the page to show updated buttons
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1000);
-                    } else {
-                        show_alert('error', response.message || 'Failed to generate ID Card');
-                    }
-                },
-                error: function(xhr) {
-                    let errorMessage = 'Failed to generate ID Card';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
-                    }
-                    show_alert('error', errorMessage);
-                },
-                complete: function() {
-                    $button.prop('disabled', false).text(originalText);
-                }
-            });
-        });
     });
 </script>
 @endpush

@@ -1044,7 +1044,7 @@ class ConvertedLeadController extends Controller
 
     public function eduthanzeelIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'studentDetails', 'teacher'])
+        $query = ConvertedLead::with(['lead', 'course', 'subCourse', 'academicAssistant', 'createdBy', 'studentDetails', 'teacher'])
             ->where('course_id', 6);
 
         // Apply role-based filtering
@@ -1112,9 +1112,104 @@ class ConvertedLeadController extends Controller
         $batches = \App\Models\Batch::where('course_id', 6)->where('is_active', 1)->get();
         $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
         $teachers = \App\Models\User::where('role_id', 10)->where('is_active', 1)->get();
+        $sub_courses = \App\Models\SubCourse::where('course_id', 6)->where('is_active', 1)->get();
         $country_codes = get_country_code();
 
-        return view('admin.converted-leads.eduthanzeel-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'teachers', 'country_codes'));
+        return view('admin.converted-leads.eduthanzeel-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'teachers', 'sub_courses', 'country_codes'));
+    }
+
+    /**
+     * Display E-School converted leads (course_id = 5)
+     */
+    public function eschoolIndex(Request $request)
+    {
+        $query = ConvertedLead::with(['lead', 'course', 'subCourse', 'academicAssistant', 'createdBy', 'studentDetails', 'teacher'])
+            ->where('course_id', 5);
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereIn('created_by', $teamMemberIds);
+                } else {
+                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Can see all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->where('created_by', AuthHelper::getCurrentUserId());
+            }
+        }
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('register_number', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('class_status')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('class_status', $request->class_status);
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('sub_course_id')) {
+            $query->where('sub_course_id', $request->sub_course_id);
+        }
+
+        if ($request->filled('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
+        if ($request->filled('teacher_id')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('teacher_id', $request->teacher_id);
+            });
+        }
+
+        // Get all results for DataTable
+        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
+
+        // Get filter data
+        $courses = \App\Models\Course::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 5)->where('is_active', 1)->get();
+        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $sub_courses = \App\Models\SubCourse::where('course_id', 5)->where('is_active', 1)->get();
+        $subjects = \App\Models\Subject::where('course_id', 5)->where('is_active', 1)->get();
+        $teachers = \App\Models\User::where('role_id', 10)->where('is_active', 1)->get();
+        $country_codes = get_country_code();
+
+        return view('admin.converted-leads.eschool-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'sub_courses', 'subjects', 'teachers', 'country_codes'));
     }
 
     /**
@@ -1488,6 +1583,7 @@ class ConvertedLeadController extends Controller
         // Define allowed fields and their validation rules
         $allowedFields = [
             'register_number' => 'nullable|string|max:50',
+            'sub_course_id' => 'nullable|exists:sub_courses,id',
             'subject_id' => 'nullable|exists:subjects,id',
             'admission_batch_id' => 'nullable|exists:admission_batches,id',
             'academic_assistant_id' => 'nullable|exists:users,id',
@@ -1528,7 +1624,7 @@ class ConvertedLeadController extends Controller
             'class_ending_date' => 'nullable|date',
             'whatsapp_group_status' => 'nullable|string|in:sent link,task complete',
             'class_time' => 'nullable|date_format:H:i',
-            'class_status' => 'nullable|string|in:Running,Cancel,complete,completed,drop out,ongoing',
+            'class_status' => 'nullable|string|in:Running,Cancel,complete,completed,drop out,ongoing,dropout',
             'complete_cancel_date' => 'nullable|date',
             // Eduthanzeel specific fields
             'teacher_id' => 'nullable|exists:users,id',
@@ -1629,7 +1725,10 @@ class ConvertedLeadController extends Controller
         }
         
         // Special handling for display values
-        if ($field === 'subject_id' && $updatedValue) {
+        if ($field === 'sub_course_id' && $updatedValue) {
+            $subCourse = \App\Models\SubCourse::find($updatedValue);
+            $updatedValue = $subCourse ? $subCourse->title : $updatedValue;
+        } elseif ($field === 'subject_id' && $updatedValue) {
             $subject = \App\Models\Subject::find($updatedValue);
             $updatedValue = $subject ? $subject->title : $updatedValue;
         } elseif ($field === 'admission_batch_id' && $updatedValue) {

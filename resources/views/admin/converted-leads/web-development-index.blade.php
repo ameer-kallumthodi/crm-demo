@@ -86,6 +86,9 @@
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
                     </a>
+                    <a href="{{ route('admin.e-school-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-laptop"></i> E-School Converted Leads
+                    </a>
                 </div>
             </div>
         </div>

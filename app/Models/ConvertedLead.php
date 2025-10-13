@@ -23,6 +23,7 @@ class ConvertedLead extends Model
         'ref_no',
         'register_number',
         'course_id',
+        'sub_course_id',
         'university_id',
         'academic_assistant_id',
         'batch_id',
@@ -57,6 +58,11 @@ class ConvertedLead extends Model
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function subCourse()
+    {
+        return $this->belongsTo(SubCourse::class);
     }
 
     public function university()

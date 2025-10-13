@@ -327,6 +327,16 @@
                     </a>
                 </li>
                 @endif
+                @if(has_permission('admin/sub-courses/index'))
+                <li class="pc-item {{ request()->routeIs('admin.sub-courses.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.sub-courses.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-layer-group"></i>
+                        </span>
+                        <span class="pc-mtext">Sub Courses</span>
+                    </a>
+                </li>
+                @endif
                 @if(has_permission('admin/countries/index'))
                 <li class="pc-item {{ request()->routeIs('admin.countries.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.countries.index') }}" class="pc-link">
