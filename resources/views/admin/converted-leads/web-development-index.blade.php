@@ -80,6 +80,9 @@
                     <a href="{{ route('admin.vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-device-desktop"></i> Vibe Coding Converted Leads
                     </a>
+                    <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-palette"></i> Graphic Designing Converted Leads
+                    </a>
                 </div>
             </div>
         </div>
