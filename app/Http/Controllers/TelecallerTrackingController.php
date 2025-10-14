@@ -19,6 +19,11 @@ class TelecallerTrackingController extends Controller
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
         
+        // Ensure user is properly authenticated
+        if (!$userId || $userId <= 0) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+        
         // Get the current active session - try both session_id and user_id
         $session = TelecallerSession::where('user_id', $userId)
             ->where('session_id', $sessionId)
@@ -72,6 +77,11 @@ class TelecallerTrackingController extends Controller
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
         
+        // Ensure user is properly authenticated
+        if (!$userId || $userId <= 0) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+        
         // Get the current active session - try both session_id and user_id
         $session = TelecallerSession::where('user_id', $userId)
             ->where('session_id', $sessionId)
@@ -118,6 +128,11 @@ class TelecallerTrackingController extends Controller
     {
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
+        
+        // Ensure user is properly authenticated
+        if (!$userId || $userId <= 0) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
         
         // Get the current active session - try both session_id and user_id
         $session = TelecallerSession::where('user_id', $userId)
@@ -178,6 +193,11 @@ class TelecallerTrackingController extends Controller
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
         
+        // Ensure user is properly authenticated
+        if (!$userId || $userId <= 0) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+        
         // Get the current active session - try both session_id and user_id
         $session = TelecallerSession::where('user_id', $userId)
             ->where('session_id', $sessionId)
@@ -222,6 +242,11 @@ class TelecallerTrackingController extends Controller
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
         
+        // Ensure user is properly authenticated
+        if (!$userId || $userId <= 0) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+        
         // Get the current active session - try both session_id and user_id
         $session = TelecallerSession::where('user_id', $userId)
             ->where('session_id', $sessionId)
@@ -258,7 +283,7 @@ class TelecallerTrackingController extends Controller
             $userId = AuthHelper::getUserId();
             $sessionId = session()->getId();
 
-            if (!$userId) {
+            if (!$userId || $userId <= 0) {
                 return response()->json(['error' => 'User not authenticated'], 401);
             }
 
@@ -311,7 +336,7 @@ class TelecallerTrackingController extends Controller
             $userId = AuthHelper::getUserId();
             $sessionId = session()->getId();
 
-            if (!$userId) {
+            if (!$userId || $userId <= 0) {
                 return response()->json(['error' => 'User not authenticated'], 401);
             }
 

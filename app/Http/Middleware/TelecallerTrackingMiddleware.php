@@ -20,8 +20,8 @@ class TelecallerTrackingMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Only track telecallers (role_id = 3)
-        if (AuthHelper::isLoggedIn() && AuthHelper::getRoleId() == 3) {
+        // Only track telecallers (role_id = 3) and ensure user is properly authenticated
+        if (AuthHelper::isLoggedIn() && AuthHelper::getRoleId() == 3 && AuthHelper::getUserId() > 0) {
             $this->cleanupOrphanedSessions();
             $this->checkWorkingHours($request);
             $this->trackSession($request);
@@ -61,6 +61,11 @@ class TelecallerTrackingMiddleware
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
         
+        // Ensure user is properly authenticated before proceeding
+        if (!$userId || $userId <= 0) {
+            return;
+        }
+        
         // Get the current active session
         $session = TelecallerSession::where('user_id', $userId)
             ->where('session_id', $sessionId)
@@ -94,6 +99,12 @@ class TelecallerTrackingMiddleware
     private function cleanupOrphanedSessions()
     {
         $userId = AuthHelper::getUserId();
+        
+        // Ensure user is properly authenticated before proceeding
+        if (!$userId || $userId <= 0) {
+            return;
+        }
+        
         $today = now()->format('Y-m-d');
         $yesterday = now()->subDay()->format('Y-m-d');
         
@@ -127,6 +138,12 @@ class TelecallerTrackingMiddleware
     {
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
+        
+        // Ensure user is properly authenticated before proceeding
+        if (!$userId || $userId <= 0) {
+            // User is not authenticated, skip session tracking
+            return;
+        }
         
         // Check if there's an active session for this user with this session ID
         $activeSession = TelecallerSession::where('user_id', $userId)
@@ -199,6 +216,11 @@ class TelecallerTrackingMiddleware
      */
     private function performAutoLogout($userId, $sessionId)
     {
+        // Ensure user is properly authenticated before proceeding
+        if (!$userId || $userId <= 0) {
+            return;
+        }
+        
         // End the current session
         $session = TelecallerSession::where('user_id', $userId)
             ->where('session_id', $sessionId)
@@ -226,6 +248,11 @@ class TelecallerTrackingMiddleware
     {
         $userId = AuthHelper::getUserId();
         $sessionId = session()->getId();
+        
+        // Ensure user is properly authenticated before proceeding
+        if (!$userId || $userId <= 0) {
+            return;
+        }
         
         // Get the current session
         $session = TelecallerSession::where('user_id', $userId)
