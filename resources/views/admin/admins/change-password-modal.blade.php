@@ -11,7 +11,6 @@
         
         <form id="changePasswordForm">
             @csrf
-            <input type="hidden" name="_method" value="PUT">
             
             <div class="mb-3">
                 <label for="password" class="form-label">New Password <span class="text-danger">*</span></label>
