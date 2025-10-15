@@ -43,6 +43,7 @@
 <!-- [ breadcrumb ] end -->
 
 <!-- [ Course Filter Buttons ] start -->
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
 <div class="row mb-3">
     <div class="col-12">
         <div class="card">
@@ -93,6 +94,7 @@
         </div>
     </div>
 </div>
+@endif
 <!-- [ Course Filter Buttons ] end -->
 
 <!-- [ Filter Section ] start -->
@@ -107,6 +109,7 @@
                             <input type="text" class="form-control" id="search" name="search"
                                 value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
                         </div>
+                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="course_id" class="form-label">Course</label>
                             <select class="form-select" id="course_id" name="course_id">
@@ -118,6 +121,7 @@
                                 @endforeach
                             </select>
                         </div>
+                        @endif
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="batch_id" class="form-label">Batch</label>
                             <select class="form-select" id="batch_id" name="batch_id" data-selected="{{ request('batch_id') }}">
@@ -133,12 +137,12 @@
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from"
-                                value="{{ request('date_from') }}">
+                                value="{{ request('date_from', $fromDate ?? now()->subDays(7)->format('Y-m-d')) }}">
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_to" class="form-label">To Date</label>
                             <input type="date" class="form-control" id="date_to" name="date_to"
-                                value="{{ request('date_to') }}">
+                                value="{{ request('date_to', $toDate ?? now()->format('Y-m-d')) }}">
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="status" class="form-label">Status</label>
