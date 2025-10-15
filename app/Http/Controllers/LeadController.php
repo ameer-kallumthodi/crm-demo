@@ -28,14 +28,26 @@ class LeadController extends Controller
         // Set execution time limit for this operation
         set_time_limit(config('timeout.max_execution_time', 300));
         
-        $query = Lead::with(['leadStatus:id,title', 'leadSource:id,title', 'course:id,title', 'telecaller:id,name', 'leadActivities' => function($query) {
-            $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type')
-                  ->whereNotNull('reason')
-                  ->where('reason', '!=', '')
-                  ->orderBy('created_at', 'desc');
-        }])
-                    ->notConverted()
-                    ->notDropped();
+        $query = Lead::select([
+            'id', 'title', 'code', 'phone', 'email', 'lead_status_id', 'lead_source_id', 
+            'course_id', 'telecaller_id', 'team_id', 'place', 'rating', 'interest_status', 
+            'followup_date', 'remarks', 'is_converted', 'created_at', 'updated_at'
+        ])
+        ->with([
+            'leadStatus:id,title', 
+            'leadSource:id,title', 
+            'course:id,title', 
+            'telecaller:id,name', 
+            'studentDetails:id,lead_id,status,course_id',
+            'leadActivities' => function($query) {
+                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type')
+                      ->whereNotNull('reason')
+                      ->where('reason', '!=', '')
+                      ->orderBy('created_at', 'desc');
+            }
+        ])
+        ->notConverted()
+        ->notDropped();
 
         // Apply filters
         $fromDate = $request->get('date_from', now()->subDays(7)->format('Y-m-d'));
@@ -157,15 +169,27 @@ class LeadController extends Controller
         $isTeamLead = AuthHelper::isTeamLead();
 
         // Base query for follow-up leads (status = 2)
-        $query = Lead::with(['leadStatus:id,title', 'leadSource:id,title', 'course:id,title', 'telecaller:id,name', 'leadActivities' => function($query) {
-            $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type')
-                  ->whereNotNull('reason')
-                  ->where('reason', '!=', '')
-                  ->orderBy('created_at', 'desc');
-        }])
-                    ->where('lead_status_id', 2)
-                    ->notConverted()
-                    ->notDropped();
+        $query = Lead::select([
+            'id', 'title', 'code', 'phone', 'email', 'lead_status_id', 'lead_source_id', 
+            'course_id', 'telecaller_id', 'team_id', 'place', 'rating', 'interest_status', 
+            'followup_date', 'remarks', 'is_converted', 'created_at', 'updated_at'
+        ])
+        ->with([
+            'leadStatus:id,title', 
+            'leadSource:id,title', 
+            'course:id,title', 
+            'telecaller:id,name', 
+            'studentDetails:id,lead_id,status,course_id',
+            'leadActivities' => function($query) {
+                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type')
+                      ->whereNotNull('reason')
+                      ->where('reason', '!=', '')
+                      ->orderBy('created_at', 'desc');
+            }
+        ])
+        ->where('lead_status_id', 2)
+        ->notConverted()
+        ->notDropped();
 
         // Apply filters
         if ($request->filled('search_key')) {
@@ -199,7 +223,7 @@ class LeadController extends Controller
             $query->where('telecaller_id', AuthHelper::getCurrentUserId());
         } elseif ($isTeamLead) {
             // Team Lead: Can see leads from their team
-            $teamId = AuthHelper::getCurrentUserTeamId();
+            $teamId = AuthHelper::getCurrentUser()->team_id ?? null;
             if ($teamId) {
                 $query->whereHas('telecaller', function($q) use ($teamId) {
                     $q->where('team_id', $teamId);
@@ -497,7 +521,7 @@ class LeadController extends Controller
     {
         try {
             // Debug: Log the incoming request data
-            \Log::info('Status Update Request Data:', $request->all());
+            Log::info('Status Update Request Data:', $request->all());
             
             // Prepare validation rules
             $rules = [
@@ -1226,16 +1250,15 @@ class LeadController extends Controller
 
         $successCount = 0;
         foreach ($request->lead_id as $leadId) {
-            $lead = Lead::find($leadId);
-            if ($lead) {
-                // Update the lead
-                $lead->update([
-                    'telecaller_id' => $request->telecaller_id,
-                    'lead_source_id' => $request->lead_source_id,
-                    'lead_status_id' => $request->lead_status_id,
-                    'updated_by' => AuthHelper::getCurrentUserId(),
-                ]);
+            // Update the lead directly without loading the full model
+            $updated = Lead::where('id', $leadId)->update([
+                'telecaller_id' => $request->telecaller_id,
+                'lead_source_id' => $request->lead_source_id,
+                'lead_status_id' => $request->lead_status_id,
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
 
+            if ($updated) {
                 // Create lead activity history
                 \App\Models\LeadActivity::create([
                     'lead_id' => $leadId,
@@ -1312,11 +1335,13 @@ class LeadController extends Controller
 
         $successCount = 0;
         foreach ($request->lead_id as $leadId) {
-            $lead = Lead::find($leadId);
-            if ($lead) {
-                $lead->deleted_by = AuthHelper::getCurrentUserId();
-                $lead->save();
-                $lead->delete();
+            // Update deleted_by and soft delete directly without loading the full model
+            $updated = Lead::where('id', $leadId)->update([
+                'deleted_by' => AuthHelper::getCurrentUserId()
+            ]);
+            
+            if ($updated) {
+                Lead::where('id', $leadId)->delete();
                 $successCount++;
             }
         }
@@ -1359,7 +1384,7 @@ class LeadController extends Controller
 
         $successCount = 0;
         foreach ($request->lead_id as $leadId) {
-            $lead = Lead::find($leadId);
+            $lead = Lead::select(['id', 'title', 'code', 'phone', 'email'])->find($leadId);
             if ($lead) {
                 // Create converted lead record with basic info
                 ConvertedLead::create([
@@ -1373,7 +1398,7 @@ class LeadController extends Controller
                 ]);
 
                 // Update lead as converted
-                $lead->update([
+                Lead::where('id', $leadId)->update([
                     'is_converted' => 1,
                     'updated_by' => AuthHelper::getCurrentUserId(),
                 ]);
@@ -1390,11 +1415,20 @@ class LeadController extends Controller
      */
     public function getLeadsBySource(Request $request)
     {
-        $leads = Lead::where('lead_source_id', $request->lead_source_id)
-                    ->where('telecaller_id', $request->tele_caller_id)
-                    ->whereDate('created_at', $request->created_at)
-                    ->with(['leadStatus', 'leadSource', 'telecaller'])
-                    ->get();
+        $leads = Lead::select([
+            'id', 'title', 'code', 'phone', 'email', 'lead_status_id', 'lead_source_id', 
+            'course_id', 'telecaller_id', 'place', 'rating', 'interest_status', 
+            'followup_date', 'remarks', 'is_converted', 'created_at'
+        ])
+        ->where('lead_source_id', $request->lead_source_id)
+        ->where('telecaller_id', $request->tele_caller_id)
+        ->whereDate('created_at', $request->created_at)
+        ->with([
+            'leadStatus:id,title', 
+            'leadSource:id,title', 
+            'telecaller:id,name'
+        ])
+        ->get();
 
         return view('admin.leads.partials.leads-table-rows', compact('leads'));
     }
@@ -1407,13 +1441,23 @@ class LeadController extends Controller
         $fromDate = date('Y-m-d H:i:s', strtotime($request->from_date . ' 00:00:00'));
         $toDate = date('Y-m-d H:i:s', strtotime($request->to_date . ' 23:59:59'));
         
-        $leads = Lead::where('lead_source_id', $request->lead_source_id)
-                    ->where('telecaller_id', $request->tele_caller_id)
-                    ->where('lead_status_id', $request->lead_status_id)
-                    ->where('created_at', '>=', $fromDate)
-                    ->where('created_at', '<=', $toDate)
-                    ->with(['leadStatus', 'leadSource', 'telecaller', 'course'])
-                    ->get();
+        $leads = Lead::select([
+            'id', 'title', 'code', 'phone', 'email', 'lead_status_id', 'lead_source_id', 
+            'course_id', 'telecaller_id', 'place', 'rating', 'interest_status', 
+            'followup_date', 'remarks', 'is_converted', 'created_at'
+        ])
+        ->where('lead_source_id', $request->lead_source_id)
+        ->where('telecaller_id', $request->tele_caller_id)
+        ->where('lead_status_id', $request->lead_status_id)
+        ->where('created_at', '>=', $fromDate)
+        ->where('created_at', '<=', $toDate)
+        ->with([
+            'leadStatus:id,title', 
+            'leadSource:id,title', 
+            'telecaller:id,name', 
+            'course:id,title'
+        ])
+        ->get();
         
         return view('admin.leads.partials.leads-table-rows-reassign', compact('leads'));
     }
@@ -1684,7 +1728,7 @@ class LeadController extends Controller
             // Use AuthHelper to get the authenticated user
             $currentUserId = AuthHelper::getCurrentUserId();
             //Log the current user
-            \Log::info('Current user: ' . $currentUserId);
+            Log::info('Current user: ' . $currentUserId);
             // Check if user is authenticated
             if (!$currentUserId) {
                 return response()->json([
