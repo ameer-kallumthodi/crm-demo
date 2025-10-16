@@ -108,6 +108,9 @@
                     <a href="{{ route('admin.mentor-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Bosse Converted Mentor List
                     </a>
+                    <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> NIOS Converted Mentor List
+                    </a>
                 </div>
             </div>
         </div>

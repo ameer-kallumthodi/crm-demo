@@ -13,10 +13,10 @@ use App\Helpers\RoleHelper;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
-class MentorConvertedLeadController extends Controller
+class NiosMentorConvertedLeadController extends Controller
 {
     /**
-     * Display a listing of BOSSE converted leads for mentoring
+     * Display a listing of NIOS converted leads for mentoring
      */
     public function index(Request $request)
     {
@@ -30,7 +30,7 @@ class MentorConvertedLeadController extends Controller
             'subject',
             'batch',
             'admissionBatch'
-        ])->where('course_id', 2); // BOSSE course
+        ])->where('course_id', 1); // NIOS course
 
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
@@ -49,20 +49,22 @@ class MentorConvertedLeadController extends Controller
                 $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
             } elseif (RoleHelper::is_telecaller()) {
                 $query->where('created_by', AuthHelper::getCurrentUserId());
+            } else {
+                $query->where('created_by', AuthHelper::getCurrentUserId());
             }
         }
 
         // Apply filters
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('register_number', 'like', "%{$search}%")
-                    ->orWhereHas('mentorDetails', function($q) use ($search) {
-                        $q->where('application_number', 'like', "%{$search}%");
-                    });
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('register_number', 'like', "%{$search}%")
+                  ->orWhereHas('studentDetails', function($subQ) use ($search) {
+                      $subQ->where('enroll_no', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -75,7 +77,9 @@ class MentorConvertedLeadController extends Controller
         }
 
         if ($request->filled('subject_id')) {
-            $query->where('subject_id', $request->subject_id);
+            $query->whereHas('mentorDetails', function($q) use ($request) {
+                $q->where('subject_id', $request->subject_id);
+            });
         }
 
         if ($request->filled('registration_status')) {
@@ -102,13 +106,13 @@ class MentorConvertedLeadController extends Controller
 
         // Get filter data
         $batches = Batch::orderBy('title')->get();
-        $subjects = Subject::where('course_id', 2)->orderBy('title')->get();
+        $subjects = Subject::where('course_id', 1)->orderBy('title')->get();
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
 
-        return view('admin.converted-leads.mentor-bosse-index', compact(
-            'convertedLeads', 
-            'batches', 
-            'subjects', 
+        return view('admin.converted-leads.nios-mentor-index', compact(
+            'convertedLeads',
+            'batches',
+            'subjects',
             'country_codes'
         ));
     }
@@ -154,7 +158,7 @@ class MentorConvertedLeadController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error updating mentor details: ' . $e->getMessage());
+            Log::error('Error updating NIOS mentor details: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'error' => 'Update failed: ' . $e->getMessage()
@@ -173,10 +177,17 @@ class MentorConvertedLeadController extends Controller
             'technology_side' => 'nullable|in:No Knowledge,Limited Knowledge,Moderate Knowledge,High Knowledge',
             'student_status' => 'nullable|in:Low Level,Below Medium,Medium Level,Advanced Level',
             'problems' => 'nullable|string|max:1000',
+            'exam_fees' => 'nullable|in:Not Respond,Task Complete',
+            'pcp_class' => 'nullable|in:Not Respond,Task Complete',
+            'practical_record' => 'nullable|in:Not Respond,1 Subject Attend,2 Subject Attend,3 Subject Attend,4 Subject Attend,5 Subject Attend,6 Subject Attend,Task Complete',
+            'id_card' => 'nullable|in:Did Not,Task Complete',
+            'practical_hall_ticket' => 'nullable|in:Did Not,Task Complete',
+            'particle_exam' => 'nullable|in:Did not log in on time,missed the exam,technical issue,task complete',
+            'theory_hall_ticket' => 'nullable|in:Did Not,Task Complete',
         ];
 
         // Add call status rules
-        $callFields = ['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9'];
+        $callFields = ['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'call_10'];
         foreach ($callFields as $callField) {
             $rules[$callField] = 'nullable|in:Call Not Answered,Switched Off,Line Busy,Student Asks to Call Later,Lack of Interest in Conversation,Wrong Contact,Inconsistent Responses,Task Complete';
         }
@@ -193,6 +204,24 @@ class MentorConvertedLeadController extends Controller
             $rules[$examField] = 'nullable|in:Did not log in on time,missed the exam,technical issue,task complete';
         }
 
+
+        // Add other field rules
+        $otherFields = [
+            'app' => 'nullable|in:Not Respond,Task Complete',
+            'whatsapp_group' => 'nullable|in:Not Respond,Task Complete',
+            'telegram_group' => 'nullable|in:Not Respond,Task Complete',
+            'first_live' => 'nullable|in:Not Respond,Task Complete',
+            'first_exam' => 'nullable|in:Did not log in on time,missed the exam,technical issue,task complete',
+            'second_live' => 'nullable|in:Not Respond,Task Complete',
+            'second_exam' => 'nullable|in:Did not log in on time,missed the exam,technical issue,task complete',
+            'model_exam_live' => 'nullable|in:Not Respond,Task Complete',
+            'model_exam' => 'nullable|in:Did not log in on time,missed the exam,technical issue,task complete',
+            'assignment' => 'nullable|in:Not Respond,Task Complete',
+            'admit_card' => 'nullable|in:Did Not,Task Complete',
+        ];
+
+        $rules = array_merge($rules, $otherFields);
+
         return $rules[$field] ?? null;
     }
 
@@ -205,7 +234,7 @@ class MentorConvertedLeadController extends Controller
             $subject = Subject::find($value);
             return $subject ? $subject->title : $value;
         }
-
+        
         return $value;
     }
 }

@@ -114,6 +114,9 @@
                     <a href="{{ route('admin.mentor-bosse-converted-leads.index') }}" class="btn btn-outline-primary active">
                         <i class="ti ti-user-star"></i> Bosse Converted Mentor List
                     </a>
+                    <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> NIOS Converted Mentor List
+                    </a>
                 </div>
             </div>
         </div>
@@ -280,16 +283,7 @@
                                 <td>{{ $convertedLead->register_number ?? '-' }}</td>
                                 <td>{{ $convertedLead->name }}</td>
                                 <td>{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</td>
-                                <td>
-                                    <div class="inline-edit" data-field="application_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->application_number }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->application_number ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
+                                <td>{{ $convertedLead->studentDetails?->application_number ?? '-' }}</td>
                                 <td>{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</td>
                                 <td>
                                     <div class="inline-edit" data-field="subject_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->subject_id }}">
