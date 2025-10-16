@@ -338,7 +338,7 @@ class LeadController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'nullable|string|max:255',
             'phone' => 'required|string|max:20',
-            'email' => 'nullable|email|max:255',
+            'email' => 'nullable|email| max:255',
             'code' => 'required|string|max:10',
             'whatsapp_code' => 'nullable|string|max:10',
             'whatsapp' => 'nullable|string|max:20',

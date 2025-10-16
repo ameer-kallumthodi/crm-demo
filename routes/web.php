@@ -193,8 +193,6 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
             Route::get('/leads/phone', [LeadController::class, 'getByPhone']);
             Route::get('/leads/telecallers-by-team', [LeadController::class, 'getTelecallersByTeam'])->name('leads.telecallers-by-team');
             Route::get('/batches/by-course/{courseId}', [App\Http\Controllers\BatchController::class, 'getByCourse'])->name('batches.by-course');
-            Route::get('/subjects/by-course/{courseId}', [App\Http\Controllers\SubjectController::class, 'getByCourse'])->name('subjects.by-course');
-            Route::get('/admission-batches/by-batch/{batchId}', [App\Http\Controllers\AdmissionBatchController::class, 'getByBatch'])->name('admission-batches.by-batch');
             Route::get('/academic-assistants', [App\Http\Controllers\AcademicAssistantController::class, 'getAll'])->name('academic-assistants.all');
 
         // Voxbay API routes (duplicates removed - already defined in public routes)
@@ -216,6 +214,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         
         // API routes for universities
         Route::get('/api/universities/{id}', [UniversityController::class, 'getUniversityData']);
+        
+        // API routes for subjects and admission batches
+        Route::get('/api/subjects/by-course/{courseId}', [App\Http\Controllers\SubjectController::class, 'getByCourse']);
+        Route::get('/api/admission-batches/by-batch/{batchId}', [App\Http\Controllers\AdmissionBatchController::class, 'getByBatch']);
     });
 
     // Admin routes
@@ -504,6 +506,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
         Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
         Route::post('/converted-leads/{id}/inline-update', [App\Http\Controllers\ConvertedLeadController::class, 'inlineUpdate'])->name('converted-leads.inline-update');
+        
+        // BOSSE Mentor Converted Leads Routes
+        Route::get('/mentor-bosse-converted-leads', [App\Http\Controllers\MentorConvertedLeadController::class, 'index'])->name('mentor-bosse-converted-leads.index');
+        Route::post('/mentor-bosse-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\MentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-bosse-converted-leads.update-mentor-details');
 
         // Invoice Routes
         Route::get('/invoices/student/{studentId}', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');

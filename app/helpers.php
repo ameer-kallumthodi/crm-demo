@@ -81,6 +81,16 @@ if (!function_exists('is_finance')) {
     }
 }
 
+if (!function_exists('is_mentor')) {
+    /**
+     * Check if current user is Mentor
+     */
+    function is_mentor()
+    {
+        return \App\Helpers\RoleHelper::is_mentor();
+    }
+}
+
 
 if (!function_exists('is_logged_in')) {
     /**

@@ -136,6 +136,23 @@ class RoleHelper
 
         return $user->role_id == 6;
     }
+    
+    /**
+     * Check if current user is Mentor
+     */
+    public static function is_mentor()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        return $user->role_id == 9;
+    }
 
     /**
      * Check if current user is Post Sales

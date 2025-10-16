@@ -102,6 +102,16 @@ class PermissionHelper
             'admin/converted-leads/index',
             'admin/notifications/index',
             'admin/reports/course-summary',
+            'admin/courses/index',
+            'admin/subjects/index',
+            'admin/course-documents/index',
+            'admin/universities/index',
+            'admin/registration-links/index',
+            'admin/teams/index',
+            'admin/countries/index',
+            'admin/boards/index',
+            'admin/batches/index',
+            'admin/admission-batches/index',
         ];
         return in_array($permission, $permissions);
     }

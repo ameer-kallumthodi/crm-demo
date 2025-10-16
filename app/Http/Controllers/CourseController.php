@@ -10,7 +10,7 @@ class CourseController extends Controller
 {
     public function index()
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 

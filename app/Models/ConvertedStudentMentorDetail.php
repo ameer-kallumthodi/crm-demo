@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class ConvertedStudentMentorDetail extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'converted_student_id',
+        'application_number',
+        'subject_id',
+        'registration_status',
+        'technology_side',
+        'student_status',
+        'call_1',
+        'app',
+        'whatsapp_group',
+        'telegram_group',
+        'problems',
+        'call_2',
+        'mentor_live_1',
+        'first_live',
+        'first_exam_registration',
+        'first_exam',
+        'call_3',
+        'mentor_live_2',
+        'second_live',
+        'second_exam',
+        'call_4',
+        'mentor_live_3',
+        'model_exam_live',
+        'model_exam',
+        'practical',
+        'call_5',
+        'mentor_live_4',
+        'self_registration',
+        'call_6',
+        'assignment',
+        'call_7',
+        'mock_test',
+        'call_8',
+        'admit_card',
+        'call_9',
+        'mentor_live_5',
+        'exam_subject_1',
+        'exam_subject_2',
+        'exam_subject_3',
+        'exam_subject_4',
+        'exam_subject_5',
+        'exam_subject_6',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
+
+    // Relationships
+    public function convertedStudent()
+    {
+        return $this->belongsTo(ConvertedLead::class, 'converted_student_id');
+    }
+
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class);
+    }
+}

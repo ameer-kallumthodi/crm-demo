@@ -1,0 +1,223 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\ConvertedLead;
+use App\Models\ConvertedStudentMentorDetail;
+use App\Models\Subject;
+use App\Models\Batch;
+use App\Models\AdmissionBatch;
+use App\Helpers\AuthHelper;
+use App\Helpers\RoleHelper;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+
+class MentorConvertedLeadController extends Controller
+{
+    /**
+     * Display a listing of BOSSE converted leads for mentoring
+     */
+    public function index(Request $request)
+    {
+        $query = ConvertedLead::with([
+            'lead', 
+            'course', 
+            'academicAssistant', 
+            'createdBy', 
+            'studentDetails',
+            'mentorDetails',
+            'subject',
+            'batch',
+            'admissionBatch'
+        ])->where('course_id', 2); // BOSSE course
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereIn('created_by', $teamMemberIds);
+                } else {
+                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Can see all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->where('created_by', AuthHelper::getCurrentUserId());
+            }
+        }
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('register_number', 'like', "%{$search}%")
+                    ->orWhereHas('mentorDetails', function($q) use ($search) {
+                        $q->where('application_number', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
+        if ($request->filled('registration_status')) {
+            $query->whereHas('mentorDetails', function($q) use ($request) {
+                $q->where('registration_status', $request->registration_status);
+            });
+        }
+
+        if ($request->filled('student_status')) {
+            $query->whereHas('mentorDetails', function($q) use ($request) {
+                $q->where('student_status', $request->student_status);
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(50);
+
+        // Get filter data
+        $batches = Batch::orderBy('title')->get();
+        $subjects = Subject::where('course_id', 2)->orderBy('title')->get();
+        $country_codes = \App\Helpers\CountriesHelper::get_country_code();
+
+        return view('admin.converted-leads.mentor-bosse-index', compact(
+            'convertedLeads', 
+            'batches', 
+            'subjects', 
+            'country_codes'
+        ));
+    }
+
+    /**
+     * Update mentor details inline
+     */
+    public function updateMentorDetails(Request $request, $id)
+    {
+        try {
+            $convertedLead = ConvertedLead::findOrFail($id);
+            $field = $request->field;
+            $value = $request->value;
+
+            // Validate the field and value
+            $validationRules = $this->getValidationRules($field);
+            if ($validationRules) {
+                $validator = Validator::make([$field => $value], [$field => $validationRules]);
+                if ($validator->fails()) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => $validator->errors()->first($field)
+                    ], 422);
+                }
+            }
+
+            // Handle application_number field - update in converted_student_details table
+            if ($field === 'application_number') {
+                $studentDetails = $convertedLead->studentDetails;
+                if (!$studentDetails) {
+                    $studentDetails = new \App\Models\ConvertedStudentDetail();
+                    $studentDetails->converted_lead_id = $id;
+                }
+                $studentDetails->$field = $value;
+                $studentDetails->save();
+            } else {
+                // Handle other fields - update in converted_student_mentor_details table
+                $mentorDetails = $convertedLead->mentorDetails;
+                if (!$mentorDetails) {
+                    $mentorDetails = new ConvertedStudentMentorDetail();
+                    $mentorDetails->converted_student_id = $id;
+                }
+                $mentorDetails->$field = $value;
+                $mentorDetails->save();
+            }
+
+            // Format the response value
+            $responseValue = $this->formatResponseValue($field, $value);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Updated successfully',
+                'value' => $responseValue
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating mentor details: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Update failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get validation rules for specific fields
+     */
+    private function getValidationRules($field)
+    {
+        $rules = [
+            'application_number' => 'nullable|string|max:255',
+            'subject_id' => 'nullable|exists:subjects,id',
+            'registration_status' => 'nullable|in:Paid,Not Paid',
+            'technology_side' => 'nullable|in:No Knowledge,Limited Knowledge,Moderate Knowledge,High Knowledge',
+            'student_status' => 'nullable|in:Low Level,Below Medium,Medium Level,Advanced Level',
+            'problems' => 'nullable|string|max:1000',
+        ];
+
+        // Add call status rules
+        $callFields = ['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9'];
+        foreach ($callFields as $callField) {
+            $rules[$callField] = 'nullable|in:Call Not Answered,Switched Off,Line Busy,Student Asks to Call Later,Lack of Interest in Conversation,Wrong Contact,Inconsistent Responses,Task Complete';
+        }
+
+        // Add mentor live rules
+        $mentorLiveFields = ['mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5'];
+        foreach ($mentorLiveFields as $mentorField) {
+            $rules[$mentorField] = 'nullable|in:Not Respond,Task Complete';
+        }
+
+        // Add exam subject rules
+        $examSubjectFields = ['exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6'];
+        foreach ($examSubjectFields as $examField) {
+            $rules[$examField] = 'nullable|in:Did not log in on time,missed the exam,technical issue,task complete';
+        }
+
+        return $rules[$field] ?? null;
+    }
+
+    /**
+     * Format response value for display
+     */
+    private function formatResponseValue($field, $value)
+    {
+        if ($field === 'subject_id' && $value) {
+            $subject = Subject::find($value);
+            return $subject ? $subject->title : $value;
+        }
+
+        return $value;
+    }
+}
