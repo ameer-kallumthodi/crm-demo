@@ -613,9 +613,9 @@
                                         -
                                         @endif
                                     </td>
-                                    <td>{{ $lead->remarks ? $lead->remarks : '-' }}</td>
+                                    <td>{{ $lead->remarks ? Str::limit($lead->remarks, 30) : '-' }}</td>
                                     <td>{{ $lead->created_at->format('M d, Y') }}</td>
-                                    <td>{{ $lead->created_at->format('h:i A') }}</td>
+                                    <td>{{ $lead->created_at->format('H:i A') }}</td>
                                 </tr>
                                 @empty
                                 <tr>

@@ -262,6 +262,7 @@
                                     <th>Call - 5</th>
                                     <th>Mentor Live 3</th>
                                     <th>Assignment</th>
+                                    <th>Status</th>
                                     <th>EXAM FEES</th>
                                     <th>CALL - 6</th>
                                     <th>PCP CLASS</th>
@@ -283,7 +284,6 @@
                                     <th>Subject -4</th>
                                     <th>Subject -5</th>
                                     <th>Subject -6</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -501,6 +501,16 @@
                                         </div>
                                     </td>
                                     <td>
+                                        <div class="inline-edit" data-field="status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->status }}">
+                                            <span class="display-value">{{ $convertedLead->status ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
                                         <div class="inline-edit" data-field="exam_fees" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->exam_fees }}">
                                             <span class="display-value">{{ $convertedLead->mentorDetails?->exam_fees ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
@@ -710,16 +720,6 @@
                                             @endif
                                         </div>
                                     </td>
-                                    <td>
-                                        <div class="" role="group">
-                                            <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
-                                                <i class="ti ti-eye"></i>
-                                            </a>
-                                            <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice">
-                                                <i class="ti ti-receipt"></i>
-                                            </a>
-                                        </div>
-                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
@@ -737,16 +737,8 @@
                         @forelse($convertedLeads as $index => $convertedLead)
                         <div class="col-12 mb-3">
                             <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
+                                <div class="card-header">
                                     <h6 class="mb-0">{{ $convertedLead->name }}</h6>
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
-                                            <i class="ti ti-eye"></i>
-                                        </a>
-                                        <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice">
-                                            <i class="ti ti-receipt"></i>
-                                        </a>
-                                    </div>
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-2 mb-3">
@@ -914,6 +906,8 @@ $(document).ready(function() {
             inputHtml = createSelectField(field, currentValue, ['No Knowledge', 'Limited Knowledge', 'Moderate Knowledge', 'High Knowledge']);
         } else if (['student_status'].includes(field)) {
             inputHtml = createSelectField(field, currentValue, ['Low Level', 'Below Medium', 'Medium Level', 'Advanced Level']);
+        } else if (['status'].includes(field)) {
+            inputHtml = createSelectField(field, currentValue, ['Paid', 'Admission cancel', 'Active', 'Inactive']);
         } else {
             inputHtml = createInputField(field, currentValue);
         }

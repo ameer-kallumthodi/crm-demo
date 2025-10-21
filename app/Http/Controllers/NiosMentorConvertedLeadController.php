@@ -139,14 +139,20 @@ class NiosMentorConvertedLeadController extends Controller
                 }
             }
 
-            // Handle all fields - update in converted_student_mentor_details table
-            $mentorDetails = $convertedLead->mentorDetails;
-            if (!$mentorDetails) {
-                $mentorDetails = new ConvertedStudentMentorDetail();
-                $mentorDetails->converted_student_id = $id;
+            // Handle status field - update in converted_leads table
+            if ($field === 'status') {
+                $convertedLead->status = $value;
+                $convertedLead->save();
+            } else {
+                // Handle all other fields - update in converted_student_mentor_details table
+                $mentorDetails = $convertedLead->mentorDetails;
+                if (!$mentorDetails) {
+                    $mentorDetails = new ConvertedStudentMentorDetail();
+                    $mentorDetails->converted_student_id = $id;
+                }
+                $mentorDetails->$field = $value;
+                $mentorDetails->save();
             }
-            $mentorDetails->$field = $value;
-            $mentorDetails->save();
 
             // Format the response value
             $responseValue = $this->formatResponseValue($field, $value);
@@ -173,6 +179,7 @@ class NiosMentorConvertedLeadController extends Controller
     {
         $rules = [
             'subject_id' => 'nullable|exists:subjects,id',
+            'status' => 'nullable|in:Paid,Admission cancel,Active,Inactive',
             'registration_status' => 'nullable|in:Paid,Not Paid',
             'technology_side' => 'nullable|in:No Knowledge,Limited Knowledge,Moderate Knowledge,High Knowledge',
             'student_status' => 'nullable|in:Low Level,Below Medium,Medium Level,Advanced Level',

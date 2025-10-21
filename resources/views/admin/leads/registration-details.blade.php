@@ -59,7 +59,7 @@
                         <a href="{{ route('leads.index') }}" class="btn btn-outline-secondary">
                             <i class="ti ti-arrow-left me-2"></i>Back to Leads
                         </a>
-                        @if(!is_telecaller()) {{-- Only admin can approve/reject --}}
+                        @if(\App\Helpers\RoleHelper::is_admission_counsellor()) {{-- Only admission counsellor can approve/reject --}}
                             @if($studentDetail->status !== 'approved')
                             <button class="btn btn-success" onclick="show_small_modal('{{ route('leads.approve-modal', $lead->id) }}','Approve Registration')">
                                 <i class="ti ti-check me-2"></i>Approve

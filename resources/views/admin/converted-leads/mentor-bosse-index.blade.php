@@ -272,7 +272,6 @@
                                 <th>Exam Subject - 4</th>
                                 <th>Exam Subject - 5</th>
                                 <th>Exam Subject - 6</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -688,16 +687,6 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="" role="group">
-                                        <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
-                                            <i class="ti ti-eye"></i>
-                                        </a>
-                                        <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice">
-                                            <i class="ti ti-receipt"></i>
-                                        </a>
-                                    </div>
-                                </td>
                             </tr>
                             @empty
                             <tr>
@@ -770,17 +759,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Action Buttons -->
-                            <div class="d-flex gap-2 flex-wrap">
-                                <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}"
-                                    class="btn btn-sm btn-primary">
-                                    <i class="ti ti-eye me-1"></i>View Details
-                                </a>
-                                <a href="{{ route('admin.invoices.index', $convertedLead->id) }}"
-                                    class="btn btn-sm btn-success">
-                                    <i class="ti ti-receipt me-1"></i>View Invoice
-                                </a>
-                            </div>
                         </div>
                     </div>
                     @empty

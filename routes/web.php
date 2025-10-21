@@ -176,7 +176,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     Route::get('/leads/{lead}/approve-modal', [LeadController::class, 'showApproveModal'])->name('leads.approve-modal');
     Route::get('/leads/{lead}/reject-modal', [LeadController::class, 'showRejectModal'])->name('leads.reject-modal');
     Route::post('/leads/{lead}/registration-status', [LeadController::class, 'updateRegistrationStatus'])->name('leads.update-registration-status');
-    
+
     // Generic lead routes (must come after specific routes)
     Route::get('leads/{lead}', [LeadController::class, 'show'])->name('leads.show');
     Route::put('leads/{lead}', [LeadController::class, 'update'])->name('leads.update');
@@ -184,16 +184,16 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
 
     // Registration status update route
     Route::post('leads/update-registration-status', [LeadController::class, 'updateRegistrationStatus'])->name('leads.update-lead-registration-status');
-    
+
     // Document verification route
     Route::post('leads/update-document-verification', [LeadController::class, 'updateDocumentVerification'])->name('leads.update-document-verification');
 
-        // API routes for AJAX calls
-        Route::prefix('api')->group(function () {
-            Route::get('/leads/phone', [LeadController::class, 'getByPhone']);
-            Route::get('/leads/telecallers-by-team', [LeadController::class, 'getTelecallersByTeam'])->name('leads.telecallers-by-team');
-            Route::get('/batches/by-course/{courseId}', [App\Http\Controllers\BatchController::class, 'getByCourse'])->name('batches.by-course');
-            Route::get('/academic-assistants', [App\Http\Controllers\AcademicAssistantController::class, 'getAll'])->name('academic-assistants.all');
+    // API routes for AJAX calls
+    Route::prefix('api')->group(function () {
+        Route::get('/leads/phone', [LeadController::class, 'getByPhone']);
+        Route::get('/leads/telecallers-by-team', [LeadController::class, 'getTelecallersByTeam'])->name('leads.telecallers-by-team');
+        Route::get('/batches/by-course/{courseId}', [App\Http\Controllers\BatchController::class, 'getByCourse'])->name('batches.by-course');
+        Route::get('/academic-assistants', [App\Http\Controllers\AcademicAssistantController::class, 'getAll'])->name('academic-assistants.all');
 
         // Voxbay API routes (duplicates removed - already defined in public routes)
 
@@ -211,10 +211,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
             Route::post('/auto-logout', [App\Http\Controllers\TelecallerTrackingController::class, 'autoLogout'])->name('telecaller-tracking.auto-logout');
             Route::post('/working-hours-logout', [App\Http\Controllers\TelecallerTrackingController::class, 'workingHoursLogout'])->name('telecaller-tracking.working-hours-logout');
         });
-        
+
         // API routes for universities
         Route::get('/api/universities/{id}', [UniversityController::class, 'getUniversityData']);
-        
+
         // API routes for subjects and admission batches
         Route::get('/api/subjects/by-course/{courseId}', [App\Http\Controllers\SubjectController::class, 'getByCourse']);
         Route::get('/api/admission-batches/by-batch/{batchId}', [App\Http\Controllers\AdmissionBatchController::class, 'getByBatch']);
@@ -240,7 +240,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/universities-add', [UniversityController::class, 'ajax_add'])->name('universities.add');
         Route::get('/universities-edit/{id}', [UniversityController::class, 'ajax_edit'])->name('universities.edit');
         Route::post('/universities-submit', [UniversityController::class, 'submit'])->name('universities.submit');
-        
+
         // Registration Links Routes
         Route::resource('registration-links', App\Http\Controllers\RegistrationLinkController::class);
         Route::get('/registration-links-add', [App\Http\Controllers\RegistrationLinkController::class, 'ajax_add'])->name('registration-links.add');
@@ -483,16 +483,16 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/converted-leads/{id}/details-pdf', [App\Http\Controllers\ConvertedLeadController::class, 'generateDetailsPdf'])->name('converted-leads.details-pdf');
         Route::post('/converted-leads/{id}/id-card-generate', [App\Http\Controllers\ConvertedLeadController::class, 'generateAndStoreIdCard'])->name('converted-leads.id-card-generate');
         Route::get('/converted-leads/{id}/id-card', [App\Http\Controllers\ConvertedLeadController::class, 'viewStoredIdCard'])->name('converted-leads.id-card-view');
-        
+
         // NIOS Converted Leads Routes
         Route::get('/nios-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'niosIndex'])->name('nios-converted-leads.index');
-        
+
         // BOSSE Converted Leads Routes
         Route::get('/bosse-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'bosseIndex'])->name('bosse-converted-leads.index');
-        
+
         // Hotel Management Converted Leads Routes
         Route::get('/hotel-management-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'hotelManagementIndex'])->name('hotel-management-converted-leads.index');
-        
+
         // GMVSS Converted Leads Routes
         Route::get('/gmvss-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'gmvssIndex'])->name('gmvss-converted-leads.index');
         Route::get('/ai-python-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'aiPythonIndex'])->name('ai-python-converted-leads.index');
@@ -506,14 +506,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
         Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
         Route::post('/converted-leads/{id}/inline-update', [App\Http\Controllers\ConvertedLeadController::class, 'inlineUpdate'])->name('converted-leads.inline-update');
-        
-// BOSSE Mentor Converted Leads Routes
-Route::get('/mentor-bosse-converted-leads', [App\Http\Controllers\MentorConvertedLeadController::class, 'index'])->name('mentor-bosse-converted-leads.index');
-Route::post('/mentor-bosse-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\MentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-bosse-converted-leads.update-mentor-details');
 
-// NIOS Mentor Converted Leads Routes
-Route::get('/mentor-nios-converted-leads', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'index'])->name('mentor-nios-converted-leads.index');
-Route::post('/mentor-nios-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-nios-converted-leads.update-mentor-details');
+        // BOSSE Mentor Converted Leads Routes
+        Route::get('/mentor-bosse-converted-leads', [App\Http\Controllers\MentorConvertedLeadController::class, 'index'])->name('mentor-bosse-converted-leads.index');
+        Route::post('/mentor-bosse-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\MentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-bosse-converted-leads.update-mentor-details');
+
+        // NIOS Mentor Converted Leads Routes
+        Route::get('/mentor-nios-converted-leads', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'index'])->name('mentor-nios-converted-leads.index');
+        Route::post('/mentor-nios-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-nios-converted-leads.update-mentor-details');
 
         // Invoice Routes
         Route::get('/invoices/student/{studentId}', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
