@@ -101,7 +101,7 @@
                 <div class="mb-3">
                     <label class="form-label" for="team_id">Team <span class="text-danger">*</span></label>
                     <select class="form-select" name="team_id" id="team_id" required>
-                        <option value="all">All Teams</option>
+                        <option value="">Select Team</option>
                         @foreach($teams as $team)
                             <option value="{{ $team->id }}">{{ $team->name }}</option>
                         @endforeach
@@ -126,12 +126,10 @@
                 <div class="mb-3">
                     <label class="form-label" for="telecallers">Assign to Telecallers <span class="text-danger">*</span></label>
                     <select class="form-select select2-multiple" name="telecallers[]" id="telecaller" multiple>
-                        @foreach($telecallers as $telecaller)
-                            <option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>
-                        @endforeach
+                        <option value="">Select Team First</option>
                     </select>
                     
-                    <small class="text-muted">Select multiple telecallers from the dropdown</small>
+                    <small class="text-muted">Select a team first to see available telecallers</small>
                     <div id="telecallers_error" class="text-danger mt-1" style="display: none;"></div>
                 </div>
             </div>
@@ -224,41 +222,23 @@ $(document).ready(function() {
         const teamId = $(this).val();
         const telecallerSelect = $('#telecaller');
         
-        if (teamId === 'all') {
-            // Load all telecallers from all teams
-            $.get('{{ route("leads.telecallers-by-team") }}', { team_id: 'all' })
-                .done(function(data) {
-                    telecallerSelect.empty();
-                    $.each(data.telecallers, function(index, telecaller) {
-                        telecallerSelect.append(
-                            $('<option></option>').val(telecaller.id).text(telecaller.name + ' (' + telecaller.team_name + ')')
-                        );
-                    });
-                    // Trigger Select2 update if available
-                    if (typeof $.fn.select2 !== 'undefined' && telecallerSelect.hasClass('select2-hidden-accessible')) {
-                        telecallerSelect.trigger('change');
-                    } else if (typeof $.fn.select2 !== 'undefined') {
-                        // Reinitialize Select2 if it's not already initialized
-                        telecallerSelect.select2({
-                            placeholder: 'Select telecallers...',
-                            allowClear: true,
-                            width: '100%'
-                        });
-                    }
-                })
-                .fail(function() {
-                    console.error('Failed to load telecallers');
-                });
-        } else if (teamId) {
+        if (teamId) {
             // Load telecallers from specific team
             $.get('{{ route("leads.telecallers-by-team") }}', { team_id: teamId })
                 .done(function(data) {
                     telecallerSelect.empty();
-                    $.each(data.telecallers, function(index, telecaller) {
-                        telecallerSelect.append(
-                            $('<option></option>').val(telecaller.id).text(telecaller.name)
-                        );
-                    });
+                    telecallerSelect.append('<option value="">Select Telecallers</option>');
+                    
+                    if (data.telecallers && data.telecallers.length > 0) {
+                        $.each(data.telecallers, function(index, telecaller) {
+                            telecallerSelect.append(
+                                $('<option></option>').val(telecaller.id).text(telecaller.name)
+                            );
+                        });
+                    } else {
+                        telecallerSelect.append('<option value="">No telecallers found in this team</option>');
+                    }
+                    
                     // Trigger Select2 update if available
                     if (typeof $.fn.select2 !== 'undefined' && telecallerSelect.hasClass('select2-hidden-accessible')) {
                         telecallerSelect.trigger('change');
@@ -272,12 +252,17 @@ $(document).ready(function() {
                     }
                 })
                 .fail(function() {
+                    telecallerSelect.empty();
+                    telecallerSelect.append('<option value="">Error loading telecallers</option>');
                     console.error('Failed to load telecallers');
                 });
         } else {
             telecallerSelect.empty();
+            telecallerSelect.append('<option value="">Select Team First</option>');
             // Trigger Select2 update
-            telecallerSelect.trigger('change');
+            if (typeof $.fn.select2 !== 'undefined' && telecallerSelect.hasClass('select2-hidden-accessible')) {
+                telecallerSelect.trigger('change');
+            }
         }
     });
 
@@ -294,6 +279,16 @@ $(document).ready(function() {
             // Show message about team requirement
             if (!teamId) {
                 toast_warning('Please select a team first to assign leads to all telecallers in that team.');
+            } else {
+                // Load telecallers for the team to show how many will be assigned
+                $.get('{{ route("leads.telecallers-by-team") }}', { team_id: teamId })
+                    .done(function(data) {
+                        if (data.telecallers && data.telecallers.length > 0) {
+                            toast_success(`Will assign leads to ${data.telecallers.length} telecaller(s) in the selected team.`);
+                        } else {
+                            toast_warning('No telecallers found in the selected team. Please select a different team.');
+                        }
+                    });
             }
         } else {
             telecallerSelection.show();
@@ -310,7 +305,7 @@ $(document).ready(function() {
             // Load telecallers for the team to show how many will be assigned
             $.get('{{ route("leads.telecallers-by-team") }}', { team_id: teamId })
                 .done(function(data) {
-                    if (data.telecallers.length > 0) {
+                    if (data.telecallers && data.telecallers.length > 0) {
                         toast_success(`Will assign leads to ${data.telecallers.length} telecaller(s) in the selected team.`);
                     } else {
                         toast_warning('No telecallers found in the selected team. Please select a different team.');
@@ -365,6 +360,7 @@ $(document).ready(function() {
         const teamId = $('#team_id').val();
         if (!teamId) {
             toast_error('Please select a team.');
+            $('#team_id').focus();
             return false;
         }
         
