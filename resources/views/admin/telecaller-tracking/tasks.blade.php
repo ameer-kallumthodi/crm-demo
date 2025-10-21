@@ -43,6 +43,11 @@
                             <small class="text-muted">Manage and track telecaller lead assignments</small>
                         </div>
                     </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('admin.telecaller-tasks.overdue') }}" class="btn btn-outline-danger btn-sm">
+                            <i class="ti ti-clock"></i> Overdue Tasks
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
