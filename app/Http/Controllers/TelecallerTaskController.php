@@ -7,6 +7,7 @@ use App\Models\Lead;
 use App\Models\User;
 use App\Helpers\AuthHelper;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class TelecallerTaskController extends Controller
 {
@@ -197,10 +198,17 @@ class TelecallerTaskController extends Controller
      */
     public function overdue()
     {
-        $overdueTasks = Lead::with(['telecaller', 'leadStatus'])
+        // Get leads that haven't been updated in the last 7 days
+        $overdueTasks = Lead::with(['telecaller', 'leadStatus', 'leadActivities'])
             ->whereNotNull('telecaller_id')
             ->where('is_converted', false)
-            ->where('created_at', '<', now()->subDays(7))
+            ->where(function($query) {
+                // Either no activities at all, or last activity was more than 7 days ago
+                $query->whereDoesntHave('leadActivities')
+                      ->orWhereHas('leadActivities', function($subQuery) {
+                          $subQuery->where('created_at', '<', now()->subDays(7));
+                      });
+            })
             ->orderBy('created_at', 'asc')
             ->get();
 

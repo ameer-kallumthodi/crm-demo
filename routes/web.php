@@ -560,14 +560,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
             Route::get('/', [App\Http\Controllers\TelecallerTaskController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\TelecallerTaskController::class, 'create'])->name('create');
             Route::post('/', [App\Http\Controllers\TelecallerTaskController::class, 'store'])->name('store');
+            Route::get('/overdue', [App\Http\Controllers\TelecallerTaskController::class, 'overdue'])->name('overdue');
+            Route::get('/due-today', [App\Http\Controllers\TelecallerTaskController::class, 'dueToday'])->name('due-today');
+            Route::get('/statistics', [App\Http\Controllers\TelecallerTaskController::class, 'statistics'])->name('statistics');
             Route::get('/{task}', [App\Http\Controllers\TelecallerTaskController::class, 'show'])->name('show');
             Route::get('/{task}/edit', [App\Http\Controllers\TelecallerTaskController::class, 'edit'])->name('edit');
             Route::put('/{task}', [App\Http\Controllers\TelecallerTaskController::class, 'update'])->name('update');
             Route::post('/{task}/complete', [App\Http\Controllers\TelecallerTaskController::class, 'complete'])->name('complete');
             Route::delete('/{task}', [App\Http\Controllers\TelecallerTaskController::class, 'destroy'])->name('destroy');
-            Route::get('/overdue', [App\Http\Controllers\TelecallerTaskController::class, 'overdue'])->name('overdue');
-            Route::get('/due-today', [App\Http\Controllers\TelecallerTaskController::class, 'dueToday'])->name('due-today');
-            Route::get('/statistics', [App\Http\Controllers\TelecallerTaskController::class, 'statistics'])->name('statistics');
         });
     });
 
