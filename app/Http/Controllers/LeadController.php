@@ -740,7 +740,13 @@ class LeadController extends Controller
                     ->withInput();
             }
 
-            $data = $request->all();
+            // Only update fields that are provided in the request
+            $data = $request->only([
+                'title', 'gender', 'age', 'phone', 'code', 'whatsapp', 'whatsapp_code',
+                'email', 'qualification', 'country_id', 'lead_status_id', 'lead_source_id',
+                'address', 'telecaller_id', 'team_id', 'place', 'course_id', 'batch_id',
+                'university_id', 'followup_date', 'add_date', 'add_time', 'remarks'
+            ]);
             
             // Set default values
             $data['lead_status_id'] = $data['lead_status_id'] ?? 1;

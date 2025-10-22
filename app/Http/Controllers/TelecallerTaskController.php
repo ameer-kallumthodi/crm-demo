@@ -147,17 +147,34 @@ class TelecallerTaskController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
-        $task->update([
+        // Only update fields that are provided in the request
+        $updateData = [
             'telecaller_id' => $request->telecaller_id,
             'title' => $request->title,
-            'phone' => $request->phone,
-            'email' => $request->email,
-            'lead_status_id' => $request->lead_status_id,
-            'lead_source_id' => $request->lead_source_id,
-            'followup_date' => $request->followup_date,
-            'remarks' => $request->remarks,
             'updated_by' => AuthHelper::getUserId(),
-        ]);
+        ];
+
+        // Only add optional fields if they are provided
+        if ($request->has('phone')) {
+            $updateData['phone'] = $request->phone;
+        }
+        if ($request->has('email')) {
+            $updateData['email'] = $request->email;
+        }
+        if ($request->has('lead_status_id')) {
+            $updateData['lead_status_id'] = $request->lead_status_id;
+        }
+        if ($request->has('lead_source_id')) {
+            $updateData['lead_source_id'] = $request->lead_source_id;
+        }
+        if ($request->has('followup_date')) {
+            $updateData['followup_date'] = $request->followup_date;
+        }
+        if ($request->has('remarks')) {
+            $updateData['remarks'] = $request->remarks;
+        }
+
+        $task->update($updateData);
 
         return redirect()->route('admin.telecaller-tasks.index')
             ->with('success', 'Lead updated successfully.');
