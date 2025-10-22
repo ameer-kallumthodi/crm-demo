@@ -19,6 +19,7 @@ use App\Http\Controllers\ConvertedLeadController;
 use App\Http\Controllers\VoxbayController;
 use App\Http\Controllers\VoxbayCallLogController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\MetaLeadController;
 
 // Public routes
 Route::get('/', [AuthController::class, 'index'])->name('login');
@@ -31,6 +32,18 @@ Route::prefix('api/voxbay')->group(function () {
     Route::get('/telecaller/{id}/extension', [VoxbayController::class, 'getTelecallerExtension'])->name('voxbay.telecaller.extension');
     Route::get('/test-connection', [VoxbayController::class, 'testConnection'])->name('voxbay.test-connection');
     Route::post('/webhook', [VoxbayController::class, 'webhook'])->name('voxbay.webhook');
+});
+
+// Public Meta Leads API routes (no authentication required)
+Route::prefix('api/meta-leads')->group(function () {
+    Route::get('/fetch', [MetaLeadController::class, 'fetchLeads'])->name('api.meta-leads.fetch');
+    Route::get('/push', [MetaLeadController::class, 'pushMetaLeads'])->name('api.meta-leads.push');
+    Route::get('/test-token', [MetaLeadController::class, 'testToken'])->name('api.meta-leads.test-token');
+    Route::get('/test-original-token', [MetaLeadController::class, 'testOriginalToken'])->name('api.meta-leads.test-original-token');
+    Route::get('/try-token-exchange', [MetaLeadController::class, 'tryTokenExchange'])->name('api.meta-leads.try-token-exchange');
+    Route::get('/debug-env', [MetaLeadController::class, 'debugEnv'])->name('api.meta-leads.debug-env');
+    Route::get('/statistics', [MetaLeadController::class, 'statistics'])->name('api.meta-leads.statistics');
+    Route::get('/list', [MetaLeadController::class, 'index'])->name('api.meta-leads.list');
 });
 
 // Public Lead Registration Routes
@@ -569,12 +582,47 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
             Route::post('/{task}/complete', [App\Http\Controllers\TelecallerTaskController::class, 'complete'])->name('complete');
             Route::delete('/{task}', [App\Http\Controllers\TelecallerTaskController::class, 'destroy'])->name('destroy');
         });
+
+        // Meta Leads Admin Routes (Protected)
+        Route::prefix('meta-leads')->name('meta-leads.')->group(function () {
+            // Main dashboard
+            Route::get('/', [MetaLeadController::class, 'index'])->name('index');
+            
+            // Individual lead operations
+            Route::get('/lead/{id}', [MetaLeadController::class, 'show'])->name('show');
+            Route::delete('/lead/{id}', [MetaLeadController::class, 'destroy'])->name('destroy');
+        });
     });
 
     // Notification routes for all users
     Route::get('/notifications', [NotificationController::class, 'viewAll'])->name('notifications.view-all');
     Route::get('/api/notifications', [NotificationController::class, 'getUserNotifications'])->name('notifications.api');
     Route::post('/notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+});
+
+// Debug route for Meta leads testing
+Route::get('/debug-meta-test', function () {
+    try {
+        $facebookService = new \App\Services\FacebookApiService();
+        $result = $facebookService->fetchLeads();
+        
+        return response()->json([
+            'status' => 'success',
+            'environment_check' => [
+                'FB_APP_ID' => config('services.facebook.app_id') ? 'SET' : 'NOT SET',
+                'FB_APP_SECRET' => config('services.facebook.app_secret') ? 'SET' : 'NOT SET',
+                'FB_ACCESS_TOKEN' => config('services.facebook.access_token') ? 'SET' : 'NOT SET',
+                'FB_LEAD_FORM_ID' => config('services.facebook.lead_form_id') ? 'SET' : 'NOT SET'
+            ],
+            'facebook_result' => $result
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
 });
 
 // Debug routes for idle time calculation

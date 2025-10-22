@@ -111,7 +111,6 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Actions</th>
                                 <th>Name</th>
                                 <th>Phone</th>
                                 <th>Email</th>
@@ -119,59 +118,16 @@
                                 <th>Source</th>
                                 <th>Telecaller</th>
                                 <th>Place</th>
+                                <th>Last Activity</th>
+                                <th>Last Updated</th>
                                 <th>Remarks</th>
-                                <th>Date</th>
-                                <th>Time</th>
+                                <th>Created Date</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($tasks as $index => $task)
                             <tr class="{{ $task->isOverdue() ? 'table-danger' : '' }}">
                                 <td>{{ $index + 1 }}</td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary"
-                                            onclick="show_large_modal('{{ route('admin.telecaller-tasks.show', $task) }}', 'View Lead')"
-                                            title="View Lead">
-                                            <i class="ti ti-eye"></i>
-                                        </a>
-                                        <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
-                                            onclick="show_ajax_modal('{{ route('admin.telecaller-tasks.edit', $task) }}', 'Edit Lead')"
-                                            title="Edit Lead">
-                                            <i class="ti ti-edit"></i>
-                                        </a>
-                                        @if(!$task->is_converted)
-                                        <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning"
-                                            onclick="completeTask({{ $task->id }})"
-                                            title="Convert Lead">
-                                            <i class="ti ti-refresh"></i>
-                                        </a>
-                                        @endif
-                                        @if($task->phone && is_telecaller())
-                                        @php
-                                            $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
-                                        @endphp
-                                        @if($currentUserId > 0)
-                                        <button class="btn btn-sm btn-outline-success voxbay-call-btn" 
-                                                data-lead-id="{{ $task->id }}" 
-                                                data-telecaller-id="{{ $currentUserId }}"
-                                                title="Call Lead">
-                                            <i class="ti ti-phone"></i>
-                                        </button>
-                                        @endif
-                                        @endif
-                                        <a href="{{ route('leads.call-logs', $task) }}" 
-                                           class="btn btn-sm btn-outline-info" 
-                                           title="View Call Logs">
-                                            <i class="ti ti-phone-call"></i>
-                                        </a>
-                                        <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
-                                            onclick="deleteTask({{ $task->id }})"
-                                            title="Delete Lead">
-                                            <i class="ti ti-trash"></i>
-                                        </a>
-                                    </div>
-                                </td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avtar avtar-s rounded-circle bg-light-primary me-2 d-flex align-items-center justify-content-center">
@@ -192,9 +148,23 @@
                                 <td>{{ $task->leadSource->title ?? '-' }}</td>
                                 <td>{{ $task->telecaller->name ?? 'Unassigned' }}</td>
                                 <td>{{ $task->place ?? '-' }}</td>
+                                <td>
+                                    @php
+                                        $lastActivity = $task->leadActivities->sortByDesc('created_at')->first();
+                                    @endphp
+                                    @if($lastActivity)
+                                        <span class="text-info">{{ $lastActivity->created_at->format('M d, Y h:i A') }}</span>
+                                    @else
+                                        <span class="text-muted">No activity</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="text-secondary">{{ $task->updated_at->format('M d, Y h:i A') }}</span>
+                                </td>
                                 <td>{{ $task->remarks ? Str::limit($task->remarks, 30) : '-' }}</td>
-                                <td>{{ $task->created_at->format('M d, Y') }}</td>
-                                <td>{{ $task->created_at->format('g:i A') }}</td>
+                                <td>
+                                    <span class="text-primary">{{ $task->created_at->format('M d, Y h:i A') }}</span>
+                                </td>
                             </tr>
                             @empty
                             <tr>
@@ -216,34 +186,6 @@
 </div>
 <!-- [ Main Content ] end -->
 
-<!-- Complete Task Modal -->
-<div class="modal fade" id="completeTaskModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Complete Task</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <form id="completeTaskForm" method="POST">
-                @csrf
-                @method('POST')
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="remarks">Conversion Notes:</label>
-                        <textarea name="remarks" id="remarks" class="form-control" rows="3" 
-                                  placeholder="Add any notes about lead conversion..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Complete Task</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('scripts')
@@ -251,33 +193,5 @@
 $(document).ready(function() {
     // DataTable is now initialized globally via initializeTables() function
 });
-
-function completeTask(taskId) {
-    $('#completeTaskForm').attr('action', '{{ route("admin.telecaller-tasks.complete", ":id") }}'.replace(':id', taskId));
-    $('#completeTaskModal').modal('show');
-}
-
-function deleteTask(taskId) {
-    if (confirm('Are you sure you want to delete this lead?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ route("admin.telecaller-tasks.destroy", ":id") }}'.replace(':id', taskId);
-        
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = '_token';
-        csrfToken.value = '{{ csrf_token() }}';
-        
-        const methodField = document.createElement('input');
-        methodField.type = 'hidden';
-        methodField.name = '_method';
-        methodField.value = 'DELETE';
-        
-        form.appendChild(csrfToken);
-        form.appendChild(methodField);
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
 </script>
 @endpush
