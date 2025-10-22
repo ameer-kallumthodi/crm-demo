@@ -12,6 +12,7 @@
 <script>
 function submitApprove() {
     const form = document.getElementById('approveForm');
+    
     fetch(form.action, {
         method: 'POST',
         body: new FormData(form),

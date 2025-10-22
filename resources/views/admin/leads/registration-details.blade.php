@@ -59,7 +59,7 @@
                         <a href="{{ route('leads.index') }}" class="btn btn-outline-secondary">
                             <i class="ti ti-arrow-left me-2"></i>Back to Leads
                         </a>
-                        @if(\App\Helpers\RoleHelper::is_admission_counsellor()) {{-- Only admission counsellor can approve/reject --}}
+                        @if(\App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_admin_or_super_admin()) {{-- Only admission counsellor can approve/reject --}}
                             @if($studentDetail->status !== 'approved')
                             <button class="btn btn-success" onclick="show_small_modal('{{ route('leads.approve-modal', $lead->id) }}','Approve Registration')">
                                 <i class="ti ti-check me-2"></i>Approve
@@ -424,7 +424,7 @@
                                         <div class="document-info">
                                             <label class="document-label">SSLC Certificate</label>
                                             <div class="verification-status">
-                                                <span class="badge bg-{{ $studentDetail->sslc_verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                <span class="badge bg-{{ $studentDetail->sslc_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="sslc_certificate">
                                                     {{ ucfirst($studentDetail->sslc_verification_status ?? 'pending') }}
                                                 </span>
                                                 @if($studentDetail->sslc_verified_at)
@@ -439,7 +439,7 @@
                                             <a href="{{ Storage::url($studentDetail->sslc_certificate) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                                 <i class="ti ti-eye me-1"></i>View
                                             </a>
-                                            @if(is_telecaller()) {{-- Telecaller or post-sales --}}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
                                             <button class="btn btn-sm btn-success" onclick="openVerificationModal('sslc_certificate', '{{ $studentDetail->sslc_verification_status }}')">
                                                 <i class="ti ti-check me-1"></i>Verify
                                             </button>
@@ -466,7 +466,7 @@
                                                     $verifiedAt = $studentDetail->{$certificateField . '_verified_at'};
                                                     $verifiedBy = $studentDetail->{ucfirst($certificateField) . 'VerifiedBy'} ?? null;
                                                 @endphp
-                                                <span class="badge bg-{{ $verificationStatus === 'verified' ? 'success' : 'warning' }}">
+                                                <span class="badge bg-{{ $verificationStatus === 'verified' ? 'success' : 'warning' }}" data-document-type="{{ $certificateField }}_certificate">
                                                     {{ ucfirst($verificationStatus) }}
                                                 </span>
                                                 @if($verifiedAt)
@@ -481,7 +481,7 @@
                                             <a href="{{ Storage::url($studentDetail->plustwo_certificate ?? $studentDetail->plus_two_certificate) }}" target="_blank" class="btn btn-sm btn-outline-success">
                                                 <i class="ti ti-eye me-1"></i>View
                                             </a>
-                                            @if(is_telecaller()) {{-- Telecaller or post-sales --}}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
                                             <button class="btn btn-sm btn-success" onclick="openVerificationModal('{{ $certificateField }}_certificate', '{{ $verificationStatus }}')">
                                                 <i class="ti ti-check me-1"></i>Verify
                                             </button>
@@ -502,7 +502,7 @@
                                         <div class="document-info">
                                             <label class="document-label">UG Certificate</label>
                                             <div class="verification-status">
-                                                <span class="badge bg-{{ $studentDetail->ug_verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                <span class="badge bg-{{ $studentDetail->ug_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="ug_certificate">
                                                     {{ ucfirst($studentDetail->ug_verification_status ?? 'pending') }}
                                                 </span>
                                                 @if($studentDetail->ug_verified_at)
@@ -517,7 +517,7 @@
                                             <a href="{{ Storage::url($studentDetail->ug_certificate) }}" target="_blank" class="btn btn-sm btn-outline-info">
                                                 <i class="ti ti-eye me-1"></i>View
                                             </a>
-                                            @if(is_telecaller()) {{-- Telecaller or post-sales --}}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
                                             <button class="btn btn-sm btn-success" onclick="openVerificationModal('ug_certificate', '{{ $studentDetail->ug_verification_status }}')">
                                                 <i class="ti ti-check me-1"></i>Verify
                                             </button>
@@ -528,7 +528,7 @@
                             </div>
                             @endif
                             
-                            @if($studentDetail->birth_certificate)
+                            @if($studentDetail->birth_certificate && isset($studentDetail->birth_certificate_verification_status))
                             <div class="col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
@@ -538,8 +538,7 @@
                                         <div class="document-info">
                                             <label class="document-label">Birth Certificate</label>
                                             <div class="verification-status">
-                                                @if(isset($studentDetail->birth_certificate_verification_status))
-                                                <span class="badge bg-{{ $studentDetail->birth_certificate_verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                <span class="badge bg-{{ $studentDetail->birth_certificate_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="birth_certificate">
                                                     {{ ucfirst($studentDetail->birth_certificate_verification_status) }}
                                                 </span>
                                                 @if($studentDetail->birth_certificate_verified_at)
@@ -548,16 +547,13 @@
                                                     Date: {{ $studentDetail->birth_certificate_verified_at->format('M d, Y h:i A') }}
                                                 </small>
                                                 @endif
-                                                @else
-                                                <span class="badge bg-secondary">Not Required</span>
-                                                @endif
                                             </div>
                                         </div>
                                         <div class="document-actions">
                                             <a href="{{ Storage::url($studentDetail->birth_certificate) }}" target="_blank" class="btn btn-sm btn-outline-info">
                                                 <i class="ti ti-eye me-1"></i>View
                                             </a>
-                                            @if(is_telecaller() && isset($studentDetail->birth_certificate_verification_status)) {{-- Telecaller or post-sales --}}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
                                             <button class="btn btn-sm btn-success" onclick="openVerificationModal('birth_certificate', '{{ $studentDetail->birth_certificate_verification_status }}')">
                                                 <i class="ti ti-check me-1"></i>Verify
                                             </button>
@@ -577,7 +573,7 @@
                                         <div class="document-info">
                                             <label class="document-label">Passport Photo</label>
                                             <div class="verification-status">
-                                                <span class="badge bg-{{ $studentDetail->passport_photo_verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                <span class="badge bg-{{ $studentDetail->passport_photo_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="passport_photo">
                                                     {{ ucfirst($studentDetail->passport_photo_verification_status ?? 'pending') }}
                                                 </span>
                                                 @if($studentDetail->passport_photo_verified_at)
@@ -592,7 +588,7 @@
                                             <a href="{{ Storage::url($studentDetail->passport_photo) }}" target="_blank" class="btn btn-sm btn-outline-warning">
                                                 <i class="ti ti-eye me-1"></i>View
                                             </a>
-                                            @if(is_telecaller()) {{-- Telecaller or post-sales --}}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
                                             <button class="btn btn-sm btn-success" onclick="openVerificationModal('passport_photo', '{{ $studentDetail->passport_photo_verification_status }}')">
                                                 <i class="ti ti-check me-1"></i>Verify
                                             </button>
@@ -611,7 +607,7 @@
                                         <div class="document-info">
                                             <label class="document-label">Aadhar Front</label>
                                             <div class="verification-status">
-                                                <span class="badge bg-{{ $studentDetail->adhar_front_verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                <span class="badge bg-{{ $studentDetail->adhar_front_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="adhar_front">
                                                     {{ ucfirst($studentDetail->adhar_front_verification_status ?? 'pending') }}
                                                 </span>
                                                 @if($studentDetail->adhar_front_verified_at)
@@ -626,7 +622,7 @@
                                             <a href="{{ Storage::url($studentDetail->adhar_front) }}" target="_blank" class="btn btn-sm btn-outline-danger">
                                                 <i class="ti ti-eye me-1"></i>View
                                             </a>
-                                            @if(is_telecaller()) {{-- Telecaller or post-sales --}}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
                                             <button class="btn btn-sm btn-success" onclick="openVerificationModal('adhar_front', '{{ $studentDetail->adhar_front_verification_status }}')">
                                                 <i class="ti ti-check me-1"></i>Verify
                                             </button>
@@ -645,7 +641,7 @@
                                         <div class="document-info">
                                             <label class="document-label">Aadhar Back</label>
                                             <div class="verification-status">
-                                                <span class="badge bg-{{ $studentDetail->adhar_back_verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                <span class="badge bg-{{ $studentDetail->adhar_back_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="adhar_back">
                                                     {{ ucfirst($studentDetail->adhar_back_verification_status ?? 'pending') }}
                                                 </span>
                                                 @if($studentDetail->adhar_back_verified_at)
@@ -660,7 +656,7 @@
                                             <a href="{{ Storage::url($studentDetail->adhar_back) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
                                                 <i class="ti ti-eye me-1"></i>View
                                             </a>
-                                            @if(is_telecaller()) {{-- Telecaller or post-sales --}}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
                                             <button class="btn btn-sm btn-success" onclick="openVerificationModal('adhar_back', '{{ $studentDetail->adhar_back_verification_status }}')">
                                                 <i class="ti ti-check me-1"></i>Verify
                                             </button>
@@ -679,7 +675,7 @@
                                         <div class="document-info">
                                             <label class="document-label">Signature</label>
                                             <div class="verification-status">
-                                                <span class="badge bg-{{ $studentDetail->signature_verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                <span class="badge bg-{{ $studentDetail->signature_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="signature">
                                                     {{ ucfirst($studentDetail->signature_verification_status ?? 'pending') }}
                                                 </span>
                                                 @if($studentDetail->signature_verified_at)
@@ -694,7 +690,7 @@
                                             <a href="{{ Storage::url($studentDetail->signature) }}" target="_blank" class="btn btn-sm btn-outline-dark">
                                                 <i class="ti ti-eye me-1"></i>View
                                             </a>
-                                            @if(is_telecaller()) {{-- Telecaller or post-sales --}}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
                                             <button class="btn btn-sm btn-success" onclick="openVerificationModal('signature', '{{ $studentDetail->signature_verification_status }}')">
                                                 <i class="ti ti-check me-1"></i>Verify
                                             </button>
@@ -1065,12 +1061,18 @@ document.getElementById('verificationForm').addEventListener('submit', function(
     
     const needToChangeDocument = document.getElementById('need_to_change_document').checked;
     const newFile = document.getElementById('new_file');
+    const submitBtn = this.querySelector('button[type="submit"]');
     
     // Validate file upload requirement
     if (needToChangeDocument && !newFile.files.length) {
-        showAlert('Please upload a new file when "Need to change document" is checked.', 'danger');
+        toast_error('Please upload a new file when "Need to change document" is checked.');
         return;
     }
+    
+    // Show loading state
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="ti ti-loader-2"></i> Updating...';
     
     const formData = new FormData(this);
     
@@ -1084,14 +1086,14 @@ document.getElementById('verificationForm').addEventListener('submit', function(
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Show success message
-            showAlert(data.message, 'success');
+            // Show success toast
+            toast_success(data.message);
             
             // Close modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('verificationModal'));
             modal.hide();
             
-            // Reload page to show updated verification status
+            // Reload page to show updated verification status and refresh approve functionality
             setTimeout(() => {
                 // Get current active tab and store it
                 const activeTab = document.querySelector('.registration-details-container .nav-link.active');
@@ -1100,40 +1102,54 @@ document.getElementById('verificationForm').addEventListener('submit', function(
                 
                 // Reload the page
                 window.location.reload();
-            }, 1500);
+            }, 1000);
         } else {
-            showAlert(data.message, 'danger');
+            toast_error(data.message);
         }
+        
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     })
     .catch(error => {
         console.error('Error:', error);
-        showAlert('An error occurred while updating verification.', 'danger');
+        toast_error('An error occurred while updating verification.');
+        
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     });
 });
 
-function showAlert(message, type) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-    alertDiv.innerHTML = `
-        <div class="d-flex align-items-center">
-            <i class="ti ti-${type === 'success' ? 'check-circle' : 'alert-circle'} me-2"></i>
-            <div class="flex-grow-1">
-                <strong>${type === 'success' ? 'Success:' : 'Error:'}</strong> ${message}
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
+function updateVerificationStatus(updatedData) {
+    // Get the document type that was updated
+    const documentType = document.getElementById('document_type').value;
+    const verificationStatus = document.getElementById('verification_status').value;
     
-    // Insert at the top of the page
-    const container = document.querySelector('.page-header').parentNode;
-    container.insertBefore(alertDiv, container.firstChild);
+    // Find all verification status badges for this document type
+    const statusBadges = document.querySelectorAll(`[data-document-type="${documentType}"]`);
     
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.remove();
+    statusBadges.forEach(badge => {
+        // Update the badge text and class
+        if (verificationStatus === 'verified') {
+            badge.textContent = 'Verified';
+            badge.className = 'badge bg-success';
+        } else {
+            badge.textContent = 'Pending';
+            badge.className = 'badge bg-warning';
         }
-    }, 5000);
+    });
+    
+    // Update verification buttons to show current status
+    const verifyButtons = document.querySelectorAll(`button[onclick*="${documentType}"]`);
+    verifyButtons.forEach(button => {
+        const onclickAttr = button.getAttribute('onclick');
+        const newOnclick = onclickAttr.replace(/'.*?'/, `'${verificationStatus}'`);
+        button.setAttribute('onclick', newOnclick);
+    });
+    
+    console.log(`Updated verification status for ${documentType} to ${verificationStatus}`);
 }
+
 </script>
 @endpush
