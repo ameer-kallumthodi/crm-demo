@@ -96,8 +96,8 @@ class MetaLeadController extends Controller
                     continue;
                 }
 
-                // Get eligible telecallers (role_id = 2 for telecallers)
-                $telecallers = User::where('role_id', 2)->get(['id']);
+                // Get eligible telecallers (role_id = 3 for telecallers)
+                $telecallers = User::where('role_id', 3)->get(['id']);
 
                 if ($telecallers->isEmpty()) {
                     Log::warning('No telecallers found for lead assignment');
