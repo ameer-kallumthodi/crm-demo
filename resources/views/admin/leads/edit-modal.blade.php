@@ -1,4 +1,4 @@
-<div class="container p-2">
+<div class="container p-2" data-is-telecaller="{{ $isTelecaller ? 'true' : 'false' }}">
     <form id="leadEditForm" action="{{ route('leads.update', $lead->id) }}" method="post">
         @csrf
         @method('PUT')
@@ -155,6 +155,7 @@
                 </div>
             </div>
 
+            @if(!$isTelecaller)
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label" for="team_id">Team</label>
@@ -172,11 +173,30 @@
                 <div class="mb-3">
                     <label class="form-label" for="telecaller_id">Telecaller</label>
                     <select class="form-select" name="telecaller_id" id="telecaller_id">
-                        <option value="">Select Telecaller</option> 
+                        <option value="">Select Telecaller</option>
+                        @foreach($telecallers as $telecaller)
+                            <option value="{{ $telecaller->id }}" {{ old('telecaller_id', $lead->telecaller_id) == $telecaller->id ? 'selected' : '' }}>{{ $telecaller->name }}</option>
+                        @endforeach
                     </select>
                     <div class="invalid-feedback" id="telecaller_id-error"></div>
                 </div>
             </div>
+            @else
+            {{-- For telecallers, show current assignment as read-only --}}
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Current Team</label>
+                    <input type="text" class="form-control" value="{{ $lead->team ? $lead->team->name : 'No Team Assigned' }}" readonly>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Current Telecaller</label>
+                    <input type="text" class="form-control" value="{{ $lead->telecaller ? $lead->telecaller->name : 'No Telecaller Assigned' }}" readonly>
+                </div>
+            </div>
+            @endif
 
             <div class="col-md-12">
                 <div class="mb-3">
@@ -217,52 +237,57 @@
 
 <script>
 $(document).ready(function() {
-    // Handle team selection change
-    $('#team_id').on('change', function() {
-        const teamId = $(this).val();
-        const telecallerSelect = $('#telecaller_id');
-        
-        // Clear existing options
-        telecallerSelect.html('<option value="">Loading telecallers...</option>');
-        
-        if (teamId) {
-            // Fetch telecallers for selected team
-            $.ajax({
-                url: '{{ route("leads.telecallers-by-team") }}',
-                type: 'GET',
-                data: { team_id: teamId },
-                success: function(response) {
-                    telecallerSelect.html('<option value="">Select Telecaller</option>');
-                    
-                    if (response.telecallers && response.telecallers.length > 0) {
-                        $.each(response.telecallers, function(index, telecaller) {
-                            telecallerSelect.append(
-                                '<option value="' + telecaller.id + '">' + telecaller.name + '</option>'
-                            );
-                        });
-                    } else {
-                        telecallerSelect.append('<option value="">No telecallers found in this team</option>');
+    // Check if user is telecaller
+    var isTelecaller = $('.container').data('is-telecaller') === 'true';
+    
+    if (!isTelecaller) {
+        // Handle team selection change (only for non-telecallers)
+        $('#team_id').on('change', function() {
+            const teamId = $(this).val();
+            const telecallerSelect = $('#telecaller_id');
+            
+            // Clear existing options
+            telecallerSelect.html('<option value="">Loading telecallers...</option>');
+            
+            if (teamId) {
+                // Fetch telecallers for selected team
+                $.ajax({
+                    url: '{{ route("leads.telecallers-by-team") }}',
+                    type: 'GET',
+                    data: { team_id: teamId },
+                    success: function(response) {
+                        telecallerSelect.html('<option value="">Select Telecaller</option>');
+                        
+                        if (response.telecallers && response.telecallers.length > 0) {
+                            $.each(response.telecallers, function(index, telecaller) {
+                                telecallerSelect.append(
+                                    '<option value="' + telecaller.id + '">' + telecaller.name + '</option>'
+                                );
+                            });
+                        } else {
+                            telecallerSelect.append('<option value="">No telecallers found in this team</option>');
+                        }
+                    },
+                    error: function() {
+                        telecallerSelect.html('<option value="">Error loading telecallers</option>');
                     }
-                },
-                error: function() {
-                    telecallerSelect.html('<option value="">Error loading telecallers</option>');
-                }
-            });
-        } else {
-            telecallerSelect.html('<option value="">Select Team First</option>');
+                });
+            } else {
+                telecallerSelect.html('<option value="">Select Team First</option>');
+            }
+        });
+        
+        // If there's a current team_id value, trigger the change event to load telecallers
+        var currentTeamId = '{{ $lead->team_id }}';
+        var currentTelecallerId = '{{ $lead->telecaller_id }}';
+        
+        if (currentTeamId) {
+            $('#team_id').trigger('change');
+            // Set the current telecaller as selected after loading
+            setTimeout(function() {
+                $('#telecaller_id').val(currentTelecallerId);
+            }, 500);
         }
-    });
-    
-    // If there's a current team_id value, trigger the change event to load telecallers
-    var currentTeamId = '{{ $lead->team_id }}';
-    var currentTelecallerId = '{{ $lead->telecaller_id }}';
-    
-    if (currentTeamId) {
-        $('#team_id').trigger('change');
-        // Set the current telecaller as selected after loading
-        setTimeout(function() {
-            $('#telecaller_id').val(currentTelecallerId);
-        }, 500);
     }
 
     // Form submission with AJAX

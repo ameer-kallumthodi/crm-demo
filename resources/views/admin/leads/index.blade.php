@@ -1338,7 +1338,8 @@
             $(this).addClass('processing');
             
             const url = $(this).data('url');
-            const fullUrl = window.location.origin + url;
+            // Check if URL already contains protocol (http/https)
+            const fullUrl = url.startsWith('http') ? url : window.location.origin + url;
             
             // Create a temporary input element
             const tempInput = document.createElement('input');

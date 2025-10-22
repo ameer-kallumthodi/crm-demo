@@ -638,16 +638,49 @@ class LeadController extends Controller
 
     public function ajax_edit(Lead $lead)
     {
-        $telecallers = User::where('role_id', 3)->get();
+        $currentUser = AuthHelper::getCurrentUser();
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        
+        // Filter telecallers based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team members
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
+                $telecallers = User::whereIn('id', $teamMemberIds)->get();
+            } else {
+                $telecallers = collect([$currentUser]); // Only themselves if no team
+            }
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only themselves
+            $telecallers = collect([$currentUser]);
+        } else {
+            // Admin/Super Admin: Show all telecallers
+            $telecallers = User::where('role_id', 3)->get();
+        }
+        
+        // Filter teams based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team
+            $teams = Team::where('id', $currentUser->team_id)->get();
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only their team (if any)
+            $teams = Team::where('id', $currentUser->team_id)->get();
+        } else {
+            // Admin/Super Admin: Show all teams
+            $teams = Team::all();
+        }
+        
         $leadStatuses = LeadStatus::all();
         $leadSources = LeadSource::all();
         $countries = Country::all();
         $courses = Course::all();
-        $teams = Team::all();
         $country_codes = get_country_code();
 
         return view('admin.leads.edit-modal', compact(
-            'lead', 'telecallers', 'leadStatuses', 'leadSources', 'countries', 'courses', 'teams', 'country_codes'
+            'lead', 'telecallers', 'leadStatuses', 'leadSources', 'countries', 'courses', 'teams', 'country_codes', 'isTelecaller', 'isTeamLead'
         ));
     }
 
