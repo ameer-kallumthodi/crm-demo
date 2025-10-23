@@ -169,6 +169,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     // Leads
     Route::get('leads', [LeadController::class, 'index'])->name('leads.index');
     Route::get('followup-leads', [LeadController::class, 'followupLeads'])->name('leads.followup');
+    Route::get('registration-form-submitted-leads', [LeadController::class, 'registrationFormSubmittedLeads'])->name('leads.registration-form-submitted');
     Route::get('/leads-add', [LeadController::class, 'ajax_add'])->name('leads.add');
     Route::post('/leads-submit', [LeadController::class, 'submit'])->name('leads.submit');
     Route::get('/leads/bulk-upload-form', [LeadController::class, 'bulkUploadView'])->name('leads.bulk-upload.test');

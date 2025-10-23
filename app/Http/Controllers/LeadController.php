@@ -161,6 +161,162 @@ class LeadController extends Controller
     }
 
     /**
+     * Display registration form submitted leads
+     */
+    public function registrationFormSubmittedLeads(Request $request)
+    {
+        // Set execution time limit for this operation
+        set_time_limit(config('timeout.max_execution_time', 300));
+        
+        $query = Lead::select([
+            'id', 'title', 'code', 'phone', 'email', 'lead_status_id', 'lead_source_id', 
+            'course_id', 'telecaller_id', 'team_id', 'place', 'rating', 'interest_status', 
+            'followup_date', 'remarks', 'is_converted', 'created_at', 'updated_at'
+        ])
+        ->with([
+            'leadStatus:id,title', 
+            'leadSource:id,title', 
+            'course:id,title', 
+            'telecaller:id,name', 
+            'studentDetails:id,lead_id,status,course_id',
+            'leadActivities' => function($query) {
+                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type')
+                      ->whereNotNull('reason')
+                      ->where('reason', '!=', '')
+                      ->orderBy('created_at', 'desc');
+            }
+        ])
+        ->whereHas('studentDetails') // Only leads that have submitted registration forms
+        ->notConverted()
+        ->notDropped();
+
+        // Apply filters
+        $fromDate = $request->get('date_from', now()->subDays(7)->format('Y-m-d'));
+        $toDate = $request->get('date_to', now()->format('Y-m-d'));
+        
+        $query->byDateRange($fromDate, $toDate);
+
+        if ($request->filled('lead_status_id')) {
+            $query->where('lead_status_id', $request->lead_status_id);
+        }
+
+        if ($request->filled('lead_source_id')) {
+            $query->where('lead_source_id', $request->lead_source_id);
+        }
+
+        if ($request->filled('course_id')) {
+            $query->where('course_id', $request->course_id);
+        }
+
+        if ($request->filled('telecaller_id')) {
+            $query->where('telecaller_id', $request->telecaller_id);
+        }
+
+        if ($request->filled('rating')) {
+            $query->where('rating', $request->rating);
+        }
+
+        // Add registration status filter
+        if ($request->filled('registration_status')) {
+            $registrationStatus = $request->registration_status;
+            if ($registrationStatus === 'approved') {
+                $query->whereHas('studentDetails', function($q) {
+                    $q->where('status', 'approved');
+                });
+            } elseif ($registrationStatus === 'rejected') {
+                $query->whereHas('studentDetails', function($q) {
+                    $q->where('status', 'rejected');
+                });
+            }
+            // If 'all' or empty, no additional filter is applied
+        }
+
+        // Add search functionality
+        if ($request->filled('search_key')) {
+            $searchKey = $request->search_key;
+            $query->where(function($q) use ($searchKey) {
+                $q->where('title', 'LIKE', "%{$searchKey}%")
+                  ->orWhere('phone', 'LIKE', "%{$searchKey}%")
+                  ->orWhere('email', 'LIKE', "%{$searchKey}%");
+            });
+        }
+
+        $currentUser = AuthHelper::getCurrentUser();
+        
+        // Role-based lead filtering
+        if ($currentUser) {
+            
+             if (AuthHelper::isTeamLead() == 1) {
+                
+                // Team Lead: Can see their own leads + their team members' leads
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                    // Include current user's ID in the team member IDs
+                    $teamMemberIds[] = AuthHelper::getCurrentUserId();  
+                    $query->whereIn('telecaller_id', $teamMemberIds);
+                } else {
+                    // If no team assigned, only show their own leads
+                    $query->where('telecaller_id', AuthHelper::getCurrentUserId());
+                }
+            } elseif (AuthHelper::isTelecaller()) {
+                // Telecaller: Can only see their own leads
+                $query->where('telecaller_id', AuthHelper::getCurrentUserId());
+            }elseif ($request->filled('telecaller_id') && !AuthHelper::isTelecaller()) {
+                // Admin/Super Admin: Can filter by specific telecaller
+                $query->where('telecaller_id', $request->telecaller_id);
+            }
+        }
+
+        // Get all leads without pagination
+        $leads = $query->orderBy('id', 'desc')->get();
+
+        // Get filter options (optimized with select only needed fields)
+        $leadStatuses = LeadStatus::select('id', 'title')->get();
+        $leadSources = LeadSource::select('id', 'title')->get();
+        $countries = Country::select('id', 'title')->get();
+        $courses = Course::select('id', 'title')->get();
+        $telecallers = User::select('id', 'name')->where('role_id', 3)->get();
+
+        // Create lookup arrays
+        $leadStatusList = $leadStatuses->pluck('title', 'id')->toArray();
+        $leadSourceList = $leadSources->pluck('title', 'id')->toArray();
+        $courseName = $courses->pluck('title', 'id')->toArray();
+        $telecallerList = $telecallers->pluck('name', 'id')->toArray();
+
+        // Get current user for role checking
+        $currentUser = AuthHelper::getCurrentUser();
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        
+        // Filter telecallers based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team members
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
+                $telecallers = User::whereIn('id', $teamMemberIds)->get();
+            } else {
+                $telecallers = collect([$currentUser]); // Only themselves if no team
+            }
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only themselves
+            $telecallers = collect([$currentUser]);
+        }
+        // Admin/Super Admin: Show all telecallers (already loaded above)
+        
+        // Update telecallerList after filtering
+        $telecallerList = $telecallers->pluck('name', 'id')->toArray();
+
+        return view('admin.leads.registration-form-submitted', compact(
+            'leads', 'leadStatuses', 'leadSources', 'countries', 'courses', 'telecallers',
+            'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList',
+            'fromDate', 'toDate', 'isTelecaller', 'isTeamLead'
+        ))->with('search_key', $request->search_key);
+    }
+
+    /**
      * Display follow-up leads (status = 2)
      */
     public function followupLeads(Request $request)

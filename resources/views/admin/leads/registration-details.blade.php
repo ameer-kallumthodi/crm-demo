@@ -18,7 +18,7 @@
             <div class="col-md-6">
                 <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('leads.index') }}">Leads</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('leads.registration-form-submitted') }}">Registration Form Submitted Leads</a></li>
                     <li class="breadcrumb-item active">Registration Details</li>
                 </ul>
             </div>
@@ -58,8 +58,8 @@
                         </div>
                     </div>
                     <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto justify-content-end">
-                        <a href="{{ route('leads.index') }}" class="btn btn-outline-secondary">
-                            <i class="ti ti-arrow-left me-2"></i>Back to Leads
+                        <a href="{{ route('leads.registration-form-submitted') }}" class="btn btn-outline-secondary">
+                            <i class="ti ti-arrow-left me-2"></i>Back to Registration Form Submitted Leads
                         </a>
                         @if(\App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_admin_or_super_admin()) {{-- Only admission counsellor can approve/reject --}}
                             <div class="d-flex flex-column flex-sm-row gap-2">
@@ -790,8 +790,8 @@
                 <i class="ti ti-file-x f-48 text-muted mb-3"></i>
                 <h5 class="text-muted">No Registration Details Found</h5>
                 <p class="text-muted">This lead has not submitted any registration form yet.</p>
-                <a href="{{ route('leads.index') }}" class="btn btn-primary">
-                    <i class="ti ti-arrow-left me-2"></i>Back to Leads
+                <a href="{{ route('leads.registration-form-submitted') }}" class="btn btn-primary">
+                    <i class="ti ti-arrow-left me-2"></i>Back to Registration Form Submitted Leads
                 </a>
             </div>
         </div>

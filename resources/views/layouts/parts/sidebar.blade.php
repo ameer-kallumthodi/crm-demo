@@ -47,6 +47,17 @@
                 </li>
                 @endif
 
+                @if(has_permission('leads/registration-form-submitted'))
+                <li class="pc-item {{ request()->routeIs('leads.registration-form-submitted') ? 'active' : '' }}">
+                    <a href="{{ route('leads.registration-form-submitted') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-file-text"></i>
+                        </span>
+                        <span class="pc-mtext">Registration Form Submitted</span>
+                    </a>
+                </li>
+                @endif
+
                 {{-- Converted Leads Section --}}
                 @if(has_permission('admin/converted-leads/index'))
                 <li class="pc-item {{ request()->routeIs('admin.converted-leads.*') ? 'active' : '' }}">
