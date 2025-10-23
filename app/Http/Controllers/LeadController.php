@@ -1764,7 +1764,7 @@ class LeadController extends Controller
         try {
             $request->validate([
                 'lead_detail_id' => 'required|exists:leads_details,id',
-                'document_type' => 'required|in:sslc_certificate,plustwo_certificate,ug_certificate,passport_photo,adhar_front,adhar_back,signature',
+                'document_type' => 'required|in:sslc_certificate,plustwo_certificate,plus_two_certificate,ug_certificate,birth_certificate,passport_photo,adhar_front,adhar_back,signature',
                 'verification_status' => 'required|in:pending,verified',
                 'need_to_change_document' => 'nullable|boolean',
                 'new_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:1024'
@@ -1795,9 +1795,23 @@ class LeadController extends Controller
             }
 
             // Update verification fields
-            $verificationField = $documentType . '_verification_status';
-            $verifiedByField = $documentType . '_verified_by';
-            $verifiedAtField = $documentType . '_verified_at';
+            // Handle special cases for field mapping
+            $fieldMapping = [
+                'plustwo_certificate' => 'plustwo',
+                'plus_two_certificate' => 'plus_two',
+                'birth_certificate' => 'birth_certificate',
+                'sslc_certificate' => 'sslc',
+                'ug_certificate' => 'ug',
+                'passport_photo' => 'passport_photo',
+                'adhar_front' => 'adhar_front',
+                'adhar_back' => 'adhar_back',
+                'signature' => 'signature'
+            ];
+            
+            $baseField = $fieldMapping[$documentType] ?? $documentType;
+            $verificationField = $baseField . '_verification_status';
+            $verifiedByField = $baseField . '_verified_by';
+            $verifiedAtField = $baseField . '_verified_at';
 
             $updateData = [
                 $verificationField => $verificationStatus,
@@ -1811,7 +1825,21 @@ class LeadController extends Controller
                 $fileName = $documentType . '_' . time() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs('documents', $fileName, 'public');
                 
-                $updateData[$documentType] = $filePath;
+                // Map document type to actual database field
+                $fileFieldMapping = [
+                    'plustwo_certificate' => 'plustwo_certificate',
+                    'plus_two_certificate' => 'plus_two_certificate',
+                    'birth_certificate' => 'birth_certificate',
+                    'sslc_certificate' => 'sslc_certificate',
+                    'ug_certificate' => 'ug_certificate',
+                    'passport_photo' => 'passport_photo',
+                    'adhar_front' => 'adhar_front',
+                    'adhar_back' => 'adhar_back',
+                    'signature' => 'signature'
+                ];
+                
+                $fileField = $fileFieldMapping[$documentType] ?? $documentType;
+                $updateData[$fileField] = $filePath;
             }
 
             $leadDetail->update($updateData);

@@ -992,7 +992,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (tabParam) {
         // Wait a bit for Bootstrap to be fully loaded
         setTimeout(() => {
-            const tabElement = document.querySelector(`[href="#${tabParam}"]`);
+            // Try to find tab by data-bs-target first, then by href
+            let tabElement = document.querySelector(`[data-bs-target="#${tabParam}"]`);
+            if (!tabElement) {
+                tabElement = document.querySelector(`[href="#${tabParam}"]`);
+            }
+            
             if (tabElement) {
                 // Remove active class from all tabs
                 document.querySelectorAll('.registration-details-container .nav-link').forEach(tab => {
@@ -1004,7 +1009,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Activate the target tab
                 tabElement.classList.add('active');
-                const targetPane = document.querySelector(tabElement.getAttribute('href'));
+                
+                // Get the target pane
+                let targetPane = document.querySelector(`#${tabParam}`);
+                if (!targetPane) {
+                    // Fallback: try to get from data-bs-target or href
+                    const target = tabElement.getAttribute('data-bs-target') || tabElement.getAttribute('href');
+                    if (target) {
+                        targetPane = document.querySelector(target);
+                    }
+                }
+                
                 if (targetPane) {
                     targetPane.classList.add('active', 'show');
                 }
@@ -1015,7 +1030,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Store active tab when user clicks on tabs
     document.querySelectorAll('.registration-details-container .nav-link[data-bs-toggle="tab"]').forEach(tab => {
         tab.addEventListener('click', function() {
-            const tabId = this.getAttribute('href').substring(1);
+            let tabId = 'personal';
+            
+            // Check if it has data-bs-target attribute (Bootstrap 5)
+            const target = this.getAttribute('data-bs-target');
+            if (target) {
+                tabId = target.substring(1); // Remove the # symbol
+            } else {
+                // Fallback to href attribute if present
+                const href = this.getAttribute('href');
+                if (href) {
+                    tabId = href.substring(1);
+                }
+            }
+            
             localStorage.setItem('activeTab', tabId);
         });
     });
@@ -1076,6 +1104,12 @@ document.getElementById('verificationForm').addEventListener('submit', function(
     
     const formData = new FormData(this);
     
+    // Debug: Log form data
+    console.log('Form data being sent:');
+    for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+    }
+    
     fetch('{{ route("leads.update-document-verification") }}', {
         method: 'POST',
         body: formData,
@@ -1083,8 +1117,12 @@ document.getElementById('verificationForm').addEventListener('submit', function(
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
         if (data.success) {
             // Show success toast
             toast_success(data.message);
@@ -1097,7 +1135,22 @@ document.getElementById('verificationForm').addEventListener('submit', function(
             setTimeout(() => {
                 // Get current active tab and store it
                 const activeTab = document.querySelector('.registration-details-container .nav-link.active');
-                const activeTabId = activeTab ? activeTab.getAttribute('href').substring(1) : 'personal-info';
+                let activeTabId = 'personal';
+                
+                if (activeTab) {
+                    // Check if it has data-bs-target attribute (Bootstrap 5)
+                    const target = activeTab.getAttribute('data-bs-target');
+                    if (target) {
+                        activeTabId = target.substring(1); // Remove the # symbol
+                    } else {
+                        // Fallback to href attribute if present
+                        const href = activeTab.getAttribute('href');
+                        if (href) {
+                            activeTabId = href.substring(1);
+                        }
+                    }
+                }
+                
                 localStorage.setItem('activeTab', activeTabId);
                 
                 // Reload the page
