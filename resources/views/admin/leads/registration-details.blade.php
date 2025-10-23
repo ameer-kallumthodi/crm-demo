@@ -48,28 +48,32 @@
     <div class="col-12">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-1">Registration Status</h6>
-                        <span class="badge bg-{{ $studentDetail->status === 'approved' ? 'success' : ($studentDetail->status === 'rejected' ? 'danger' : 'warning') }} fs-6">
-                            {{ ucfirst($studentDetail->status ?? 'pending') }}
-                        </span>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2">
+                        <div>
+                            <h6 class="mb-1">Registration Status</h6>
+                            <span class="badge bg-{{ $studentDetail->status === 'approved' ? 'success' : ($studentDetail->status === 'rejected' ? 'danger' : 'warning') }} fs-6">
+                                {{ ucfirst($studentDetail->status ?? 'pending') }}
+                            </span>
+                        </div>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto justify-content-end">
                         <a href="{{ route('leads.index') }}" class="btn btn-outline-secondary">
                             <i class="ti ti-arrow-left me-2"></i>Back to Leads
                         </a>
                         @if(\App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_admin_or_super_admin()) {{-- Only admission counsellor can approve/reject --}}
-                            @if($studentDetail->status !== 'approved')
-                            <button class="btn btn-success" onclick="show_small_modal('{{ route('leads.approve-modal', $lead->id) }}','Approve Registration')">
-                                <i class="ti ti-check me-2"></i>Approve
-                            </button>
-                            @endif
-                            @if($studentDetail->status !== 'rejected')
-                            <button class="btn btn-danger" onclick="show_small_modal('{{ route('leads.reject-modal', $lead->id) }}','Reject Registration')">
-                                <i class="ti ti-x me-2"></i>Reject
-                            </button>
-                            @endif
+                            <div class="d-flex flex-column flex-sm-row gap-2">
+                                @if($studentDetail->status !== 'approved')
+                                <button class="btn btn-success" onclick="show_small_modal('{{ route('leads.approve-modal', $lead->id) }}', 'Approve Registration')">
+                                    <i class="ti ti-check me-2"></i>Approve
+                                </button>
+                                @endif
+                                @if($studentDetail->status !== 'rejected')
+                                <button class="btn btn-danger" onclick="show_small_modal('{{ route('leads.reject-modal', $lead->id) }}', 'Reject Registration')">
+                                    <i class="ti ti-x me-2"></i>Reject
+                                </button>
+                                @endif
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -80,8 +84,8 @@
 
 <div class="row registration-details-container">
     <!-- Lead Information Card -->
-    <div class="col-lg-4">
-        <div class="card border-0 shadow-sm">
+    <div class="col-12 col-lg-4 mb-4 mb-lg-0">
+        <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-gradient-primary text-white">
                 <h5 class="card-title mb-0">
                     <i class="ti ti-user me-2"></i>Lead Information
@@ -100,7 +104,7 @@
                     <div class="col-12">
                         <div class="d-flex align-items-center p-2 bg-light rounded">
                             <i class="ti ti-phone text-primary me-3"></i>
-                            <div>
+                            <div class="flex-grow-1">
                                 <small class="text-muted d-block">Phone</small>
                                 <span class="fw-medium">{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</span>
                             </div>
@@ -109,7 +113,7 @@
                     <div class="col-12">
                         <div class="d-flex align-items-center p-2 bg-light rounded">
                             <i class="ti ti-mail text-primary me-3"></i>
-                            <div>
+                            <div class="flex-grow-1">
                                 <small class="text-muted d-block">Email</small>
                                 <span class="fw-medium">{{ $lead->email ?? 'N/A' }}</span>
                             </div>
@@ -118,7 +122,7 @@
                     <div class="col-12">
                         <div class="d-flex align-items-center p-2 bg-light rounded">
                             <i class="ti ti-book text-primary me-3"></i>
-                            <div>
+                            <div class="flex-grow-1">
                                 <small class="text-muted d-block">Course</small>
                                 <span class="fw-medium">{{ $lead->course->title ?? 'N/A' }}</span>
                             </div>
@@ -127,7 +131,7 @@
                     <div class="col-12">
                         <div class="d-flex align-items-center p-2 bg-light rounded">
                             <i class="ti ti-user text-primary me-3"></i>
-                            <div>
+                            <div class="flex-grow-1">
                                 <small class="text-muted d-block">Telecaller</small>
                                 <span class="fw-medium">{{ $lead->telecaller->name ?? 'N/A' }}</span>
                             </div>
@@ -136,7 +140,7 @@
                     <div class="col-12">
                         <div class="d-flex align-items-center p-2 bg-light rounded">
                             <i class="ti ti-calendar text-primary me-3"></i>
-                            <div>
+                            <div class="flex-grow-1">
                                 <small class="text-muted d-block">Created</small>
                                 <span class="fw-medium">{{ $lead->created_at->format('M d, Y H:i') }}</span>
                             </div>
@@ -148,7 +152,7 @@
     </div>
     
     <!-- Registration Details Card -->
-    <div class="col-lg-8">
+    <div class="col-12 col-lg-8">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-gradient-success text-white">
                 <h5 class="card-title mb-0">
@@ -157,30 +161,30 @@
             </div>
             <div class="card-body">
                 <!-- Navigation Tabs -->
-                <ul class="nav nav-tabs nav-fill mb-4" id="registrationTabs" role="tablist">
+                <ul class="nav nav-tabs nav-fill mb-4 responsive-tabs" id="registrationTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab">
-                            <i class="ti ti-user me-2"></i>Personal Info
+                            <i class="ti ti-user me-1 me-md-2"></i><span class="d-none d-sm-inline">Personal Info</span><span class="d-sm-none">Personal</span>
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab">
-                            <i class="ti ti-phone me-2"></i>Contact Info
+                            <i class="ti ti-phone me-1 me-md-2"></i><span class="d-none d-sm-inline">Contact Info</span><span class="d-sm-none">Contact</span>
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="address-tab" data-bs-toggle="tab" data-bs-target="#address" type="button" role="tab">
-                            <i class="ti ti-map-pin me-2"></i>Address
+                            <i class="ti ti-map-pin me-1 me-md-2"></i><span class="d-none d-sm-inline">Address</span><span class="d-sm-none">Address</span>
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="course-tab" data-bs-toggle="tab" data-bs-target="#course" type="button" role="tab">
-                            <i class="ti ti-book me-2"></i>Course Info
+                            <i class="ti ti-book me-1 me-md-2"></i><span class="d-none d-sm-inline">Course Info</span><span class="d-sm-none">Course</span>
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">
-                            <i class="ti ti-file me-2"></i>Documents
+                            <i class="ti ti-file me-1 me-md-2"></i><span class="d-none d-sm-inline">Documents</span><span class="d-sm-none">Docs</span>
                         </button>
                     </li>
                 </ul>
@@ -415,7 +419,7 @@
                     <div class="tab-pane fade" id="documents" role="tabpanel">
                         <div class="row g-3">
                             @if($studentDetail->sslc_certificate)
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
                                         <i class="ti ti-file-certificate text-primary"></i>
@@ -451,7 +455,7 @@
                             @endif
                             
                             @if($studentDetail->plustwo_certificate || $studentDetail->plus_two_certificate)
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
                                         <i class="ti ti-file-certificate text-success"></i>
@@ -493,7 +497,7 @@
                             @endif
                             
                             @if($studentDetail->ug_certificate)
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
                                         <i class="ti ti-file-certificate text-info"></i>
@@ -529,7 +533,7 @@
                             @endif
                             
                             @if($studentDetail->birth_certificate && isset($studentDetail->birth_certificate_verification_status))
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
                                         <i class="ti ti-file-certificate text-info"></i>
@@ -564,7 +568,7 @@
                             </div>
                             @endif
                             
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
                                         <i class="ti ti-photo text-warning"></i>
@@ -598,7 +602,7 @@
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
                                         <i class="ti ti-id text-danger"></i>
@@ -632,7 +636,7 @@
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
                                         <i class="ti ti-id text-secondary"></i>
@@ -666,7 +670,7 @@
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
                                         <i class="ti ti-signature text-dark"></i>
@@ -735,7 +739,7 @@
 
 <!-- Document Verification Modal -->
 <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="verificationModalLabel">Document Verification</h5>
@@ -954,28 +958,101 @@
         transform: translateY(-2px);
     }
     
+    /* Mobile Responsive Styles */
     @media (max-width: 768px) {
         .info-card, .document-card {
             flex-direction: column;
             text-align: center;
+            padding: 0.75rem;
         }
         
         .info-icon, .document-icon {
             margin-right: 0;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
+            width: 40px;
+            height: 40px;
+        }
+        
+        .info-icon i, .document-icon i {
+            font-size: 1.25rem;
         }
         
         .document-content {
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            align-items: center;
         }
         
-        .nav-tabs {
+        .document-actions {
+            flex-direction: row;
+            justify-content: center;
+            gap: 0.5rem;
             flex-wrap: wrap;
         }
         
-        .nav-tabs .nav-link {
+        .responsive-tabs {
+            flex-wrap: wrap;
+        }
+        
+        .responsive-tabs .nav-link {
             margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .tab-content {
+            padding: 1rem;
+            min-height: 300px;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+        
+        .page-header .row {
+            flex-direction: column;
+        }
+        
+        .page-header .col-md-6:last-child {
+            margin-top: 1rem;
+        }
+        
+        .breadcrumb {
+            justify-content: flex-start !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .info-card, .document-card {
+            padding: 0.5rem;
+        }
+        
+        .responsive-tabs .nav-link {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
+        }
+        
+        .btn {
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+        }
+        
+        .btn-sm {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .document-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .document-actions .btn {
+            width: 100%;
         }
     }
 </style>
