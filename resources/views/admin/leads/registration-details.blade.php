@@ -530,17 +530,6 @@
                                     </div>
                                 </div>
                                 @endforeach
-                                
-                                <!-- Add SSLC Certificate Button -->
-                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
-                                <div class="col-12">
-                                    <div class="text-center">
-                                        <button class="btn btn-outline-primary" onclick="openAddSSLCModal()">
-                                            <i class="ti ti-plus me-2"></i>Add SSLC Certificate
-                                        </button>
-                                    </div>
-                                </div>
-                                @endif
                             @elseif($studentDetail->sslc_certificate)
                             <!-- Fallback for old single SSLC certificate -->
                             <div class="col-12 col-md-6">
@@ -574,6 +563,17 @@
                                             @endif
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                            @endif
+                            
+                            <!-- Add SSLC Certificate Button - Always show if user has permission -->
+                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
+                            <div class="col-12">
+                                <div class="text-center">
+                                    <button class="btn btn-outline-primary" onclick="openAddSSLCModal()">
+                                        <i class="ti ti-plus me-2"></i>Add SSLC Certificate
+                                    </button>
                                 </div>
                             </div>
                             @endif
