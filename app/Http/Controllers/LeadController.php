@@ -1842,6 +1842,8 @@ class LeadController extends Controller
                 'studentDetails.course', 
                 'studentDetails.subject', 
                 'studentDetails.batch',
+                'studentDetails.sslcCertificates',
+                'studentDetails.sslcCertificates.verifiedBy',
                 'course',
                 'leadStatus',
                 'leadSource',
