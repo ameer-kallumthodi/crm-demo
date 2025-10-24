@@ -156,4 +156,12 @@ class LeadDetail extends Model
     {
         return $this->belongsTo(User::class, 'signature_verified_by');
     }
+
+    /**
+     * Get the SSLC certificates for this lead detail.
+     */
+    public function sslcCertificates()
+    {
+        return $this->hasMany(SSLCertificate::class);
+    }
 }

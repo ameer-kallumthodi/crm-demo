@@ -70,13 +70,15 @@ class LeadBosseRegistrationController extends Controller
             'adhar_front' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'adhar_back' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'signature' => 'required|file|mimes:jpg,jpeg,png|max:2048',
-            'sslc_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'sslc_certificates' => 'nullable|array',
+            'sslc_certificates.*' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
             'message' => 'nullable|string',
         ];
         
-        // Add conditional validation for SSLC certificate if class is plustwo
+        // Add conditional validation for SSLC certificates if class is plustwo
         if ($request->class === 'plustwo') {
-            $validationRules['sslc_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $validationRules['sslc_certificates'] = 'required|array|min:1';
+            $validationRules['sslc_certificates.*'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:2048';
         }
         
         $request->validate($validationRules, [
@@ -129,16 +131,19 @@ class LeadBosseRegistrationController extends Controller
             'signature.file' => 'Signature must be a valid file.',
             'signature.mimes' => 'Signature must be an image file (JPG, PNG).',
             'signature.max' => 'Signature file size must not exceed 2MB.',
-            'sslc_certificate.required' => 'SSLC certificate is required for Plus Two class.',
-            'sslc_certificate.file' => 'SSLC certificate must be a valid file.',
-            'sslc_certificate.mimes' => 'SSLC certificate must be a PDF or image file.',
-            'sslc_certificate.max' => 'SSLC certificate file size must not exceed 2MB.',
+            'sslc_certificates.required' => 'SSLC certificates are required for Plus Two class.',
+            'sslc_certificates.array' => 'SSLC certificates must be uploaded as files.',
+            'sslc_certificates.min' => 'At least one SSLC certificate is required.',
+            'sslc_certificates.*.required' => 'Each SSLC certificate file is required.',
+            'sslc_certificates.*.file' => 'SSLC certificate must be a valid file.',
+            'sslc_certificates.*.mimes' => 'SSLC certificate must be a PDF or image file.',
+            'sslc_certificates.*.max' => 'SSLC certificate file size must not exceed 2MB.',
         ]);
         
         try {
             // Handle file uploads
             $filePaths = [];
-            $fileFields = ['birth_certificate', 'passport_photo', 'adhar_front', 'adhar_back', 'signature', 'sslc_certificate'];
+            $fileFields = ['birth_certificate', 'passport_photo', 'adhar_front', 'adhar_back', 'signature'];
             
             foreach ($fileFields as $field) {
                 if ($request->hasFile($field)) {
@@ -146,6 +151,27 @@ class LeadBosseRegistrationController extends Controller
                     $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
                     $filePath = $file->storeAs('student-documents', $fileName, 'public');
                     $filePaths[$field] = $filePath;
+                }
+            }
+            
+            // Handle multiple SSLC certificates
+            $sslcCertificateIds = [];
+            if ($request->hasFile('sslc_certificates')) {
+                foreach ($request->file('sslc_certificates') as $file) {
+                    $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                    $filePath = $file->storeAs('student-documents', $fileName, 'public');
+                    
+                    // Create SSLC certificate record
+                    $sslcCertificate = \App\Models\SSLCertificate::create([
+                        'lead_detail_id' => null, // Will be updated after LeadDetail is created
+                        'certificate_path' => $filePath,
+                        'original_filename' => $file->getClientOriginalName(),
+                        'file_type' => $file->getClientOriginalExtension(),
+                        'file_size' => $file->getSize(),
+                        'verification_status' => 'pending',
+                    ]);
+                    
+                    $sslcCertificateIds[] = $sslcCertificate->id;
                 }
             }
             
@@ -189,12 +215,16 @@ class LeadBosseRegistrationController extends Controller
                 'adhar_front' => $filePaths['adhar_front'] ?? null,
                 'adhar_back' => $filePaths['adhar_back'] ?? null,
                 'signature' => $filePaths['signature'] ?? null,
-                'sslc_certificate' => $filePaths['sslc_certificate'] ?? null,
+                // SSLC certificate is now handled separately in sslc_certificates table
                 'message' => $request->message,
                 'status' => 'pending',
             ]);
             
-            
+            // Update SSLC certificate records with the correct lead_detail_id
+            if (!empty($sslcCertificateIds)) {
+                \App\Models\SSLCertificate::whereIn('id', $sslcCertificateIds)
+                    ->update(['lead_detail_id' => $studentDetail->id]);
+            }
             
             // Send registration confirmation email
             try {
@@ -216,6 +246,17 @@ class LeadBosseRegistrationController extends Controller
             foreach ($filePaths as $filePath) {
                 if (Storage::disk('public')->exists($filePath)) {
                     Storage::disk('public')->delete($filePath);
+                }
+            }
+            
+            // Clean up SSLC certificate files and records
+            if (!empty($sslcCertificateIds)) {
+                foreach ($sslcCertificateIds as $certId) {
+                    $certificate = \App\Models\SSLCertificate::find($certId);
+                    if ($certificate && Storage::disk('public')->exists($certificate->certificate_path)) {
+                        Storage::disk('public')->delete($certificate->certificate_path);
+                    }
+                    $certificate->delete();
                 }
             }
             return response()->json([

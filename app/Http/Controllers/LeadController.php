@@ -2024,6 +2024,87 @@ class LeadController extends Controller
         }
     }
 
+    public function verifySSLCertificate(Request $request)
+    {
+        try {
+            $request->validate([
+                'sslc_certificate_id' => 'required|exists:sslc_certificates,id',
+                'lead_detail_id' => 'required|exists:leads_details,id',
+                'verification_status' => 'required|in:pending,verified',
+                'verification_notes' => 'nullable|string|max:1000',
+                'need_to_change_document' => 'nullable|boolean',
+                'new_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048'
+            ]);
 
+            $sslcCertificate = \App\Models\SSLCertificate::findOrFail($request->sslc_certificate_id);
+            $verificationStatus = $request->verification_status;
+            $needToChangeDocument = $request->boolean('need_to_change_document');
+            
+            // Use AuthHelper to get the authenticated user
+            $currentUserId = AuthHelper::getCurrentUserId();
+            
+            // Check if user is authenticated
+            if (!$currentUserId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated. Please login again.'
+                ], 401);
+            }
+
+            // If need to change document is checked, file upload is required
+            if ($needToChangeDocument && !$request->hasFile('new_file')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please upload a new document file.'
+                ], 400);
+            }
+
+            // Handle new file upload if needed
+            if ($needToChangeDocument && $request->hasFile('new_file')) {
+                // Delete old file
+                if (Storage::disk('public')->exists($sslcCertificate->certificate_path)) {
+                    Storage::disk('public')->delete($sslcCertificate->certificate_path);
+                }
+                
+                // Upload new file
+                $file = $request->file('new_file');
+                $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('student-documents', $fileName, 'public');
+                
+                // Update certificate with new file
+                $sslcCertificate->update([
+                    'certificate_path' => $filePath,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_type' => $file->getClientOriginalExtension(),
+                    'file_size' => $file->getSize(),
+                ]);
+            }
+
+            // Update verification status
+            $updateData = [
+                'verification_status' => $verificationStatus,
+                'verified_by' => $currentUserId,
+                'verified_at' => now(),
+            ];
+
+            if ($request->filled('verification_notes')) {
+                $updateData['verification_notes'] = $request->verification_notes;
+            }
+
+            $sslcCertificate->update($updateData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'SSLC certificate verification updated successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('SSLC certificate verification error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating SSLC certificate verification: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
 }

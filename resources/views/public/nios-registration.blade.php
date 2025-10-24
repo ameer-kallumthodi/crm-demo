@@ -650,16 +650,16 @@
                         </div>
                     </div>
                     
-                    <!-- SSLC Certificate (conditional) - Full width below other fields -->
-                    <div class="form-group" id="sslc_certificate_group" style="display: none;">
-                        <label class="form-label">SSLC Certificate <span class="required">*</span></label>
-                        <div class="file-upload-area" onclick="document.getElementById('sslc_certificate').click()">
+                    <!-- SSLC Certificates (conditional) - Full width below other fields -->
+                    <div class="form-group" id="sslc_certificates_group" style="display: none;">
+                        <label class="form-label">SSLC Certificates <span class="required">*</span></label>
+                        <div class="file-upload-area" onclick="document.getElementById('sslc_certificates').click()">
                             <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                            <p class="mb-0">Click to upload or drag & drop</p>
-                            <small class="text-muted">PDF, JPG, PNG (Max 2MB)</small>
+                            <p class="mb-0">Click to upload multiple certificates or drag & drop</p>
+                            <small class="text-muted">PDF, JPG, PNG (Max 2MB each) - You can upload multiple files</small>
                         </div>
-                        <input type="file" id="sslc_certificate" name="sslc_certificate" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
-                        <div class="file-preview" id="sslc_certificate_preview"></div>
+                        <input type="file" id="sslc_certificates" name="sslc_certificates[]" accept=".pdf,.jpg,.jpeg,.png" multiple style="display: none;">
+                        <div class="file-preview" id="sslc_certificates_preview"></div>
                     </div>
                     </div>
                     
@@ -687,6 +687,7 @@
         let currentStep = 1;
         const totalSteps = 4;
         const STORAGE_KEY = 'nios_form_data';
+        let selectedFiles = []; // Store selected files globally
 
         // Load saved data on page load
         function loadSavedData() {
@@ -765,8 +766,8 @@
         // Function to handle class selection changes
         function setupClassSelectionHandler() {
             const classSelect = document.querySelector('select[name="class"]');
-            const sslcGroup = document.getElementById('sslc_certificate_group');
-            const sslcInput = document.getElementById('sslc_certificate');
+            const sslcGroup = document.getElementById('sslc_certificates_group');
+            const sslcInput = document.getElementById('sslc_certificates');
             
             if (classSelect && sslcGroup && sslcInput) {
                 classSelect.addEventListener('change', function() {
@@ -778,7 +779,7 @@
                         sslcInput.removeAttribute('required');
                         sslcInput.value = ''; // Clear the file input
                         // Clear preview
-                        const preview = document.getElementById('sslc_certificate_preview');
+                        const preview = document.getElementById('sslc_certificates_preview');
                         if (preview) {
                             preview.innerHTML = '';
                             preview.style.display = 'none';
@@ -868,15 +869,15 @@
                     'adhar_back': 'Aadhar back',
                     'signature': 'Signature',
                     'birth_certificate': 'Birth certificate',
-                    'sslc_certificate': 'SSLC certificate'
+                    'sslc_certificates': 'SSLC certificates'
                 };
                 
                 const requiredFileFields = ['passport_photo', 'adhar_front', 'adhar_back', 'signature'];
                 
-                // Add SSLC certificate if class is plustwo
+                // Add SSLC certificates if class is plustwo
                 const classSelect = document.querySelector('select[name="class"]');
                 if (classSelect && classSelect.value === 'plustwo') {
-                    requiredFileFields.push('sslc_certificate');
+                    requiredFileFields.push('sslc_certificates');
                 }
                 
                 for (let fieldName of requiredFileFields) {
@@ -963,24 +964,43 @@
         });
         
         function handleFileSelect(input) {
-            const file = input.files[0];
-            const preview = document.getElementById(input.name + '_preview');
+            const files = input.files;
+            const preview = document.getElementById(input.id + '_preview');
             
-            if (file) {
-                // Validate file size (2MB limit)
-                const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+            if (files && files.length > 0) {
+                // Special handling for multiple SSLC certificates
+                if (input.name === 'sslc_certificates[]') {
+                    handleMultipleFiles(input, files, preview);
+                } else {
+                    // Single file handling
+                    const file = files[0];
+                    if (validateFile(file, input)) {
+                        displaySingleFile(file, preview, input.name);
+                    }
+                }
+            } else {
+                if (preview) {
+                    preview.style.display = 'none';
+                    preview.innerHTML = '';
+                }
+            }
+        }
+        
+        function handleMultipleFiles(input, files, preview) {
+            const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+            const allowedTypes = input.accept.split(',').map(type => type.trim());
+            let validFiles = [];
+            
+            // Validate all files
+            for (let file of files) {
                 if (file.size > maxSize) {
-                    showAlert(`File "${file.name}" is too large. Please select a file smaller than 2MB.`, 'danger');
-                    input.value = '';
-                    return;
+                    showAlert(`File "${file.name}" is too large. Please select files smaller than 2MB.`, 'danger');
+                    continue;
                 }
                 
-                // Validate file type
-                const allowedTypes = input.accept.split(',').map(type => type.trim());
                 const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
                 const mimeType = file.type;
                 
-                // Check if file extension or MIME type is allowed
                 const isExtensionAllowed = allowedTypes.includes(fileExtension);
                 const isMimeTypeAllowed = allowedTypes.some(type => {
                     if (type === '.pdf') return mimeType === 'application/pdf';
@@ -990,14 +1010,90 @@
                 });
                 
                 if (!isExtensionAllowed && !isMimeTypeAllowed) {
-                    showAlert(`File type not allowed for "${file.name}". Please select a valid file type.`, 'danger');
-                    input.value = '';
-                    return;
+                    showAlert(`File type not allowed for "${file.name}". Please select valid file types.`, 'danger');
+                    continue;
                 }
                 
+                validFiles.push(file);
+            }
+            
+            if (validFiles.length > 0) {
+                // Store files globally for management
+                selectedFiles = validFiles;
+                displayMultipleFiles(validFiles, preview);
+            } else {
+                input.value = '';
+                selectedFiles = [];
+                preview.style.display = 'none';
+                preview.innerHTML = '';
+            }
+        }
+        
+        function validateFile(file, input) {
+            const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+            if (file.size > maxSize) {
+                showAlert(`File "${file.name}" is too large. Please select a file smaller than 2MB.`, 'danger');
+                input.value = '';
+                return false;
+            }
+            
+            const allowedTypes = input.accept.split(',').map(type => type.trim());
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            const mimeType = file.type;
+            
+            const isExtensionAllowed = allowedTypes.includes(fileExtension);
+            const isMimeTypeAllowed = allowedTypes.some(type => {
+                if (type === '.pdf') return mimeType === 'application/pdf';
+                if (type === '.jpg' || type === '.jpeg') return mimeType === 'image/jpeg';
+                if (type === '.png') return mimeType === 'image/png';
+                return false;
+            });
+            
+            if (!isExtensionAllowed && !isMimeTypeAllowed) {
+                showAlert(`File type not allowed for "${file.name}". Please select a valid file type.`, 'danger');
+                input.value = '';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        function displaySingleFile(file, preview, inputName) {
+            if (!preview) {
+                console.error('Preview element not found');
+                return;
+            }
+            
+            const fileSize = (file.size / 1024 / 1024).toFixed(2);
+            preview.innerHTML = `
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file me-2 text-success"></i>
+                        <div>
+                            <div class="fw-bold">${file.name}</div>
+                            <small class="text-muted">${fileSize} MB</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile('${inputName}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            preview.style.display = 'block';
+        }
+        
+        function displayMultipleFiles(files, preview) {
+            if (!preview) {
+                console.error('Preview element not found');
+                return;
+            }
+            
+            let html = `<div class="mb-2"><strong>${files.length} certificate(s) selected:</strong></div>`;
+            
+            files.forEach((file, index) => {
                 const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                preview.innerHTML = `
-                    <div class="d-flex align-items-center justify-content-between">
+                html += `
+                    <div class="d-flex align-items-center justify-content-between mb-2" id="file-${index}">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-file me-2 text-success"></i>
                             <div>
@@ -1005,23 +1101,72 @@
                                 <small class="text-muted">${fileSize} MB</small>
                             </div>
                         </div>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile('${input.name}')">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSpecificFile(${index})">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                 `;
-                preview.style.display = 'block';
+            });
+            
+            // Add a "Clear All" button
+            html += `
+                <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-warning" onclick="removeFile('sslc_certificates[]')">
+                        <i class="fas fa-trash me-1"></i>Clear All
+                    </button>
+                </div>
+            `;
+            
+            preview.innerHTML = html;
+            preview.style.display = 'block';
+        }
+        
+        function removeSpecificFile(index) {
+            // Remove the specific file from the global array
+            selectedFiles.splice(index, 1);
+            
+            // Update the file input with remaining files
+            const input = document.querySelector('input[name="sslc_certificates[]"]');
+            const preview = document.getElementById(input.id + '_preview');
+            
+            if (selectedFiles.length > 0) {
+                // Create a new DataTransfer object with remaining files
+                const dt = new DataTransfer();
+                selectedFiles.forEach(file => dt.items.add(file));
+                input.files = dt.files;
+                
+                // Update the preview
+                displayMultipleFiles(selectedFiles, preview);
             } else {
-                preview.style.display = 'none';
+                // No files left, clear everything
+                input.value = '';
+                selectedFiles = [];
+                if (preview) {
+                    preview.style.display = 'none';
+                    preview.innerHTML = '';
+                }
             }
         }
         
         function removeFile(inputName) {
             const input = document.querySelector(`input[name="${inputName}"]`);
-            const preview = document.getElementById(inputName + '_preview');
+            const preview = document.getElementById(input.id + '_preview');
             
-            input.value = '';
-            preview.style.display = 'none';
+            if (inputName === 'sslc_certificates[]') {
+                // For multiple files, clear all and hide preview
+                input.value = '';
+                selectedFiles = [];
+                if (preview) {
+                    preview.style.display = 'none';
+                    preview.innerHTML = '';
+                }
+            } else {
+                // For single files, clear and hide preview
+                input.value = '';
+                if (preview) {
+                    preview.style.display = 'none';
+                }
+            }
         }
         
         // Form submission

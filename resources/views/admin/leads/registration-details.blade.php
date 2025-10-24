@@ -418,7 +418,44 @@
                     <!-- Documents Tab -->
                     <div class="tab-pane fade" id="documents" role="tabpanel">
                         <div class="row g-3">
-                            @if($studentDetail->sslc_certificate)
+                            @if($studentDetail->sslcCertificates && $studentDetail->sslcCertificates->count() > 0)
+                                @foreach($studentDetail->sslcCertificates as $index => $certificate)
+                                <div class="col-12 col-md-6">
+                                    <div class="document-card">
+                                        <div class="document-icon">
+                                            <i class="ti ti-file-certificate text-primary"></i>
+                                        </div>
+                                        <div class="document-content">
+                                            <div class="document-info">
+                                                <label class="document-label">SSLC Certificate {{ $index + 1 }}</label>
+                                                <div class="verification-status">
+                                                    <span class="badge bg-{{ $certificate->verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="sslc_certificate_{{ $certificate->id }}">
+                                                        {{ ucfirst($certificate->verification_status) }}
+                                                    </span>
+                                                    @if($certificate->verified_at)
+                                                    <small class="text-muted d-block">
+                                                        Verified by: {{ $certificate->verifiedBy->name ?? 'Unknown' }}<br>
+                                                        Date: {{ $certificate->verified_at->format('M d, Y h:i A') }}
+                                                    </small>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="document-actions">
+                                                <a href="{{ Storage::url($certificate->certificate_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="ti ti-eye me-1"></i>View
+                                                </a>
+                                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
+                                                <button class="btn btn-sm btn-success" onclick="openSSLCVerificationModal({{ $certificate->id }}, '{{ $certificate->verification_status }}')">
+                                                    <i class="ti ti-check me-1"></i>Verify
+                                                </button>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            @elseif($studentDetail->sslc_certificate)
+                            <!-- Fallback for old single SSLC certificate -->
                             <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
@@ -426,7 +463,7 @@
                                     </div>
                                     <div class="document-content">
                                         <div class="document-info">
-                                            <label class="document-label">SSLC Certificate</label>
+                                            <label class="document-label">SSLC Certificate (Legacy)</label>
                                             <div class="verification-status">
                                                 <span class="badge bg-{{ $studentDetail->sslc_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="sslc_certificate">
                                                     {{ ucfirst($studentDetail->sslc_verification_status ?? 'pending') }}
@@ -771,6 +808,58 @@
                         <label for="new_file" class="form-label">Upload New File <span class="text-danger">*</span></label>
                         <input type="file" class="form-control" id="new_file" name="new_file" accept=".pdf,.jpg,.jpeg,.png">
                         <small class="text-muted">Upload a new file (Max 1MB)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Verification</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- SSLC Certificate Verification Modal -->
+<div class="modal fade" id="sslcVerificationModal" tabindex="-1" aria-labelledby="sslcVerificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sslcVerificationModalLabel">SSLC Certificate Verification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="sslcVerificationForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" id="sslc_certificate_id" name="sslc_certificate_id">
+                    <input type="hidden" id="lead_detail_id" name="lead_detail_id" value="{{ $studentDetail->id }}">
+                    
+                    <div class="mb-3">
+                        <label for="sslc_verification_status" class="form-label">Verification Status</label>
+                        <select class="form-select" id="sslc_verification_status" name="verification_status" required>
+                            <option value="pending">Pending</option>
+                            <option value="verified">Verified</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sslc_verification_notes" class="form-label">Verification Notes</label>
+                        <textarea class="form-control" id="sslc_verification_notes" name="verification_notes" rows="3" placeholder="Enter verification notes..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="sslc_need_to_change_document">
+                            <label class="form-check-label" for="sslc_need_to_change_document">
+                                Need to change document
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="sslc_file_upload_section" style="display: none;">
+                        <div class="mb-3">
+                            <label for="sslc_new_file" class="form-label">Upload New Document</label>
+                            <input type="file" class="form-control" id="sslc_new_file" name="new_file" accept=".pdf,.jpg,.jpeg,.png">
+                            <div class="form-text">PDF, JPG, PNG files only (Max 2MB)</div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1145,10 +1234,36 @@ function openVerificationModal(documentType, currentStatus) {
     modal.show();
 }
 
+function openSSLCVerificationModal(certificateId, currentStatus) {
+    document.getElementById('sslc_certificate_id').value = certificateId;
+    document.getElementById('sslc_verification_status').value = currentStatus || 'pending';
+    document.getElementById('sslc_need_to_change_document').checked = false;
+    document.getElementById('sslc_new_file').value = '';
+    document.getElementById('sslc_file_upload_section').style.display = 'none';
+    
+    const modal = new bootstrap.Modal(document.getElementById('sslcVerificationModal'));
+    modal.show();
+}
+
 // Handle checkbox change
 document.getElementById('need_to_change_document').addEventListener('change', function() {
     const fileUploadSection = document.getElementById('file_upload_section');
     const newFileInput = document.getElementById('new_file');
+    
+    if (this.checked) {
+        fileUploadSection.style.display = 'block';
+        newFileInput.required = true;
+    } else {
+        fileUploadSection.style.display = 'none';
+        newFileInput.required = false;
+        newFileInput.value = '';
+    }
+});
+
+// Handle SSLC checkbox change
+document.getElementById('sslc_need_to_change_document').addEventListener('change', function() {
+    const fileUploadSection = document.getElementById('sslc_file_upload_section');
+    const newFileInput = document.getElementById('sslc_new_file');
     
     if (this.checked) {
         fileUploadSection.style.display = 'block';
@@ -1231,6 +1346,63 @@ document.getElementById('verificationForm').addEventListener('submit', function(
                 localStorage.setItem('activeTab', activeTabId);
                 
                 // Reload the page
+                window.location.reload();
+            }, 1000);
+        } else {
+            toast_error(data.message);
+        }
+        
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        toast_error('An error occurred while updating verification.');
+        
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+});
+
+// Handle SSLC verification form submission
+document.getElementById('sslcVerificationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const needToChangeDocument = document.getElementById('sslc_need_to_change_document').checked;
+    const newFileInput = document.getElementById('sslc_new_file');
+    
+    if (needToChangeDocument && (!newFileInput.files || newFileInput.files.length === 0)) {
+        toast_error('Please select a new file to upload.');
+        return;
+    }
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+    
+    fetch('{{ route("leads.verify-sslc-certificate") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toast_success(data.message);
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('sslcVerificationModal'));
+            modal.hide();
+            
+            // Reload page to show updated verification status
+            setTimeout(() => {
                 window.location.reload();
             }, 1000);
         } else {

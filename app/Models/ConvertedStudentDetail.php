@@ -78,4 +78,12 @@ class ConvertedStudentDetail extends Model
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
+
+    /**
+     * Get the SSLC certificates for this converted student detail.
+     */
+    public function sslcCertificates()
+    {
+        return $this->hasMany(SSLCertificate::class);
+    }
 }
