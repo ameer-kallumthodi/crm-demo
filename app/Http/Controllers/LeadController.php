@@ -1887,7 +1887,7 @@ class LeadController extends Controller
 
     public function updateRegistrationStatus(Request $request, Lead $lead)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant()) {
             return response()->json(['success' => false, 'message' => 'Access denied'], 403);
         }
 

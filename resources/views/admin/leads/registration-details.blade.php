@@ -64,7 +64,7 @@
                         <a href="{{ route('leads.registration-form-submitted') }}" class="btn btn-outline-secondary">
                             <i class="ti ti-arrow-left me-2"></i>Back to Registration Form Submitted Leads
                         </a>
-                        @if(\App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_admin_or_super_admin()) {{-- Only admission counsellor can approve/reject --}}
+                        @if(\App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant()) {{-- Only admission counsellor, admin, and academic assistant can approve/reject --}}
                             <div class="d-flex flex-column flex-sm-row gap-2">
                                 @if($studentDetail->status !== 'approved')
                                 <button class="btn btn-success" onclick="show_small_modal('{{ route('leads.approve-modal', $lead->id) }}', 'Approve Registration')">
