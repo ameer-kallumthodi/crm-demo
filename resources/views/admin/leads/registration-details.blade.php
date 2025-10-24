@@ -3,6 +3,9 @@
 @section('title', 'Registration Details - ' . $lead->title)
 
 @section('content')
+<!-- Country codes JSON for JavaScript -->
+<script type="application/json" id="country-codes-json">{{ json_encode($country_codes) }}</script>
+
 <!-- [ breadcrumb ] start -->
 <div class="page-header">
     <div class="page-block">
@@ -201,7 +204,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Student Name</label>
-                                        <p class="info-value">{{ $studentDetail->student_name }}</p>
+                                        <p class="info-value" data-field="student_name" data-lead-detail-id="{{ $studentDetail->id }}">
+                                            {{ $studentDetail->student_name }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -212,7 +220,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Father Name</label>
-                                        <p class="info-value">{{ $studentDetail->father_name }}</p>
+                                        <p class="info-value" data-field="father_name" data-lead-detail-id="{{ $studentDetail->id }}">
+                                            {{ $studentDetail->father_name }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -223,7 +236,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Mother Name</label>
-                                        <p class="info-value">{{ $studentDetail->mother_name }}</p>
+                                        <p class="info-value" data-field="mother_name" data-lead-detail-id="{{ $studentDetail->id }}">
+                                            {{ $studentDetail->mother_name }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -234,7 +252,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Date of Birth</label>
-                                        <p class="info-value">{{ $studentDetail->date_of_birth ? $studentDetail->date_of_birth->format('M d, Y') : 'N/A' }}</p>
+                                        <p class="info-value" data-field="date_of_birth" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->date_of_birth ? $studentDetail->date_of_birth->format('Y-m-d') : '' }}">
+                                            {{ $studentDetail->date_of_birth ? $studentDetail->date_of_birth->format('M d, Y') : 'N/A' }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -251,7 +274,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Email</label>
-                                        <p class="info-value">{{ $studentDetail->email }}</p>
+                                        <p class="info-value" data-field="email" data-lead-detail-id="{{ $studentDetail->id }}">
+                                            {{ $studentDetail->email }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -262,7 +290,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Personal Phone</label>
-                                        <p class="info-value">{{ \App\Helpers\PhoneNumberHelper::display($studentDetail->personal_code, $studentDetail->personal_number) }}</p>
+                                        <p class="info-value" data-field="phone" data-lead-detail-id="{{ $studentDetail->id }}" data-phone-code="{{ $studentDetail->personal_code }}" data-phone-number="{{ $studentDetail->personal_number }}">
+                                            {{ \App\Helpers\PhoneNumberHelper::display($studentDetail->personal_code, $studentDetail->personal_number) }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-phone-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -273,7 +306,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Parents Phone</label>
-                                        <p class="info-value">{{ \App\Helpers\PhoneNumberHelper::display($studentDetail->parents_code, $studentDetail->parents_number) }}</p>
+                                        <p class="info-value" data-field="parents_phone" data-lead-detail-id="{{ $studentDetail->id }}" data-phone-code="{{ $studentDetail->parents_code }}" data-phone-number="{{ $studentDetail->parents_number }}">
+                                            {{ \App\Helpers\PhoneNumberHelper::display($studentDetail->parents_code, $studentDetail->parents_number) }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-phone-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -284,7 +322,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">WhatsApp</label>
-                                        <p class="info-value">{{ \App\Helpers\PhoneNumberHelper::display($studentDetail->whatsapp_code, $studentDetail->whatsapp_number) }}</p>
+                                        <p class="info-value" data-field="whatsapp" data-lead-detail-id="{{ $studentDetail->id }}" data-phone-code="{{ $studentDetail->whatsapp_code }}" data-phone-number="{{ $studentDetail->whatsapp_number }}">
+                                            {{ \App\Helpers\PhoneNumberHelper::display($studentDetail->whatsapp_code, $studentDetail->whatsapp_number) }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-phone-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -301,7 +344,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Street Address</label>
-                                        <p class="info-value">{{ $studentDetail->street }}</p>
+                                        <p class="info-value" data-field="street" data-lead-detail-id="{{ $studentDetail->id }}">
+                                            {{ $studentDetail->street }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -312,7 +360,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Locality</label>
-                                        <p class="info-value">{{ $studentDetail->locality }}</p>
+                                        <p class="info-value" data-field="locality" data-lead-detail-id="{{ $studentDetail->id }}">
+                                            {{ $studentDetail->locality }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -323,7 +376,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Post Office</label>
-                                        <p class="info-value">{{ $studentDetail->post_office }}</p>
+                                        <p class="info-value" data-field="post_office" data-lead-detail-id="{{ $studentDetail->id }}">
+                                            {{ $studentDetail->post_office }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -334,7 +392,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">District</label>
-                                        <p class="info-value">{{ $studentDetail->district }}</p>
+                                        <p class="info-value" data-field="district" data-lead-detail-id="{{ $studentDetail->id }}">
+                                            {{ $studentDetail->district }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -345,7 +408,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">State</label>
-                                        <p class="info-value">{{ $studentDetail->state }}</p>
+                                        <p class="info-value" data-field="state" data-lead-detail-id="{{ $studentDetail->id }}">
+                                            {{ $studentDetail->state }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -356,7 +424,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Pin Code</label>
-                                        <p class="info-value">{{ $studentDetail->pin_code }}</p>
+                                        <p class="info-value" data-field="pin_code" data-lead-detail-id="{{ $studentDetail->id }}">
+                                            {{ $studentDetail->pin_code }}
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -448,12 +521,26 @@
                                                 <button class="btn btn-sm btn-success" onclick="openSSLCVerificationModal({{ $certificate->id }}, '{{ $certificate->verification_status }}')">
                                                     <i class="ti ti-check me-1"></i>Verify
                                                 </button>
+                                                <button class="btn btn-sm btn-danger" onclick="removeSSLCertificate({{ $certificate->id }})">
+                                                    <i class="ti ti-trash me-1"></i>Remove
+                                                </button>
                                                 @endif
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 @endforeach
+                                
+                                <!-- Add SSLC Certificate Button -->
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
+                                <div class="col-12">
+                                    <div class="text-center">
+                                        <button class="btn btn-outline-primary" onclick="openAddSSLCModal()">
+                                            <i class="ti ti-plus me-2"></i>Add SSLC Certificate
+                                        </button>
+                                    </div>
+                                </div>
+                                @endif
                             @elseif($studentDetail->sslc_certificate)
                             <!-- Fallback for old single SSLC certificate -->
                             <div class="col-12 col-md-6">
@@ -865,6 +952,35 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Update Verification</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add SSLC Certificate Modal -->
+<div class="modal fade" id="addSSLCModal" tabindex="-1" aria-labelledby="addSSLCModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSSLCModalLabel">Add SSLC Certificate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addSSLCForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" id="add_lead_detail_id" name="lead_detail_id" value="{{ $studentDetail->id }}">
+                    
+                    <div class="mb-3">
+                        <label for="add_sslc_certificates" class="form-label">SSLC Certificates <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="add_sslc_certificates" name="certificates[]" accept=".pdf,.jpg,.jpeg,.png" multiple required>
+                        <div class="form-text">PDF, JPG, PNG files only (Max 2MB each) - You can upload multiple files</div>
+                    </div>
+                    
+                    <div class="file-preview" id="add_sslc_preview"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Certificate(s)</button>
                 </div>
             </form>
         </div>
@@ -1452,6 +1568,349 @@ function updateVerificationStatus(updatedData) {
     
     console.log(`Updated verification status for ${documentType} to ${verificationStatus}`);
 }
+
+// Inline editing functionality
+let inlineEditInitialized = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (!inlineEditInitialized) {
+        inlineEditInitialized = true;
+        
+        // Handle regular field editing
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.edit-field')) {
+                e.preventDefault();
+                const button = e.target.closest('.edit-field');
+                const infoValue = button.closest('.info-value');
+                const field = infoValue.dataset.field;
+                const leadDetailId = infoValue.dataset.leadDetailId;
+                // Get the value from data attribute or text content
+                let currentValue = infoValue.dataset.value || infoValue.textContent.trim().replace(/\s*Edit\s*$/, '').trim();
+                
+                // Debug logging
+                console.log('Field:', field);
+                console.log('Current value:', currentValue);
+                
+                // Create edit form
+                const editForm = createEditForm(field, currentValue, leadDetailId);
+                infoValue.innerHTML = editForm;
+                
+                // Focus on input
+                const input = infoValue.querySelector('input, textarea, select');
+                if (input) input.focus();
+            }
+        });
+        
+        // Handle phone field editing
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.edit-phone-field')) {
+                e.preventDefault();
+                const button = e.target.closest('.edit-phone-field');
+                const infoValue = button.closest('.info-value');
+                const field = infoValue.dataset.field;
+                const leadDetailId = infoValue.dataset.leadDetailId;
+                const phoneCode = infoValue.dataset.phoneCode;
+                const phoneNumber = infoValue.dataset.phoneNumber;
+                
+                // Create phone edit form
+                const editForm = createPhoneEditForm(field, phoneCode, phoneNumber, leadDetailId);
+                infoValue.innerHTML = editForm;
+                
+                // Focus on phone number input
+                const phoneInput = infoValue.querySelector('input[name="phone_number"]');
+                if (phoneInput) phoneInput.focus();
+            }
+        });
+        
+        // Handle save and cancel buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.save-edit')) {
+                e.preventDefault();
+                const button = e.target.closest('.save-edit');
+                const infoValue = button.closest('.info-value');
+                const field = infoValue.dataset.field;
+                const leadDetailId = infoValue.dataset.leadDetailId;
+                
+                let value = '';
+                if (field.includes('phone') || field === 'whatsapp') {
+                    const code = infoValue.querySelector('select[name="code"]').value;
+                    const number = infoValue.querySelector('input[name="phone_number"]').value;
+                    value = code + '|' + number;
+                } else {
+                    const input = infoValue.querySelector('input, textarea, select');
+                    value = input ? input.value : '';
+                }
+                
+                saveFieldEdit(field, value, leadDetailId, infoValue);
+            }
+            
+            if (e.target.closest('.cancel-edit')) {
+                e.preventDefault();
+                const button = e.target.closest('.cancel-edit');
+                const infoValue = button.closest('.info-value');
+                const field = infoValue.dataset.field;
+                const leadDetailId = infoValue.dataset.leadDetailId;
+                
+                // Reload the field with original value
+                location.reload();
+            }
+        });
+    }
+});
+
+function createEditForm(field, currentValue, leadDetailId) {
+    let inputHtml = '';
+    
+    if (field === 'date_of_birth') {
+        // Use the date value directly (should be in Y-m-d format from data attribute)
+        let dateValue = currentValue || '';
+        console.log('Processing date_of_birth field');
+        console.log('Current value for date:', currentValue);
+        console.log('Date value for input:', dateValue);
+        
+        inputHtml = `<input type="date" name="${field}" value="${dateValue}" class="form-control form-control-sm">`;
+    } else if (field === 'gender') {
+        inputHtml = `
+            <select name="${field}" class="form-select form-select-sm">
+                <option value="male" ${currentValue === 'male' ? 'selected' : ''}>Male</option>
+                <option value="female" ${currentValue === 'female' ? 'selected' : ''}>Female</option>
+                <option value="other" ${currentValue === 'other' ? 'selected' : ''}>Other</option>
+            </select>
+        `;
+    } else if (field === 'message') {
+        inputHtml = `<textarea name="${field}" class="form-control form-control-sm" rows="3">${currentValue}</textarea>`;
+    } else {
+        inputHtml = `<input type="text" name="${field}" value="${currentValue}" class="form-control form-control-sm">`;
+    }
+    
+    return `
+        <div class="edit-form">
+            ${inputHtml}
+            <div class="btn-group mt-1">
+                <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+            </div>
+        </div>
+    `;
+}
+
+function createPhoneEditForm(field, phoneCode, phoneNumber, leadDetailId) {
+    const codeOptionsEl = document.getElementById('country-codes-json');
+    let codeOptions = {};
+    
+    if (codeOptionsEl) {
+        try {
+            codeOptions = JSON.parse(codeOptionsEl.textContent);
+        } catch (e) {
+            console.error('Error parsing country codes:', e);
+        }
+    }
+    
+    const codeOptionsHtml = Object.entries(codeOptions).map(([code, country]) => 
+        `<option value="${code}" ${code === phoneCode ? 'selected' : ''}>${code} - ${country}</option>`
+    ).join('');
+    
+    return `
+        <div class="edit-form">
+            <div class="row g-1">
+                <div class="col-4">
+                    <select name="code" class="form-select form-select-sm">
+                        <option value="">Select Code</option>
+                        ${codeOptionsHtml}
+                    </select>
+                </div>
+                <div class="col-8">
+                    <input type="tel" name="phone_number" value="${phoneNumber || ''}" class="form-control form-control-sm" placeholder="Phone Number">
+                </div>
+            </div>
+            <div class="btn-group mt-1">
+                <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+            </div>
+        </div>
+    `;
+}
+
+let isSubmitting = false;
+
+function saveFieldEdit(field, value, leadDetailId, infoValue) {
+    if (isSubmitting) {
+        return;
+    }
+    
+    isSubmitting = true;
+    const formData = new FormData();
+    formData.append('lead_detail_id', leadDetailId);
+    formData.append('field', field);
+    formData.append('value', value);
+    
+    fetch('{{ route("leads.update-registration-details") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the display value
+            if (field.includes('phone') || field === 'whatsapp') {
+                const [code, number] = value.split('|');
+                const displayValue = code && number ? `${code} ${number}` : 'N/A';
+                infoValue.innerHTML = `${displayValue} <button class="btn btn-sm btn-outline-primary ms-2 edit-phone-field" title="Edit"><i class="ti ti-edit"></i></button>`;
+            } else {
+                const displayValue = data.new_value || value;
+                infoValue.innerHTML = `${displayValue} <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit"><i class="ti ti-edit"></i></button>`;
+            }
+            
+            toast_success(data.message);
+        } else {
+            toast_error(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        toast_error('An error occurred while updating the field.');
+    })
+    .finally(() => {
+        isSubmitting = false;
+    });
+}
+
+// SSLC Certificate Management
+function removeSSLCertificate(certificateId) {
+    if (confirm('Are you sure you want to remove this SSLC certificate?')) {
+        const formData = new FormData();
+        formData.append('certificate_id', certificateId);
+        
+        fetch('{{ route("leads.remove-sslc-certificate") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                toast_success(data.message);
+                // Reload page to show updated certificates
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                toast_error(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toast_error('An error occurred while removing the certificate.');
+        });
+    }
+}
+
+function openAddSSLCModal() {
+    const modal = new bootstrap.Modal(document.getElementById('addSSLCModal'));
+    modal.show();
+}
+
+// Handle Add SSLC Certificate form submission
+let addSSLCInitialized = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (!addSSLCInitialized) {
+        addSSLCInitialized = true;
+        
+        const addSSLCForm = document.getElementById('addSSLCForm');
+        if (addSSLCForm) {
+            addSSLCForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (isSubmitting) {
+                    return;
+                }
+                
+                isSubmitting = true;
+                const formData = new FormData(this);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="ti ti-loader-2"></i> Adding...';
+                
+                fetch('{{ route("leads.add-sslc-certificate") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        toast_success(data.message);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addSSLCModal'));
+                        modal.hide();
+                        // Reload page to show new certificates
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        toast_error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toast_error('An error occurred while adding the certificate.');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    isSubmitting = false;
+                });
+            });
+        }
+    }
+});
+
+// Handle file preview for Add SSLC modal
+let filePreviewInitialized = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (!filePreviewInitialized) {
+        filePreviewInitialized = true;
+        
+        const fileInput = document.getElementById('add_sslc_certificates');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                const preview = document.getElementById('add_sslc_preview');
+                
+                if (files && files.length > 0) {
+                    let html = `<div class="mt-2"><strong>${files.length} file(s) selected:</strong></div>`;
+                    
+                    Array.from(files).forEach((file, index) => {
+                        const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                        html += `
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-file me-2 text-success"></i>
+                                    <div>
+                                        <div class="fw-bold">${file.name}</div>
+                                        <small class="text-muted">${fileSize} MB</small>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    preview.innerHTML = html;
+                    preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
+                    preview.innerHTML = '';
+                }
+            });
+        }
+    }
+});
 
 </script>
 @endpush

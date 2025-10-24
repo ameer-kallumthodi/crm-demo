@@ -18,7 +18,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class LeadController extends Controller
@@ -1853,8 +1855,9 @@ class LeadController extends Controller
             }
 
             $studentDetail = $lead->studentDetails;
+            $country_codes = get_country_code();
             
-            return view('admin.leads.registration-details', compact('studentDetail', 'lead'));
+            return view('admin.leads.registration-details', compact('studentDetail', 'lead', 'country_codes'));
             
         } catch (\Exception $e) {
             return view('admin.leads.registration-details', compact('lead'))
@@ -2103,6 +2106,163 @@ class LeadController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error updating SSLC certificate verification: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update registration details inline
+     */
+    public function updateRegistrationDetails(Request $request)
+    {
+        try {
+            $request->validate([
+                'lead_detail_id' => 'required|exists:leads_details,id',
+                'field' => 'required|string',
+                'value' => 'nullable|string|max:255'
+            ]);
+
+            $studentDetail = \App\Models\LeadDetail::findOrFail($request->lead_detail_id);
+            $field = $request->field;
+            $value = $request->value;
+
+            // Define allowed fields for security
+            $allowedFields = [
+                'student_name', 'father_name', 'mother_name', 'date_of_birth', 'gender',
+                'email', 'phone', 'whatsapp', 'street', 'locality', 'post_office', 'district', 'state', 'pin_code',
+                'message'
+            ];
+
+            if (!in_array($field, $allowedFields)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid field for editing.'
+                ], 400);
+            }
+
+            // Handle phone fields specially
+            if (in_array($field, ['phone', 'whatsapp', 'parents_phone'])) {
+                if (strpos($value, '|') !== false) {
+                    [$code, $number] = explode('|', $value, 2);
+                    
+                    if ($field === 'phone') {
+                        $studentDetail->update([
+                            'personal_code' => $code,
+                            'personal_number' => $number
+                        ]);
+                    } elseif ($field === 'whatsapp') {
+                        $studentDetail->update([
+                            'whatsapp_code' => $code,
+                            'whatsapp_number' => $number
+                        ]);
+                    } elseif ($field === 'parents_phone') {
+                        $studentDetail->update([
+                            'parents_code' => $code,
+                            'parents_number' => $number
+                        ]);
+                    }
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid phone number format.'
+                    ], 400);
+                }
+            } else {
+                $studentDetail->update([$field => $value]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration details updated successfully.',
+                'new_value' => $value
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Registration details update error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating registration details: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove SSLC certificate
+     */
+    public function removeSSLCertificate(Request $request)
+    {
+        try {
+            $request->validate([
+                'certificate_id' => 'required|exists:sslc_certificates,id'
+            ]);
+
+            $certificate = \App\Models\SSLCertificate::findOrFail($request->certificate_id);
+            
+            // Delete the file from storage
+            if (Storage::disk('public')->exists($certificate->certificate_path)) {
+                Storage::disk('public')->delete($certificate->certificate_path);
+            }
+            
+            // Delete the database record
+            $certificate->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'SSLC certificate removed successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('SSLC certificate removal error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error removing SSLC certificate: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Add new SSLC certificate
+     */
+    public function addSSLCCertificates(Request $request)
+    {
+        try {
+            $request->validate([
+                'lead_detail_id' => 'required|exists:leads_details,id',
+                'certificates' => 'required|array|min:1',
+                'certificates.*' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048'
+            ]);
+
+            $leadDetailId = $request->lead_detail_id;
+            $certificateIds = [];
+
+            foreach ($request->file('certificates') as $file) {
+                $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('student-documents', $fileName, 'public');
+
+                // Create SSLC certificate record
+                $sslcCertificate = \App\Models\SSLCertificate::create([
+                    'lead_detail_id' => $leadDetailId,
+                    'certificate_path' => $filePath,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_type' => $file->getClientOriginalExtension(),
+                    'file_size' => $file->getSize(),
+                    'verification_status' => 'pending',
+                ]);
+
+                $certificateIds[] = $sslcCertificate->id;
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'SSLC certificate(s) added successfully.',
+                'certificate_ids' => $certificateIds
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('SSLC certificate addition error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error adding SSLC certificate: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -204,6 +204,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     
     // SSLC certificate verification route
     Route::post('leads/verify-sslc-certificate', [LeadController::class, 'verifySSLCertificate'])->name('leads.verify-sslc-certificate');
+Route::post('leads/update-registration-details', [LeadController::class, 'updateRegistrationDetails'])->name('leads.update-registration-details');
+Route::post('leads/remove-sslc-certificate', [LeadController::class, 'removeSSLCertificate'])->name('leads.remove-sslc-certificate');
+Route::post('leads/add-sslc-certificate', [LeadController::class, 'addSSLCCertificates'])->name('leads.add-sslc-certificate');
 
     // API routes for AJAX calls
     Route::prefix('api')->group(function () {
