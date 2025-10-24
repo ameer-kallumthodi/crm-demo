@@ -83,9 +83,11 @@ class PermissionHelper
         $permissions = [
             'dashboard/index',
             'leads/index',
-            'profile/index',
-            'admin/reports/leads',
+            'leads/followup',
+            'leads/registration-form-submitted',
             'admin/converted-leads/index',
+            'admin/reports/leads',
+            'profile/index',
         ];
         return in_array($permission, $permissions);
     }

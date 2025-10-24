@@ -39,6 +39,10 @@
 <script>
     // Set user role for tracking script
     window.userRoleId = {{ \App\Helpers\AuthHelper::getRoleId() }};
+    
+    // Set environment variables for tracking script
+    window.disableWorkingHoursCheck = {{ app()->environment('local', 'development', 'testing') ? 'true' : 'false' }};
+    window.appEnvironment = '{{ app()->environment() }}';
 </script>
 @endif
 

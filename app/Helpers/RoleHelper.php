@@ -65,8 +65,7 @@ class RoleHelper
             return false;
         }
 
-        $role = UserRole::find($user->role_id);
-        return $role && $role->title === 'Telecaller';
+        return $user->role_id == 3;
     }
 
     /**

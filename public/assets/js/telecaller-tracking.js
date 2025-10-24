@@ -30,17 +30,12 @@ class TelecallerTracking {
         
         // Only initialize for telecallers (role_id = 3)
         if (this.isTelecaller()) {
-            // Check if current time is within working hours
-            if (this.isWithinWorkingHours()) {
-                console.log('TelecallerTracking: User is telecaller and within working hours, starting tracking...');
-                this.startTracking();
-                this.setupEventListeners();
-                this.startSyncTimer();
-                this.trackPageVisit(); // Track initial page visit
-            } else {
-                console.log('TelecallerTracking: User is telecaller but outside working hours, auto-logout...');
-                this.performWorkingHoursLogout();
-            }
+            // Always start tracking for telecallers (working hours check disabled)
+            console.log('TelecallerTracking: User is telecaller, starting tracking (working hours check disabled)...');
+            this.startTracking();
+            this.setupEventListeners();
+            this.startSyncTimer();
+            this.trackPageVisit(); // Track initial page visit
         } else {
             console.log('TelecallerTracking: User is not telecaller, skipping tracking');
         }
@@ -59,102 +54,14 @@ class TelecallerTracking {
                window.innerWidth <= 768;
     }
 
-    isWithinWorkingHours() {
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-        const currentTimeMinutes = (currentHour * 60) + currentMinute;
-        
-        // Working hours: 9:30 AM (570 minutes) to 7:30 PM (1140 minutes)
-        const workStartMinutes = (9 * 60) + 30; // 9:30 AM = 570 minutes
-        const workEndMinutes = (19 * 60) + 30;  // 7:30 PM = 1140 minutes
-        
-        return currentTimeMinutes >= workStartMinutes && currentTimeMinutes <= workEndMinutes;
-    }
+    // isWithinWorkingHours() - REMOVED: Working hours check completely disabled
+    // Telecallers can now work at any time
 
-    performWorkingHoursLogout() {
-        console.log('Auto-logout due to working hours (9:30 AM - 7:30 PM)');
-        
-        // Stop tracking immediately
-        this.stopTracking();
-        
-        // Send working hours logout to backend
-        fetch('/api/telecaller-tracking/working-hours-logout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                reason: 'working_hours',
-                current_time: new Date().toISOString()
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Working hours logout response:', data);
-            // Clear any stored data
-            localStorage.clear();
-            sessionStorage.clear();
-            
-            // Show working hours logout modal
-            this.showWorkingHoursLogoutModal();
-        })
-        .catch(error => {
-            console.error('Error during working hours logout:', error);
-            // Force redirect even if API call fails
-            localStorage.clear();
-            sessionStorage.clear();
-            this.showWorkingHoursLogoutModal();
-        });
-    }
+    // performWorkingHoursLogout() - REMOVED: Working hours check completely disabled
+    // Telecallers can now work at any time
 
-    showWorkingHoursLogoutModal() {
-        // Use SweetAlert2 for working hours logout modal
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Outside Working Hours',
-                html: `
-                    <div class="text-center">
-                        <div class="mb-3">
-                            <i class="ti ti-clock" style="font-size: 3rem; color: #ffc107;"></i>
-                        </div>
-                        <p class="mb-3">You are outside working hours.</p>
-                        <p class="text-muted small">Working hours are from 9:30 AM to 7:30 PM.</p>
-                        <p class="text-muted small">Please log in during working hours.</p>
-                    </div>
-                `,
-                icon: 'warning',
-                showCancelButton: false,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#ffc107',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                customClass: {
-                    popup: 'swal2-popup-custom',
-                    title: 'swal2-title-custom',
-                    content: 'swal2-content-custom',
-                    confirmButton: 'swal2-confirm-custom'
-                },
-                didOpen: () => {
-                    // Add custom styling
-                    const popup = document.querySelector('.swal2-popup');
-                    if (popup) {
-                        popup.style.borderRadius = '12px';
-                        popup.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)';
-                    }
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Redirect to root URL
-                    window.location.href = window.location.origin;
-                }
-            });
-        } else {
-            // Fallback modal if SweetAlert2 is not available
-            this.showFallbackModal('Outside Working Hours', 'You are outside working hours (9:30 AM - 7:30 PM). Please log in during working hours.');
-        }
-    }
+    // showWorkingHoursLogoutModal() - REMOVED: Working hours check completely disabled
+    // Telecallers can now work at any time
 
     showFallbackModal(title, message) {
         // Create a custom modal if SweetAlert2 is not available

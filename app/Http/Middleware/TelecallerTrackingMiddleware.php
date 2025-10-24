@@ -23,7 +23,7 @@ class TelecallerTrackingMiddleware
         // Only track telecallers (role_id = 3) and ensure user is properly authenticated
         if (AuthHelper::isLoggedIn() && AuthHelper::getRoleId() == 3 && AuthHelper::getUserId() > 0) {
             $this->cleanupOrphanedSessions();
-            $this->checkWorkingHours($request);
+            // $this->checkWorkingHours($request); // DISABLED: Working hours check completely removed
             $this->trackSession($request);
             $this->checkForAutoLogout($request);
             $this->logActivity($request);
@@ -35,9 +35,40 @@ class TelecallerTrackingMiddleware
     /**
      * Check if current time is within working hours (9:30 AM - 7:30 PM)
      * If outside working hours, auto-logout the user
+     * DISABLED: Working hours check is completely disabled
      */
     private function checkWorkingHours(Request $request)
     {
+        // Working hours check is completely disabled
+        // Telecallers can now work at any time
+        return;
+        
+        // The following code is commented out to disable working hours check
+        /*
+        // Skip working hours check in development environment
+        if (app()->environment('local', 'development', 'testing')) {
+            return;
+        }
+        
+        // Skip working hours check if disabled via environment variable
+        if (env('DISABLE_WORKING_HOURS_CHECK', false)) {
+            return;
+        }
+        
+        // Skip working hours check if APP_ENV is not set (development)
+        if (empty(env('APP_ENV'))) {
+            return;
+        }
+        
+        // Skip working hours check for localhost/development domains
+        $host = $request->getHost();
+        if (in_array($host, ['localhost', '127.0.0.1']) || 
+            str_contains($host, 'local') || 
+            str_contains($host, 'dev') || 
+            str_contains($host, 'test')) {
+            return;
+        }
+        
         $currentTime = now();
         $currentHour = $currentTime->hour;
         $currentMinute = $currentTime->minute;
@@ -51,6 +82,7 @@ class TelecallerTrackingMiddleware
         if ($currentTimeMinutes < $workStartMinutes || $currentTimeMinutes > $workEndMinutes) {
             $this->performWorkingHoursLogout($request);
         }
+        */
     }
 
     /**
