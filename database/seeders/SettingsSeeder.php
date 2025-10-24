@@ -43,7 +43,7 @@ class SettingsSeeder extends Seeder
             // Email Settings
             [
                 'key' => 'email_from_name',
-                'value' => 'Skillpark',
+                'value' => 'Support Team',
                 'type' => 'text',
                 'description' => 'Email sender name',
                 'group' => 'email',
