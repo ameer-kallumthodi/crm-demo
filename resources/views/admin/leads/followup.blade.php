@@ -289,8 +289,6 @@
                                                 </a>
                                                 @endif
                                             </div>
-
-                                            @endif
                                         </td>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                         <td class="text-center">
