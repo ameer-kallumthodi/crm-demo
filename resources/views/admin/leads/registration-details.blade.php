@@ -384,7 +384,7 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Subject</label>
-                                        <p class="info-value">{{ $studentDetail->subject->name ?? 'N/A' }}</p>
+                                        <p class="info-value">{{ $studentDetail->subject->title ?? 'N/A' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -395,7 +395,7 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Batch</label>
-                                        <p class="info-value">{{ $studentDetail->batch->name ?? 'N/A' }}</p>
+                                        <p class="info-value">{{ $studentDetail->batch->title ?? 'N/A' }}</p>
                                     </div>
                                 </div>
                             </div>

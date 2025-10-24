@@ -114,6 +114,7 @@ class PermissionHelper
             'admin/boards/index',
             'admin/batches/index',
             'admin/admission-batches/index',
+            'leads/registration-form-submitted',
         ];
         return in_array($permission, $permissions);
     }
@@ -129,6 +130,7 @@ class PermissionHelper
             'profile/index',
             'admin/converted-leads/index',
             'admin/notifications/index',
+            'leads/registration-form-submitted',
         ];
         return in_array($permission, $permissions);
     }
