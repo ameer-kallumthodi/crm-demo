@@ -1669,9 +1669,11 @@ class LeadController extends Controller
      */
     public function convert(Lead $lead)
     {
-        $academic_assistants = User::where('role_id', 5)->where('is_active', true)->get();
         $boards = \App\Models\Board::where('is_active', true)->get();
         $country_codes = get_country_code();
+        
+        // Load lead details to get DOB and other information
+        $lead->load('studentDetails');
         
         // Load the course information if the lead has a course_id
         $course = null;
@@ -1707,7 +1709,7 @@ class LeadController extends Controller
         }
 
         return view('admin.leads.convert-modal', compact(
-            'lead', 'academic_assistants', 'boards', 'country_codes', 'course', 'extraAmount', 'universityAmount', 'courseType', 'university'
+            'lead', 'boards', 'country_codes', 'course', 'extraAmount', 'universityAmount', 'courseType', 'university'
         ));
     }
 
@@ -1721,7 +1723,7 @@ class LeadController extends Controller
             'code' => 'required|string|max:10',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
-            'academic_assistant_id' => 'required|exists:users,id',
+            'dob' => 'nullable|date|before_or_equal:today',
             'board_id' => 'nullable|exists:boards,id',
             'remarks' => 'nullable|string|max:1000',
             'payment_collected' => 'boolean',
@@ -1747,9 +1749,22 @@ class LeadController extends Controller
         try {
             DB::beginTransaction();
             
-            // Get DOB from leads_details table
+            // Get or create lead detail record
             $leadDetail = \App\Models\LeadDetail::where('lead_id', $lead->id)->first();
-            $dob = $leadDetail ? $leadDetail->date_of_birth : null;
+            if (!$leadDetail) {
+                $leadDetail = \App\Models\LeadDetail::create([
+                    'lead_id' => $lead->id,
+                    'course_id' => $lead->course_id,
+                ]);
+            }
+            
+            // Update DOB in lead details if provided
+            if ($request->filled('dob')) {
+                $leadDetail->update(['date_of_birth' => $request->dob]);
+            }
+            
+            // Get DOB for converted lead (from request or existing lead detail)
+            $dob = $request->dob ?? ($leadDetail ? $leadDetail->date_of_birth : null);
             
             // Create converted lead record
             $convertedLead = ConvertedLead::create([
@@ -1761,7 +1776,6 @@ class LeadController extends Controller
                 'dob' => $dob,
                 'course_id' => $lead->course_id,
                 'batch_id' => $lead->batch_id,
-                'academic_assistant_id' => $request->academic_assistant_id,
                 'board_id' => $request->board_id,
                 'candidate_status_id' => 1,
                 'remarks' => $request->remarks,

@@ -46,6 +46,10 @@ Route::prefix('api/meta-leads')->group(function () {
     Route::get('/list', [MetaLeadController::class, 'index'])->name('api.meta-leads.list');
 });
 
+// Public API routes for subjects and courses (no authentication required)
+Route::get('/api/subjects/by-course/{courseId}', [App\Http\Controllers\SubjectController::class, 'getByCourse'])->name('api.subjects.by-course');
+Route::get('/api/admission-batches/by-batch/{batchId}', [App\Http\Controllers\AdmissionBatchController::class, 'getByBatch'])->name('api.admission-batches.by-batch');
+
 // Public Lead Registration Routes
 Route::prefix('register')->group(function () {
     // NIOS Registration Routes
@@ -235,9 +239,6 @@ Route::post('leads/add-sslc-certificate', [LeadController::class, 'addSSLCCertif
         // API routes for universities
         Route::get('/api/universities/{id}', [UniversityController::class, 'getUniversityData']);
 
-        // API routes for subjects and admission batches
-        Route::get('/api/subjects/by-course/{courseId}', [App\Http\Controllers\SubjectController::class, 'getByCourse']);
-        Route::get('/api/admission-batches/by-batch/{batchId}', [App\Http\Controllers\AdmissionBatchController::class, 'getByBatch']);
     });
 
     // Admin routes

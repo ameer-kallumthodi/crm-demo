@@ -342,16 +342,6 @@
                                             @endif
                                         </div>
                                     </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
-                                            <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="st" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->st }}">
@@ -905,7 +895,21 @@
                 }, extra),
                 success: function(response) {
                     if (response.success) {
-                        container.find('.display-value').text(response.value || value);
+                        let displayValue = response.value || value;
+                        
+                        // Special handling for DOB field - convert Y-m-d to d-m-Y for display
+                        if (field === 'dob' && displayValue) {
+                            try {
+                                const date = new Date(displayValue);
+                                if (!isNaN(date.getTime())) {
+                                    displayValue = date.toLocaleDateString('en-GB'); // d/m/Y format
+                                }
+                            } catch (e) {
+                                // Keep original value if conversion fails
+                            }
+                        }
+                        
+                        container.find('.display-value').text(displayValue);
                         // Update the data-current attribute with the new value
                         container.data('current', response.value || value);
                         if (field === 'phone') {
@@ -953,7 +957,35 @@
         function createInputField(field, currentValue) {
             if (field === 'dob') {
                 const today = new Date().toISOString().split('T')[0];
-                const value = (currentValue && currentValue !== 'N/A') ? currentValue : '';
+                let value = '';
+                
+                // Debug: Log the current value
+                console.log('DOB currentValue:', currentValue);
+                
+                // Convert date to Y-m-d format for date input
+                if (currentValue && currentValue !== 'N/A' && currentValue !== '') {
+                    // Check if it's already in Y-m-d format (from database)
+                    if (currentValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                        value = currentValue;
+                        console.log('DOB: Using Y-m-d format:', value);
+                    } else {
+                        // Try to parse d-m-Y format (from display)
+                        const dateParts = currentValue.split('-');
+                        if (dateParts.length === 3) {
+                            // Check if it's d-m-Y format (day-month-year)
+                            if (dateParts[0].length <= 2 && dateParts[1].length <= 2 && dateParts[2].length === 4) {
+                                const day = dateParts[0].padStart(2, '0');
+                                const month = dateParts[1].padStart(2, '0');
+                                const year = dateParts[2];
+                                value = `${year}-${month}-${day}`;
+                                console.log('DOB: Converted from d-m-Y format:', value);
+                            }
+                        }
+                    }
+                }
+                
+                console.log('DOB final value:', value);
+                
                 return `
                     <div class="edit-form">
                         <input type="date" max="${today}" value="${value}" class="form-control form-control-sm">

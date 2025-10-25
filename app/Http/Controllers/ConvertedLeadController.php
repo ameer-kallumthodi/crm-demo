@@ -34,20 +34,26 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
                     // If no team assigned, only show their own leads
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Admission Counsellor: Can see ALL converted leads
                 // No additional filtering needed - show all
             } elseif (RoleHelper::is_academic_assistant()) {
-                // Academic Assistant: Can only see converted leads assigned to them
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Academic Assistant: Can see ALL converted leads
+                // No additional filtering needed - show all
             } elseif (RoleHelper::is_telecaller()) {
-                // Telecaller: Can only see converted leads they created
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                // Telecaller: Can only see converted leads from leads assigned to them
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -137,16 +143,20 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
                     $query->where('created_by', AuthHelper::getCurrentUserId());
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -231,16 +241,22 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -307,16 +323,22 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -461,16 +483,22 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -558,16 +586,22 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -655,16 +689,22 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -752,16 +792,22 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -853,16 +899,22 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -954,16 +1006,22 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -1052,16 +1110,22 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -1131,16 +1195,22 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 
@@ -1236,31 +1306,28 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    if (!in_array($convertedLead->created_by, $teamMemberIds)) {
+                    if (!in_array($convertedLead->lead->telecaller_id, $teamMemberIds)) {
                         return redirect()->route('admin.converted-leads.index')
                             ->with('message_danger', 'Access denied. You can only view converted leads from your team.');
                     }
                 } else {
                     // If no team assigned, only show their own leads
-                    if ($convertedLead->created_by != AuthHelper::getCurrentUserId()) {
+                    if ($convertedLead->lead->telecaller_id != AuthHelper::getCurrentUserId()) {
                         return redirect()->route('admin.converted-leads.index')
-                            ->with('message_danger', 'Access denied. You can only view converted leads you created.');
+                            ->with('message_danger', 'Access denied. You can only view converted leads from your team.');
                     }
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Admission Counsellor: Can see ALL converted leads
                 // No additional filtering needed
             } elseif (RoleHelper::is_academic_assistant()) {
-                // Academic Assistant: Can only see converted leads assigned to them
-                if ($convertedLead->academic_assistant_id != AuthHelper::getCurrentUserId()) {
-                    return redirect()->route('admin.converted-leads.index')
-                        ->with('message_danger', 'Access denied. You can only view converted leads assigned to you.');
-                }
+                // Academic Assistant: Can see ALL converted leads
+                // No additional filtering needed
             } elseif (RoleHelper::is_telecaller()) {
-                // Telecaller: Can only see converted leads they created
-                if ($convertedLead->created_by != AuthHelper::getCurrentUserId()) {
+                // Telecaller: Can only see converted leads from leads assigned to them
+                if ($convertedLead->lead->telecaller_id != AuthHelper::getCurrentUserId()) {
                     return redirect()->route('admin.converted-leads.index')
-                        ->with('message_danger', 'Access denied. You can only view converted leads you created.');
+                        ->with('message_danger', 'Access denied. You can only view converted leads from leads assigned to you.');
                 }
             }
         }
@@ -1294,25 +1361,23 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    if (!in_array($convertedLead->created_by, $teamMemberIds)) {
+                    if (!in_array($convertedLead->lead->telecaller_id, $teamMemberIds)) {
                         return redirect()->route('admin.converted-leads.index')
                             ->with('message_danger', 'Access denied. You can only view converted leads from your team.');
                     }
                 } else {
-                    if ($convertedLead->created_by != AuthHelper::getCurrentUserId()) {
+                    if ($convertedLead->lead->telecaller_id != AuthHelper::getCurrentUserId()) {
                         return redirect()->route('admin.converted-leads.index')
-                            ->with('message_danger', 'Access denied. You can only view converted leads you created.');
+                            ->with('message_danger', 'Access denied. You can only view converted leads from your team.');
                     }
                 }
             } elseif (RoleHelper::is_academic_assistant()) {
-                if ($convertedLead->academic_assistant_id != AuthHelper::getCurrentUserId()) {
-                    return redirect()->route('admin.converted-leads.index')
-                        ->with('message_danger', 'Access denied. You can only view converted leads assigned to you.');
-                }
+                // Academic Assistant: Can see ALL converted leads
+                // No additional filtering needed
             } elseif (RoleHelper::is_telecaller()) {
-                if ($convertedLead->created_by != AuthHelper::getCurrentUserId()) {
+                if ($convertedLead->lead->telecaller_id != AuthHelper::getCurrentUserId()) {
                     return redirect()->route('admin.converted-leads.index')
-                        ->with('message_danger', 'Access denied. You can only view converted leads you created.');
+                        ->with('message_danger', 'Access denied. You can only view converted leads from leads assigned to you.');
                 }
             }
             // Admission counsellor = can see all
@@ -1501,9 +1566,9 @@ class ConvertedLeadController extends Controller
     {
         $convertedLead = ConvertedLead::findOrFail($id);
         
-        // Check if user is admin or super admin
-        if (!RoleHelper::is_admin_or_super_admin()) {
-            return response()->json(['error' => 'Access denied. Only admins can update register numbers.'], 403);
+        // Check if user has permission to update register numbers
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_admission_counsellor()) {
+            return response()->json(['error' => 'Access denied. Only admins, academic assistants, and admission counsellors can update register numbers.'], 403);
         }
 
         return view('admin.converted-leads.update-register-number-modal', compact('convertedLead'));
@@ -1514,9 +1579,9 @@ class ConvertedLeadController extends Controller
      */
     public function updateRegisterNumber(Request $request, $id)
     {
-        // Check if user is admin or super admin
-        if (!RoleHelper::is_admin_or_super_admin()) {
-            return response()->json(['error' => 'Access denied. Only admins can update register numbers.'], 403);
+        // Check if user has permission to update register numbers
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_admission_counsellor()) {
+            return response()->json(['error' => 'Access denied. Only admins, academic assistants, and admission counsellors can update register numbers.'], 403);
         }
 
         $request->validate([
@@ -1554,10 +1619,8 @@ class ConvertedLeadController extends Controller
         $currentUser = AuthHelper::getCurrentUser();
         if ($currentUser) {
             if (RoleHelper::is_academic_assistant()) {
-                // Academic Assistant: Can only update converted leads assigned to them
-                if ($convertedLead->academic_assistant_id != AuthHelper::getCurrentUserId()) {
-                    return response()->json(['error' => 'Access denied. You can only update converted leads assigned to you.'], 403);
-                }
+                // Academic Assistant: Can update ALL converted leads
+                // No additional filtering needed
             }
         }
 

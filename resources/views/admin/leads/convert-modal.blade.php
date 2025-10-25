@@ -29,10 +29,30 @@
             </div>
         </div>
 
-        <div class="col-lg-12">
+        <div class="col-lg-6">
             <div class="p-1">
                 <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control" name="email" value="{{ $lead->email }}">
+            </div>
+        </div>
+        
+
+        <div class="col-lg-6">
+            <div class="p-1">
+                <label for="dob" class="form-label">Date of Birth</label>
+                <input type="date" class="form-control" name="dob" id="dob" max="{{ date('Y-m-d') }}" value="{{ $lead->studentDetails && $lead->studentDetails->date_of_birth ? $lead->studentDetails->date_of_birth->format('Y-m-d') : '' }}">
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="p-1">
+                <label for="modal_board_id" class="form-label">Board</label>
+                <select class="form-control" name="board_id" id="modal_board_id">
+                    <option value="">Select Board</option>
+                    @foreach($boards as $board)
+                        <option value="{{ $board->id }}">{{ $board->title }} ({{ $board->code }})</option>
+                    @endforeach
+                </select>
             </div>
         </div>
 
@@ -67,30 +87,6 @@
         </div>
         @endif
 
-
-        <div class="col-lg-6">
-            <div class="p-1">
-                <label for="modal_board_id" class="form-label">Board</label>
-                <select class="form-control" name="board_id" id="modal_board_id">
-                    <option value="">Select Board</option>
-                    @foreach($boards as $board)
-                        <option value="{{ $board->id }}">{{ $board->title }} ({{ $board->code }})</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-
-        <div class="col-lg-6">
-            <div class="p-1">
-                <label for="modal_academic_assistant_id" class="form-label">Academic Assistant <span class="text-danger">*</span></label>
-                <select class="form-control" name="academic_assistant_id" id="modal_academic_assistant_id" required>
-                    <option value="">Select Academic Assistant</option>
-                    @foreach($academic_assistants as $assistant)
-                        <option value="{{ $assistant->id }}">{{ $assistant->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
 
         <div class="col-12">
             <div class="p-1">
@@ -417,7 +413,6 @@ $(document).ready(function() {
         $.each(errors, function(field, messages) {
             // Map field names to modal IDs
             const modalFieldMap = {
-                'academic_assistant_id': 'modal_academic_assistant_id'
             };
             
             const fieldId = modalFieldMap[field] || field;
@@ -471,12 +466,11 @@ $(document).ready(function() {
         
         
         // Check required fields
-        const requiredFields = ['name', 'code', 'phone', 'academic_assistant_id'];
+        const requiredFields = ['name', 'code', 'phone'];
         
         requiredFields.forEach(function(field) {
             // Map field names to modal IDs
             const modalFieldMap = {
-                'academic_assistant_id': 'modal_academic_assistant_id'
             };
             
             const fieldId = modalFieldMap[field] || field;
