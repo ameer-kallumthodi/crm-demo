@@ -147,17 +147,23 @@ class CountryController extends Controller
     public function delete($id)
     {
         if (!RoleHelper::is_admin_or_super_admin()) {
-            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
+            return response()->json(['error' => 'Access denied.'], 403);
         }
 
         $country = Country::findOrFail($id);
         
         // Check if country has leads
         if ($country->leads()->count() > 0) {
-            return redirect()->route('admin.countries.index')->with('message_danger', 'Cannot delete country. It has assigned leads.');
+            return response()->json([
+                'success' => false,
+                'error' => 'Cannot delete country. It has assigned leads.'
+            ], 422);
         }
 
         $country->delete();
-        return redirect()->route('admin.countries.index')->with('message_success', 'Country deleted successfully!');
+        return response()->json([
+            'success' => true,
+            'message' => 'Country deleted successfully!'
+        ]);
     }
 }
