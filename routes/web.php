@@ -536,6 +536,10 @@ Route::post('leads/add-sslc-certificate', [LeadController::class, 'addSSLCCertif
         Route::get('/mentor-nios-converted-leads', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'index'])->name('mentor-nios-converted-leads.index');
         Route::post('/mentor-nios-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-nios-converted-leads.update-mentor-details');
 
+        // Support Team Converted Leads Routes (Generic for all courses)
+        Route::get('/support-team-converted-leads/{courseId?}', [App\Http\Controllers\SupportTeamConvertedLeadController::class, 'index'])->name('support-team-converted-leads');
+        Route::post('/support-team-converted-leads/{id}/update-support-team-details', [App\Http\Controllers\SupportTeamConvertedLeadController::class, 'updateSupportTeamDetails'])->name('support-team-converted-leads.update-support-team-details');
+
         // Invoice Routes
         Route::get('/invoices/student/{studentId}', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
         Route::get('/invoices/{id}', [App\Http\Controllers\InvoiceController::class, 'show'])->name('invoices.show');

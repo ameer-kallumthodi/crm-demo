@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'BOSSE Converted Leads')
+@section('title', $course->title . ' Support Team Converted Leads')
 
 @section('content')
 <style>
@@ -28,95 +28,25 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">BOSSE Converted Leads Management</h5>
+                    <h5 class="m-b-10">{{ $course->title }} Support Team Converted Leads</h5>
                 </div>
             </div>
             <div class="col-md-6">
-                <ul class="breadcrumb d-flex justify-content-end">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                    <li class="breadcrumb-item">BOSSE</li>
-                </ul>
+                <div class="d-flex justify-content-end align-items-center gap-3">
+                    <ul class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
+                        <li class="breadcrumb-item">{{ $course->title }} Support Team</li>
+                    </ul>
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-secondary">
+                        <i class="ti ti-arrow-left"></i> Back to Converted Leads
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
 <!-- [ breadcrumb ] end -->
-
-<!-- [ Course Filter Buttons ] start -->
-<div class="row mb-3">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <h6 class="mb-3">Filter by Course</h6>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-list"></i> All Converted Leads
-                    </a>
-                    <a href="{{ route('admin.nios-converted-leads.index') }}" class="btn btn-outline-success">
-                        <i class="ti ti-school"></i> NIOS Converted Leads
-                    </a>
-                    <a href="{{ route('admin.bosse-converted-leads.index') }}" class="btn btn-warning active">
-                        <i class="ti ti-school-2"></i> BOSSE Converted Leads
-                    </a>
-                    <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-outline-info">
-                        <i class="ti ti-building"></i> Hotel Management Converted Leads
-                    </a>
-                    <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
-                        <i class="ti ti-certificate"></i> GMVSS Converted Leads
-                    </a>
-                    <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-code"></i> AI with Python Converted Leads
-                    </a>
-                    <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
-                    </a>
-                    <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-robot"></i> AI Automation Converted Leads
-                    </a>
-                    <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-world"></i> Web Development & Designing Converted Leads
-                    </a>
-                    <a href="{{ route('admin.vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-device-desktop"></i> Vibe Coding Converted Leads
-                    </a>
-                    <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-palette"></i> Graphic Designing Converted Leads
-                    </a>
-                    <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-school"></i> Eduthanzeel Converted Leads
-                    </a>
-                    <a href="{{ route('admin.e-school-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-device-laptop"></i> E-School Converted Leads
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- [ Course Filter Buttons ] end -->
-
-<!-- [ Mentor List ] start -->
-@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
-<div class="row mb-3">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <h6 class="mb-3">Mentor List</h6>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('admin.mentor-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Bosse Converted Mentor List
-                    </a>
-                    <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> NIOS Converted Mentor List
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
-<!-- [ Mentor List ] end -->
 
 <!-- [ Support Team List ] start -->
 @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
@@ -126,11 +56,53 @@
             <div class="card-body">
                 <h6 class="mb-3">Support Team List</h6>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('admin.support-team-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.support-team-converted-leads', 1) }}" class="btn btn-outline-primary {{ $courseId == 1 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> NIOS Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 2) }}" class="btn btn-outline-primary {{ $courseId == 2 ? 'active' : '' }}">
                         <i class="ti ti-headset"></i> BOSSE Support Team Converted Leads
                     </a>
-                    <a href="{{ route('admin.support-team-nios-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headset"></i> NIOS Support Team Converted Leads
+                    <a href="{{ route('admin.support-team-converted-leads', 3) }}" class="btn btn-outline-primary {{ $courseId == 3 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> Medical Coding Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 4) }}" class="btn btn-outline-primary {{ $courseId == 4 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> Hospital Administration Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 5) }}" class="btn btn-outline-primary {{ $courseId == 5 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> E-School Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 6) }}" class="btn btn-outline-primary {{ $courseId == 6 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> Eduthanzeel Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 7) }}" class="btn btn-outline-primary {{ $courseId == 7 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> TTC Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 8) }}" class="btn btn-outline-primary {{ $courseId == 8 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> Hotel Management Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 9) }}" class="btn btn-outline-primary {{ $courseId == 9 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> AI with Python Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 10) }}" class="btn btn-outline-primary {{ $courseId == 10 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> Digital Marketing Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 11) }}" class="btn btn-outline-primary {{ $courseId == 11 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> AI Automation Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 12) }}" class="btn btn-outline-primary {{ $courseId == 12 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> Web Development & Designing Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 13) }}" class="btn btn-outline-primary {{ $courseId == 13 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> Vibe Coding Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 14) }}" class="btn btn-outline-primary {{ $courseId == 14 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> Graphic Designing Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 15) }}" class="btn btn-outline-primary {{ $courseId == 15 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> Eduthanzeel Support Team Converted Leads
+                    </a>
+                    <a href="{{ route('admin.support-team-converted-leads', 16) }}" class="btn btn-outline-primary {{ $courseId == 16 ? 'active' : '' }}">
+                        <i class="ti ti-headset"></i> GMVSS Support Team Converted Leads
                     </a>
                 </div>
             </div>
@@ -145,7 +117,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.bosse-converted-leads.index') }}" id="filterForm">
+                <form method="GET" action="{{ route('admin.support-team-converted-leads', $courseId) }}" id="filterForm">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
@@ -209,7 +181,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="ti ti-search"></i> <span class="d-none d-sm-inline">Filter</span>
                                 </button>
-                                <a href="{{ route('admin.bosse-converted-leads.index') }}" class="btn btn-secondary">
+                                <a href="{{ route('admin.support-team-converted-leads', $courseId) }}" class="btn btn-secondary">
                                     <i class="ti ti-x"></i> <span class="d-none d-sm-inline">Clear</span>
                                 </a>
                             </div>
@@ -227,13 +199,13 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">BOSSE Converted Leads List</h5>
+                <h5 class="mb-0">{{ $course->title }} Support Team Converted Leads List</h5>
             </div>
             <div class="card-body">
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover data_table_basic" id="convertedLeadsTable">
+                        <table class="table table-hover data_table_basic" id="supportTeamTable">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -334,8 +306,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="reg_fee" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->reg_fee }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->reg_fee ?? 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="reg_fee" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->reg_fee }}">
+                                            <span class="display-value">{{ $convertedLead->reg_fee ?? 'N/A' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -345,8 +317,8 @@
                                     </td>
                                     <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
                                     <td>
-                                        <div class="inline-edit" data-field="application_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->application_number }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->application_number ?? 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="application_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->application_number }}">
+                                            <span class="display-value">{{ $convertedLead->application_number ?? 'N/A' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -355,8 +327,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="board_registration_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->board_registration_number }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->board_registration_number ?? 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="board_registration_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->board_registration_number }}">
+                                            <span class="display-value">{{ $convertedLead->board_registration_number ?? 'N/A' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -366,8 +338,8 @@
                                     </td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>
-                                        <div class="inline-edit" data-field="st" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->st }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->st ?? '0' }}</span>
+                                        <div class="inline-edit" data-field="st" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->st }}">
+                                            <span class="display-value">{{ $convertedLead->st ?? '0' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -376,8 +348,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="phy" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->phy }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->phy ?? '0' }}</span>
+                                        <div class="inline-edit" data-field="phy" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->phy }}">
+                                            <span class="display-value">{{ $convertedLead->phy ?? '0' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -386,8 +358,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="che" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->che }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->che ?? '0' }}</span>
+                                        <div class="inline-edit" data-field="che" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->che }}">
+                                            <span class="display-value">{{ $convertedLead->che ?? '0' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -396,8 +368,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="bio" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->bio }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->bio ?? '0' }}</span>
+                                        <div class="inline-edit" data-field="bio" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->bio }}">
+                                            <span class="display-value">{{ $convertedLead->bio ?? '0' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -406,8 +378,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? '-' }}</span>
+                                        <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->remarks }}">
+                                            <span class="display-value">{{ $convertedLead->remarks ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -452,7 +424,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="20" class="text-center">No BOSSE converted leads found</td>
+                                    <td colspan="20" class="text-center">No {{ $course->title }} support team converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -575,7 +547,7 @@
                     <div class="text-center py-5">
                         <div class="text-muted">
                             <i class="ti ti-check-circle f-48 mb-3 d-block"></i>
-                            <h5>No BOSSE converted leads found</h5>
+                            <h5>No {{ $course->title }} support team converted leads found</h5>
                             <p>Try adjusting your filters or check back later.</p>
                         </div>
                     </div>
@@ -653,12 +625,12 @@
     font-size: 11px;
 }
 
-#convertedLeadsTable thead th,
-#convertedLeadsTable tbody td {
+#supportTeamTable thead th,
+#supportTeamTable tbody td {
     white-space: nowrap;
 }
 
-#convertedLeadsTable thead th {
+#supportTeamTable thead th {
     position: sticky;
     top: 0;
     z-index: 5;
@@ -666,11 +638,11 @@
     box-shadow: inset 0 -1px 0 #e9ecef;
 }
 
-#convertedLeadsTable tbody tr:hover {
+#supportTeamTable tbody tr:hover {
     background: #fafbff;
 }
 
-#convertedLeadsTable td .display-value {
+#supportTeamTable td .display-value {
     display: inline-block;
     max-width: 220px;
     overflow: hidden;
@@ -679,8 +651,8 @@
     vertical-align: middle;
 }
 
-#convertedLeadsTable .btn-group .btn { margin-right: 4px; }
-#convertedLeadsTable .btn-group .btn:last-child { margin-right: 0; }
+#supportTeamTable .btn-group .btn { margin-right: 4px; }
+#supportTeamTable .btn-group .btn:last-child { margin-right: 0; }
 
 .card .card-body #filterForm {
     border-bottom: 1px dashed #e9ecef;
@@ -688,46 +660,46 @@
 }
 
 /* Column-specific min-widths by position */
-#convertedLeadsTable thead th:nth-child(1),
-#convertedLeadsTable tbody td:nth-child(1) { min-width: 60px; }
-#convertedLeadsTable thead th:nth-child(2),
-#convertedLeadsTable tbody td:nth-child(2) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(3),
-#convertedLeadsTable tbody td:nth-child(3) { min-width: 120px; }
-#convertedLeadsTable thead th:nth-child(4),
-#convertedLeadsTable tbody td:nth-child(4) { min-width: 120px; }
-#convertedLeadsTable thead th:nth-child(5),
-#convertedLeadsTable tbody td:nth-child(5) { min-width: 220px; }
-#convertedLeadsTable thead th:nth-child(6),
-#convertedLeadsTable tbody td:nth-child(6) { min-width: 180px; }
-#convertedLeadsTable thead th:nth-child(7),
-#convertedLeadsTable tbody td:nth-child(7) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(8),
-#convertedLeadsTable tbody td:nth-child(8) { min-width: 180px; }
-#convertedLeadsTable thead th:nth-child(9),
-#convertedLeadsTable tbody td:nth-child(9) { min-width: 180px; }
-#convertedLeadsTable thead th:nth-child(10),
-#convertedLeadsTable tbody td:nth-child(10) { min-width: 160px; }
-#convertedLeadsTable thead th:nth-child(11),
-#convertedLeadsTable tbody td:nth-child(11) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(12),
-#convertedLeadsTable tbody td:nth-child(12) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(13),
-#convertedLeadsTable tbody td:nth-child(13) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(14),
-#convertedLeadsTable tbody td:nth-child(14) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(15),
-#convertedLeadsTable tbody td:nth-child(15) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(16),
-#convertedLeadsTable tbody td:nth-child(16) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(17),
-#convertedLeadsTable tbody td:nth-child(17) { min-width: 200px; }
-#convertedLeadsTable thead th:nth-child(18),
-#convertedLeadsTable tbody td:nth-child(18) { min-width: 120px; }
-#convertedLeadsTable thead th:nth-child(19),
-#convertedLeadsTable tbody td:nth-child(19) { min-width: 120px; }
-#convertedLeadsTable thead th:nth-child(20),
-#convertedLeadsTable tbody td:nth-child(20) { min-width: 140px; }
+#supportTeamTable thead th:nth-child(1),
+#supportTeamTable tbody td:nth-child(1) { min-width: 60px; }
+#supportTeamTable thead th:nth-child(2),
+#supportTeamTable tbody td:nth-child(2) { min-width: 140px; }
+#supportTeamTable thead th:nth-child(3),
+#supportTeamTable tbody td:nth-child(3) { min-width: 120px; }
+#supportTeamTable thead th:nth-child(4),
+#supportTeamTable tbody td:nth-child(4) { min-width: 120px; }
+#supportTeamTable thead th:nth-child(5),
+#supportTeamTable tbody td:nth-child(5) { min-width: 220px; }
+#supportTeamTable thead th:nth-child(6),
+#supportTeamTable tbody td:nth-child(6) { min-width: 180px; }
+#supportTeamTable thead th:nth-child(7),
+#supportTeamTable tbody td:nth-child(7) { min-width: 140px; }
+#supportTeamTable thead th:nth-child(8),
+#supportTeamTable tbody td:nth-child(8) { min-width: 180px; }
+#supportTeamTable thead th:nth-child(9),
+#supportTeamTable tbody td:nth-child(9) { min-width: 180px; }
+#supportTeamTable thead th:nth-child(10),
+#supportTeamTable tbody td:nth-child(10) { min-width: 160px; }
+#supportTeamTable thead th:nth-child(11),
+#supportTeamTable tbody td:nth-child(11) { min-width: 140px; }
+#supportTeamTable thead th:nth-child(12),
+#supportTeamTable tbody td:nth-child(12) { min-width: 140px; }
+#supportTeamTable thead th:nth-child(13),
+#supportTeamTable tbody td:nth-child(13) { min-width: 140px; }
+#supportTeamTable thead th:nth-child(14),
+#supportTeamTable tbody td:nth-child(14) { min-width: 140px; }
+#supportTeamTable thead th:nth-child(15),
+#supportTeamTable tbody td:nth-child(15) { min-width: 140px; }
+#supportTeamTable thead th:nth-child(16),
+#supportTeamTable tbody td:nth-child(16) { min-width: 140px; }
+#supportTeamTable thead th:nth-child(17),
+#supportTeamTable tbody td:nth-child(17) { min-width: 200px; }
+#supportTeamTable thead th:nth-child(18),
+#supportTeamTable tbody td:nth-child(18) { min-width: 120px; }
+#supportTeamTable thead th:nth-child(19),
+#supportTeamTable tbody td:nth-child(19) { min-width: 120px; }
+#supportTeamTable thead th:nth-child(20),
+#supportTeamTable tbody td:nth-child(20) { min-width: 140px; }
 </style>
 @endpush
 
@@ -753,9 +725,9 @@
         });
 
         // Handle clear button
-        $('a[href="{{ route("admin.bosse-converted-leads.index") }}"]').on('click', function(e) {
+        $('a[href*="support-team-converted-leads"]').on('click', function(e) {
             e.preventDefault();
-            window.location.href = '{{ route("admin.bosse-converted-leads.index") }}';
+            window.location.href = '{{ route("admin.support-team-converted-leads", $courseId) }}';
         });
 
         // Dependent filters: load admission batches by batch

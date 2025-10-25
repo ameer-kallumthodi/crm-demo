@@ -170,6 +170,23 @@ class RoleHelper
         return $user->role_id == 7;
     }
 
+    /**
+     * Check if current user is Support Team
+     */
+    public static function is_support_team()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        return $user->role_id == 8;
+    }
+
 
     /**
      * Check if current user has admin or super admin role

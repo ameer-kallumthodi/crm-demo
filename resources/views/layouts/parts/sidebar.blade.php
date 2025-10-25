@@ -69,6 +69,18 @@
                     </a>
                 </li>
                 @endif
+
+                {{-- Support Team Converted Leads Section --}}
+                @if(has_permission('admin/support-team/index') && (\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team()))
+                <li class="pc-item {{ request()->routeIs('admin.support-team-converted-leads*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.support-team-converted-leads', 2) }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-headset"></i>
+                        </span>
+                        <span class="pc-mtext">Support Team Converted Leads</span>
+                    </a>
+                </li>
+                @endif
                 
                 {{-- User Management Section --}}
                 @if(has_permission('admin/telecallers/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index') || has_permission('admin/teachers/index'))
@@ -126,7 +138,7 @@
                 </li>
                 @endif
                 @if(has_permission('admin/support-team/index'))
-                <li class="pc-item {{ request()->routeIs('admin.support-team.*') ? 'active' : '' }}">
+                <li class="pc-item {{ request()->routeIs('admin.support-team.*') || request()->routeIs('admin.support-team-*-converted-leads.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.support-team.index') }}" class="pc-link">
                         <span class="pc-micon">
                             <i class="ti ti-headset"></i>
