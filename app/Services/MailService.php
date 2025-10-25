@@ -12,16 +12,18 @@ class MailService
     {
         $subject = "Registration Confirmation – {$courseType} Course";
         
-        $body = self::buildStudentRegistrationEmailBody($student, $courseType);
+        // Build different content for student and CAO
+        $studentBody = self::buildStudentRegistrationEmailBody($student, $courseType);
+        $caoBody = self::buildCAORegistrationEmailBody($student, $courseType);
         
         // Get attachments
         $attachments = self::getStudentAttachments($student);
         
-        // Send to student
-        send_email($student->email, $student->name, $subject, $body, $attachments);
+        // Send to student with full content including terms and conditions
+        send_email($student->email, $student->name, $subject, $studentBody, $attachments);
         
-        // Send copy to CAO
-        send_email('cao@natdemy.com', 'CAO', $subject, $body, $attachments);
+        // Send to CAO with only details and files, no terms and conditions
+        send_email('cao@natdemy.com', 'CAO', $subject, $caoBody, $attachments);
     }
     
     public static function sendNiosStudentVerificationEmail($student, $verifier)
@@ -40,6 +42,104 @@ class MailService
         send_email('cao@natdemy.com', 'CAO', $subject, $body, $attachments);
     }
     
+    private static function buildCAORegistrationEmailBody($student, $courseType)
+    {
+        // Build Basic Info list with only available fields
+        $basicItems = [];
+        if (!empty($student->student_name)) { $basicItems[] = "<li><b>Name:</b> {$student->student_name}</li>"; }
+        if (!empty($student->father_name)) { $basicItems[] = "<li><b>Father Name:</b> {$student->father_name}</li>"; }
+        if (!empty($student->mother_name)) { $basicItems[] = "<li><b>Mother Name:</b> {$student->mother_name}</li>"; }
+        if (!empty($student->date_of_birth)) { $basicItems[] = "<li><b>Date of Birth:</b> " . \Carbon\Carbon::parse($student->date_of_birth)->format('d-m-Y') . "</li>"; }
+        if (!empty($student->email)) { $basicItems[] = "<li><b>Email:</b> {$student->email}</li>"; }
+        if (!empty($student->personal_number)) { $basicItems[] = "<li><b>Personal Number:</b> {$student->personal_number}</li>"; }
+        if (!empty($student->parents_number)) { $basicItems[] = "<li><b>Parents Number:</b> {$student->parents_number}</li>"; }
+        if (!empty($student->whatsapp_number)) { $basicItems[] = "<li><b>WhatsApp Number:</b> {$student->whatsapp_number}</li>"; }
+        $basicHtml = implode("\n", $basicItems);
+
+        // Resolve subject and batch names from relation or string fields
+        $subjectName = null;
+        if (isset($student->subject)) {
+            $subjectName = $student->subject->title ?? $student->subject->name ?? null;
+        }
+        if (empty($subjectName) && !empty($student->subject_name)) {
+            $subjectName = $student->subject_name;
+        }
+
+        $batchName = null;
+        if (isset($student->batch)) {
+            $batchName = $student->batch->title ?? $student->batch->name ?? null;
+        }
+        if (empty($batchName) && !empty($student->batch_name)) {
+            $batchName = $student->batch_name;
+        }
+
+        // Build Course Info list with only available fields
+        $courseItems = [];
+        if (!empty($courseType)) { $courseItems[] = "<li><b>Course:</b> {$courseType}</li>"; }
+        if (!empty($subjectName)) { $courseItems[] = "<li><b>Subject:</b> {$subjectName}</li>"; }
+        if (!empty($batchName)) { $courseItems[] = "<li><b>Batch:</b> {$batchName}</li>"; }
+        if (!empty($student->second_language)) { $courseItems[] = "<li><b>Second Language:</b> {$student->second_language}</li>"; }
+        $courseHtml = implode("\n", $courseItems);
+
+        // Build Address list with only available fields
+        $addressItems = [];
+        if (!empty($student->street)) { $addressItems[] = "<li><b>Street:</b> {$student->street}</li>"; }
+        if (!empty($student->locality)) { $addressItems[] = "<li><b>Locality:</b> {$student->locality}</li>"; }
+        if (!empty($student->post_office)) { $addressItems[] = "<li><b>Post Office:</b> {$student->post_office}</li>"; }
+        if (!empty($student->district)) { $addressItems[] = "<li><b>District:</b> {$student->district}</li>"; }
+        if (!empty($student->state)) { $addressItems[] = "<li><b>State:</b> {$student->state}</li>"; }
+        if (!empty($student->pin_code)) { $addressItems[] = "<li><b>PIN Code:</b> {$student->pin_code}</li>"; }
+        $addressHtml = implode("\n", $addressItems);
+
+        // Build uploaded files list
+        $uploadedFiles = self::getUploadedFilesList($student);
+
+        return "
+        <html>
+        <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+            <div style='max-width: 700px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;'>
+                
+                <h2 style='color: #2c3e50; text-align: center;'>New Student Registration – {$courseType} Course</h2>
+                <p>Dear CAO Team,</p>
+
+                <p>A new student has completed their registration for the {$courseType} course. Please find the submitted details and uploaded documents below.</p>
+
+                <hr style='margin:20px 0;'>
+
+                <h3 style='color: #2c3e50;'>📌 Student Details</h3>
+                <ul>
+                    {$basicHtml}
+                </ul>
+
+                <h3 style='color: #2c3e50;'>📌 Course Information</h3>
+                <ul>
+                    {$courseHtml}
+                </ul>
+
+                <h3 style='color: #2c3e50;'>📌 Address</h3>
+                <ul>
+                    {$addressHtml}
+                </ul>
+
+                <h3 style='color: #2c3e50;'>📌 Uploaded Documents</h3>
+                {$uploadedFiles}
+
+                <p><b>Registration Date:</b> " . now()->format('d-m-Y h:i A') . "</p>
+
+                <hr style='margin:20px 0;'>
+                <p>
+                    Please review the submitted documents and process the student's application accordingly.
+                </p>
+
+                <p style='margin-top:30px;'>
+                    Best regards,<br>
+                    <b>Registration System</b>
+                </p>
+            </div>
+        </body>
+        </html>";
+    }
+
     private static function buildStudentRegistrationEmailBody($student, $courseType)
     {
         // Build Basic Info list with only available fields
@@ -294,6 +394,35 @@ class MailService
         }
 
         return $attachments;
+    }
+    
+    private static function getUploadedFilesList($student)
+    {
+        $fileList = [];
+        
+        // Document fields with their display names
+        $documentFields = [
+            'birth_certificate' => 'Birth Certificate',
+            'passport_photo' => 'Passport Photo',
+            'adhar_front' => 'Aadhar Card (Front)',
+            'adhar_back' => 'Aadhar Card (Back)',
+            'signature' => 'Signature',
+            'plustwo_certificate' => 'Plus Two Certificate',
+            'ug_certificate' => 'UG Certificate',
+            'sslc_certificate' => 'SSLC Certificate'
+        ];
+
+        foreach ($documentFields as $field => $displayName) {
+            if (!empty($student->$field)) {
+                $fileList[] = "<li><b>{$displayName}:</b> Uploaded</li>";
+            }
+        }
+
+        if (empty($fileList)) {
+            return "<p>No documents uploaded.</p>";
+        }
+
+        return "<ul>" . implode("\n", $fileList) . "</ul>";
     }
     
     private static function getFieldName($field)
