@@ -446,7 +446,29 @@ class LeadController extends Controller
         $leadSources = LeadSource::where('is_active', true)->get();
         $countries = Country::where('is_active', true)->get();
         $courses = Course::where('is_active', true)->get();
-        $teams = Team::all();
+        
+        // Filter teams based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teams = Team::where('id', $teamId)->get();
+            } else {
+                $teams = collect(); // No teams if not assigned to any team
+            }
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only their team
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teams = Team::where('id', $teamId)->get();
+            } else {
+                $teams = collect(); // No teams if not assigned to any team
+            }
+        } else {
+            // Admin/Super Admin: Show all teams
+            $teams = Team::all();
+        }
+        
         $country_codes = get_country_code();
 
         return view('admin.leads.create', compact(
@@ -483,7 +505,29 @@ class LeadController extends Controller
         $leadSources = LeadSource::where('is_active', true)->get();
         $countries = Country::where('is_active', true)->get();
         $courses = Course::where('is_active', true)->get();
-        $teams = Team::all();
+        
+        // Filter teams based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teams = Team::where('id', $teamId)->get();
+            } else {
+                $teams = collect(); // No teams if not assigned to any team
+            }
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only their team
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teams = Team::where('id', $teamId)->get();
+            } else {
+                $teams = collect(); // No teams if not assigned to any team
+            }
+        } else {
+            // Admin/Super Admin: Show all teams
+            $teams = Team::all();
+        }
+        
         $country_codes = get_country_code();
 
         return view('admin.leads.add', compact(
@@ -781,12 +825,56 @@ class LeadController extends Controller
 
     public function edit(Lead $lead)
     {
-        $telecallers = User::where('role_id', 3)->get();
+        $currentUser = AuthHelper::getCurrentUser();
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        
+        // Filter telecallers based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team members
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
+                $telecallers = User::whereIn('id', $teamMemberIds)->get();
+            } else {
+                $telecallers = collect([$currentUser]); // Only themselves if no team
+            }
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only themselves
+            $telecallers = collect([$currentUser]);
+        } else {
+            // Admin/Super Admin: Show all telecallers
+            $telecallers = User::where('role_id', 3)->get();
+        }
+        
         $leadStatuses = LeadStatus::all();
         $leadSources = LeadSource::all();
         $countries = Country::all();
         $courses = Course::all();
-        $teams = Team::all();
+        
+        // Filter teams based on role
+        if ($isTeamLead) {
+            // Team Lead: Show only their team
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teams = Team::where('id', $teamId)->get();
+            } else {
+                $teams = collect(); // No teams if not assigned to any team
+            }
+        } elseif ($isTelecaller) {
+            // Telecaller: Show only their team
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teams = Team::where('id', $teamId)->get();
+            } else {
+                $teams = collect(); // No teams if not assigned to any team
+            }
+        } else {
+            // Admin/Super Admin: Show all teams
+            $teams = Team::all();
+        }
+        
         $country_codes = get_country_code();
 
         return view('admin.leads.edit', compact(
