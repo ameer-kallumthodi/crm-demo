@@ -203,24 +203,23 @@ class TelecallerTrackingMiddleware
                 }
             }
 
-            // Check if session already exists for this user and session ID
-            $existingSession = TelecallerSession::where('user_id', $userId)
-                ->where('session_id', $sessionId)
-                ->first();
-
-            if (!$existingSession) {
-                // Create new session only if it doesn't exist
-                TelecallerSession::create([
+            // Use firstOrCreate to handle race conditions more elegantly
+            $session = TelecallerSession::firstOrCreate(
+                [
                     'user_id' => $userId,
                     'session_id' => $sessionId,
+                ],
+                [
                     'login_time' => now(),
                     'ip_address' => $request->ip(),
                     'user_agent' => $request->userAgent(),
                     'is_active' => true,
-                ]);
-            } else {
-                // Reactivate existing session without updating login_time
-                $existingSession->update([
+                ]
+            );
+
+            // If session already existed, reactivate it
+            if (!$session->wasRecentlyCreated) {
+                $session->update([
                     'ip_address' => $request->ip(),
                     'user_agent' => $request->userAgent(),
                     'is_active' => true,

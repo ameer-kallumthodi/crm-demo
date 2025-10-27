@@ -86,19 +86,23 @@
             <!-- Progress Bar -->
             <div class="progress-container">
                 <div class="progress">
-                    <div class="progress-bar" id="progressBar" style="width: 33.33%"></div>
+                    <div class="progress-bar" id="progressBar" style="width: 25%"></div>
                 </div>
                 <div class="step-indicators">
                     <div class="step-indicator active" id="step1Indicator">
                         <div class="step-circle">1</div>
-                        <div class="step-label">Personal Info</div>
+                        <div class="step-label">Personal Details</div>
                     </div>
                     <div class="step-indicator" id="step2Indicator">
                         <div class="step-circle">2</div>
-                        <div class="step-label">Address Info</div>
+                        <div class="step-label">Communication</div>
                     </div>
                     <div class="step-indicator" id="step3Indicator">
                         <div class="step-circle">3</div>
+                        <div class="step-label">Programme</div>
+                    </div>
+                    <div class="step-indicator" id="step4Indicator">
+                        <div class="step-circle">4</div>
                         <div class="step-label">Documents</div>
                     </div>
                 </div>
@@ -137,73 +141,20 @@
                 @csrf
                 <input type="hidden" name="lead_id" value="{{ $lead->id ?? '' }}">
                 
-                <!-- Step 1: Personal Information -->
+                <!-- Step 1: Personal Details -->
                 <div class="form-step active" id="formStep1">
-                    <h4 class="mb-4"><i class="fas fa-user me-2"></i>Personal Information</h4>
-                    
-                    <!-- University Selection -->
-                    <div class="form-group">
-                        <label class="form-label">University <span class="required">*</span></label>
-                        <select class="form-control" name="university_id" id="university_id" required>
-                            <option value="">Select University</option>
-                            @foreach($universities as $university)
-                                <option value="{{ $university->id }}">{{ $university->title }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <!-- UG/PG Selection -->
-                <div class="form-group">
-                    <label class="form-label">Course Type <span class="required">*</span></label>
-                    <select class="form-control" name="course_type" id="course_type" required>
-                        <option value="">Select Course Type</option>
-                        <option value="UG">Under Graduate (UG)</option>
-                        <option value="PG">Post Graduate (PG)</option>
-                    </select>
-                    <small class="form-text text-muted">
-                        <strong>UG:</strong> Requires SSLC and Plus Two certificates<br>
-                        <strong>PG:</strong> Requires SSLC, Plus Two, and UG degree certificates
-                    </small>
-                </div>
-                
-                <!-- University Amount Display -->
-                <div class="form-group" id="university_amount_display" style="display: none;">
-                    <label class="form-label">University Fee</label>
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="text-center">
-                                        <h6 class="text-muted mb-1">UG Amount</h6>
-                                        <h4 class="text-primary mb-0" id="ug_amount_display">₹0</h4>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="text-center">
-                                        <h6 class="text-muted mb-1">PG Amount</h6>
-                                        <h4 class="text-success mb-0" id="pg_amount_display">₹0</h4>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="text-center">
-                                <h6 class="text-muted mb-1">Selected Course Fee</h6>
-                                <h3 class="text-info mb-0" id="selected_amount_display">₹0</h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    <h4 class="mb-4"><i class="fas fa-user me-2"></i>Personal Details</h4>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Student Name <span class="required">*</span></label>
+                                <label class="form-label">Candidate Name <span class="required">*</span></label>
                                 <input type="text" class="form-control" name="student_name" value="{{ $lead->title ?? '' }}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Father Name <span class="required">*</span></label>
+                                <label class="form-label">Father's Name <span class="required">*</span></label>
                                 <input type="text" class="form-control" name="father_name" required>
                             </div>
                         </div>
@@ -212,7 +163,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Mother Name <span class="required">*</span></label>
+                                <label class="form-label">Mother's Name <span class="required">*</span></label>
                                 <input type="text" class="form-control" name="mother_name" required>
                             </div>
                         </div>
@@ -227,13 +178,37 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Email <span class="required">*</span></label>
-                                <input type="email" class="form-control" name="email" value="{{ $lead->email ?? '' }}" required>
+                                <label class="form-label">Gender <span class="required">*</span></label>
+                                <select class="form-control" name="gender" required>
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Personal Number <span class="required">*</span></label>
+                                <label class="form-label">Are you employed? <span class="required">*</span></label>
+                                <select class="form-control" name="is_employed" required>
+                                    <option value="">Select</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Step 2: Communication Details -->
+                <div class="form-step" id="formStep2">
+                    <h4 class="mb-4"><i class="fas fa-phone me-2"></i>Communication Details</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Candidate Contact No. <span class="required">*</span></label>
                                 <div class="row">
                                     <div class="col-4">
                                         <select class="form-control" name="personal_code" required>
@@ -248,29 +223,9 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Parents Number <span class="required">*</span></label>
-                                <div class="row">
-                                    <div class="col-4">
-                                        <select class="form-control" name="parents_code" required>
-                                            @foreach($countryCodes as $code => $country)
-                                                <option value="{{ $code }}">{{ $code }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-8">
-                                        <input type="tel" class="form-control" name="parents_number" required>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">WhatsApp Number <span class="required">*</span></label>
+                                <label class="form-label">Candidate WhatsApp No. <span class="required">*</span></label>
                                 <div class="row">
                                     <div class="col-4">
                                         <select class="form-control" name="whatsapp_code" required>
@@ -287,6 +242,109 @@
                         </div>
                     </div>
                     
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Father's Contact No. <span class="required">*</span></label>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <select class="form-control" name="father_code" required>
+                                            @foreach($countryCodes as $code => $country)
+                                                <option value="{{ $code }}">{{ $code }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="tel" class="form-control" name="father_number" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Mother's Contact No. <span class="required">*</span></label>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <select class="form-control" name="mother_code" required>
+                                            @foreach($countryCodes as $code => $country)
+                                                <option value="{{ $code }}">{{ $code }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="tel" class="form-control" name="mother_number" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Email Address <span class="required">*</span></label>
+                                <input type="email" class="form-control" name="email" value="{{ $lead->email ?? '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Residential Address <span class="required">*</span></label>
+                                <textarea class="form-control" name="residential_address" rows="2" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Step 3: Programme Details -->
+                <div class="form-step" id="formStep3">
+                    <h4 class="mb-4"><i class="fas fa-graduation-cap me-2"></i>Programme Details</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Board/University <span class="required">*</span></label>
+                                <select class="form-control" name="university_id" id="university_id" required>
+                                    <option value="">Select Board/University</option>
+                                    @foreach($universities as $university)
+                                        <option value="{{ $university->id }}">{{ $university->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Course Type <span class="required">*</span></label>
+                                <select class="form-control" name="course_type" id="course_type" required>
+                                    <option value="">Select Course Type</option>
+                                    <option value="UG">UG (Under Graduate)</option>
+                                    <option value="PG">PG (Post Graduate)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Course Name <span class="required">*</span></label>
+                                <input type="text" class="form-control" name="course_name" placeholder="Type course name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group" id="back_year_group" style="display: none;">
+                                <label class="form-label">Back Year <span class="required">*</span></label>
+                                <select class="form-control" name="back_year">
+                                    <option value="">Select Back Year</option>
+                                    @for($year = 2023; $year <= date('Y'); $year++)
+                                        <option value="{{ $year }}">{{ $year }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
                     <!-- Batch Selection -->
                     <div class="row">
                         <div class="col-md-6">
@@ -301,103 +359,17 @@
                             </div>
                         </div>
                     </div>
-                    
                 </div>
                 
-                <!-- Step 2: Address Information -->
-                <div class="form-step" id="formStep2">
-                    <h4 class="mb-4"><i class="fas fa-map-marker-alt me-2"></i>Address Information</h4>
-                    <div class="form-group">
-                        <label class="form-label">Street <span class="required">*</span></label>
-                        <textarea class="form-control" name="street" rows="2" required></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Locality <span class="required">*</span></label>
-                                <input type="text" class="form-control" name="locality" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Post Office <span class="required">*</span></label>
-                                <input type="text" class="form-control" name="post_office" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">District <span class="required">*</span></label>
-                                <input type="text" class="form-control" name="district" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">State <span class="required">*</span></label>
-                                <input type="text" class="form-control" name="state" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Pin Code <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="pin_code" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" required>
-                        <small class="form-text text-muted">Enter 6-digit pin code</small>
-                    </div>
-                </div>
-                
-                <!-- Step 3: Document Uploads & Message -->
-                <div class="form-step" id="formStep3">
-                    <h4 class="mb-4"><i class="fas fa-upload me-2"></i>Document Uploads</h4>
+                <!-- Step 4: Upload Documents -->
+                <div class="form-step" id="formStep4">
+                    <h4 class="mb-4"><i class="fas fa-upload me-2"></i>Upload Documents</h4>
                     <p class="text-muted mb-4">Please upload clear scans or photos of the required documents. Max file size: 1MB.</p>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">SSLC Certificate <span class="required">*</span></label>
-                                <div class="file-upload-area" onclick="document.getElementById('sslc_certificate').click()">
-                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                    <p class="mb-0">Click to upload or drag & drop</p>
-                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
-                                </div>
-                                <input type="file" id="sslc_certificate" name="sslc_certificate" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
-                                <div class="file-preview" id="sslc_certificate_preview"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Plus Two Certificate <span class="required">*</span></label>
-                                <div class="file-upload-area" onclick="document.getElementById('plustwo_certificate').click()">
-                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                    <p class="mb-0">Click to upload or drag & drop</p>
-                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
-                                </div>
-                                <input type="file" id="plustwo_certificate" name="plustwo_certificate" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
-                                <div class="file-preview" id="plustwo_certificate_preview"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- UG Certificate (only for PG) -->
-                    <div class="row" id="ug_certificate_row" style="display: none;">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">UG Degree Certificate <span class="required">*</span></label>
-                                <div class="file-upload-area" onclick="document.getElementById('ug_certificate').click()">
-                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                    <p class="mb-0">Click to upload or drag & drop</p>
-                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
-                                </div>
-                                <input type="file" id="ug_certificate" name="ug_certificate" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
-                                <div class="file-preview" id="ug_certificate_preview"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Passport Photo <span class="required">*</span></label>
+                                <label class="form-label">Recent Passport Size Photograph <span class="required">*</span></label>
                                 <div class="file-upload-area" onclick="document.getElementById('passport_photo').click()">
                                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                     <p class="mb-0">Click to upload or drag & drop</p>
@@ -409,7 +381,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Aadhar Front <span class="required">*</span></label>
+                                <label class="form-label">Aadhar Card (Front) <span class="required">*</span></label>
                                 <div class="file-upload-area" onclick="document.getElementById('adhar_front').click()">
                                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                     <p class="mb-0">Click to upload or drag & drop</p>
@@ -424,7 +396,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Aadhar Back <span class="required">*</span></label>
+                                <label class="form-label">Aadhar Card (Back) <span class="required">*</span></label>
                                 <div class="file-upload-area" onclick="document.getElementById('adhar_back').click()">
                                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                     <p class="mb-0">Click to upload or drag & drop</p>
@@ -444,6 +416,64 @@
                                 </div>
                                 <input type="file" id="signature" name="signature" accept=".jpg,.jpeg,.png" required style="display: none;">
                                 <div class="file-preview" id="signature_preview"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Secondary (10th) Certificate <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('sslc_certificate').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="sslc_certificate" name="sslc_certificate" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
+                                <div class="file-preview" id="sslc_certificate_preview"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Senior Secondary (12th) Certificate <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('plustwo_certificate').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="plustwo_certificate" name="plustwo_certificate" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
+                                <div class="file-preview" id="plustwo_certificate_preview"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Graduation Certificate (only for PG) -->
+                    <div class="row" id="ug_certificate_row" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Graduation Certificate <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('ug_certificate').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="ug_certificate" name="ug_certificate" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                                <div class="file-preview" id="ug_certificate_preview"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Other Relevant Documents</label>
+                                <div class="file-upload-area" onclick="document.getElementById('other_documents').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="other_documents" name="other_documents[]" accept=".pdf,.jpg,.jpeg,.png" multiple style="display: none;">
+                                <div class="file-preview" id="other_documents_preview"></div>
                             </div>
                         </div>
                     </div>
@@ -475,7 +505,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let currentStep = 1;
-        const totalSteps = 3;
+        const totalSteps = 4;
         const STORAGE_KEY = 'ugpg_form_data';
 
         // Handle Course Type selection change
@@ -494,43 +524,23 @@
                 ugInput.value = '';
                 document.getElementById('ug_certificate_preview').innerHTML = '';
             }
-            
-            // Update university amount display
-            updateUniversityAmountDisplay();
         }
         
-        // Update university amount display
-        function updateUniversityAmountDisplay() {
+        // Handle University selection change
+        function handleUniversityChange() {
             const universityId = document.getElementById('university_id').value;
-            const courseType = document.getElementById('course_type').value;
-            const amountDisplay = document.getElementById('university_amount_display');
+            const backYearGroup = document.getElementById('back_year_group');
+            const backYearSelect = document.querySelector('select[name="back_year"]');
             
-            if (universityId && courseType) {
-                // Show the amount display
-                amountDisplay.style.display = 'block';
-                
-                // Fetch university data and update amounts
-                fetch(`/api/universities/${universityId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            const university = data.university;
-                            
-                            // Update UG and PG amounts
-                            document.getElementById('ug_amount_display').textContent = `₹${university.ug_amount || 0}`;
-                            document.getElementById('pg_amount_display').textContent = `₹${university.pg_amount || 0}`;
-                            
-                            // Update selected course amount
-                            const selectedAmount = courseType === 'UG' ? university.ug_amount : university.pg_amount;
-                            document.getElementById('selected_amount_display').textContent = `₹${selectedAmount || 0}`;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching university data:', error);
-                    });
+            if (universityId == 1) {
+                // Show back year field for university ID 1
+                backYearGroup.style.display = 'block';
+                backYearSelect.required = true;
             } else {
-                // Hide the amount display
-                amountDisplay.style.display = 'none';
+                // Hide back year field for other universities
+                backYearGroup.style.display = 'none';
+                backYearSelect.required = false;
+                backYearSelect.value = '';
             }
         }
         
@@ -593,7 +603,7 @@
             
             // Add change event listener to University select
             document.getElementById('university_id').addEventListener('change', function() {
-                updateUniversityAmountDisplay();
+                handleUniversityChange();
                 // Remove error styling when user makes a selection
                 this.classList.remove('is-invalid');
             });
@@ -649,6 +659,9 @@
                 nextBtn.style.display = 'inline-block';
             } else if (currentStep === 3) {
                 prevBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'inline-block';
+            } else if (currentStep === 4) {
+                prevBtn.style.display = 'inline-block';
                 submitBtn.style.display = 'inline-block';
             }
         }
@@ -685,8 +698,8 @@
                 }
             }
             
-            // Validate Course Type selection for step 1
-            if (currentStep === 1) {
+            // Validate Course Type selection for step 3 (Programme Details)
+            if (currentStep === 3) {
                 const courseType = document.getElementById('course_type').value;
                 if (!courseType) {
                     // Add error styling to Course Type select
@@ -697,16 +710,29 @@
                     // Remove error styling when valid
                     document.getElementById('course_type').classList.remove('is-invalid');
                 }
+                
+                // Validate back year if university is 1
+                const universityId = document.getElementById('university_id').value;
+                const backYearSelect = document.querySelector('select[name="back_year"]');
+                if (universityId == 1) {
+                    if (!backYearSelect.value) {
+                        backYearSelect.classList.add('is-invalid');
+                        showAlert('Please select a Back Year', 'warning');
+                        return false;
+                    } else {
+                        backYearSelect.classList.remove('is-invalid');
+                    }
+                }
             }
             
-            if (currentStep === 3) {
+            if (currentStep === 4) {
                 const fileFieldNames = {
-                    'sslc_certificate': 'SSLC certificate',
-                    'plustwo_certificate': 'Plus Two certificate',
-                    'ug_certificate': 'UG degree certificate',
-                    'passport_photo': 'Passport photo',
-                    'adhar_front': 'Aadhar front',
-                    'adhar_back': 'Aadhar back',
+                    'sslc_certificate': 'Secondary (10th) Certificate',
+                    'plustwo_certificate': 'Senior Secondary (12th) Certificate',
+                    'ug_certificate': 'Graduation Certificate',
+                    'passport_photo': 'Recent Passport Size Photograph',
+                    'adhar_front': 'Aadhar Card (Front)',
+                    'adhar_back': 'Aadhar Card (Back)',
                     'signature': 'Signature'
                 };
                 
@@ -815,6 +841,7 @@
         setupFileUpload('adhar_front');
         setupFileUpload('adhar_back');
         setupFileUpload('signature');
+        setupFileUpload('other_documents');
 
         // Form submission
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
