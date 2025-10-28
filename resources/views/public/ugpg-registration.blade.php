@@ -327,26 +327,12 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Course Name <span class="required">*</span></label>
-                                <input type="text" class="form-control" name="course_name" placeholder="Type course name" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group" id="back_year_group" style="display: none;">
-                                <label class="form-label">Back Year <span class="required">*</span></label>
-                                <select class="form-control" name="back_year">
-                                    <option value="">Select Back Year</option>
-                                    @for($year = 2023; $year <= date('Y'); $year++)
-                                        <option value="{{ $year }}">{{ $year }}</option>
-                                    @endfor
+                                <label class="form-label">Course <span class="required">*</span></label>
+                                <select class="form-control" name="university_course_id" id="university_course_id" required>
+                                    <option value="">Select Course</option>
                                 </select>
                             </div>
                         </div>
-                    </div>
-                    
-                    
-                    <!-- Batch Selection -->
-                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">Batch <span class="required">*</span></label>
@@ -355,6 +341,20 @@
                                     @foreach($batches as $batch)
                                         <option value="{{ $batch->id }}">{{ $batch->title }}</option>
                                     @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group" id="back_year_group" style="display: none;">
+                                <label class="form-label">Back Year <span class="required">*</span></label>
+                                <select class="form-control" name="back_year">
+                                    <option value="">Select Back Year</option>
+                                    @for($year = 2023; $year <= date('Y'); $year++)
+                                        <option value="{{ $year }}">{{ $year }}</option>
+                                    @endfor
                                 </select>
                             </div>
                         </div>
@@ -524,6 +524,9 @@
                 ugInput.value = '';
                 document.getElementById('ug_certificate_preview').innerHTML = '';
             }
+            
+            // Update course dropdown
+            updateCourseDropdown();
         }
         
         // Handle University selection change
@@ -542,8 +545,47 @@
                 backYearSelect.required = false;
                 backYearSelect.value = '';
             }
+            
+            // Update course dropdown
+            updateCourseDropdown();
         }
         
+        // Update course dropdown based on university and course type
+        function updateCourseDropdown() {
+            const universityId = document.getElementById('university_id').value;
+            const courseType = document.getElementById('course_type').value;
+            const courseSelect = document.getElementById('university_course_id');
+            
+            // Store current selection
+            const currentValue = courseSelect.value;
+            
+            // Clear existing options
+            courseSelect.innerHTML = '<option value="">Select Course Name</option>';
+            
+            if (!universityId || !courseType) {
+                return;
+            }
+            
+            // Fetch courses from API
+            fetch(`/register/ugpg/courses?university_id=${universityId}&course_type=${courseType}`)
+                .then(response => response.json())
+                .then(courses => {
+                    courses.forEach(course => {
+                        const option = document.createElement('option');
+                        option.value = course.id;
+                        option.textContent = course.title;
+                        courseSelect.appendChild(option);
+                    });
+                    
+                    // Restore previous selection if it exists in the new options
+                    if (currentValue && courseSelect.querySelector(`option[value="${currentValue}"]`)) {
+                        courseSelect.value = currentValue;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching courses:', error);
+                });
+        }
 
         function loadSavedData() {
             const savedData = localStorage.getItem(STORAGE_KEY);
@@ -559,6 +601,22 @@
                     // Restore course type selection
                     if (data.course_type) {
                         selectCourseType(data.course_type);
+                    }
+                    
+                    // Populate course dropdown if university and course type are selected
+                    if (data.university_id && data.course_type) {
+                        setTimeout(() => {
+                            updateCourseDropdown();
+                            // Restore course selection after dropdown is populated
+                            if (data.university_course_id) {
+                                setTimeout(() => {
+                                    const courseSelect = document.getElementById('university_course_id');
+                                    if (courseSelect) {
+                                        courseSelect.value = data.university_course_id;
+                                    }
+                                }, 500);
+                            }
+                        }, 100);
                     }
                 } catch (e) {
                     console.error('Error loading saved data:', e);
@@ -593,6 +651,16 @@
             loadSavedData();
             setupAutoSave();
             updateStepDisplay();
+            
+            // Check for pre-filled values and populate course dropdown
+            setTimeout(() => {
+                const universityId = document.getElementById('university_id').value;
+                const courseType = document.getElementById('course_type').value;
+                
+                if (universityId && courseType) {
+                    updateCourseDropdown();
+                }
+            }, 200);
             
             // Add change event listener to Course Type select
             document.getElementById('course_type').addEventListener('change', function() {

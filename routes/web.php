@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LeadStatusController;
 use App\Http\Controllers\LeadSourceController;
 use App\Http\Controllers\UniversityController;
+use App\Http\Controllers\UniversityCourseController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\TeamController;
@@ -113,11 +114,12 @@ Route::prefix('register')->group(function () {
     Route::get('/hotel-mgmt/batches', [App\Http\Controllers\Public\LeadHotelMgmtRegistrationController::class, 'getBatches'])->name('public.lead.hotel-mgmt.batches');
 
     // UG/PG Registration Routes
+    Route::get('/ugpg/subjects', [App\Http\Controllers\Public\LeadUGPGRegistrationController::class, 'getSubjects'])->name('public.lead.ugpg.subjects');
+    Route::get('/ugpg/batches', [App\Http\Controllers\Public\LeadUGPGRegistrationController::class, 'getBatches'])->name('public.lead.ugpg.batches');
+    Route::get('/ugpg/courses', [App\Http\Controllers\Public\LeadUGPGRegistrationController::class, 'getCourses'])->name('public.lead.ugpg.courses');
     Route::get('/ugpg/{leadId?}', [App\Http\Controllers\Public\LeadUGPGRegistrationController::class, 'showUGPGForm'])->name('public.lead.ugpg.register');
     Route::post('/ugpg', [App\Http\Controllers\Public\LeadUGPGRegistrationController::class, 'store'])->name('public.lead.ugpg.register.store');
     Route::get('/ugpg/{leadId}/success', [App\Http\Controllers\Public\LeadUGPGRegistrationController::class, 'showSuccess'])->name('public.lead.ugpg.register.success');
-    Route::get('/ugpg/subjects', [App\Http\Controllers\Public\LeadUGPGRegistrationController::class, 'getSubjects'])->name('public.lead.ugpg.subjects');
-    Route::get('/ugpg/batches', [App\Http\Controllers\Public\LeadUGPGRegistrationController::class, 'getBatches'])->name('public.lead.ugpg.batches');
 
     // Python Registration Routes
     Route::get('/python/{leadId?}', [App\Http\Controllers\Public\LeadPythonRegistrationController::class, 'showPythonForm'])->name('public.lead.python.register');
@@ -271,6 +273,14 @@ Route::post('leads/add-sslc-certificate', [LeadController::class, 'addSSLCCertif
         Route::delete('/registration-links-delete/{id}', [App\Http\Controllers\RegistrationLinkController::class, 'delete'])->name('registration-links.delete');
         Route::put('/universities-update/{university}', [UniversityController::class, 'update'])->name('universities.update');
         Route::delete('/universities-delete/{id}', [UniversityController::class, 'delete'])->name('universities.delete');
+
+        // University Courses Routes
+        Route::resource('university-courses', App\Http\Controllers\UniversityCourseController::class);
+        Route::get('/university-courses-add', [App\Http\Controllers\UniversityCourseController::class, 'ajax_add'])->name('university-courses.add');
+        Route::get('/university-courses-edit/{id}', [App\Http\Controllers\UniversityCourseController::class, 'ajax_edit'])->name('university-courses.edit');
+        Route::post('/university-courses-submit', [App\Http\Controllers\UniversityCourseController::class, 'submit'])->name('university-courses.submit');
+        Route::put('/university-courses-update/{id}', [App\Http\Controllers\UniversityCourseController::class, 'update'])->name('university-courses.update');
+        Route::delete('/university-courses-delete/{id}', [App\Http\Controllers\UniversityCourseController::class, 'delete'])->name('university-courses.delete');
 
         Route::resource('countries', CountryController::class);
         Route::get('/countries-add', [CountryController::class, 'ajax_add'])->name('countries.add');
@@ -536,9 +546,6 @@ Route::post('leads/add-sslc-certificate', [LeadController::class, 'addSSLCCertif
         Route::get('/mentor-nios-converted-leads', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'index'])->name('mentor-nios-converted-leads.index');
         Route::post('/mentor-nios-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-nios-converted-leads.update-mentor-details');
 
-        // Support Team Converted Leads Routes (Generic for all courses)
-        Route::get('/support-team-converted-leads/{courseId?}', [App\Http\Controllers\SupportTeamConvertedLeadController::class, 'index'])->name('support-team-converted-leads');
-        Route::post('/support-team-converted-leads/{id}/update-support-team-details', [App\Http\Controllers\SupportTeamConvertedLeadController::class, 'updateSupportTeamDetails'])->name('support-team-converted-leads.update-support-team-details');
 
         // Invoice Routes
         Route::get('/invoices/student/{studentId}', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');

@@ -65,7 +65,7 @@ class LeadUGPGRegistrationController extends Controller
             'whatsapp_number' => 'required|string|max:20',
             'whatsapp_code' => 'required|string|max:10',
             'residential_address' => 'required|string',
-            'course_name' => 'required|string|max:255',
+            'university_course_id' => 'required|exists:university_courses,id',
             'back_year' => 'required_if:university_id,1|string',
             'batch_id' => 'required|exists:batches,id',
             'sslc_certificate' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1024',
@@ -197,7 +197,7 @@ class LeadUGPGRegistrationController extends Controller
                 'whatsapp_number' => $request->whatsapp_number,
                 'whatsapp_code' => $request->whatsapp_code,
                 'residential_address' => $request->residential_address,
-                'course_name' => $request->course_name,
+                'university_course_id' => $request->university_course_id,
                 'back_year' => $request->back_year,
                 'batch_id' => $request->batch_id,
                 'sslc_certificate' => $filePaths['sslc_certificate'] ?? null,
@@ -255,6 +255,23 @@ class LeadUGPGRegistrationController extends Controller
         $courseId = $request->query('course_id');
         $batches = Batch::where('course_id', $courseId)->where('is_active', true)->get(['id', 'title']);
         return response()->json($batches);
+    }
+
+    public function getCourses(Request $request)
+    {
+        $universityId = $request->query('university_id');
+        $courseType = $request->query('course_type');
+        
+        if (!$universityId || !$courseType) {
+            return response()->json([]);
+        }
+        
+        $courses = \App\Models\UniversityCourse::where('university_id', $universityId)
+            ->where('course_type', $courseType)
+            ->where('is_active', true)
+            ->get(['id', 'title']);
+            
+        return response()->json($courses);
     }
 
     public function showSuccess($leadId)

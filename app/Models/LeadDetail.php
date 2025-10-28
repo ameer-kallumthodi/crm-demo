@@ -16,6 +16,7 @@ class LeadDetail extends Model
         'lead_id',
         'course_id',
         'university_id',
+        'university_course_id',
         'course_type',
         'student_name',
         'father_name',
@@ -114,6 +115,11 @@ class LeadDetail extends Model
     public function university()
     {
         return $this->belongsTo(University::class);
+    }
+
+    public function universityCourse()
+    {
+        return $this->belongsTo(UniversityCourse::class);
     }
 
     public function reviewedBy()
