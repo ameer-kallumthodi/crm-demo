@@ -141,6 +141,16 @@ class ConvertedLead extends Model
         return $this->hasOne(ConvertedStudentMentorDetail::class, 'converted_student_id');
     }
 
+    public function supportDetails()
+    {
+        return $this->hasOne(ConvertedStudentSupportDetail::class, 'converted_student_id');
+    }
+
+    public function supportFeedbackHistory()
+    {
+        return $this->hasMany(SupportFeedbackHistory::class, 'converted_student_id')->orderBy('created_at', 'desc');
+    }
+
     public function niosStudentDetails()
     {
         return $this->hasOne(ConvertedStudentDetail::class)->where('course_id', 1);

@@ -118,19 +118,19 @@
 @endif
 <!-- [ Mentor List ] end -->
 
-<!-- [ Support Team List ] start -->
+<!-- [ Support List ] start -->
 @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
 <div class="row mb-3">
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <h6 class="mb-3">Support Team List</h6>
+                <h6 class="mb-3">Support List</h6>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('admin.support-team-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headset"></i> BOSSE Support Team Converted Leads
+                    <a href="{{ route('admin.support-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Bosse Converted Support List
                     </a>
-                    <a href="{{ route('admin.support-team-nios-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headset"></i> NIOS Support Team Converted Leads
+                    <a href="{{ route('admin.support-nios-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> NIOS Converted Support List
                     </a>
                 </div>
             </div>
@@ -138,7 +138,7 @@
     </div>
 </div>
 @endif
-<!-- [ Support Team List ] end -->
+<!-- [ Support List ] end -->
 
 <!-- [ Filter Section ] start -->
 <div class="row mb-3">

@@ -101,7 +101,7 @@ class MentorConvertedLeadController extends Controller
         $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(50);
 
         // Get filter data
-        $batches = Batch::orderBy('title')->get();
+        $batches = Batch::where('course_id', 2)->orderBy('title')->get();
         $subjects = Subject::where('course_id', 2)->orderBy('title')->get();
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
 

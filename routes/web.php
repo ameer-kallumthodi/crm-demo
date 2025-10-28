@@ -546,6 +546,22 @@ Route::post('leads/add-sslc-certificate', [LeadController::class, 'addSSLCCertif
         Route::get('/mentor-nios-converted-leads', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'index'])->name('mentor-nios-converted-leads.index');
         Route::post('/mentor-nios-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-nios-converted-leads.update-mentor-details');
 
+// Support Converted Lead Details Route (Unified)
+Route::get('/support-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-converted-leads.details');
+Route::post('/support-converted-leads/{id}/feedback', [App\Http\Controllers\SupportConvertedLeadController::class, 'submitFeedback'])->name('support-converted-leads.feedback');
+
+        // Back-compat routes (optional): keep if already linked somewhere
+        Route::get('/support-bosse-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-bosse-converted-leads.details');
+        Route::get('/support-nios-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-nios-converted-leads.details');
+
+        // BOSSE Support Converted Leads Routes
+        Route::get('/support-bosse-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'index'])->name('support-bosse-converted-leads.index');
+        Route::post('/support-bosse-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-bosse-converted-leads.update-support-details');
+
+        // NIOS Support Converted Leads Routes
+        Route::get('/support-nios-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'niosIndex'])->name('support-nios-converted-leads.index');
+        Route::post('/support-nios-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-nios-converted-leads.update-support-details');
+
 
         // Invoice Routes
         Route::get('/invoices/student/{studentId}', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
