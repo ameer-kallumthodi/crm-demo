@@ -52,6 +52,11 @@ class Subject extends Model
         return $this->hasMany(ConvertedLead::class);
     }
 
+    public function leadDetails()
+    {
+        return $this->hasMany(LeadDetail::class);
+    }
+
     /**
      * Override the delete method to set deleted_by
      */
