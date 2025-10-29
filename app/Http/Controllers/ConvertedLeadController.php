@@ -405,16 +405,28 @@ class ConvertedLeadController extends Controller
         $currentUser = AuthHelper::getCurrentUser();
         if ($currentUser) {
             if (RoleHelper::is_team_lead()) {
-                // Team leads can see all converted leads
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
+                } else {
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                // Academic assistants can only see their own converted leads
-                $query->where('academic_assistant_id', $currentUser->id);
-            } else {
-                // Other users can only see their own converted leads
-                $query->where('created_by', $currentUser->id);
+                // Can see all
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
-
+        
         // Apply filters
         if ($request->filled('search')) {
             $search = $request->search;
@@ -459,6 +471,7 @@ class ConvertedLeadController extends Controller
         }
 
         $convertedLeads = $query->orderBy('created_at', 'desc')->get();
+        
         $courses = \App\Models\Course::all();
         $batches = \App\Models\Batch::where('course_id', 16)->get();
         $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
