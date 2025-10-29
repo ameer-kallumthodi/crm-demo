@@ -147,7 +147,9 @@ class ConvertedLeadController extends Controller
                         $q->whereIn('telecaller_id', $teamMemberIds);
                     });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all

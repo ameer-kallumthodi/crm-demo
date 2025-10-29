@@ -207,12 +207,12 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
 
     // Document verification route
     Route::post('leads/update-document-verification', [LeadController::class, 'updateDocumentVerification'])->name('leads.update-document-verification');
-    
+
     // SSLC certificate verification route
     Route::post('leads/verify-sslc-certificate', [LeadController::class, 'verifySSLCertificate'])->name('leads.verify-sslc-certificate');
-Route::post('leads/update-registration-details', [LeadController::class, 'updateRegistrationDetails'])->name('leads.update-registration-details');
-Route::post('leads/remove-sslc-certificate', [LeadController::class, 'removeSSLCertificate'])->name('leads.remove-sslc-certificate');
-Route::post('leads/add-sslc-certificate', [LeadController::class, 'addSSLCCertificates'])->name('leads.add-sslc-certificate');
+    Route::post('leads/update-registration-details', [LeadController::class, 'updateRegistrationDetails'])->name('leads.update-registration-details');
+    Route::post('leads/remove-sslc-certificate', [LeadController::class, 'removeSSLCertificate'])->name('leads.remove-sslc-certificate');
+    Route::post('leads/add-sslc-certificate', [LeadController::class, 'addSSLCCertificates'])->name('leads.add-sslc-certificate');
 
     // API routes for AJAX calls
     Route::prefix('api')->group(function () {
@@ -240,7 +240,6 @@ Route::post('leads/add-sslc-certificate', [LeadController::class, 'addSSLCCertif
 
         // API routes for universities
         Route::get('/api/universities/{id}', [UniversityController::class, 'getUniversityData']);
-
     });
 
     // Admin routes
@@ -546,9 +545,9 @@ Route::post('leads/add-sslc-certificate', [LeadController::class, 'addSSLCCertif
         Route::get('/mentor-nios-converted-leads', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'index'])->name('mentor-nios-converted-leads.index');
         Route::post('/mentor-nios-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-nios-converted-leads.update-mentor-details');
 
-// Support Converted Lead Details Route (Unified)
-Route::get('/support-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-converted-leads.details');
-Route::post('/support-converted-leads/{id}/feedback', [App\Http\Controllers\SupportConvertedLeadController::class, 'submitFeedback'])->name('support-converted-leads.feedback');
+        // Support Converted Lead Details Route (Unified)
+        Route::get('/support-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-converted-leads.details');
+        Route::post('/support-converted-leads/{id}/feedback', [App\Http\Controllers\SupportConvertedLeadController::class, 'submitFeedback'])->name('support-converted-leads.feedback');
 
         // Back-compat routes (optional): keep if already linked somewhere
         Route::get('/support-bosse-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-bosse-converted-leads.details');
@@ -662,7 +661,7 @@ Route::post('/support-converted-leads/{id}/feedback', [App\Http\Controllers\Supp
         Route::prefix('meta-leads')->name('meta-leads.')->group(function () {
             // Main dashboard
             Route::get('/', [MetaLeadController::class, 'index'])->name('index');
-            
+
             // Individual lead operations
             Route::get('/lead/{id}', [MetaLeadController::class, 'show'])->name('show');
             Route::delete('/lead/{id}', [MetaLeadController::class, 'destroy'])->name('destroy');
@@ -680,7 +679,7 @@ Route::get('/debug-meta-test', function () {
     try {
         $facebookService = new \App\Services\FacebookApiService();
         $result = $facebookService->fetchLeads();
-        
+
         return response()->json([
             'status' => 'success',
             'environment_check' => [

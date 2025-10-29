@@ -39,16 +39,22 @@ class MentorConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereIn('created_by', $teamMemberIds);
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
                 } else {
-                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
                 }
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {
-                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+                // Can see all
             } elseif (RoleHelper::is_telecaller()) {
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         }
 

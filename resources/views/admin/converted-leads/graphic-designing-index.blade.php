@@ -132,7 +132,6 @@
                     <a href="{{ route('admin.support-nios-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> NIOS Converted Support List
                     </a>
-                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
                     <a href="{{ route('admin.support-hotel-management-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Hotel Management Converted Support List
                     </a>
@@ -163,7 +162,6 @@
                     <a href="{{ route('admin.support-e-school-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> E-School Converted Support List
                     </a>
-                    @endif
                 </div>
             </div>
         </div>
