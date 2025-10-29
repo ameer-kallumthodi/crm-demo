@@ -1685,9 +1685,10 @@ class LeadController extends Controller
         foreach ($request->lead_id as $leadId) {
             $lead = Lead::select(['id', 'title', 'code', 'phone', 'email'])->find($leadId);
             if ($lead) {
-                // Get DOB from leads_details table
+                // Get DOB and subject_id from leads_details table
                 $leadDetail = \App\Models\LeadDetail::where('lead_id', $leadId)->first();
                 $dob = $leadDetail ? $leadDetail->date_of_birth : null;
+                $subjectId = $leadDetail ? $leadDetail->subject_id : null;
                 
                 // Create converted lead record with basic info
                 ConvertedLead::create([
@@ -1697,6 +1698,7 @@ class LeadController extends Controller
                     'phone' => $lead->phone,
                     'email' => $lead->email,
                     'dob' => $dob,
+                    'subject_id' => $subjectId,
                     'remarks' => $request->remarks ?? 'Converted via bulk operation',
                     'created_by' => AuthHelper::getCurrentUserId(),
                 ]);
@@ -1865,8 +1867,9 @@ class LeadController extends Controller
                 $leadDetail->update(['date_of_birth' => $request->dob]);
             }
             
-            // Get DOB for converted lead (from request or existing lead detail)
+            // Get DOB and subject_id for converted lead (from request or existing lead detail)
             $dob = $request->dob ?? ($leadDetail ? $leadDetail->date_of_birth : null);
+            $subjectId = $leadDetail ? $leadDetail->subject_id : null;
             
             // Create converted lead record
             $convertedLead = ConvertedLead::create([
@@ -1879,6 +1882,7 @@ class LeadController extends Controller
                 'course_id' => $lead->course_id,
                 'batch_id' => $lead->batch_id,
                 'board_id' => $request->board_id,
+                'subject_id' => $subjectId,
                 'candidate_status_id' => 1,
                 'remarks' => $request->remarks,
                 'created_by' => AuthHelper::getCurrentUserId(),
