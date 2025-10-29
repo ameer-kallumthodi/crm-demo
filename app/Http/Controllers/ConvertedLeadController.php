@@ -458,7 +458,7 @@ class ConvertedLeadController extends Controller
             });
         }
 
-        $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(20);
+        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
         $courses = \App\Models\Course::all();
         $batches = \App\Models\Batch::where('course_id', 16)->get();
         $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
