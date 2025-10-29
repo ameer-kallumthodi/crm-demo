@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'Web Development Converted Support List')
+@section('title', 'E-School Converted Support List')
 
 @section('content')
 <style>
@@ -28,7 +28,7 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Web Development & Designing Converted Support List</h5>
+                    <h5 class="m-b-10">E-School Converted Support List</h5>
                 </div>
             </div>
             <div class="col-md-6">
@@ -36,7 +36,7 @@
                     <ul class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                         <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                        <li class="breadcrumb-item">Web Development & Designing Converted Support List</li>
+                        <li class="breadcrumb-item">E-School Converted Support List</li>
                     </ul>
                     <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-secondary">
                         <i class="ti ti-arrow-left"></i> Back to Converted Leads
@@ -154,7 +154,7 @@
                     <a href="{{ route('admin.support-ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> AI Automation Converted Support List
                     </a>
-                    <a href="{{ route('admin.support-web-development-converted-leads.index') }}" class="btn btn-outline-primary active">
+                    <a href="{{ route('admin.support-web-development-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Web Development & Designing Converted Support List
                     </a>
                     <a href="{{ route('admin.support-vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
@@ -166,7 +166,7 @@
                     <a href="{{ route('admin.support-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Eduthanzeel Converted Support List
                     </a>
-                    <a href="{{ route('admin.support-e-school-converted-leads.index') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.support-e-school-converted-leads.index') }}" class="btn btn-outline-primary active">
                         <i class="ti ti-headphones"></i> E-School Converted Support List
                     </a>
                 </div>
@@ -182,7 +182,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.support-web-development-converted-leads.index') }}" id="filterForm">
+                <form method="GET" action="{{ route('admin.support-e-school-converted-leads.index') }}" id="filterForm">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
@@ -249,7 +249,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.support-web-development-converted-leads.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.support-e-school-converted-leads.index') }}" class="btn btn-secondary">
                                 <i class="ti ti-refresh"></i> Clear
                             </a>
                         </div>
@@ -266,13 +266,13 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5>Web Development & Designing Converted Support List</h5>
+                <h5>E-School Converted Support List</h5>
             </div>
             <div class="card-body">
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover data_table_basic" id="supportWebDevelopmentTable">
+                        <table class="table table-hover data_table_basic" id="supportESchoolTable">
                         <thead>
                             <tr>
                                 <th>SL No</th>
@@ -312,7 +312,7 @@
                                 <td>
                                     <div class="inline-edit" data-field="registration_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->registration_status }}">
                                         <span class="display-value">{{ $convertedLead->supportDetails?->registration_status ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
                                         </button>
@@ -322,7 +322,7 @@
                                 <td>
                                     <div class="inline-edit" data-field="technology_side" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->technology_side }}">
                                         <span class="display-value">{{ $convertedLead->supportDetails?->technology_side ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
                                         </button>
@@ -332,7 +332,7 @@
                                 <td>
                                     <div class="inline-edit" data-field="student_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->student_status }}">
                                         <span class="display-value">{{ $convertedLead->supportDetails?->student_status ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
                                         </button>
@@ -342,7 +342,7 @@
                                 <td>
                                     <div class="inline-edit" data-field="call_1" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->call_1 }}">
                                         <span class="display-value">{{ $convertedLead->supportDetails?->call_1 ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
                                         </button>
@@ -352,7 +352,7 @@
                                 <td>
                                     <div class="inline-edit" data-field="app" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->app }}">
                                         <span class="display-value">{{ $convertedLead->supportDetails?->app ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
                                         </button>
@@ -362,7 +362,7 @@
                                 <td>
                                     <div class="inline-edit" data-field="whatsapp_group" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->whatsapp_group }}">
                                         <span class="display-value">{{ $convertedLead->supportDetails?->whatsapp_group ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
                                         </button>
@@ -372,7 +372,7 @@
                                 <td>
                                     <div class="inline-edit" data-field="telegram_group" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->telegram_group }}">
                                         <span class="display-value">{{ $convertedLead->supportDetails?->telegram_group ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
                                         </button>
@@ -382,7 +382,7 @@
                                 <td>
                                     <div class="inline-edit" data-field="problems" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->problems }}">
                                         <span class="display-value">{{ $convertedLead->supportDetails?->problems ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
                                         </button>
@@ -551,12 +551,12 @@
     font-size: 11px;
 }
 
-#supportWebDevelopmentTable thead th,
-#supportWebDevelopmentTable tbody td {
+#supportESchoolTable thead th,
+#supportESchoolTable tbody td {
     white-space: nowrap;
 }
 
-#supportWebDevelopmentTable thead th {
+#supportESchoolTable thead th {
     position: sticky;
     top: 0;
     z-index: 5;
@@ -564,11 +564,11 @@
     box-shadow: inset 0 -1px 0 #e9ecef;
 }
 
-#supportWebDevelopmentTable tbody tr:hover {
+#supportESchoolTable tbody tr:hover {
     background: #fafbff;
 }
 
-#supportWebDevelopmentTable td .display-value {
+#supportESchoolTable td .display-value {
     display: inline-block;
     max-width: 220px;
     overflow: hidden;
@@ -577,8 +577,8 @@
     vertical-align: middle;
 }
 
-#supportWebDevelopmentTable .btn-group .btn { margin-right: 4px; }
-#supportWebDevelopmentTable .btn-group .btn:last-child { margin-right: 0; }
+#supportESchoolTable .btn-group .btn { margin-right: 4px; }
+#supportESchoolTable .btn-group .btn:last-child { margin-right: 0; }
 </style>
 @endpush
 
@@ -679,7 +679,7 @@
             btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
             
             $.ajax({
-                url: `/admin/support-web-development-converted-leads/${id}/update-support-details`,
+                url: `/admin/support-e-school-converted-leads/${id}/update-support-details`,
                 method: 'POST',
                 data: {
                     field: field,
