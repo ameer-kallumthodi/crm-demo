@@ -562,6 +562,46 @@ Route::post('/support-converted-leads/{id}/feedback', [App\Http\Controllers\Supp
         Route::get('/support-nios-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'niosIndex'])->name('support-nios-converted-leads.index');
         Route::post('/support-nios-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-nios-converted-leads.update-support-details');
 
+        // Hotel Management Support Converted Leads Routes
+        Route::get('/support-hotel-management-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'hotelManagementIndex'])->name('support-hotel-management-converted-leads.index');
+        Route::post('/support-hotel-management-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-hotel-management-converted-leads.update-support-details');
+
+        // GMVSS Support Converted Leads Routes
+        Route::get('/support-gmvss-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'gmvssIndex'])->name('support-gmvss-converted-leads.index');
+        Route::post('/support-gmvss-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-gmvss-converted-leads.update-support-details');
+
+        // AI with Python Support Converted Leads Routes
+        Route::get('/support-ai-python-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'aiPythonIndex'])->name('support-ai-python-converted-leads.index');
+        Route::post('/support-ai-python-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-ai-python-converted-leads.update-support-details');
+
+        // Digital Marketing Support Converted Leads Routes
+        Route::get('/support-digital-marketing-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'digitalMarketingIndex'])->name('support-digital-marketing-converted-leads.index');
+        Route::post('/support-digital-marketing-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-digital-marketing-converted-leads.update-support-details');
+
+        // AI Automation Support Converted Leads Routes
+        Route::get('/support-ai-automation-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'aiAutomationIndex'])->name('support-ai-automation-converted-leads.index');
+        Route::post('/support-ai-automation-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-ai-automation-converted-leads.update-support-details');
+
+        // Web Development Support Converted Leads Routes
+        Route::get('/support-web-development-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'webDevelopmentIndex'])->name('support-web-development-converted-leads.index');
+        Route::post('/support-web-development-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-web-development-converted-leads.update-support-details');
+
+        // Vibe Coding Support Converted Leads Routes
+        Route::get('/support-vibe-coding-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'vibeCodingIndex'])->name('support-vibe-coding-converted-leads.index');
+        Route::post('/support-vibe-coding-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-vibe-coding-converted-leads.update-support-details');
+
+        // Graphic Designing Support Converted Leads Routes
+        Route::get('/support-graphic-designing-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'graphicDesigningIndex'])->name('support-graphic-designing-converted-leads.index');
+        Route::post('/support-graphic-designing-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-graphic-designing-converted-leads.update-support-details');
+
+        // Eduthanzeel Support Converted Leads Routes
+        Route::get('/support-eduthanzeel-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'eduthanzeelIndex'])->name('support-eduthanzeel-converted-leads.index');
+        Route::post('/support-eduthanzeel-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-eduthanzeel-converted-leads.update-support-details');
+
+        // E-School Support Converted Leads Routes
+        Route::get('/support-e-school-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'eSchoolIndex'])->name('support-e-school-converted-leads.index');
+        Route::post('/support-e-school-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-e-school-converted-leads.update-support-details');
+
 
         // Invoice Routes
         Route::get('/invoices/student/{studentId}', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');

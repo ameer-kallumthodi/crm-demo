@@ -410,6 +410,184 @@ class SupportConvertedLeadController extends Controller
     }
 
     /**
+     * Display a listing of Hotel Management converted leads for support
+     */
+    public function hotelManagementIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 8, 'Hotel Management Converted Support List', 'admin.converted-leads.support-hotel-management-index');
+    }
+
+    /**
+     * Display a listing of GMVSS converted leads for support
+     */
+    public function gmvssIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 16, 'GMVSS Converted Support List', 'admin.converted-leads.support-gmvss-index');
+    }
+
+    /**
+     * Display a listing of AI with Python converted leads for support
+     */
+    public function aiPythonIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 10, 'AI with Python Converted Support List', 'admin.converted-leads.support-ai-python-index');
+    }
+
+    /**
+     * Display a listing of Digital Marketing converted leads for support
+     */
+    public function digitalMarketingIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 11, 'Digital Marketing Converted Support List', 'admin.converted-leads.support-digital-marketing-index');
+    }
+
+    /**
+     * Display a listing of AI Automation converted leads for support
+     */
+    public function aiAutomationIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 12, 'AI Automation Converted Support List', 'admin.converted-leads.support-ai-automation-index');
+    }
+
+    /**
+     * Display a listing of Web Development converted leads for support
+     */
+    public function webDevelopmentIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 13, 'Web Development & Designing Converted Support List', 'admin.converted-leads.support-web-development-index');
+    }
+
+    /**
+     * Display a listing of Vibe Coding converted leads for support
+     */
+    public function vibeCodingIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 14, 'Vibe Coding Converted Support List', 'admin.converted-leads.support-vibe-coding-index');
+    }
+
+    /**
+     * Display a listing of Graphic Designing converted leads for support
+     */
+    public function graphicDesigningIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 15, 'Graphic Designing Converted Support List', 'admin.converted-leads.support-graphic-designing-index');
+    }
+
+    /**
+     * Display a listing of Eduthanzeel converted leads for support
+     */
+    public function eduthanzeelIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 6, 'Eduthanzeel Converted Support List', 'admin.converted-leads.support-eduthanzeel-index');
+    }
+
+    /**
+     * Display a listing of E-School converted leads for support
+     */
+    public function eSchoolIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 5, 'E-School Converted Support List', 'admin.converted-leads.support-e-school-index');
+    }
+
+    /**
+     * Generic method to get course support index
+     */
+    private function getCourseSupportIndex(Request $request, $courseId, $pageTitle, $viewName)
+    {
+        $query = ConvertedLead::with([
+            'lead', 
+            'course', 
+            'academicAssistant', 
+            'createdBy', 
+            'studentDetails',
+            'supportDetails',
+            'subject',
+            'batch',
+            'admissionBatch'
+        ])->where('course_id', $courseId);
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereIn('created_by', $teamMemberIds);
+                } else {
+                    $query->where('created_by', AuthHelper::getCurrentUserId());
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Can see all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                $query->where('academic_assistant_id', AuthHelper::getCurrentUserId());
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->where('created_by', AuthHelper::getCurrentUserId());
+            } else {
+                $query->where('created_by', AuthHelper::getCurrentUserId());
+            }
+        }
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhereHas('studentDetails', function($subQ) use ($search) {
+                      $subQ->where('application_number', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
+        if ($request->filled('registration_status')) {
+            $query->whereHas('supportDetails', function($q) use ($request) {
+                $q->where('registration_status', $request->registration_status);
+            });
+        }
+
+        if ($request->filled('student_status')) {
+            $query->whereHas('supportDetails', function($q) use ($request) {
+                $q->where('student_status', $request->student_status);
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(50);
+        $batches = Batch::where('course_id', $courseId)->orderBy('title')->get();
+        $subjects = Subject::where('course_id', $courseId)->orderBy('title')->get();
+        $country_codes = \App\Helpers\CountriesHelper::get_country_code();
+
+        return view($viewName, compact(
+            'convertedLeads', 
+            'batches', 
+            'subjects', 
+            'country_codes',
+            'pageTitle'
+        ));
+    }
+
+    /**
      * Format response value for display
      */
     private function formatResponseValue($field, $value)

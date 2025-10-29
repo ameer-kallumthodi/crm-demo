@@ -133,6 +133,36 @@
                     <a href="{{ route('admin.support-nios-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> NIOS Converted Support List
                     </a>
+                    <a href="{{ route('admin.support-hotel-management-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Hotel Management Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-gmvss-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> GMVSS Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> AI with Python Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Digital Marketing Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> AI Automation Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-web-development-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Web Development & Designing Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Vibe Coding Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Graphic Designing Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Eduthanzeel Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-e-school-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> E-School Converted Support List
+                    </a>
                 </div>
             </div>
         </div>
