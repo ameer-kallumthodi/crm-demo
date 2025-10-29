@@ -28,6 +28,8 @@ class PermissionHelper
             return self::has_permission_finance($permission);
         } elseif (RoleHelper::is_post_sales()) {
             return self::has_permission_post_sales($permission);
+        } elseif (RoleHelper::is_support_team()) {
+            return self::has_permission_support_team($permission);
         }
         
         return false;
@@ -151,7 +153,7 @@ class PermissionHelper
     }
 
     /**
-     * Academic Assistant permissions
+     * Post Sales permissions
      */
     public static function has_permission_post_sales($permission = '')
     {
@@ -160,6 +162,33 @@ class PermissionHelper
             'leads/index',
             'profile/index',
             'admin/converted-leads/index',
+        ];
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * Support Team permissions
+     */
+    public static function has_permission_support_team($permission = '')
+    {
+        $permissions = [
+            'dashboard/index',
+            'leads/index',
+            'profile/index',
+            'admin/converted-leads/index',
+            'admin/support-team/index',
+            'admin/support-bosse-converted-leads/index',
+            'admin/support-nios-converted-leads/index',
+            'admin/support-hotel-management-converted-leads/index',
+            'admin/support-gmvss-converted-leads/index',
+            'admin/support-ai-python-converted-leads/index',
+            'admin/support-digital-marketing-converted-leads/index',
+            'admin/support-ai-automation-converted-leads/index',
+            'admin/support-web-development-converted-leads/index',
+            'admin/support-vibe-coding-converted-leads/index',
+            'admin/support-graphic-designing-converted-leads/index',
+            'admin/support-eduthanzeel-converted-leads/index',
+            'admin/support-e-school-converted-leads/index',
         ];
         return in_array($permission, $permissions);
     }
