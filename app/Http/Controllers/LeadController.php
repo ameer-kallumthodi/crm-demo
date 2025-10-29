@@ -52,10 +52,17 @@ class LeadController extends Controller
         ->notDropped();
 
         // Apply filters
+        // Only apply date filters if search_key is not provided (to allow searching across all dates)
         $fromDate = $request->get('date_from', now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', now()->format('Y-m-d'));
         
-        $query->byDateRange($fromDate, $toDate);
+        if (!$request->filled('search_key')) {
+            $query->byDateRange($fromDate, $toDate);
+        } else {
+            // When searching, clear the date values to show search is across all dates
+            $fromDate = '';
+            $toDate = '';
+        }
 
         if ($request->filled('lead_status_id')) {
             $query->where('lead_status_id', $request->lead_status_id);
@@ -193,10 +200,17 @@ class LeadController extends Controller
         ->notDropped();
 
         // Apply filters
+        // Only apply date filters if search_key is not provided (to allow searching across all dates)
         $fromDate = $request->get('date_from', now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', now()->format('Y-m-d'));
         
-        $query->byDateRange($fromDate, $toDate);
+        if (!$request->filled('search_key')) {
+            $query->byDateRange($fromDate, $toDate);
+        } else {
+            // When searching, clear the date values to show search is across all dates
+            $fromDate = '';
+            $toDate = '';
+        }
 
         if ($request->filled('lead_status_id')) {
             $query->where('lead_status_id', $request->lead_status_id);

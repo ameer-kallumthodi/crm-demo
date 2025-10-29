@@ -50,14 +50,14 @@
                         <div class="col-6 col-md-4 col-lg-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control form-control-sm" name="date_from" id="date_from"
-                                value="{{ request('date_from', \Carbon\Carbon::now()->subDays(7)->format('Y-m-d')) }}">
+                                value="{{ $fromDate }}">
                         </div>
 
                         <!-- To Date -->
                         <div class="col-6 col-md-4 col-lg-2">
                             <label for="date_to" class="form-label">To Date</label>
                             <input type="date" class="form-control form-control-sm" name="date_to" id="date_to"
-                                value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
+                                value="{{ $toDate }}">
                         </div>
 
                         <!-- Status -->
