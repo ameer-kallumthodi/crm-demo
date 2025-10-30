@@ -903,12 +903,6 @@ class LeadController extends Controller
 
     public function ajax_edit(Lead $lead)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_team_lead()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Access denied'
-            ], 403);
-        }
         $currentUser = AuthHelper::getCurrentUser();
         $isTeamLead = $currentUser && AuthHelper::isTeamLead();
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
@@ -986,15 +980,6 @@ class LeadController extends Controller
 
     public function update(Request $request, Lead $lead)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_team_lead()) {
-            if (request()->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Access denied'
-                ], 403);
-            }
-            return redirect()->back()->with('message_danger', 'Access denied');
-        }
         try {
             $validator = Validator::make($request->all(), [
                 'title' => 'nullable|string|max:255',
