@@ -32,7 +32,8 @@ class SupportConvertedLeadController extends Controller
             'subject',
             'batch',
             'admissionBatch'
-        ])->where('course_id', 2); // BOSSE course
+        ])->where('course_id', 2) // BOSSE course
+          ->where('is_academic_verified', 1);
 
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
@@ -202,7 +203,8 @@ class SupportConvertedLeadController extends Controller
             'subject',
             'batch',
             'admissionBatch'
-        ])->where('course_id', 1); // NIOS course
+        ])->where('course_id', 1) // NIOS course
+          ->where('is_academic_verified', 1);
 
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
@@ -420,6 +422,35 @@ class SupportConvertedLeadController extends Controller
     }
 
     /**
+     * Toggle support verification (Support team only)
+     */
+    public function toggleSupportVerification(Request $request, $id)
+    {
+        if (!RoleHelper::is_support_team()) {
+            return response()->json(['success' => false, 'message' => 'Access denied. Support team only.'], 403);
+        }
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+        $currently = (bool) $convertedLead->is_support_verified;
+        if ($currently) {
+            $convertedLead->is_support_verified = 0;
+            $convertedLead->support_verified_by = null;
+            $convertedLead->support_verified_at = null;
+        } else {
+            $convertedLead->is_support_verified = 1;
+            $convertedLead->support_verified_by = AuthHelper::getCurrentUserId();
+            $convertedLead->support_verified_at = now();
+        }
+        $convertedLead->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $currently ? 'Support verification removed.' : 'Support verification completed.',
+            'is_support_verified' => (bool) $convertedLead->is_support_verified,
+        ]);
+    }
+
+    /**
      * Display a listing of Hotel Management converted leads for support
      */
     public function hotelManagementIndex(Request $request)
@@ -514,7 +545,8 @@ class SupportConvertedLeadController extends Controller
             'subject',
             'batch',
             'admissionBatch'
-        ])->where('course_id', $courseId);
+        ])->where('course_id', $courseId)
+          ->where('is_academic_verified', 1);
 
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();

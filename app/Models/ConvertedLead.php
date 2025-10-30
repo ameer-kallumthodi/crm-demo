@@ -35,6 +35,12 @@ class ConvertedLead extends Model
         'updated_by',
         'deleted_by',
         'reg_updated_by',
+        'is_academic_verified',
+        'academic_verified_by',
+        'academic_verified_at',
+        'is_support_verified',
+        'support_verified_by',
+        'support_verified_at',
     ];
 
     protected $casts = [
@@ -42,6 +48,8 @@ class ConvertedLead extends Model
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
         'reg_updated_at' => 'datetime',
+        'academic_verified_at' => 'datetime',
+        'support_verified_at' => 'datetime',
     ];
 
     // Relationships

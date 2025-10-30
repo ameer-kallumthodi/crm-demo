@@ -54,6 +54,12 @@ class ConvertedLeadController extends Controller
                 $query->whereHas('lead', function($q) {
                     $q->where('telecaller_id', AuthHelper::getCurrentUserId());
                 });
+            } elseif (RoleHelper::is_support_team()) {
+                // Support Team: Only see academically verified leads
+                $query->where('is_academic_verified', 1);
+            } elseif (RoleHelper::is_mentor()) {
+                // Mentor: Only see support-verified leads
+                $query->where('is_support_verified', 1);
             }
         }
 
@@ -1615,6 +1621,36 @@ class ConvertedLeadController extends Controller
             'success' => true,
             'message' => 'Register number updated successfully.',
             'register_number' => $convertedLead->register_number
+        ]);
+    }
+
+    /**
+     * Toggle academic verification status for a converted lead
+     */
+    public function toggleAcademicVerification(\Illuminate\Http\Request $request, $id)
+    {
+        if (!\App\Helpers\RoleHelper::is_admin_or_super_admin() && !\App\Helpers\RoleHelper::is_academic_assistant() && !\App\Helpers\RoleHelper::is_admission_counsellor()) {
+            return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
+        }
+
+        $convertedLead = \App\Models\ConvertedLead::findOrFail($id);
+
+        $isCurrentlyVerified = (bool) $convertedLead->is_academic_verified;
+        if ($isCurrentlyVerified) {
+            $convertedLead->is_academic_verified = 0;
+            $convertedLead->academic_verified_by = null;
+            $convertedLead->academic_verified_at = null;
+        } else {
+            $convertedLead->is_academic_verified = 1;
+            $convertedLead->academic_verified_by = \App\Helpers\AuthHelper::getCurrentUserId();
+            $convertedLead->academic_verified_at = now();
+        }
+        $convertedLead->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $isCurrentlyVerified ? 'Academic verification removed.' : 'Academic verification completed.',
+            'is_academic_verified' => (bool) $convertedLead->is_academic_verified,
         ]);
     }
 

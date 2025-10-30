@@ -513,6 +513,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/converted-leads/{id}/details-pdf', [App\Http\Controllers\ConvertedLeadController::class, 'generateDetailsPdf'])->name('converted-leads.details-pdf');
         Route::post('/converted-leads/{id}/id-card-generate', [App\Http\Controllers\ConvertedLeadController::class, 'generateAndStoreIdCard'])->name('converted-leads.id-card-generate');
         Route::get('/converted-leads/{id}/id-card', [App\Http\Controllers\ConvertedLeadController::class, 'viewStoredIdCard'])->name('converted-leads.id-card-view');
+        Route::post('/converted-leads/{id}/toggle-academic-verify', [App\Http\Controllers\ConvertedLeadController::class, 'toggleAcademicVerification'])->name('converted-leads.toggle-academic-verify');
 
         // NIOS Converted Leads Routes
         Route::get('/nios-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'niosIndex'])->name('nios-converted-leads.index');
@@ -560,6 +561,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // NIOS Support Converted Leads Routes
         Route::get('/support-nios-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'niosIndex'])->name('support-nios-converted-leads.index');
         Route::post('/support-nios-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-nios-converted-leads.update-support-details');
+        Route::post('/support-converted-leads/{id}/toggle-support-verify', [App\Http\Controllers\SupportConvertedLeadController::class, 'toggleSupportVerification'])->name('support-converted-leads.toggle-support-verify');
 
         // Hotel Management Support Converted Leads Routes
         Route::get('/support-hotel-management-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'hotelManagementIndex'])->name('support-hotel-management-converted-leads.index');

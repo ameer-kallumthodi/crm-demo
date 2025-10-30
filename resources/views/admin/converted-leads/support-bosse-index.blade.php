@@ -133,6 +133,11 @@
             <div class="card-body">
                 <h6 class="mb-3">Support List</h6>
                 <div class="d-flex gap-2 flex-wrap">
+                    @if(\App\Helpers\RoleHelper::is_support_team())
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-list"></i> All Converted Leads
+                    </a>
+                    @endif
                     <a href="{{ route('admin.support-bosse-converted-leads.index') }}" class="btn btn-outline-primary active">
                         <i class="ti ti-headphones"></i> Bosse Converted Support List
                     </a>
@@ -348,22 +353,23 @@
                                         <a href="{{ route('admin.support-converted-leads.details', $convertedLead->id) }}" class="btn btn-sm btn-primary" title="View Details">
                                             <i class="ti ti-eye"></i> Details
                                         </a>
-                                        <!-- ID Card Generation/View Buttons -->
-                                        @php
-                                            $idCardRecord = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
-                                        @endphp
-                                        
-                                        @if($idCardRecord)
-                                            <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-info" title="View ID Card" target="_blank">
-                                                <i class="ti ti-id"></i>
-                                            </a>
-                                        @else
-                                            <form class="d-inline" action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="POST" class="id-card-generate-form">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
+                                            <!-- ID Card Generation/View Buttons -->
+                                            @php
+                                                $idCardRecord = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                            @endphp
+                                            @if($idCardRecord)
+                                                <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-info" title="View ID Card" target="_blank">
                                                     <i class="ti ti-id"></i>
-                                                </button>
-                                            </form>
+                                                </a>
+                                            @else
+                                                <form class="d-inline" action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="POST" class="id-card-generate-form">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
+                                                        <i class="ti ti-id"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         @endif
                                     </div>
                                 </td>

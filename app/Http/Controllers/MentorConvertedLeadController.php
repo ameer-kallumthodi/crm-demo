@@ -30,7 +30,8 @@ class MentorConvertedLeadController extends Controller
             'subject',
             'batch',
             'admissionBatch'
-        ])->where('course_id', 2); // BOSSE course
+        ])->where('course_id', 2) // BOSSE course
+          ->where('is_support_verified', 1);
 
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
