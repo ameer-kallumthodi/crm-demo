@@ -74,15 +74,7 @@
                         <div class="card shadow-none border h-100">
                             <div class="card-body">
                                 <h6 class="text-muted mb-3"><i class="ti ti-headphones"></i> Support Snapshot</h6>
-                                <div class="mb-2"><span class="text-muted">Registration:</span> 
-                                    @php($reg = $convertedLead->supportDetails?->registration_status)
-                                    <span class="badge {{ $reg ? 'bg-primary' : 'bg-secondary' }}">{{ $reg ?? 'N/A' }}</span>
-                                </div>
-                                <div class="mb-2"><span class="text-muted">Technology:</span> <span class="fw-medium">{{ $convertedLead->supportDetails?->technology_side ?? '-' }}</span></div>
-                                <div class=""><span class="text-muted">Student Status:</span> 
-                                    @php($ss = $convertedLead->supportDetails?->student_status)
-                                    <span class="badge {{ $ss ? 'bg-info' : 'bg-secondary' }} text-dark">{{ $ss ?? 'N/A' }}</span>
-                                </div>
+                                
                             </div>
                         </div>
                     </div>

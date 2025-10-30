@@ -217,24 +217,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="registration_status" class="form-label">Registration Status</label>
-                            <select class="form-select" id="registration_status" name="registration_status">
-                                <option value="">All</option>
-                                <option value="Paid" {{ request('registration_status')==='Paid' ? 'selected' : '' }}>Paid</option>
-                                <option value="Not Paid" {{ request('registration_status')==='Not Paid' ? 'selected' : '' }}>Not Paid</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-sm-6 col-md-2">
-                            <label for="student_status" class="form-label">Student Status</label>
-                            <select class="form-select" id="student_status" name="student_status">
-                                <option value="">All</option>
-                                <option value="Low Level" {{ request('student_status')==='Low Level' ? 'selected' : '' }}>Low Level</option>
-                                <option value="Below Medium" {{ request('student_status')==='Below Medium' ? 'selected' : '' }}>Below Medium</option>
-                                <option value="Medium Level" {{ request('student_status')==='Medium Level' ? 'selected' : '' }}>Medium Level</option>
-                                <option value="Advanced Level" {{ request('student_status')==='Advanced Level' ? 'selected' : '' }}>Advanced Level</option>
-                            </select>
-                        </div>
+                        
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from"
@@ -285,9 +268,9 @@
                                 <th>Subject</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
-                                <th>Registration Status</th>
-                                <th>Technology Side</th>
-                                <th>Student Status</th>
+                                
+                                
+                                
                                 <th>CALL - 1</th>
                                 <th>APP</th>
                                 <th>WhatsApp Group</th>
@@ -309,36 +292,9 @@
                                 <td>{{ $convertedLead->subject?->title ?? '-' }}</td>
                                 <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
                                 <td>{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</td>
-                                <td>
-                                    <div class="inline-edit" data-field="registration_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->registration_status }}">
-                                        <span class="display-value">{{ $convertedLead->supportDetails?->registration_status ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_support_team())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="technology_side" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->technology_side }}">
-                                        <span class="display-value">{{ $convertedLead->supportDetails?->technology_side ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_support_team())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="student_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->student_status }}">
-                                        <span class="display-value">{{ $convertedLead->supportDetails?->student_status ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_support_team())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
+                                
+                                
+                                
                                 <td>
                                     <div class="inline-edit" data-field="call_1" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->call_1 }}">
                                         <span class="display-value">{{ $convertedLead->supportDetails?->call_1 ?? '-' }}</span>
@@ -394,12 +350,29 @@
                                         <a href="{{ route('admin.support-converted-leads.details', $convertedLead->id) }}" class="btn btn-sm btn-primary" title="View Details">
                                             <i class="ti ti-eye"></i> Details
                                         </a>
+                                        <!-- ID Card Generation/View Buttons -->
+                                        @php
+                                            $idCardRecord = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                        @endphp
+                                        
+                                        @if($idCardRecord)
+                                            <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-info" title="View ID Card" target="_blank">
+                                                <i class="ti ti-id"></i>
+                                            </a>
+                                        @else
+                                            <form class="d-inline" action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="POST" class="id-card-generate-form">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
+                                                    <i class="ti ti-id"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="19" class="text-center">No converted leads found for support</td>
+                                <td colspan="16" class="text-center">No converted leads found for support</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -450,14 +423,8 @@
                                     <small class="text-muted d-block">Application Number</small>
                                     <span class="fw-medium">{{ $convertedLead->studentDetails?->application_number ?? 'N/A' }}</span>
                                 </div>
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Registration Status</small>
-                                    <span class="fw-medium">{{ $convertedLead->supportDetails?->registration_status ?? 'N/A' }}</span>
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Student Status</small>
-                                    <span class="fw-medium">{{ $convertedLead->supportDetails?->student_status ?? 'N/A' }}</span>
-                                </div>
+                                
+                                
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
                                     <span class="fw-medium">{{ $convertedLead->created_at->format('d-m-Y') }}</span>
@@ -645,7 +612,7 @@
             
             if (field === 'subject_id') {
                 editForm = createSubjectField(field, currentValue);
-            } else if (['registration_status', 'technology_side', 'student_status', 'call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'app', 'whatsapp_group', 'telegram_group', 'mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5', 'first_live', 'first_exam_registration', 'first_exam', 'second_live', 'second_exam', 'model_exam_live', 'model_exam', 'practical', 'self_registration', 'assignment', 'mock_test', 'admit_card', 'exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6'].includes(field)) {
+            } else if (['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'app', 'whatsapp_group', 'telegram_group', 'mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5', 'first_live', 'first_exam_registration', 'first_exam', 'second_live', 'second_exam', 'model_exam_live', 'model_exam', 'practical', 'self_registration', 'assignment', 'mock_test', 'admit_card', 'exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
             } else {
                 editForm = createInputField(field, currentValue);
@@ -774,29 +741,7 @@
         function createSelectField(field, currentValue) {
             let options = '';
             
-            if (field === 'registration_status') {
-                options = `
-                    <option value="">Select Registration Status</option>
-                    <option value="Paid" ${currentValue === 'Paid' ? 'selected' : ''}>Paid</option>
-                    <option value="Not Paid" ${currentValue === 'Not Paid' ? 'selected' : ''}>Not Paid</option>
-                `;
-            } else if (field === 'technology_side') {
-                options = `
-                    <option value="">Select Technology Side</option>
-                    <option value="No Knowledge" ${currentValue === 'No Knowledge' ? 'selected' : ''}>No Knowledge</option>
-                    <option value="Limited Knowledge" ${currentValue === 'Limited Knowledge' ? 'selected' : ''}>Limited Knowledge</option>
-                    <option value="Moderate Knowledge" ${currentValue === 'Moderate Knowledge' ? 'selected' : ''}>Moderate Knowledge</option>
-                    <option value="High Knowledge" ${currentValue === 'High Knowledge' ? 'selected' : ''}>High Knowledge</option>
-                `;
-            } else if (field === 'student_status') {
-                options = `
-                    <option value="">Select Student Status</option>
-                    <option value="Low Level" ${currentValue === 'Low Level' ? 'selected' : ''}>Low Level</option>
-                    <option value="Below Medium" ${currentValue === 'Below Medium' ? 'selected' : ''}>Below Medium</option>
-                    <option value="Medium Level" ${currentValue === 'Medium Level' ? 'selected' : ''}>Medium Level</option>
-                    <option value="Advanced Level" ${currentValue === 'Advanced Level' ? 'selected' : ''}>Advanced Level</option>
-                `;
-            } else if (['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9'].includes(field)) {
+            if (['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9'].includes(field)) {
                 options = `
                     <option value="">Select Call Status</option>
                     <option value="Call Not Answered" ${currentValue === 'Call Not Answered' ? 'selected' : ''}>Call Not Answered</option>

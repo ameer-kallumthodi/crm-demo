@@ -75,9 +75,7 @@
                 <div class="row g-4">
                     <div class="col-lg-6">
                         <h6 class="text-muted mb-2"><i class="ti ti-headphones me-1"></i> Support Status</h6>
-                        <div class="mb-1"><strong>Registration Status:</strong> {{ $convertedLead->supportDetails?->registration_status ?? '-' }}</div>
-                        <div class="mb-1"><strong>Technology Side:</strong> {{ $convertedLead->supportDetails?->technology_side ?? '-' }}</div>
-                        <div class="mb-1"><strong>Student Status:</strong> {{ $convertedLead->supportDetails?->student_status ?? '-' }}</div>
+                        
                         <div class="mb-1"><strong>APP:</strong> {{ $convertedLead->supportDetails?->app ?? '-' }}</div>
                         <div class="mb-1"><strong>WhatsApp Group:</strong> {{ $convertedLead->supportDetails?->whatsapp_group ?? '-' }}</div>
                         <div class="mb-1"><strong>Telegram Group:</strong> {{ $convertedLead->supportDetails?->telegram_group ?? '-' }}</div>

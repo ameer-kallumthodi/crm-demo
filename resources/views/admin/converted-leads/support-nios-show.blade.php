@@ -54,9 +54,7 @@
                 <div class="row g-4">
                     <div class="col-md-6">
                         <h6 class="text-muted">Support Status</h6>
-                        <div><strong>Registration Status:</strong> {{ $convertedLead->supportDetails?->registration_status ?? '-' }}</div>
-                        <div><strong>Technology Side:</strong> {{ $convertedLead->supportDetails?->technology_side ?? '-' }}</div>
-                        <div><strong>Student Status:</strong> {{ $convertedLead->supportDetails?->student_status ?? '-' }}</div>
+                        
                         <div><strong>APP:</strong> {{ $convertedLead->supportDetails?->app ?? '-' }}</div>
                         <div><strong>WhatsApp Group:</strong> {{ $convertedLead->supportDetails?->whatsapp_group ?? '-' }}</div>
                         <div><strong>Telegram Group:</strong> {{ $convertedLead->supportDetails?->telegram_group ?? '-' }}</div>
