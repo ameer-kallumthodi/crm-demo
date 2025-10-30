@@ -727,10 +727,11 @@ class LeadController extends Controller
     public function status_update(Lead $lead)
     {
         $leadStatuses = LeadStatus::all();
+        $courses = Course::active()->orderBy('title')->get(['id', 'title']);
         $lead->load(['leadActivities' => function($query) {
             $query->with(['leadStatus', 'createdBy'])->orderBy('created_at', 'desc');
         }]);
-        return view('admin.leads.status-update-modal', compact('lead', 'leadStatuses'));
+        return view('admin.leads.status-update-modal', compact('lead', 'leadStatuses', 'courses'));
     }
 
     public function status_update_submit(Request $request, Lead $lead)
@@ -747,6 +748,7 @@ class LeadController extends Controller
                 'rating' => 'required|integer|min:1|max:10',
                 'date' => 'required|date',
                 'time' => 'required',
+                'course_id' => 'nullable|exists:courses,id',
             ];
 
             // Only add followup_date validation if status is 2
@@ -783,6 +785,9 @@ class LeadController extends Controller
                 'remarks' => $request->remarks,
                 'updated_by' => AuthHelper::getCurrentUserId()
             ];
+            if ($request->filled('course_id')) {
+                $leadUpdateData['course_id'] = $request->course_id;
+            }
             
             // If status is 2 (followup), store followup date
             if ($request->lead_status_id == 2 && $request->followup_date) {
@@ -898,6 +903,12 @@ class LeadController extends Controller
 
     public function ajax_edit(Lead $lead)
     {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_team_lead()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
         $currentUser = AuthHelper::getCurrentUser();
         $isTeamLead = $currentUser && AuthHelper::isTeamLead();
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
@@ -975,6 +986,15 @@ class LeadController extends Controller
 
     public function update(Request $request, Lead $lead)
     {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_team_lead()) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Access denied'
+                ], 403);
+            }
+            return redirect()->back()->with('message_danger', 'Access denied');
+        }
         try {
             $validator = Validator::make($request->all(), [
                 'title' => 'nullable|string|max:255',

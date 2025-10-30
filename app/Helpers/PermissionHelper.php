@@ -39,18 +39,11 @@ class PermissionHelper
     {
         if (RoleHelper::is_admin_or_super_admin()) {
             return true;
-        } elseif (RoleHelper::is_academic_assistant()) {
-            return false;
-        } elseif (RoleHelper::is_admission_counsellor()) {
-            return false;
-        } elseif (RoleHelper::is_finance()) {
-            return false;
-        } elseif (RoleHelper::is_post_sales()) {
-            return false;
-        } elseif (RoleHelper::is_telecaller()) {
+        }
+        if (RoleHelper::is_team_lead()) {
             return true;
         }
-        
+
         return false;
     }
 

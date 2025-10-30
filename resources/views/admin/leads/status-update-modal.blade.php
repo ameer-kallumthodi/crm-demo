@@ -48,6 +48,20 @@
         </div>
 
         <div class="mb-3">
+            <label class="form-label" for="course_id">Course</label>
+            <select class="form-select" name="course_id" id="course_id">
+                <option value="">Select Course</option>
+                @isset($courses)
+                @foreach($courses as $course)
+                <option value="{{ $course->id }}" {{ (string)$course->id === (string)$lead->course_id ? 'selected' : '' }}>
+                    {{ $course->title }}
+                </option>
+                @endforeach
+                @endisset
+            </select>
+        </div>
+
+        <div class="mb-3">
             <label class="form-label" for="rating">Lead Rating (1 - 10) <span class="text-danger">*</span></label>
             <input type="number" class="form-control" name="rating" id="rating"
                 min="1" max="10" required placeholder="Enter rating between 1 and 10">
