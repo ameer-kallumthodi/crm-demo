@@ -83,7 +83,7 @@ class InvoiceController extends Controller
      */
     public function store(Request $request, $studentId)
     {
-        \Log::info('[InvoiceController@store] Incoming invoice create', [
+        Log::info('[InvoiceController@store] Incoming invoice create', [
             'student_id' => $studentId,
             'payload' => $request->all()
         ]);
@@ -106,7 +106,7 @@ class InvoiceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            \Log::warning('[InvoiceController@store] Validation failed', [
+            Log::warning('[InvoiceController@store] Validation failed', [
                 'errors' => $validator->errors()->toArray()
             ]);
             return redirect()->back()
@@ -148,7 +148,7 @@ class InvoiceController extends Controller
                 $this->transferStudentBatch($studentId, $request->batch_id);
             }
 
-            \Log::info('[InvoiceController@store] Invoice created', [
+            Log::info('[InvoiceController@store] Invoice created', [
                 'invoice_id' => $invoice->id,
                 'invoice_type' => $invoice->invoice_type
             ]);
@@ -157,7 +157,7 @@ class InvoiceController extends Controller
                 ->with('message_success', 'Invoice created successfully!');
 
         } catch (\Exception $e) {
-            \Log::error('[InvoiceController@store] Invoice create failed: ' . $e->getMessage(), [
+            Log::error('[InvoiceController@store] Invoice create failed: ' . $e->getMessage(), [
                 'payload' => $request->all()
             ]);
             return redirect()->back()
@@ -264,6 +264,7 @@ class InvoiceController extends Controller
         switch ($currentUserRole) {
             case 1: // Super Admin
             case 2: // Admin
+            case 11: // General Manager
             case 4: // Admission Counsellor
             case 6: // Finance
             case 7: // Post Sales
@@ -319,14 +320,14 @@ class InvoiceController extends Controller
 
             DB::commit();
             
-            \Log::info('Student batch transferred successfully', [
+            Log::info('Student batch transferred successfully', [
                 'student_id' => $studentId,
                 'new_batch_id' => $batchId
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Failed to transfer student batch: ' . $e->getMessage(), [
+            Log::error('Failed to transfer student batch: ' . $e->getMessage(), [
                 'student_id' => $studentId,
                 'batch_id' => $batchId
             ]);

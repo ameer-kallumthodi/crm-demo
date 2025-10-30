@@ -96,6 +96,16 @@
                     </a>
                 </li>
                 @endif
+                @if(has_permission('admin/general-managers/index'))
+                <li class="pc-item {{ request()->routeIs('admin.general-managers.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.general-managers.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-user-shield"></i>
+                        </span>
+                        <span class="pc-mtext">General Managers</span>
+                    </a>
+                </li>
+                @endif
                 @if(has_permission('admin/admission-counsellors/index'))
                 <li class="pc-item {{ request()->routeIs('admin.admission-counsellors.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.admission-counsellors.index') }}" class="pc-link">

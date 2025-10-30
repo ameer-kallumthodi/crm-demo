@@ -28,8 +28,11 @@ class ConvertedLeadController extends Controller
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
         if ($currentUser) {
-            // Check team lead first (highest priority)
-            if (RoleHelper::is_team_lead()) {
+            // General Manager: Can see ALL converted leads (no filter)
+            if (RoleHelper::is_general_manager()) {
+                // No filtering
+            // Check team lead next
+            } elseif (RoleHelper::is_team_lead()) {
                 // Team Lead: Can see converted leads from their team
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
@@ -145,7 +148,9 @@ class ConvertedLeadController extends Controller
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
         if ($currentUser) {
-            if (RoleHelper::is_team_lead()) {
+            if (RoleHelper::is_general_manager()) {
+                // No filtering
+            } elseif (RoleHelper::is_team_lead()) {
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
@@ -245,7 +250,9 @@ class ConvertedLeadController extends Controller
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
         if ($currentUser) {
-            if (RoleHelper::is_team_lead()) {
+            if (RoleHelper::is_general_manager()) {
+                // No filtering
+            } elseif (RoleHelper::is_team_lead()) {
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();

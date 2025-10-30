@@ -92,6 +92,17 @@ if (!function_exists('is_mentor')) {
 }
 
 
+if (!function_exists('is_general_manager')) {
+    /**
+     * Check if current user is General Manager
+     */
+    function is_general_manager()
+    {
+        return \App\Helpers\RoleHelper::is_general_manager();
+    }
+}
+
+
 if (!function_exists('is_logged_in')) {
     /**
      * Check if user is logged in

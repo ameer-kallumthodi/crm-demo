@@ -189,6 +189,24 @@ class RoleHelper
 
 
     /**
+     * Check if current user is General Manager
+     */
+    public static function is_general_manager()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        return $user->role_id == 11;
+    }
+
+
+    /**
      * Check if current user has admin or super admin role
      */
     public static function is_admin_or_super_admin()

@@ -30,6 +30,8 @@ class PermissionHelper
             return self::has_permission_post_sales($permission);
         } elseif (RoleHelper::is_support_team()) {
             return self::has_permission_support_team($permission);
+        } elseif (RoleHelper::is_general_manager()) {
+            return self::has_permission_general_manager($permission);
         }
         
         return false;
@@ -48,6 +50,8 @@ class PermissionHelper
         } elseif (RoleHelper::is_post_sales()) {
             return false;
         } elseif (RoleHelper::is_telecaller()) {
+            return true;
+        } elseif (RoleHelper::is_general_manager()) {
             return true;
         }
         
@@ -189,6 +193,27 @@ class PermissionHelper
             'admin/support-graphic-designing-converted-leads/index',
             'admin/support-eduthanzeel-converted-leads/index',
             'admin/support-e-school-converted-leads/index',
+        ];
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * General Manager permissions
+     */
+    public static function has_permission_general_manager($permission = '')
+    {
+        $permissions = [
+            'dashboard/index',
+            'leads/index',
+            'leads/followup',
+            'leads/registration-form-submitted',
+            'admin/converted-leads/index',
+            'admin/reports/leads',
+            'admin/general-managers/index',
+            // User Management (index pages; actions are guarded in controllers)
+            'admin/telecallers/index',
+            'admin/post-sales/index',
+            'profile/index',
         ];
         return in_array($permission, $permissions);
     }

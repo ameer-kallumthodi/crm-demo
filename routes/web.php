@@ -366,6 +366,16 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/admission-counsellors-change-password/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'changePassword'])->name('admission-counsellors.change-password');
         Route::post('/admission-counsellors-update-password/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'updatePassword'])->name('admission-counsellors.update-password');
 
+        // General Manager routes (role_id = 11)
+        Route::resource('general-managers', App\Http\Controllers\GeneralManagerController::class);
+        Route::get('/general-managers-add', [App\Http\Controllers\GeneralManagerController::class, 'ajax_add'])->name('general-managers.add');
+        Route::get('/general-managers-edit/{id}', [App\Http\Controllers\GeneralManagerController::class, 'ajax_edit'])->name('general-managers.edit');
+        Route::post('/general-managers-submit', [App\Http\Controllers\GeneralManagerController::class, 'submit'])->name('general-managers.submit');
+        Route::put('/general-managers-update/{id}', [App\Http\Controllers\GeneralManagerController::class, 'update'])->name('general-managers.update');
+        Route::delete('/general-managers-delete/{id}', [App\Http\Controllers\GeneralManagerController::class, 'delete'])->name('general-managers.delete');
+        Route::get('/general-managers-change-password/{id}', [App\Http\Controllers\GeneralManagerController::class, 'changePassword'])->name('general-managers.change-password');
+        Route::post('/general-managers-update-password/{id}', [App\Http\Controllers\GeneralManagerController::class, 'updatePassword'])->name('general-managers.update-password');
+
         // Academic Assistant routes (role_id = 5)
         Route::resource('academic-assistants', App\Http\Controllers\AcademicAssistantController::class);
         Route::get('/academic-assistants-add', [App\Http\Controllers\AcademicAssistantController::class, 'ajax_add'])->name('academic-assistants.add');

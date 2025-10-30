@@ -66,7 +66,7 @@ class LeadUGPGRegistrationController extends Controller
             'whatsapp_code' => 'required|string|max:10',
             'residential_address' => 'required|string',
             'university_course_id' => 'required|exists:university_courses,id',
-            'back_year' => 'required_if:university_id,1|string',
+            'back_year' => 'required_if:university_id,1',
             'batch_id' => 'required|exists:batches,id',
             'sslc_certificate' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1024',
             'passport_photo' => 'required|file|mimes:jpg,jpeg,png|max:1024',

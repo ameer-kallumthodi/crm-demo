@@ -74,6 +74,12 @@ class UserRoleSeeder extends Seeder
                 'description' => 'Teacher access for teaching and student management',
                 'is_active' => true,
             ],
+            [
+                'id' => 11,
+                'title' => 'General Manager',
+                'description' => 'General Manager with extended access over leads and teams',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($roles as $role) {

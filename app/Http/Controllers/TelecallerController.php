@@ -7,6 +7,7 @@ use App\Models\UserRole;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use App\Helpers\RoleHelper;
 use App\Helpers\AuthHelper;
 
@@ -14,7 +15,7 @@ class TelecallerController extends Controller
 {
     public function index()
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -27,7 +28,7 @@ class TelecallerController extends Controller
 
     public function store(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -56,7 +57,7 @@ class TelecallerController extends Controller
 
     public function show(User $telecaller)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -88,7 +89,7 @@ class TelecallerController extends Controller
 
     public function ajax_add(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -101,11 +102,11 @@ class TelecallerController extends Controller
 
     public function submit(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $validator = \Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
@@ -152,7 +153,7 @@ class TelecallerController extends Controller
 
     public function ajax_edit($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -164,11 +165,11 @@ class TelecallerController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $validator = \Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
             'phone' => 'nullable|string|max:20',
@@ -248,7 +249,7 @@ class TelecallerController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $validator = \Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'password' => 'required|string|min:8|confirmed',
         ]);
 

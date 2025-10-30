@@ -508,6 +508,7 @@ class PaymentController extends Controller
         switch ($currentUserRole) {
             case 1: // Super Admin
             case 2: // Admin
+            case 11: // General Manager
             case 3: // Telecaller
             case 4: // Admission Counsellor
             case 5: // Academic Assistant

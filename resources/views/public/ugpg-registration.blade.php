@@ -931,10 +931,24 @@
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => response.json())
+            .then(async response => {
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const data = isJson ? await response.json() : null;
+                if (!response.ok) {
+                    if (response.status === 422 && data && data.errors) {
+                        // Collect first validation error message
+                        const firstError = Object.values(data.errors)[0]?.[0] || 'Validation failed.';
+                        throw new Error(firstError);
+                    }
+                    throw new Error(data?.message || 'Request failed.');
+                }
+                return data;
+            })
             .then(data => {
                 if (data.success) {
                     clearSavedData();
@@ -950,7 +964,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                showAlert('An error occurred while submitting the form. Please try again.', 'danger');
+                showAlert(error.message || 'An error occurred while submitting the form. Please try again.', 'danger');
             })
             .finally(() => {
                 submitBtn.innerHTML = originalText;
@@ -979,3 +993,4 @@
     </script>
 </body>
 </html>
+
