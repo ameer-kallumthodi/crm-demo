@@ -261,12 +261,14 @@
                                                 title="View Lead">
                                                 <i class="ti ti-eye"></i>
                                             </a>
-                                            @if(\App\Helpers\PermissionHelper::has_lead_action_permission())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_team_lead())
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
                                                 onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
                                                 title="Edit Lead">
                                                 <i class="ti ti-edit"></i>
                                             </a>
+                                            @endif
+                                            @if(\App\Helpers\PermissionHelper::has_lead_action_permission())
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-success"
                                                 onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')"
                                                 title="Update Status">
