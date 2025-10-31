@@ -32,6 +32,8 @@ class PermissionHelper
             return self::has_permission_support_team($permission);
         } elseif (RoleHelper::is_general_manager()) {
             return self::has_permission_general_manager($permission);
+		} elseif (RoleHelper::is_mentor()) {
+			return self::has_permission_mentor($permission);
         }
         
         return false;
@@ -217,6 +219,20 @@ class PermissionHelper
         ];
         return in_array($permission, $permissions);
     }
+
+	/**
+	 * Mentor permissions
+	 */
+	public static function has_permission_mentor($permission = '')
+	{
+		$permissions = [
+			'dashboard/index',
+			'leads/index',
+			'admin/converted-leads/index',
+            'profile/index',
+		];
+		return in_array($permission, $permissions);
+	}
 
 
     /**

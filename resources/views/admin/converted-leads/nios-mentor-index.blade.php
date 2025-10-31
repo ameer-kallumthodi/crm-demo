@@ -111,6 +111,11 @@
             <div class="card-body">
                 <h6 class="mb-3">Mentor List</h6>
                 <div class="d-flex gap-2 flex-wrap">
+                    @if(\App\Helpers\RoleHelper::is_mentor())
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-list"></i> All Converted Leads
+                    </a>
+                    @endif
                     <a href="{{ route('admin.mentor-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Bosse Converted Mentor List
                     </a>
