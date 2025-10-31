@@ -533,6 +533,11 @@
                                     @php $isVerified = (bool) ($convertedLead->is_academic_verified ?? false); @endphp
                                     <span class="badge {{ $isVerified ? 'bg-success' : 'bg-secondary' }}">{{ $isVerified ? 'Verified' : 'Not Verified' }}</span>
                                 </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Support</small>
+                                    @php $isSupportVerified = (bool) ($convertedLead->is_support_verified ?? false); @endphp
+                                    <span class="badge {{ $isSupportVerified ? 'bg-success' : 'bg-secondary' }}">{{ $isSupportVerified ? 'Verified' : 'Not Verified' }}</span>
+                                </div>
                             </div>
                             
                             <!-- Action Buttons -->
@@ -557,6 +562,13 @@
                                     data-verified="{{ $isVerified ? 1 : 0 }}"
                                     data-url="{{ route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) }}">
                                     <i class="ti {{ $isVerified ? 'ti-x' : 'ti-check' }} me-1"></i>{{ $isVerified ? 'Unverify' : 'Verify' }}
+                                </button>
+                                <button type="button" class="btn btn-sm {{ $isSupportVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-support-verify-btn"
+                                    data-id="{{ $convertedLead->id }}"
+                                    data-name="{{ $convertedLead->name }}"
+                                    data-verified="{{ $isSupportVerified ? 1 : 0 }}"
+                                    data-url="{{ route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) }}">
+                                    <i class="ti {{ $isSupportVerified ? 'ti-x' : 'ti-check' }} me-1"></i>{{ $isSupportVerified ? 'Unverify Support' : 'Verify Support' }}
                                 </button>
                                 @if($convertedLead->register_number)
                                     @php

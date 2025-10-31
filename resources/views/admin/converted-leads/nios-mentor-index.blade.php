@@ -885,15 +885,26 @@
 .inline-edit .edit-form input,
 .inline-edit .edit-form select {
     width: 100%;
-    margin-bottom: 8px;
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.inline-edit .edit-form input:focus,
+.inline-edit .edit-form select:focus {
+    border-color: #7366ff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(115,102,255,0.15);
 }
 
 .inline-edit .edit-form .btn-group {
-    width: 100%;
+    margin-top: 5px;
 }
 
 .inline-edit .edit-form .btn {
-    flex: 1;
+    padding: 2px 8px;
+    font-size: 11px;
 }
 </style>
 @endpush
@@ -901,177 +912,87 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Handle batch change to load admission batches
-    $('#batch_id').change(function() {
-        const batchId = $(this).val();
-        const $admissionBatchSelect = $('#admission_batch_id');
-        
-        if (batchId) {
-            $.get(`/api/admission-batches/by-batch/${batchId}`, function(data) {
-                $admissionBatchSelect.html('<option value="">All Admission Batches</option>');
-                data.forEach(function(batch) {
-                    $admissionBatchSelect.append(`<option value="${batch.id}">${batch.title}</option>`);
-                });
-            }).fail(function() {
-                $admissionBatchSelect.html('<option value="">Error loading admission batches</option>');
-            });
-        } else {
-            $admissionBatchSelect.html('<option value="">All Admission Batches</option>');
-        }
-    });
-
-    // Inline editing functionality
-    $('.edit-btn').click(function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const $inlineEdit = $(this).closest('.inline-edit');
-        const field = $inlineEdit.data('field');
-        const id = $inlineEdit.data('id');
-        const currentValue = $inlineEdit.data('current') || '';
-        
-        if ($inlineEdit.hasClass('editing')) {
+    // Dependent filters: admission batches by batch
+    function loadAdmissionBatchesByBatch(batchId, selectedId) {
+        const $admission = $('#admission_batch_id');
+        $admission.html('<option value="">Loading...</option>');
+        if (!batchId) {
+            $admission.html('<option value="">All Admission Batches</option>');
             return;
         }
-        
-        $inlineEdit.addClass('editing');
-        
-        let inputHtml = '';
-        
-        if (field === 'subject_id') {
-            inputHtml = createSubjectField(field, currentValue, id);
-        } else if (field === 'problems') {
-            inputHtml = createTextareaField(field, currentValue);
-        } else if (['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'call_10'].includes(field)) {
-            inputHtml = createSelectField(field, currentValue, [
-                'Call Not Answered', 'Switched Off', 'Line Busy', 'Student Asks to Call Later', 
-                'Lack of Interest in Conversation', 'Wrong Contact', 'Inconsistent Responses', 'Task Complete'
-            ]);
-        } else if (['mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5'].includes(field)) {
-            inputHtml = createSelectField(field, currentValue, ['Not Respond', 'Task Complete']);
-        } else if (['app', 'whatsapp_group', 'telegram_group', 'first_live', 'second_live', 'model_exam_live', 'assignment', 'exam_fees', 'pcp_class'].includes(field)) {
-            inputHtml = createSelectField(field, currentValue, ['Not Respond', 'Task Complete']);
-        } else if (['first_exam', 'second_exam', 'model_exam', 'particle_exam'].includes(field)) {
-            inputHtml = createSelectField(field, currentValue, ['Did not log in on time', 'missed the exam', 'technical issue', 'task complete']);
-        } else if (['practical_record'].includes(field)) {
-            inputHtml = createSelectField(field, currentValue, ['Not Respond', '1 Subject Attend', '2 Subject Attend', '3 Subject Attend', '4 Subject Attend', '5 Subject Attend', '6 Subject Attend', 'Task Complete']);
-        } else if (['id_card', 'practical_hall_ticket', 'theory_hall_ticket'].includes(field)) {
-            inputHtml = createSelectField(field, currentValue, ['Did Not', 'Task Complete']);
-        } else if (['exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6'].includes(field)) {
-            inputHtml = createSelectField(field, currentValue, ['Did not log in on time', 'missed the exam', 'technical issue', 'task complete']);
-        } else if (['technology_side'].includes(field)) {
-            inputHtml = createSelectField(field, currentValue, ['No Knowledge', 'Limited Knowledge', 'Moderate Knowledge', 'High Knowledge']);
-        } else if (['student_status'].includes(field)) {
-            inputHtml = createSelectField(field, currentValue, ['Low Level', 'Below Medium', 'Medium Level', 'Advanced Level']);
-        } else if (['status'].includes(field)) {
-            inputHtml = createSelectField(field, currentValue, ['Paid', 'Admission cancel', 'Active', 'Inactive']);
-        } else {
-            inputHtml = createInputField(field, currentValue);
-        }
-        
-        $inlineEdit.append(inputHtml);
-    });
-    
-    function createInputField(field, value) {
-        return `
-            <div class="edit-form">
-                <input type="text" class="form-control" value="${value}" data-field="${field}">
-                <div class="btn-group w-100">
-                    <button type="button" class="btn btn-success btn-sm save-btn">
-                        <i class="ti ti-check"></i> Save
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm cancel-btn">
-                        <i class="ti ti-x"></i> Cancel
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    
-    function createTextareaField(field, value) {
-        return `
-            <div class="edit-form">
-                <textarea class="form-control" rows="3" data-field="${field}">${value}</textarea>
-                <div class="btn-group w-100">
-                    <button type="button" class="btn btn-success btn-sm save-btn">
-                        <i class="ti ti-check"></i> Save
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm cancel-btn">
-                        <i class="ti ti-x"></i> Cancel
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    
-    function createSelectField(field, value, options) {
-        let optionsHtml = '<option value="">Select ' + field.replace('_', ' ') + '</option>';
-        options.forEach(option => {
-            const selected = option === value ? 'selected' : '';
-            optionsHtml += `<option value="${option}" ${selected}>${option}</option>`;
-        });
-        
-        return `
-            <div class="edit-form">
-                <select class="form-select" data-field="${field}">
-                    ${optionsHtml}
-                </select>
-                <div class="btn-group w-100">
-                    <button type="button" class="btn btn-success btn-sm save-btn">
-                        <i class="ti ti-check"></i> Save
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm cancel-btn">
-                        <i class="ti ti-x"></i> Cancel
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    
-    function createSubjectField(field, value, id) {
-        return `
-            <div class="edit-form">
-                <select class="form-select" data-field="${field}">
-                    <option value="">Select Subject</option>
-                </select>
-                <div class="btn-group w-100">
-                    <button type="button" class="btn btn-success btn-sm save-btn">
-                        <i class="ti ti-check"></i> Save
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm cancel-btn">
-                        <i class="ti ti-x"></i> Cancel
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    
-    function loadSubjectsForEdit($select, currentValue) {
-        $.get('/api/subjects/by-course/1', function(data) {
-            $select.html('<option value="">Select Subject</option>');
-            data.forEach(function(item) {
-                const selected = item.id == currentValue ? 'selected' : '';
-                $select.append(`<option value="${item.id}" ${selected}>${item.title}</option>`);
+        $.get(`/api/admission-batches/by-batch/${batchId}`).done(function(list) {
+            let opts = '<option value=\"\">All Admission Batches</option>';
+            list.forEach(function(i) {
+                const sel = String(selectedId) === String(i.id) ? 'selected' : '';
+                opts += `<option value="${i.id}" ${sel}>${i.title}</option>`;
             });
+            $admission.html(opts);
         }).fail(function() {
-            $select.html('<option value="">Error loading subjects</option>');
+            $admission.html('<option value="">All Admission Batches</option>');
         });
     }
-    
-    // Handle save
-    $(document).on('click', '.save-btn', function() {
-        const $inlineEdit = $(this).closest('.inline-edit');
-        const field = $inlineEdit.data('field');
-        const id = $inlineEdit.data('id');
-        const $input = $inlineEdit.find('[data-field]');
-        const value = $input.val();
-        
-        // Show loading
-        $(this).html('<i class="ti ti-loader spin"></i> Saving...');
-        $(this).prop('disabled', true);
-        
+
+    loadAdmissionBatchesByBatch($('#batch_id').val(), $('#admission_batch_id').data('selected'));
+    $('#batch_id').on('change', function() {
+        loadAdmissionBatchesByBatch($(this).val(), '');
+    });
+
+    // Inline editing aligned with BOSSE mentor page
+    $(document).on('click', '.edit-btn', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const container = $(this).closest('.inline-edit');
+        const field = container.data('field');
+        const id = container.data('id');
+        const currentValue = container.data('current') !== undefined ? String(container.data('current')).trim() : container.find('.display-value').text().trim();
+
+        if (container.hasClass('editing')) return;
+
+        $('.inline-edit.editing').not(container).each(function() {
+            $(this).removeClass('editing');
+            $(this).find('.edit-form').remove();
+        });
+
+        let editForm = '';
+        if (field === 'subject_id') {
+            editForm = createSubjectField(field, currentValue);
+        } else if (field === 'problems') {
+            editForm = createTextareaField(field, currentValue);
+        } else if (['registration_status', 'technology_side', 'student_status', 'call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'call_10', 'app', 'whatsapp_group', 'telegram_group', 'mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5', 'first_live', 'first_exam', 'second_live', 'second_exam', 'model_exam_live', 'model_exam', 'assignment', 'exam_fees', 'pcp_class', 'id_card', 'practical_hall_ticket', 'particle_exam', 'theory_hall_ticket', 'practical_record', 'admit_card', 'exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6', 'status'].includes(field)) {
+            editForm = createSelectField(field, currentValue);
+        } else {
+            editForm = createInputField(field, currentValue);
+        }
+
+        container.addClass('editing');
+        container.append(editForm);
+
+        if (field === 'subject_id') {
+            const $select = container.find('select');
+            loadSubjectsForEdit($select, currentValue);
+        }
+
+        container.find('input, select, textarea').first().focus();
+    });
+
+    // Save inline edit
+    $(document).off('click.saveInline').on('click.saveInline', '.save-edit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const container = $(this).closest('.inline-edit');
+        const field = container.data('field');
+        const id = container.data('id');
+        const value = container.find('input, select, textarea').val();
+
+        const btn = $(this);
+        if (btn.data('busy')) return;
+        btn.data('busy', true);
+        btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
+
         $.ajax({
-            url: `/mentor-nios-converted-leads/${id}/update-mentor-details`,
+            url: `/admin/mentor-nios-converted-leads/${id}/update-mentor-details`,
             method: 'POST',
             data: {
                 field: field,
@@ -1080,51 +1001,202 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    $inlineEdit.find('.display-value').text(response.value || value || '-');
-                    $inlineEdit.data('current', value);
-                    $inlineEdit.removeClass('editing');
-                    $inlineEdit.find('.edit-form').remove();
+                    container.find('.display-value').text(response.value || value || '-');
+                    container.data('current', response.value || value);
+                    if (typeof toast_success === 'function') toast_success(response.message || 'Updated successfully');
                 } else {
-                    alert('Error: ' + response.error);
+                    if (typeof toast_error === 'function') toast_error(response.error || 'Update failed');
                 }
             },
             error: function(xhr) {
-                const response = xhr.responseJSON;
-                alert('Error: ' + (response?.error || 'Update failed'));
+                let errorMessage = 'Update failed';
+                if (xhr.responseJSON) {
+                    if (xhr.responseJSON.error) {
+                        errorMessage = xhr.responseJSON.error;
+                    } else if (xhr.responseJSON.errors) {
+                        const errors = xhr.responseJSON.errors;
+                        const fieldErrors = Object.values(errors).flat();
+                        errorMessage = fieldErrors.join(', ');
+                    }
+                }
+                if (typeof toast_error === 'function') toast_error(errorMessage);
             },
             complete: function() {
-                // Reset button
-                $inlineEdit.find('.save-btn').html('<i class="ti ti-check"></i> Save');
-                $inlineEdit.find('.save-btn').prop('disabled', false);
+                btn.data('busy', false);
+                container.removeClass('editing');
+                container.find('.edit-form').remove();
             }
         });
     });
-    
-    // Handle cancel
-    $(document).on('click', '.cancel-btn', function() {
-        const $inlineEdit = $(this).closest('.inline-edit');
-        $inlineEdit.removeClass('editing');
-        $inlineEdit.find('.edit-form').remove();
+
+    // Cancel edit
+    $(document).on('click', '.cancel-edit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const container = $(this).closest('.inline-edit');
+        container.removeClass('editing');
+        container.find('.edit-form').remove();
+        container.find('.display-value').show();
+        container.find('.edit-btn').show();
     });
-    
-    // Load subjects when editing subject field
-    $(document).on('change', '.edit-form select[data-field="subject_id"]', function() {
-        // This is handled by the createSubjectField function
-    });
-    
-    // Initialize subject dropdown when editing
-    $(document).on('click', '.edit-btn', function() {
-        const $inlineEdit = $(this).closest('.inline-edit');
-        const field = $inlineEdit.data('field');
-        
-        if (field === 'subject_id') {
-            setTimeout(() => {
-                const $select = $inlineEdit.find('select[data-field="subject_id"]');
-                const currentValue = $inlineEdit.data('current');
-                loadSubjectsForEdit($select, currentValue);
-            }, 100);
+
+    // Helpers
+    function createInputField(field, currentValue) {
+        const displayValue = currentValue === '-' ? '' : currentValue;
+        return `
+            <div class=\"edit-form\">
+                <input type=\"text\" value=\"${displayValue}\" class=\"form-control form-control-sm\" autocomplete=\"off\" autocapitalize=\"off\" spellcheck=\"false\">
+                <div class=\"btn-group mt-1\">
+                    <button type=\"button\" class=\"btn btn-success btn-sm save-edit\">Save</button>
+                    <button type=\"button\" class=\"btn btn-secondary btn-sm cancel-edit\">Cancel</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function createTextareaField(field, currentValue) {
+        const displayValue = currentValue === '-' ? '' : currentValue;
+        return `
+            <div class=\"edit-form\">
+                <textarea rows=\"3\" class=\"form-control form-control-sm\" autocomplete=\"off\" autocapitalize=\"off\" spellcheck=\"false\">${displayValue}</textarea>
+                <div class=\"btn-group mt-1\">
+                    <button type=\"button\" class=\"btn btn-success btn-sm save-edit\">Save</button>
+                    <button type=\"button\" class=\"btn btn-secondary btn-sm cancel-edit\">Cancel</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function createSubjectField(field, currentValue) {
+        return `
+            <div class=\"edit-form\">
+                <select class=\"form-select form-select-sm\">
+                    <option value=\"\">Select Subject</option>
+                </select>
+                <div class=\"btn-group mt-1\">
+                    <button type=\"button\" class=\"btn btn-success btn-sm save-edit\">Save</button>
+                    <button type=\"button\" class=\"btn btn-secondary btn-sm cancel-edit\">Cancel</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function loadSubjectsForEdit($select, currentValue) {
+        $.get('/api/subjects/by-course/1').done(function(list) {
+            let options = '<option value=\"\">Select Subject</option>';
+            list.forEach(function(item) {
+                const selected = String(currentValue) === String(item.id) ? 'selected' : '';
+                options += `<option value="${item.id}" ${selected}>${item.title}</option>`;
+            });
+            $select.html(options);
+        }).fail(function() {
+            $select.html('<option value="">Error loading subjects</option>');
+        });
+    }
+
+    function createSelectField(field, currentValue) {
+        let options = '';
+
+        if (field === 'registration_status') {
+            options = `
+                <option value=\"\">Select Registration Status</option>
+                <option value=\"Paid\" ${currentValue === 'Paid' ? 'selected' : ''}>Paid</option>
+                <option value=\"Not Paid\" ${currentValue === 'Not Paid' ? 'selected' : ''}>Not Paid</option>
+            `;
+        } else if (field === 'technology_side') {
+            options = `
+                <option value=\"\">Select Technology Side</option>
+                <option value=\"No Knowledge\" ${currentValue === 'No Knowledge' ? 'selected' : ''}>No Knowledge</option>
+                <option value=\"Limited Knowledge\" ${currentValue === 'Limited Knowledge' ? 'selected' : ''}>Limited Knowledge</option>
+                <option value=\"Moderate Knowledge\" ${currentValue === 'Moderate Knowledge' ? 'selected' : ''}>Moderate Knowledge</option>
+                <option value=\"High Knowledge\" ${currentValue === 'High Knowledge' ? 'selected' : ''}>High Knowledge</option>
+            `;
+        } else if (field === 'student_status') {
+            options = `
+                <option value=\"\">Select Student Status</option>
+                <option value=\"Low Level\" ${currentValue === 'Low Level' ? 'selected' : ''}>Low Level</option>
+                <option value=\"Below Medium\" ${currentValue === 'Below Medium' ? 'selected' : ''}>Below Medium</option>
+                <option value=\"Medium Level\" ${currentValue === 'Medium Level' ? 'selected' : ''}>Medium Level</option>
+                <option value=\"Advanced Level\" ${currentValue === 'Advanced Level' ? 'selected' : ''}>Advanced Level</option>
+            `;
+        } else if (['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'call_10'].includes(field)) {
+            options = `
+                <option value=\"\">Select Call Status</option>
+                <option value=\"Call Not Answered\" ${currentValue === 'Call Not Answered' ? 'selected' : ''}>Call Not Answered</option>
+                <option value=\"Switched Off\" ${currentValue === 'Switched Off' ? 'selected' : ''}>Switched Off</option>
+                <option value=\"Line Busy\" ${currentValue === 'Line Busy' ? 'selected' : ''}>Line Busy</option>
+                <option value=\"Student Asks to Call Later\" ${currentValue === 'Student Asks to Call Later' ? 'selected' : ''}>Student Asks to Call Later</option>
+                <option value=\"Lack of Interest in Conversation\" ${currentValue === 'Lack of Interest in Conversation' ? 'selected' : ''}>Lack of Interest in Conversation</option>
+                <option value=\"Wrong Contact\" ${currentValue === 'Wrong Contact' ? 'selected' : ''}>Wrong Contact</option>
+                <option value=\"Inconsistent Responses\" ${currentValue === 'Inconsistent Responses' ? 'selected' : ''}>Inconsistent Responses</option>
+                <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
+            `;
+        } else if (field === 'app' || field === 'whatsapp_group' || field === 'telegram_group' || field === 'first_live' || field === 'second_live' || field === 'model_exam_live' || field === 'assignment' || field === 'exam_fees' || field === 'pcp_class') {
+            options = `
+                <option value=\"\">Select Status</option>
+                <option value=\"Not Respond\" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
+                <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
+            `;
+        } else if (['mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5'].includes(field)) {
+            options = `
+                <option value=\"\">Select Mentor Live Status</option>
+                <option value=\"Not Respond\" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
+                <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
+            `;
+        } else if (['first_exam', 'second_exam', 'model_exam', 'particle_exam'].includes(field)) {
+            options = `
+                <option value=\"\">Select Exam Status</option>
+                <option value=\"Did not log in on time\" ${currentValue === 'Did not log in on time' ? 'selected' : ''}>Did not log in on time</option>
+                <option value=\"missed the exam\" ${currentValue === 'missed the exam' ? 'selected' : ''}>missed the exam</option>
+                <option value=\"technical issue\" ${currentValue === 'technical issue' ? 'selected' : ''}>technical issue</option>
+                <option value=\"task complete\" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
+            `;
+        } else if (field === 'practical_record') {
+            options = `
+                <option value=\"\">Select Practical Record Status</option>
+                <option value=\"Not Respond\" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
+                <option value=\"1 Subject Attend\" ${currentValue === '1 Subject Attend' ? 'selected' : ''}>1 Subject Attend</option>
+                <option value=\"2 Subject Attend\" ${currentValue === '2 Subject Attend' ? 'selected' : ''}>2 Subject Attend</option>
+                <option value=\"3 Subject Attend\" ${currentValue === '3 Subject Attend' ? 'selected' : ''}>3 Subject Attend</option>
+                <option value=\"4 Subject Attend\" ${currentValue === '4 Subject Attend' ? 'selected' : ''}>4 Subject Attend</option>
+                <option value=\"5 Subject Attend\" ${currentValue === '5 Subject Attend' ? 'selected' : ''}>5 Subject Attend</option>
+                <option value=\"6 Subject Attend\" ${currentValue === '6 Subject Attend' ? 'selected' : ''}>6 Subject Attend</option>
+                <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
+            `;
+        } else if (['id_card', 'practical_hall_ticket', 'theory_hall_ticket', 'admit_card'].includes(field)) {
+            options = `
+                <option value=\"\">Select Status</option>
+                <option value=\"Did Not\" ${currentValue === 'Did Not' ? 'selected' : ''}>Did Not</option>
+                <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
+            `;
+        } else if (['exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6'].includes(field)) {
+            options = `
+                <option value=\"\">Select Exam Subject Status</option>
+                <option value=\"Did not log in on time\" ${currentValue === 'Did not log in on time' ? 'selected' : ''}>Did not log in on time</option>
+                <option value=\"missed the exam\" ${currentValue === 'missed the exam' ? 'selected' : ''}>missed the exam</option>
+                <option value=\"technical issue\" ${currentValue === 'technical issue' ? 'selected' : ''}>technical issue</option>
+                <option value=\"task complete\" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
+            `;
+        } else if (field === 'status') {
+            options = `
+                <option value=\"\">Select Status</option>
+                <option value=\"Paid\" ${currentValue === 'Paid' ? 'selected' : ''}>Paid</option>
+                <option value=\"Admission cancel\" ${currentValue === 'Admission cancel' ? 'selected' : ''}>Admission cancel</option>
+                <option value=\"Active\" ${currentValue === 'Active' ? 'selected' : ''}>Active</option>
+                <option value=\"Inactive\" ${currentValue === 'Inactive' ? 'selected' : ''}>Inactive</option>
+            `;
         }
-    });
+
+        return `
+            <div class=\"edit-form\">
+                <select class=\"form-select form-select-sm\">${options}</select>
+                <div class=\"btn-group mt-1\">
+                    <button type=\"button\" class=\"btn btn-success btn-sm save-edit\">Save</button>
+                    <button type=\"button\" class=\"btn btn-secondary btn-sm cancel-edit\">Cancel</button>
+                </div>
+            </div>
+        `;
+    }
 });
 </script>
 @endpush

@@ -993,6 +993,8 @@
             
             if (field === 'subject_id') {
                 editForm = createSubjectField(field, currentValue);
+            } else if (field === 'problems') {
+                editForm = createTextareaField(field, currentValue);
             } else if (['registration_status', 'technology_side', 'student_status', 'call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'app', 'whatsapp_group', 'telegram_group', 'mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5', 'first_live', 'first_exam_registration', 'first_exam', 'second_live', 'second_exam', 'model_exam_live', 'model_exam', 'practical', 'self_registration', 'assignment', 'mock_test', 'admit_card', 'exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
             } else {
@@ -1008,7 +1010,7 @@
                 loadSubjectsForEdit($select, currentValue);
             }
             
-            container.find('input, select').first().focus();
+            container.find('input, select, textarea').first().focus();
         });
         
         // Save inline edit
@@ -1019,7 +1021,7 @@
             const container = $(this).closest('.inline-edit');
             const field = container.data('field');
             const id = container.data('id');
-            const value = container.find('input, select').val();
+            const value = container.find('input, select, textarea').val();
             
             const btn = $(this);
             if (btn.data('busy')) return;
@@ -1098,6 +1100,19 @@
                     <select class="form-select form-select-sm">
                         <option value="">Select Subject</option>
                     </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createTextareaField(field, currentValue) {
+            const displayValue = currentValue === '-' ? '' : currentValue;
+            return `
+                <div class="edit-form">
+                    <textarea rows="3" class="form-control form-control-sm" autocomplete="off" autocapitalize="off" spellcheck="false">${displayValue}</textarea>
                     <div class="btn-group mt-1">
                         <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
                         <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>

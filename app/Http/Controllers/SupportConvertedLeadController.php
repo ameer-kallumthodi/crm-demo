@@ -426,8 +426,8 @@ class SupportConvertedLeadController extends Controller
      */
     public function toggleSupportVerification(Request $request, $id)
     {
-        if (!RoleHelper::is_support_team()) {
-            return response()->json(['success' => false, 'message' => 'Access denied. Support team only.'], 403);
+        if (!(RoleHelper::is_support_team() || RoleHelper::is_admin_or_super_admin())) {
+            return response()->json(['success' => false, 'message' => 'Access denied. Support team or Admin only.'], 403);
         }
 
         $convertedLead = ConvertedLead::findOrFail($id);
