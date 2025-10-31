@@ -49,6 +49,8 @@ class MentorConvertedLeadController extends Controller
                     $query->whereRaw('1 = 0')
                     ->where('is_support_verified', 1);
                 }
+            } elseif (RoleHelper::is_admin_or_super_admin()) {
+                // Admin/Super Admin: Can see all
             } elseif (RoleHelper::is_team_lead()) {
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
@@ -139,6 +141,12 @@ class MentorConvertedLeadController extends Controller
     public function updateMentorDetails(Request $request, $id)
     {
         try {
+            if (!RoleHelper::is_mentor() && !RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Access denied.'
+                ], 403);
+            }
             $convertedLead = ConvertedLead::findOrFail($id);
             $field = $request->field;
             $value = $request->value;
