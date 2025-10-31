@@ -48,8 +48,6 @@ class NiosMentorConvertedLeadController extends Controller
                     // If mentor has no admission batches, return empty result
                     $query->whereRaw('1 = 0');
                 }
-            } elseif (RoleHelper::is_admin_or_super_admin()) {
-                // Admin/Super Admin: Can see all
             } elseif (RoleHelper::is_team_lead()) {
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
@@ -67,6 +65,10 @@ class NiosMentorConvertedLeadController extends Controller
             } elseif (RoleHelper::is_academic_assistant()) {
                 // Can see all
             } elseif (RoleHelper::is_telecaller()) {
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
+            } else {
                 $query->whereHas('lead', function($q) {
                     $q->where('telecaller_id', AuthHelper::getCurrentUserId());
                 });
@@ -142,12 +144,6 @@ class NiosMentorConvertedLeadController extends Controller
     public function updateMentorDetails(Request $request, $id)
     {
         try {
-            if (!RoleHelper::is_mentor() && !RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Access denied.'
-                ], 403);
-            }
             $convertedLead = ConvertedLead::findOrFail($id);
             $field = $request->field;
             $value = $request->value;

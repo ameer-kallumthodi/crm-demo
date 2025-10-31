@@ -1678,7 +1678,7 @@ class ConvertedLeadController extends Controller
     public function inlineUpdate(Request $request, $id)
     {
         // Check if user has permission to update
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
