@@ -1189,10 +1189,27 @@
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => response.json())
+            .then(async (response) => {
+                let data = null;
+                try {
+                    data = await response.json();
+                } catch (e) {}
+                if (!response.ok) {
+                    if (response.status === 422 && data && data.errors) {
+                        const messages = Object.values(data.errors).flat().join('<br>');
+                        showAlert(messages, 'danger');
+                    } else {
+                        showAlert((data && (data.message || data.error)) || 'An error occurred. Please try again.', 'danger');
+                    }
+                    throw new Error('Request failed');
+                }
+                return data;
+            })
             .then(data => {
                 if (data.success) {
                     // Clear saved form data on successful submission
@@ -1211,7 +1228,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                showAlert('An error occurred while submitting the form. Please try again.', 'danger');
+                // Error already shown for non-OK responses
             })
             .finally(() => {
                 submitBtn.innerHTML = originalText;
