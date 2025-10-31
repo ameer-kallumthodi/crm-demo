@@ -36,7 +36,20 @@ class MentorConvertedLeadController extends Controller
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
         if ($currentUser) {
-            if (RoleHelper::is_team_lead()) {
+            if (RoleHelper::is_mentor()) {
+                // Mentor: Filter by admission_batch_id where mentor_id matches
+                $mentorAdmissionBatchIds = AdmissionBatch::where('mentor_id', AuthHelper::getCurrentUserId())
+                    ->pluck('id')
+                    ->toArray();
+                
+                if (!empty($mentorAdmissionBatchIds)) {
+                    $query->whereIn('admission_batch_id', $mentorAdmissionBatchIds);
+                } else {
+                    // If mentor has no admission batches, return empty result
+                    $query->whereRaw('1 = 0')
+                    ->where('is_support_verified', 1);
+                }
+            } elseif (RoleHelper::is_team_lead()) {
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
