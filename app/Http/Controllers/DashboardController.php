@@ -7,6 +7,9 @@ use App\Models\Lead;
 use App\Models\User;
 use App\Models\LeadStatus;
 use App\Models\Country;
+use App\Models\Team;
+use App\Models\LeadSource;
+use App\Models\ConvertedLead;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
 
@@ -25,6 +28,11 @@ class DashboardController extends Controller
      */
     public function index()
     {
+        // Check if user is auditor - show specialized dashboard
+        if (RoleHelper::is_auditor()) {
+            return $this->auditorDashboard();
+        }
+
         $data = [
             'leadStatuses' => $this->getLeadStatusesWithCount(),
             'topTelecallers' => $this->getTopTelecallers(),
@@ -32,7 +40,7 @@ class DashboardController extends Controller
             'totalLeads' => $this->getTotalLeadsCount(),
             'totalUsers' => User::whereNotIn('role_id', [1, 2])->count(),
             'totalAdmins' => User::where('role_id', 2)->count(),
-            'totalTelecallers' => User::where('role_id', 6)->count(),
+            'totalTelecallers' => User::where('role_id', 3)->count(),
             'recentLeads' => $this->getRecentLeads(),
             'monthlyLeads' => $this->getMonthlyLeadsData(),
             'leadSourcesData' => $this->getLeadSourcesData(),
@@ -46,6 +54,25 @@ class DashboardController extends Controller
     }
 
     /**
+     * Show specialized dashboard for auditors
+     */
+    private function auditorDashboard()
+    {
+        $data = [
+            'summaryStats' => $this->getAuditorSummaryStats(),
+            'telecallerStats' => $this->getAuditorTelecallerStats(),
+            'teamStats' => $this->getAuditorTeamStats(),
+            'leadStats' => $this->getAuditorLeadStats(),
+            'convertedLeadsStats' => $this->getAuditorConvertedLeadsStats(),
+            'followupStats' => $this->getAuditorFollowupStats(),
+            'todaysLeads' => $this->getAuditorTodaysLeads(),
+            'chartsData' => $this->getAuditorChartsData(),
+        ];
+
+        return view('dashboard-auditor', $data);
+    }
+
+    /**
      * Get top telecallers by lead count.
      */
     private function getTopTelecallers()
@@ -54,7 +81,7 @@ class DashboardController extends Controller
         $telecallers = User::select('users.id', 'users.name', 'users.phone', 'users.profile_picture')
             ->selectRaw('COUNT(leads.id) as lead_count')
             ->leftJoin('leads', 'users.id', '=', 'leads.telecaller_id')
-            ->where('users.role_id', 6)
+            ->where('users.role_id', 3)
             ->whereNull('users.deleted_at')
             ->whereNull('leads.deleted_at')
             ->groupBy('users.id', 'users.name', 'users.phone', 'users.profile_picture')
@@ -373,5 +400,291 @@ class DashboardController extends Controller
         }
         
         return $query;
+    }
+
+    /**
+     * Get summary statistics for auditor dashboard
+     */
+    private function getAuditorSummaryStats()
+    {
+        $today = now()->startOfDay();
+        $tomorrow = now()->addDay()->startOfDay();
+
+        return [
+            'totalLeads' => Lead::count(),
+            'totalTelecallers' => User::where('role_id', 3)->count(),
+            'totalTeams' => Team::count(),
+            'totalConvertedLeads' => ConvertedLead::count(),
+            'todaysLeads' => Lead::whereBetween('created_at', [$today, $tomorrow])->count(),
+            'todaysConverted' => ConvertedLead::whereBetween('created_at', [$today, $tomorrow])->count(),
+            'followupLeads' => Lead::where('lead_status_id', 2)->count(), // Assuming 2 is Follow-up status
+            'conversionRate' => $this->getConversionRate(),
+        ];
+    }
+
+    /**
+     * Get detailed telecaller statistics for auditor
+     */
+    private function getAuditorTelecallerStats()
+    {
+        return User::select('users.id', 'users.name', 'users.phone', 'users.profile_picture')
+            ->selectRaw('COUNT(leads.id) as total_leads')
+            ->selectRaw('COUNT(CASE WHEN leads.is_converted = 1 THEN 1 END) as converted_leads')
+            ->selectRaw('COUNT(CASE WHEN leads.lead_status_id = 2 THEN 1 END) as followup_leads')
+            ->selectRaw('COUNT(CASE WHEN leads.created_at >= DATE(NOW()) THEN 1 END) as todays_leads')
+            ->leftJoin('leads', 'users.id', '=', 'leads.telecaller_id')
+            ->where('users.role_id', 3)
+            ->whereNull('users.deleted_at')
+            ->groupBy('users.id', 'users.name', 'users.phone', 'users.profile_picture')
+            ->orderByDesc('total_leads')
+            ->get()
+            ->map(function ($telecaller) {
+                $conversionRate = $telecaller->total_leads > 0 
+                    ? round(($telecaller->converted_leads / $telecaller->total_leads) * 100, 2) 
+                    : 0;
+                
+                return [
+                    'id' => $telecaller->id,
+                    'name' => $telecaller->name,
+                    'phone' => $telecaller->phone,
+                    'profile_picture' => $telecaller->profile_picture,
+                    'total_leads' => $telecaller->total_leads,
+                    'converted_leads' => $telecaller->converted_leads,
+                    'followup_leads' => $telecaller->followup_leads,
+                    'todays_leads' => $telecaller->todays_leads,
+                    'conversion_rate' => $conversionRate,
+                ];
+            });
+    }
+
+    /**
+     * Get detailed team statistics for auditor
+     */
+    private function getAuditorTeamStats()
+    {
+        return Team::with('teamLead')
+            ->get()
+            ->map(function ($team) {
+                $teamUserIds = User::where('team_id', $team->id)
+                    ->where('role_id', 3)
+                    ->pluck('id')
+                    ->toArray();
+
+                $totalLeads = Lead::whereIn('telecaller_id', $teamUserIds)->count();
+                $convertedLeads = Lead::whereIn('telecaller_id', $teamUserIds)
+                    ->where('is_converted', true)
+                    ->count();
+                $followupLeads = Lead::whereIn('telecaller_id', $teamUserIds)
+                    ->where('lead_status_id', 2)
+                    ->count();
+                
+                $today = now()->startOfDay();
+                $tomorrow = now()->addDay()->startOfDay();
+                $todaysLeads = Lead::whereIn('telecaller_id', $teamUserIds)
+                    ->whereBetween('created_at', [$today, $tomorrow])
+                    ->count();
+
+                $conversionRate = $totalLeads > 0 
+                    ? round(($convertedLeads / $totalLeads) * 100, 2) 
+                    : 0;
+
+                $teamMembers = User::where('team_id', $team->id)
+                    ->where('role_id', 3)
+                    ->count();
+
+                return [
+                    'id' => $team->id,
+                    'name' => $team->name,
+                    'team_lead' => $team->teamLead ? $team->teamLead->name : 'N/A',
+                    'total_members' => $teamMembers,
+                    'total_leads' => $totalLeads,
+                    'converted_leads' => $convertedLeads,
+                    'followup_leads' => $followupLeads,
+                    'todays_leads' => $todaysLeads,
+                    'conversion_rate' => $conversionRate,
+                ];
+            })
+            ->sortByDesc('total_leads')
+            ->values();
+    }
+
+    /**
+     * Get detailed lead statistics for auditor
+     */
+    private function getAuditorLeadStats()
+    {
+        $leadStatuses = LeadStatus::withCount('leads')->get();
+        
+        $leadSources = LeadSource::select('lead_sources.id', 'lead_sources.title')
+            ->selectRaw('COUNT(leads.id) as lead_count')
+            ->leftJoin('leads', 'lead_sources.id', '=', 'leads.lead_source_id')
+            ->whereNull('leads.deleted_at')
+            ->groupBy('lead_sources.id', 'lead_sources.title')
+            ->orderByDesc('lead_count')
+            ->get();
+
+        return [
+            'by_status' => $leadStatuses->map(function ($status) {
+                return [
+                    'id' => $status->id,
+                    'title' => $status->title,
+                    'count' => $status->leads_count,
+                ];
+            }),
+            'by_source' => $leadSources->map(function ($source) {
+                return [
+                    'id' => $source->id,
+                    'title' => $source->title,
+                    'count' => $source->lead_count,
+                ];
+            }),
+        ];
+    }
+
+    /**
+     * Get converted leads statistics for auditor
+     */
+    private function getAuditorConvertedLeadsStats()
+    {
+        $today = now()->startOfDay();
+        $tomorrow = now()->addDay()->startOfDay();
+        $weekStart = now()->startOfWeek();
+        $monthStart = now()->startOfMonth();
+
+        return [
+            'total' => ConvertedLead::count(),
+            'today' => ConvertedLead::whereBetween('created_at', [$today, $tomorrow])->count(),
+            'this_week' => ConvertedLead::where('created_at', '>=', $weekStart)->count(),
+            'this_month' => ConvertedLead::where('created_at', '>=', $monthStart)->count(),
+            'recent' => ConvertedLead::with(['lead.telecaller' => function($q) {
+                $q->select('id', 'name');
+            }, 'course'])
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get(),
+        ];
+    }
+
+    /**
+     * Get follow-up leads statistics for auditor
+     */
+    private function getAuditorFollowupStats()
+    {
+        $today = now()->startOfDay();
+        $tomorrow = now()->addDay()->startOfDay();
+
+        return [
+            'total' => Lead::where('lead_status_id', 2)->count(),
+            'today' => Lead::where('lead_status_id', 2)
+                ->whereBetween('created_at', [$today, $tomorrow])
+                ->count(),
+            'overdue' => Lead::where('lead_status_id', 2)
+                ->where('followup_date', '<', $today)
+                ->count(),
+            'upcoming' => Lead::where('lead_status_id', 2)
+                ->where('followup_date', '>=', $today)
+                ->where('followup_date', '<=', now()->addDays(7))
+                ->count(),
+            'recent' => Lead::with(['leadStatus', 'telecaller', 'leadSource'])
+                ->where('lead_status_id', 2)
+                ->orderBy('followup_date', 'asc')
+                ->limit(10)
+                ->get(),
+        ];
+    }
+
+    /**
+     * Get today's leads for auditor
+     */
+    private function getAuditorTodaysLeads()
+    {
+        $today = now()->startOfDay();
+        $tomorrow = now()->addDay()->startOfDay();
+
+        return Lead::with(['leadStatus', 'leadSource', 'telecaller', 'team'])
+            ->whereBetween('created_at', [$today, $tomorrow])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get charts data for auditor dashboard
+     */
+    private function getAuditorChartsData()
+    {
+        // Monthly leads and conversions for line chart
+        $monthlyData = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $monthStart = $date->copy()->startOfMonth();
+            $monthEnd = $date->copy()->endOfMonth();
+            
+            $monthlyData[] = [
+                'month' => $date->format('M Y'),
+                'leads' => Lead::whereBetween('created_at', [$monthStart, $monthEnd])->count(),
+                'converted' => Lead::whereBetween('created_at', [$monthStart, $monthEnd])
+                    ->where('is_converted', true)
+                    ->count(),
+                'followups' => Lead::whereBetween('created_at', [$monthStart, $monthEnd])
+                    ->where('lead_status_id', 2)
+                    ->count(),
+            ];
+        }
+
+        // Weekly data (last 7 days)
+        $weeklyData = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $dayStart = $date->copy()->startOfDay();
+            $dayEnd = $date->copy()->endOfDay();
+            
+            $weeklyData[] = [
+                'day' => $date->format('D M d'),
+                'leads' => Lead::whereBetween('created_at', [$dayStart, $dayEnd])->count(),
+                'converted' => Lead::whereBetween('created_at', [$dayStart, $dayEnd])
+                    ->where('is_converted', true)
+                    ->count(),
+            ];
+        }
+
+        // Top telecallers for bar chart
+        $topTelecallersChart = User::select('users.id', 'users.name')
+            ->selectRaw('COUNT(leads.id) as lead_count')
+            ->leftJoin('leads', 'users.id', '=', 'leads.telecaller_id')
+            ->where('users.role_id', 3)
+            ->whereNull('users.deleted_at')
+            ->groupBy('users.id', 'users.name')
+            ->orderByDesc('lead_count')
+            ->limit(10)
+            ->get()
+            ->map(function ($t) {
+                return [
+                    'name' => $t->name,
+                    'count' => $t->lead_count,
+                ];
+            });
+
+        // Lead sources pie chart
+        $leadSourcesChart = LeadSource::select('lead_sources.id', 'lead_sources.title')
+            ->selectRaw('COUNT(leads.id) as count')
+            ->leftJoin('leads', 'lead_sources.id', '=', 'leads.lead_source_id')
+            ->whereNull('leads.deleted_at')
+            ->groupBy('lead_sources.id', 'lead_sources.title')
+            ->orderByDesc('count')
+            ->limit(8)
+            ->get()
+            ->map(function ($source) {
+                return [
+                    'name' => $source->title,
+                    'value' => $source->count,
+                ];
+            });
+
+        return [
+            'monthly' => $monthlyData,
+            'weekly' => $weeklyData,
+            'top_telecallers' => $topTelecallersChart,
+            'lead_sources' => $leadSourcesChart,
+        ];
     }
 }
