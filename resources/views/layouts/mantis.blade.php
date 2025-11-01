@@ -43,6 +43,9 @@
         }
     </style>
     
+    <!-- Profile Dropdown Responsive Styles -->
+    <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
+    
     @stack('styles')
 </head>
 <!-- [Head] end -->

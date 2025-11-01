@@ -1734,6 +1734,9 @@ class ConvertedLeadController extends Controller
             'certificate_received_date' => 'nullable|date',
             'certificate_issued_date' => 'nullable|date',
             'remarks' => 'nullable|string|max:1000',
+            // E-School and Eduthanzeel specific fields
+            'continuing_studies' => 'nullable|string|in:yes,no',
+            'reason' => 'nullable|string|max:1000',
             // BOSSE specific fields
             'application_number' => 'nullable|string|max:255',
             'board_registration_number' => 'nullable|string|max:255',
@@ -1826,7 +1829,7 @@ class ConvertedLeadController extends Controller
         }
 
         // Handle fields that are now in ConvertedStudentDetail
-        $studentDetailFields = ['reg_fee', 'exam_fee', 'enroll_no', 'id_card', 'tma', 'registration_number', 'enrollment_number', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks', 'application_number', 'board_registration_number', 'st', 'phy', 'che', 'bio', 'app', 'group', 'interview', 'howmany_interview', 'call_status', 'class_information', 'orientation_class_status', 'class_starting_date', 'class_ending_date', 'whatsapp_group_status', 'class_time', 'class_status', 'complete_cancel_date', 'teacher_id', 'screening'];
+        $studentDetailFields = ['reg_fee', 'exam_fee', 'enroll_no', 'id_card', 'tma', 'registration_number', 'enrollment_number', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks', 'continuing_studies', 'reason', 'application_number', 'board_registration_number', 'st', 'phy', 'che', 'bio', 'app', 'group', 'interview', 'howmany_interview', 'call_status', 'class_information', 'orientation_class_status', 'class_starting_date', 'class_ending_date', 'whatsapp_group_status', 'class_time', 'class_status', 'complete_cancel_date', 'teacher_id', 'screening'];
         
         if (in_array($field, $studentDetailFields)) {
             // Update in ConvertedStudentDetail
@@ -1883,6 +1886,9 @@ class ConvertedLeadController extends Controller
         } elseif ($field === 'register_number') {
             // For register_number, return the value or '-' if empty
             $updatedValue = $updatedValue ?: '-';
+        } elseif ($field === 'continuing_studies' && $updatedValue) {
+            // Format continuing_studies with ucfirst
+            $updatedValue = ucfirst($updatedValue);
         }
 
         return response()->json([

@@ -39,6 +39,9 @@ class ConvertedStudentDetail extends Model
         'howmany_interview',
         'teacher_id',
         'screening',
+        // E-School and Eduthanzeel specific fields
+        'continuing_studies',
+        'reason',
     ];
 
     protected $casts = [

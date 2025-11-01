@@ -1,0 +1,305 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\ConvertedLead;
+use App\Models\ConvertedStudentMentorDetail;
+use App\Models\Subject;
+use App\Models\Batch;
+use App\Models\AdmissionBatch;
+use App\Models\SubCourse;
+use App\Models\User;
+use App\Helpers\AuthHelper;
+use App\Helpers\RoleHelper;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+
+class ESchoolEduthanzeelMentorController extends Controller
+{
+    /**
+     * Display a listing of E-School converted leads for mentoring
+     */
+    public function eschoolIndex(Request $request)
+    {
+        return $this->getMentorIndex($request, 5, 'E-School');
+    }
+
+    /**
+     * Display a listing of Eduthanzeel converted leads for mentoring
+     */
+    public function eduthanzeelIndex(Request $request)
+    {
+        return $this->getMentorIndex($request, 6, 'Eduthanzeel');
+    }
+
+    /**
+     * Common method to get mentor index
+     */
+    private function getMentorIndex(Request $request, $courseId, $courseName)
+    {
+        // Check permissions
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor()) {
+            return redirect()->route('dashboard')
+                ->with('message_danger', 'Access denied.');
+        }
+
+        $query = ConvertedLead::with([
+            'lead', 
+            'course', 
+            'academicAssistant', 
+            'createdBy', 
+            'studentDetails.teacher',
+            'mentorDetails',
+            'subject',
+            'batch',
+            'admissionBatch',
+            'subCourse'
+        ])->where('course_id', $courseId);
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_mentor()) {
+                // Mentor: Filter by admission_batch_id where mentor_id matches
+                $mentorAdmissionBatchIds = AdmissionBatch::where('mentor_id', AuthHelper::getCurrentUserId())
+                    ->pluck('id')
+                    ->toArray();
+                
+                if (!empty($mentorAdmissionBatchIds)) {
+                    $query->whereIn('admission_batch_id', $mentorAdmissionBatchIds);
+                } else {
+                    // If mentor has no admission batches, return empty result
+                    $query->whereRaw('1 = 0');
+                }
+            } elseif (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
+                } else {
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
+                }
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
+            }
+        }
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('register_number', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('sub_course_id')) {
+            $query->where('sub_course_id', $request->sub_course_id);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(50);
+
+        // Get filter data
+        $batches = Batch::where('course_id', $courseId)->orderBy('title')->get();
+        $admission_batches = AdmissionBatch::whereHas('batch', function($q) use ($courseId) {
+            $q->where('course_id', $courseId);
+        })->orderBy('title')->get();
+        $sub_courses = SubCourse::where('course_id', $courseId)->orderBy('title')->get();
+        $teachers = User::where('role_id', 10)->where('is_active', 1)->orderBy('name')->get();
+        $country_codes = \App\Helpers\CountriesHelper::get_country_code();
+
+        $viewName = $courseId == 5 ? 'admin.converted-leads.eschool-mentor-index' : 'admin.converted-leads.eduthanzeel-mentor-index';
+        $routeName = $courseId == 5 ? 'admin.mentor-eschool-converted-leads.index' : 'admin.mentor-eduthanzeel-converted-leads.index';
+
+        return view($viewName, compact(
+            'convertedLeads', 
+            'batches',
+            'admission_batches',
+            'sub_courses',
+            'teachers', 
+            'country_codes',
+            'courseName',
+            'routeName'
+        ));
+    }
+
+    /**
+     * Update mentor details inline
+     */
+    public function updateMentorDetails(Request $request, $id)
+    {
+        // Check permissions
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor()) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Access denied.'
+            ], 403);
+        }
+
+        try {
+            $convertedLead = ConvertedLead::findOrFail($id);
+            $field = $request->field;
+            $value = $request->value;
+
+            // Validate the field and value
+            $validationRules = $this->getValidationRules($field);
+            if ($validationRules) {
+                $validator = Validator::make([$field => $value], [$field => $validationRules]);
+                if ($validator->fails()) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => $validator->errors()->first($field)
+                    ], 422);
+                }
+            }
+
+            // Special handling for tutor_id (displayed as Tutor, but uses teacher_id in DB)
+            if ($field === 'tutor_id') {
+                // teacher_id is stored in converted_student_details, not mentor_details
+                $studentDetails = $convertedLead->studentDetails;
+                if (!$studentDetails) {
+                    $studentDetails = new \App\Models\ConvertedStudentDetail();
+                    $studentDetails->converted_lead_id = $id;
+                    $studentDetails->save();
+                }
+                $studentDetails->teacher_id = $value;
+                $studentDetails->save();
+                
+                // Update tutor phone number in mentor details if teacher is selected
+                $mentorDetails = $convertedLead->mentorDetails;
+                if (!$mentorDetails) {
+                    $mentorDetails = new ConvertedStudentMentorDetail();
+                    $mentorDetails->converted_student_id = $id;
+                }
+                
+                $teacher = null;
+                if ($value) {
+                    $teacher = User::find($value);
+                    if ($teacher && $teacher->phone) {
+                        $mentorDetails->tutor_phone_number = $teacher->phone;
+                    }
+                }
+                
+                $mentorDetails->save();
+
+                $teacherName = $teacher ? $teacher->name : '';
+                $tutorPhoneDisplay = $teacher ? \App\Helpers\PhoneNumberHelper::display($teacher->code, $teacher->phone) : '';
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Updated successfully',
+                    'value' => $teacherName,
+                    'tutor_phone' => $tutorPhoneDisplay
+                ]);
+            }
+
+
+            // Handle all other fields - update in converted_student_mentor_details table
+            $mentorDetails = $convertedLead->mentorDetails;
+            if (!$mentorDetails) {
+                $mentorDetails = new ConvertedStudentMentorDetail();
+                $mentorDetails->converted_student_id = $id;
+            }
+            $mentorDetails->$field = $value;
+            $mentorDetails->save();
+
+            // Format the response value
+            $responseValue = $this->formatResponseValue($field, $value, $mentorDetails);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Updated successfully',
+                'value' => $responseValue
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating mentor details: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Update failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get validation rules for specific fields
+     */
+    private function getValidationRules($field)
+    {
+        $rules = [
+            'call_1' => 'nullable|in:Call Not Answered,Switched Off,Line Busy,Student Asks to Call Later,Lack of Interest in Conversation,Wrong Contact,Inconsistent Responses,Task Complete',
+            'whatsapp_group' => 'nullable|in:Not Responding,Task Complete',
+            'screening_date' => 'nullable|date',
+            'screening_officer' => 'nullable|string|max:255',
+            'class_time' => 'nullable|date_format:H:i',
+            'tutor_id' => 'nullable|exists:users,id', // Maps to teacher_id in converted_student_details
+            'class_status' => 'nullable|in:Active,In Progress,Inactive,Dropped Out,Completed,Rejoining',
+            'first_pa' => 'nullable|in:Pending,Not Written,Completed',
+            'first_pa_mark' => 'nullable|string|max:50',
+            'feedback_call_1' => 'nullable|string|max:1000',
+            'first_pa_remarks' => 'nullable|string|max:1000',
+            'second_pa' => 'nullable|in:Pending,Not Written,Completed',
+            'second_pa_mark' => 'nullable|string|max:50',
+            'feedback_call_2' => 'nullable|string|max:1000',
+            'second_pa_remarks' => 'nullable|string|max:1000',
+            'third_pa' => 'nullable|in:Pending,Not Written,Completed',
+            'third_pa_mark' => 'nullable|string|max:50',
+            'feedback_call_3' => 'nullable|string|max:1000',
+            'third_pa_remarks' => 'nullable|string|max:1000',
+            'certification_exam' => 'nullable|in:Pending,Not Written,Completed',
+            'certification_exam_mark' => 'nullable|string|max:50',
+            'course_completion_feedback' => 'nullable|in:yes,no',
+            'certificate_collection' => 'nullable|in:Pending,Collected,Not Required',
+            'continuing_studies' => 'nullable|in:yes,no',
+            'reason' => 'nullable|string|max:1000',
+        ];
+
+        return $rules[$field] ?? null;
+    }
+
+    /**
+     * Format response value for display
+     */
+    private function formatResponseValue($field, $value, $mentorDetails)
+    {
+        if ($field === 'tutor_id' && $value) {
+            $teacher = User::find($value);
+            return $teacher ? $teacher->name : $value;
+        }
+
+        if ($field === 'screening_date' && $value) {
+            return \Carbon\Carbon::parse($value)->format('d-m-Y');
+        }
+
+        if ($field === 'class_time' && $value) {
+            return \Carbon\Carbon::parse($value)->format('h:i A');
+        }
+
+        return $value;
+    }
+}
+

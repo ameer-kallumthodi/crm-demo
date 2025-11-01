@@ -671,3 +671,182 @@ body.login {
 .card-body {
     padding: 1.5rem;
 }
+
+/* Profile Dropdown Responsive Styles */
+.header-user-profile .pc-head-link {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.header-user-profile .user-name-text {
+    display: inline-block;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* Dropdown menu responsive improvements */
+.dropdown-user-profile {
+    min-width: 290px;
+    max-width: calc(100vw - 30px);
+    width: auto;
+}
+
+.dropdown-user-profile .dropdown-header {
+    padding: 16px 20px;
+}
+
+.dropdown-user-profile .dropdown-header .d-flex {
+    gap: 0.5rem;
+}
+
+.dropdown-user-profile .user-name-display {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: break-word;
+}
+
+.dropdown-user-profile .min-w-0 {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.dropdown-user-profile .user-role-info {
+    font-size: 0.875rem;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+.dropdown-user-profile .user-role-info .badge {
+    margin-left: 0.25rem;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Responsive adjustments for profile dropdown */
+@media (max-width: 768px) {
+    .header-user-profile .user-name-text {
+        max-width: 100px;
+    }
+    
+    .dropdown-user-profile {
+        min-width: calc(100vw - 60px);
+        max-width: calc(100vw - 60px);
+    }
+    
+    .dropdown-user-profile .dropdown-header {
+        padding: 12px 16px;
+    }
+    
+    .dropdown-user-profile .user-name-display {
+        font-size: 0.9rem;
+    }
+    
+    .dropdown-user-profile .user-role-info {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .header-user-profile .user-name-text {
+        max-width: 80px;
+    }
+    
+    .dropdown-user-profile {
+        min-width: calc(100vw - 40px);
+        max-width: calc(100vw - 40px);
+    }
+    
+    .dropdown-user-profile .dropdown-header {
+        padding: 10px 12px;
+    }
+    
+    .dropdown-user-profile .dropdown-header .flex-grow-1 {
+        margin-left: 0.5rem !important;
+    }
+    
+    .dropdown-user-profile .user-name-display {
+        font-size: 0.85rem;
+    }
+    
+    .dropdown-user-profile .user-role-info {
+        font-size: 0.75rem;
+    }
+    
+    .dropdown-user-profile .user-role-info .badge {
+        display: block;
+        margin: 0.25rem 0 0 0;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 400px) {
+    .header-user-profile .user-name-text {
+        max-width: 60px;
+    }
+    
+    .dropdown-user-profile .dropdown-header .d-flex {
+        flex-wrap: wrap;
+    }
+    
+    .dropdown-user-profile .dropdown-header .flex-grow-1 {
+        min-width: 100%;
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Ensure dropdown items are responsive */
+.dropdown-user-profile .dropdown-item {
+    padding: 10px 25px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-user-profile .dropdown-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+    .dropdown-user-profile .dropdown-item {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Fix for dropdown tabs on mobile */
+.dropdown-user-profile .drp-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.dropdown-user-profile .drp-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.dropdown-user-profile .drp-tabs::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 2px;
+}
+
+@media (max-width: 576px) {
+    .dropdown-user-profile .drp-tabs .nav-link {
+        padding: 0.6rem 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .dropdown-user-profile .drp-tabs .nav-link i {
+        font-size: 16px;
+        margin: 0 2px;
+    }
+}

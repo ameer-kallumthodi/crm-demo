@@ -116,6 +116,12 @@
                     <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> NIOS Converted Mentor List
                     </a>
+                    <a href="{{ route('admin.mentor-eschool-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> E-School Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Eduthanzeel Converted Mentor List
+                    </a>
                 </div>
             </div>
         </div>

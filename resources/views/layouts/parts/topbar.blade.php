@@ -75,27 +75,29 @@
                 <li class="dropdown pc-h-item header-user-profile">
                     <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
                         <img src="{{ asset('assets/mantis/images/user/avatar-2.jpg') }}" alt="user-image" class="user-avtar">
-                        <span>{{ \App\Helpers\AuthHelper::getUserName() ?? 'User' }}</span>
+                        <span class="user-name-text">{{ \App\Helpers\AuthHelper::getUserName() ?? 'User' }}</span>
                     </a>
                     <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
                         <div class="dropdown-header">
-                            <div class="d-flex mb-1">
+                            <div class="d-flex mb-1 align-items-start">
                                 <div class="flex-shrink-0">
                                     <img src="{{ asset('assets/mantis/images/user/avatar-2.jpg') }}" alt="user-image" class="user-avtar wid-35">
                                 </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="mb-1">{{ \App\Helpers\AuthHelper::getUserName() ?? 'User' }}</h6>
-                                    <span>
-                                        {{ \App\Helpers\AuthHelper::getRoleTitle() ?? 'User' }}
-                                        @if(\App\Helpers\AuthHelper::isTeamLead())
-                                            <span class="badge bg-info">Team Lead</span>
-                                        @endif
-                                        @if(\App\Helpers\AuthHelper::isTelecaller() && !\App\Helpers\AuthHelper::isTeamLead())
-                                            <span class="badge bg-info">Telecaller</span>
-                                        @endif
-                                    </span>
+                                <div class="flex-grow-1 ms-3 min-w-0">
+                                    <h6 class="mb-1 text-truncate user-name-display" title="{{ \App\Helpers\AuthHelper::getUserName() ?? 'User' }}">{{ \App\Helpers\AuthHelper::getUserName() ?? 'User' }}</h6>
+                                    <div class="user-role-info">
+                                        <span class="d-inline-block text-truncate" style="max-width: 100%;">
+                                            {{ \App\Helpers\AuthHelper::getRoleTitle() ?? 'User' }}
+                                            @if(\App\Helpers\AuthHelper::isTeamLead())
+                                                <span class="badge bg-info">Team Lead</span>
+                                            @endif
+                                            @if(\App\Helpers\AuthHelper::isTelecaller() && !\App\Helpers\AuthHelper::isTeamLead())
+                                                <span class="badge bg-info">Telecaller</span>
+                                            @endif
+                                        </span>
+                                    </div>
                                 </div>
-                                <a href="#" class="pc-head-link bg-transparent" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                <a href="#" class="pc-head-link bg-transparent flex-shrink-0" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" title="Logout">
                                     <i class="ti ti-power text-danger"></i>
                                 </a>
                             </div>

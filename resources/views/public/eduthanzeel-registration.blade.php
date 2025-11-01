@@ -589,13 +589,13 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Signature <span class="required">*</span></label>
+                                <label class="form-label">Signature</label>
                                 <div class="file-upload-area" onclick="document.getElementById('signature').click()">
                                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                     <p class="mb-0">Click to upload or drag & drop</p>
                                     <small class="text-muted">JPG, PNG (Max 2MB)</small>
                                 </div>
-                                <input type="file" id="signature" name="signature" accept=".jpg,.jpeg,.png" required style="display: none;">
+                                <input type="file" id="signature" name="signature" accept=".jpg,.jpeg,.png" style="display: none;">
                                 <div class="file-preview" id="signature_preview"></div>
                             </div>
                         </div>

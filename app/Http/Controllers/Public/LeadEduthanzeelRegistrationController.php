@@ -64,7 +64,7 @@ class LeadEduthanzeelRegistrationController extends Controller
             'passport_photo' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             'adhar_front' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'adhar_back' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'signature' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            'signature' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'message' => 'nullable|string',
         ], [
             'lead_id.required' => 'Lead ID is required.',
@@ -101,7 +101,6 @@ class LeadEduthanzeelRegistrationController extends Controller
             'adhar_back.file' => 'Aadhar back must be a valid file.',
             'adhar_back.mimes' => 'Aadhar back must be a PDF or image file.',
             'adhar_back.max' => 'Aadhar back file size must not exceed 2MB.',
-            'signature.required' => 'Signature is required.',
             'signature.file' => 'Signature must be a valid file.',
             'signature.mimes' => 'Signature must be an image file (JPG, PNG).',
             'signature.max' => 'Signature file size must not exceed 2MB.',

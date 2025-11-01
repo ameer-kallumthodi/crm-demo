@@ -567,6 +567,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/mentor-nios-converted-leads', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'index'])->name('mentor-nios-converted-leads.index');
         Route::post('/mentor-nios-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-nios-converted-leads.update-mentor-details');
 
+        // E-School Mentor Converted Leads Routes
+        Route::get('/mentor-eschool-converted-leads', [App\Http\Controllers\ESchoolEduthanzeelMentorController::class, 'eschoolIndex'])->name('mentor-eschool-converted-leads.index');
+        Route::post('/mentor-eschool-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\ESchoolEduthanzeelMentorController::class, 'updateMentorDetails'])->name('mentor-eschool-converted-leads.update-mentor-details');
+
+        // Eduthanzeel Mentor Converted Leads Routes
+        Route::get('/mentor-eduthanzeel-converted-leads', [App\Http\Controllers\ESchoolEduthanzeelMentorController::class, 'eduthanzeelIndex'])->name('mentor-eduthanzeel-converted-leads.index');
+        Route::post('/mentor-eduthanzeel-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\ESchoolEduthanzeelMentorController::class, 'updateMentorDetails'])->name('mentor-eduthanzeel-converted-leads.update-mentor-details');
+
         // Support Converted Lead Details Route (Unified)
         Route::get('/support-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-converted-leads.details');
         Route::post('/support-converted-leads/{id}/feedback', [App\Http\Controllers\SupportConvertedLeadController::class, 'submitFeedback'])->name('support-converted-leads.feedback');

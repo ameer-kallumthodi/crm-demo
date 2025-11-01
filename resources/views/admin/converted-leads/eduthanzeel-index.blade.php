@@ -110,6 +110,12 @@
                     <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> NIOS Converted Mentor List
                     </a>
+                    <a href="{{ route('admin.mentor-eschool-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> E-School Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Eduthanzeel Converted Mentor List
+                    </a>
                 </div>
             </div>
         </div>
@@ -220,9 +226,9 @@
                             </select>
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
-                            <label for="teacher_id" class="form-label">Teacher</label>
+                            <label for="teacher_id" class="form-label">Tutors</label>
                             <select class="form-select" id="teacher_id" name="teacher_id">
-                                <option value="">All Teachers</option>
+                                <option value="">All Tutors</option>
                                 @foreach($teachers as $teacher)
                                 <option value="{{ $teacher->id }}" {{ request('teacher_id') == $teacher->id ? 'selected' : '' }}>
                                     {{ $teacher->name }}
@@ -278,10 +284,13 @@
                                 <th>Admission Batch</th>
                                 <th>Sub Course</th>
                                 <th>Email</th>
-                                <th>Teacher</th>
+                                <th>Tutor</th>
                                 <th>Class Time</th>
-                                <th>Screening</th>
+                                <th>Screening Date</th>
                                 <th>Class Status</th>
+                                <th>Remarks</th>
+                                <th>Continuing Studies?</th>
+                                <th>Reason</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -375,6 +384,36 @@
                                     </div>
                                 </td>
                                 <td>
+                                    <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="continuing_studies" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->continuing_studies }}">
+                                        <span class="display-value">{{ ucfirst($convertedLead->studentDetails?->continuing_studies ?: '-') }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="reason" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->reason }}">
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->reason ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
                                     <div class="" role="group">
                                         <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
                                             <i class="ti ti-eye"></i>
@@ -405,7 +444,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="13" class="text-center">No Eduthanzeel converted leads found</td>
+                                <td colspan="16" class="text-center">No Eduthanzeel converted leads found</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -457,7 +496,7 @@
                                     <span class="fw-medium">{{ $convertedLead->email ?? 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block">Teacher</small>
+                                    <small class="text-muted d-block">Tutor</small>
                                     <span class="fw-medium">{{ $convertedLead->studentDetails?->teacher ? $convertedLead->studentDetails->teacher->name : 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
@@ -683,7 +722,7 @@
             if (field === 'phone') {
                 const currentCode = container.siblings('.inline-code-value').data('current') || '';
                 editForm = createPhoneField(currentCode, currentValue);
-            } else if (['class_status'].includes(field)) {
+            } else if (['class_status', 'continuing_studies'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
             } else if (['screening'].includes(field)) {
                 editForm = createDateField(field, currentValue);
@@ -926,7 +965,7 @@
 
         function createTeacherField(field, currentValue) {
             let options = `
-                <option value="">Select Teacher</option>
+                <option value="">Select Tutor</option>
                 @foreach($teachers as $teacher)
                 <option value="{{ $teacher->id }}" ${String(currentValue) === '{{ $teacher->id }}' ? 'selected' : ''}>{{ $teacher->name }}</option>
                 @endforeach
@@ -954,6 +993,12 @@
                     <option value="completed" ${currentValue === 'completed' ? 'selected' : ''}>Completed</option>
                     <option value="drop out" ${currentValue === 'drop out' ? 'selected' : ''}>Drop Out</option>
                     <option value="ongoing" ${currentValue === 'ongoing' ? 'selected' : ''}>Ongoing</option>
+                `;
+            } else if (field === 'continuing_studies') {
+                options = `
+                    <option value="">Select Continuing Studies</option>
+                    <option value="yes" ${currentValue === 'yes' ? 'selected' : ''}>Yes</option>
+                    <option value="no" ${currentValue === 'no' ? 'selected' : ''}>No</option>
                 `;
             }
             

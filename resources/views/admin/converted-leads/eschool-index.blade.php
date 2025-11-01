@@ -110,6 +110,12 @@
                     <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> NIOS Converted Mentor List
                     </a>
+                    <a href="{{ route('admin.mentor-eschool-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> E-School Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Eduthanzeel Converted Mentor List
+                    </a>
                 </div>
             </div>
         </div>
@@ -227,9 +233,9 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="teacher_id" class="form-label">Teacher</label>
+                            <label for="teacher_id" class="form-label">Tutor</label>
                             <select class="form-select" id="teacher_id" name="teacher_id">
-                                <option value="">All Teachers</option>
+                                <option value="">All Tutors</option>
                                 @foreach($teachers as $teacher)
                                     <option value="{{ $teacher->id }}" {{ request('teacher_id') == $teacher->id ? 'selected' : '' }}>
                                         {{ $teacher->name }}
@@ -288,14 +294,17 @@
                                 <th>Converted Date</th>
                                 <th>Registration Number</th>
                                 <th>Phone</th>
-                                <th>Teacher</th>
+                                <th>Tutor</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
                                 <th>Sub Course</th>
                                 <th>Subject</th>
-                                <th>Screening</th>
+                                <th>Screening Date</th>
                                 <th>Class Time</th>
                                 <th>Class Status</th>
+                                <th>Remarks</th>
+                                <th>Continuing Studies?</th>
+                                <th>Reason</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -396,6 +405,36 @@
                                         @endif
                                     </div>
                                 </td>
+                                <td>
+                                    <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="continuing_studies" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->continuing_studies }}">
+                                        <span class="display-value">{{ ucfirst($convertedLead->studentDetails?->continuing_studies ?: '-') }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="reason" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->reason }}">
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->reason ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
                                         <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" 
@@ -407,7 +446,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="13" class="text-center">No E-School converted leads found.</td>
+                                <td colspan="16" class="text-center">No E-School converted leads found.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -635,7 +674,7 @@
             if (field === 'phone') {
                 const currentCode = container.siblings('.inline-code-value').data('current') || '';
                 editForm = createPhoneField(currentCode, currentValue);
-            } else if (['class_status'].includes(field)) {
+            } else if (['class_status', 'continuing_studies'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
             } else if (['screening'].includes(field)) {
                 editForm = createDateField(field, currentValue);
@@ -661,7 +700,7 @@
             }
             
             // Load options for select fields
-            if (['teacher_id', 'sub_course_id', 'subject_id', 'class_status'].includes(field)) {
+            if (['teacher_id', 'sub_course_id', 'subject_id', 'class_status', 'continuing_studies'].includes(field)) {
                 const $select = container.find('select');
                 loadSelectOptions($select, field, currentValue);
             }
@@ -859,6 +898,12 @@
                 statuses.forEach(function(status) {
                     const selected = String(currentValue) === status ? 'selected' : '';
                     options += `<option value="${status}" ${selected}>${status.charAt(0).toUpperCase() + status.slice(1)}</option>`;
+                });
+            } else if (field === 'continuing_studies') {
+                const options_list = ['yes', 'no'];
+                options_list.forEach(function(opt) {
+                    const selected = String(currentValue) === opt ? 'selected' : '';
+                    options += `<option value="${opt}" ${selected}>${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`;
                 });
             }
             

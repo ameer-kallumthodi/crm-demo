@@ -1,0 +1,947 @@
+@extends('layouts.mantis')
+
+@section('title', 'Eduthanzeel Converted Mentor List')
+
+@section('content')
+<style>
+    .table td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    .table td .btn-group {
+        white-space: nowrap;
+    }
+    .table td .inline-edit {
+        white-space: nowrap;
+    }
+    .table td .display-value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+        display: inline-block;
+    }
+</style>
+<!-- [ breadcrumb ] start -->
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Eduthanzeel Converted Mentor List</h5>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <ul class="breadcrumb d-flex justify-content-end">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
+                    <li class="breadcrumb-item">Eduthanzeel Mentor</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ breadcrumb ] end -->
+
+<!-- [ Mentor List ] start -->
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-3">Mentor List</h6>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ route('admin.mentor-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Bosse Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> NIOS Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-eschool-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> E-School Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary active">
+                        <i class="ti ti-user-star"></i> Eduthanzeel Converted Mentor List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+<!-- [ Mentor List ] end -->
+
+<!-- [ Filter Section ] start -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" action="{{ route('admin.mentor-eduthanzeel-converted-leads.index') }}" id="filterForm">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="search" name="search"
+                                value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="batch_id" class="form-label">Batch</label>
+                            <select class="form-select" id="batch_id" name="batch_id">
+                                <option value="">All Batches</option>
+                                @foreach($batches as $batch)
+                                <option value="{{ $batch->id }}" {{ request('batch_id') == $batch->id ? 'selected' : '' }}>
+                                    {{ $batch->title }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="admission_batch_id" class="form-label">Admission Batch</label>
+                            <select class="form-select" id="admission_batch_id" name="admission_batch_id" data-selected="{{ request('admission_batch_id') }}">
+                                <option value="">All Admission Batches</option>
+                                @foreach($admission_batches as $admission_batch)
+                                <option value="{{ $admission_batch->id }}" {{ request('admission_batch_id') == $admission_batch->id ? 'selected' : '' }}>
+                                    {{ $admission_batch->title }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="sub_course_id" class="form-label">Sub Course</label>
+                            <select class="form-select" id="sub_course_id" name="sub_course_id">
+                                <option value="">All Sub Courses</option>
+                                @foreach($sub_courses as $sub_course)
+                                <option value="{{ $sub_course->id }}" {{ request('sub_course_id') == $sub_course->id ? 'selected' : '' }}>
+                                    {{ $sub_course->title }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="date_from" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from"
+                                value="{{ request('date_from') }}">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="date_to" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to"
+                                value="{{ request('date_to') }}">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ti ti-search"></i> Filter
+                            </button>
+                            <a href="{{ route('admin.mentor-eduthanzeel-converted-leads.index') }}" class="btn btn-secondary">
+                                <i class="ti ti-refresh"></i> Clear
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Filter Section ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Eduthanzeel Converted Mentor List</h5>
+            </div>
+            <div class="card-body">
+                <!-- Desktop Table View -->
+                <div class="d-none d-lg-block">
+                    <div class="table-responsive">
+                        <table class="table table-hover data_table_basic" id="eduthanzeelMentorTable">
+                        <thead>
+                            <tr>
+                                <th>SL No</th>
+                                <th>Converted Date</th>
+                                <th>Registration No</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Batch</th>
+                                <th>Admission Batch</th>
+                                <th>Subcourse</th>
+                                <th>Call 1</th>
+                                <th>WhatsApp Group</th>
+                                <th>Screening Date</th>
+                                <th>Screening Officer</th>
+                                <th>Class Time</th>
+                                <th>Tutor Name</th>
+                                <th>Tutor Phone Number</th>
+                                <th>Class Status</th>
+                                <th>First PA</th>
+                                <th>First PA Mark</th>
+                                <th>Feedback Call 1</th>
+                                <th>First PA Remarks</th>
+                                <th>Second PA</th>
+                                <th>Second PA Mark</th>
+                                <th>Feedback Call 2</th>
+                                <th>Second PA Remarks</th>
+                                <th>Third PA</th>
+                                <th>Third PA Mark</th>
+                                <th>Feedback Call 3</th>
+                                <th>Third PA Remarks</th>
+                                <th>Certification Exam</th>
+                                <th>Certification Exam Mark</th>
+                                <th>Course Completion Feedback</th>
+                                <th>Certificate Collection</th>
+                                <th>Continuing Studies?</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($convertedLeads as $index => $convertedLead)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
+                                <td>{{ $convertedLead->register_number ?: '-' }}</td>
+                                <td>{{ $convertedLead->name }}</td>
+                                <td>
+                                    <div class="inline-edit" data-field="phone" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->phone }}">
+                                        <span class="display-value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) ?: '-' }}</span>
+                                        <span class="inline-code-value d-none" data-current="{{ $convertedLead->code }}"></span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>{{ $convertedLead->batch?->title ?: '-' }}</td>
+                                <td>{{ $convertedLead->admissionBatch?->title ?: '-' }}</td>
+                                <td>{{ $convertedLead->subCourse?->title ?: '-' }}</td>
+                                <td>
+                                    <div class="inline-edit" data-field="call_1" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->call_1 }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->call_1 ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="whatsapp_group" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->whatsapp_group }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->whatsapp_group ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="screening_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->screening_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->screening_date)->format('Y-m-d') : '' }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->screening_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->screening_date)->format('d-m-Y') : '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="screening_officer" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->screening_officer }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->screening_officer ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="class_time" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->class_time ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_time)->format('H:i') : '' }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->class_time ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_time)->format('h:i A') : '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="tutor_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->teacher_id }}">
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->teacher?->name ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <span>{{ $convertedLead->studentDetails?->teacher ? \App\Helpers\PhoneNumberHelper::display($convertedLead->studentDetails->teacher->code, $convertedLead->studentDetails->teacher->phone) : ($convertedLead->mentorDetails?->tutor_phone_number ?: '-') }}</span>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="class_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->class_status }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->class_status ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="first_pa" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->first_pa }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->first_pa ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="first_pa_mark" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->first_pa_mark }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->first_pa_mark ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="feedback_call_1" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->feedback_call_1 }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->feedback_call_1 ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="first_pa_remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->first_pa_remarks }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->first_pa_remarks ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="second_pa" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->second_pa }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->second_pa ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="second_pa_mark" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->second_pa_mark }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->second_pa_mark ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="feedback_call_2" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->feedback_call_2 }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->feedback_call_2 ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="second_pa_remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->second_pa_remarks }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->second_pa_remarks ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="third_pa" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_pa }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->third_pa ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="third_pa_mark" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_pa_mark }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->third_pa_mark ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="feedback_call_3" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->feedback_call_3 }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->feedback_call_3 ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="third_pa_remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_pa_remarks }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->third_pa_remarks ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="certification_exam" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->certification_exam }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->certification_exam ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="certification_exam_mark" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->certification_exam_mark }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->certification_exam_mark ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="course_completion_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->course_completion_feedback }}">
+                                        <span class="display-value">{{ ucfirst($convertedLead->mentorDetails?->course_completion_feedback ?: '-') }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="certificate_collection" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->certificate_collection }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->certificate_collection ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="continuing_studies" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->continuing_studies }}">
+                                        <span class="display-value">{{ ucfirst($convertedLead->mentorDetails?->continuing_studies ?: '-') }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="reason" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->reason }}">
+                                        <span class="display-value">{{ $convertedLead->mentorDetails?->reason ?: '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="34" class="text-center">No Eduthanzeel converted leads found for mentoring</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+
+<!-- Country Codes JSON for JavaScript -->
+<script type="application/json" id="country-codes-json">
+{!! json_encode($country_codes) !!}
+</script>
+@endsection
+
+@push('styles')
+<style>
+.inline-edit {
+    position: relative;
+    overflow: visible;
+}
+
+.inline-edit .edit-form {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: -8px;
+    z-index: 10;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    min-width: 320px;
+    max-width: 440px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.inline-edit.editing .edit-form {
+    display: block;
+}
+
+.inline-edit.editing .display-value {
+    display: none;
+}
+
+.inline-edit .edit-form input,
+.inline-edit .edit-form select {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.inline-edit .edit-form input:focus,
+.inline-edit .edit-form select:focus {
+    border-color: #7366ff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(115,102,255,0.15);
+}
+
+.inline-edit .edit-form .btn-group {
+    margin-top: 5px;
+}
+
+.inline-edit .edit-form .btn {
+    padding: 2px 8px;
+    font-size: 11px;
+}
+
+#eduthanzeelMentorTable thead th,
+#eduthanzeelMentorTable tbody td {
+    white-space: nowrap;
+}
+
+#eduthanzeelMentorTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #fff;
+    box-shadow: inset 0 -1px 0 #e9ecef;
+}
+
+#eduthanzeelMentorTable tbody tr:hover {
+    background: #fafbff;
+}
+
+#eduthanzeelMentorTable td .display-value {
+    display: inline-block;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        // Dependent filters: load admission batches by batch
+        function loadAdmissionBatchesByBatch(batchId, selectedId) {
+            const $admission = $('#admission_batch_id');
+            $admission.html('<option value="">Loading...</option>');
+            if (!batchId) {
+                $admission.html('<option value="">All Admission Batches</option>');
+                return;
+            }
+            $.get(`/api/admission-batches/by-batch/${batchId}`).done(function(list) {
+                let opts = '<option value="">All Admission Batches</option>';
+                list.forEach(function(i) {
+                    const sel = String(selectedId) === String(i.id) ? 'selected' : '';
+                    opts += `<option value="${i.id}" ${sel}>${i.title}</option>`;
+                });
+                $admission.html(opts);
+            }).fail(function() {
+                $admission.html('<option value="">All Admission Batches</option>');
+            });
+        }
+
+        // Initialize dependent dropdowns on load
+        loadAdmissionBatchesByBatch($('#batch_id').val(), $('#admission_batch_id').data('selected'));
+
+        // On batch change → reload admission batches
+        $('#batch_id').on('change', function() {
+            const bid = $(this).val();
+            loadAdmissionBatchesByBatch(bid, '');
+        });
+
+        // Inline editing functionality
+        $(document).on('click', '.edit-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const container = $(this).closest('.inline-edit');
+            const field = container.data('field');
+            const id = container.data('id');
+            const currentValue = container.data('current') !== undefined ? String(container.data('current')).trim() : container.find('.display-value').text().trim();
+            
+            if (container.hasClass('editing')) {
+                return;
+            }
+            
+            $('.inline-edit.editing').not(container).each(function() {
+                $(this).removeClass('editing');
+                $(this).find('.edit-form').remove();
+            });
+
+            let editForm = '';
+            
+            if (field === 'phone') {
+                const currentCode = container.find('.inline-code-value').data('current') || '';
+                editForm = createPhoneField(currentCode, currentValue);
+            } else if (['call_1', 'whatsapp_group', 'class_status', 'first_pa', 'second_pa', 'third_pa', 'certification_exam', 'course_completion_feedback', 'certificate_collection', 'continuing_studies'].includes(field)) {
+                editForm = createSelectField(field, currentValue);
+            } else if (field === 'screening_date') {
+                editForm = createDateField(field, currentValue);
+            } else if (field === 'class_time') {
+                editForm = createTimeField(field, currentValue);
+            } else if (field === 'tutor_id') {
+                editForm = createTutorField(field, currentValue);
+            } else {
+                editForm = createInputField(field, currentValue);
+            }
+            
+            container.addClass('editing');
+            container.append(editForm);
+            
+            // Load tutor options if it's a tutor field
+            if (field === 'tutor_id') {
+                const $select = container.find('select');
+                loadTutorOptions($select, currentValue);
+            }
+            
+            container.find('input, select').first().focus();
+        });
+        
+        // Save inline edit
+        $(document).off('click.saveInline').on('click.saveInline', '.save-edit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const container = $(this).closest('.inline-edit');
+            const field = container.data('field');
+            const id = container.data('id');
+            let value;
+            if (field === 'phone') {
+                value = container.find('input[type="text"]').val();
+            } else {
+                value = container.find('input, select').val();
+            }
+            let extra = {};
+            if (field === 'phone') {
+                const codeVal = container.find('select[name="code"]').val();
+                extra = { code: codeVal };
+            }
+            
+            const btn = $(this);
+            if (btn.data('busy')) return;
+            btn.data('busy', true);
+            btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
+            
+            // Use converted-leads endpoint for phone updates, mentor endpoint for other fields
+            const updateUrl = field === 'phone' 
+                ? `/admin/converted-leads/${id}/inline-update`
+                : `/admin/mentor-eduthanzeel-converted-leads/${id}/update-mentor-details`;
+            
+            $.ajax({
+                url: updateUrl,
+                method: 'POST',
+                data: $.extend({
+                    field: field,
+                    value: value,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                }, extra),
+                success: function(response) {
+                    if (response.success) {
+                        container.find('.display-value').text(response.value || value);
+                        container.data('current', response.value || value);
+                        if (field === 'phone') {
+                            const codeVal = extra.code || '';
+                            container.find('.inline-code-value').data('current', codeVal);
+                        }
+                        if (field === 'tutor_id') {
+                            // Update tutor phone number display when tutor changes
+                            if (response.tutor_phone) {
+                                // Find the tutor phone number cell in the same row (it's now a simple span)
+                                const tutorPhoneCell = container.closest('tr').find('td').eq(13); // Tutor Phone Number is 14th column (0-indexed: 13)
+                                if (tutorPhoneCell.length) {
+                                    tutorPhoneCell.find('span').text(response.tutor_phone || '-');
+                                }
+                            }
+                        }
+                        toast_success(response.message);
+                    } else {
+                        toast_error(response.error || 'Update failed');
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Update failed';
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.error) {
+                            errorMessage = xhr.responseJSON.error;
+                        } else if (xhr.responseJSON.errors) {
+                            const errors = xhr.responseJSON.errors;
+                            const fieldErrors = Object.values(errors).flat();
+                            errorMessage = fieldErrors.join(', ');
+                        }
+                    }
+                    toast_error(errorMessage);
+                },
+                complete: function() {
+                    btn.data('busy', false);
+                    container.removeClass('editing');
+                    container.find('.edit-form').remove();
+                }
+            });
+        });
+        
+        // Cancel edit
+        $(document).on('click', '.cancel-edit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const container = $(this).closest('.inline-edit');
+            container.removeClass('editing');
+            container.find('.edit-form').remove();
+            container.find('.display-value').show();
+            container.find('.edit-btn').show();
+        });
+
+        // Helper functions for creating form elements
+        function createInputField(field, currentValue) {
+            const displayValue = currentValue === '-' ? '' : currentValue;
+            return `
+                <div class="edit-form">
+                    <input type="text" value="${displayValue}" class="form-control form-control-sm" autocomplete="off">
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createDateField(field, currentValue) {
+            let value = '';
+            if (currentValue && currentValue !== '-') {
+                // Convert d-m-Y to Y-m-d for date input
+                if (currentValue.includes('-')) {
+                    const parts = currentValue.split('-');
+                    if (parts.length === 3) {
+                        value = parts[2] + '-' + parts[1] + '-' + parts[0];
+                    }
+                } else {
+                    value = currentValue;
+                }
+            }
+            return `
+                <div class="edit-form">
+                    <input type="date" value="${value}" class="form-control form-control-sm">
+                    <div class="btn-group mt-1">
+                        <button class="btn btn-success btn-sm save-edit">Save</button>
+                        <button class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createTimeField(field, currentValue) {
+            let value = '';
+            if (currentValue && currentValue !== '-') {
+                // Convert h:i A to H:i for time input
+                if (currentValue.includes('AM') || currentValue.includes('PM')) {
+                    const time12 = currentValue.replace(/\s*(AM|PM)\s*/i, '');
+                    const parts = time12.split(':');
+                    if (parts.length === 2) {
+                        let hours = parseInt(parts[0]);
+                        const minutes = parts[1];
+                        if (currentValue.toUpperCase().includes('PM') && hours !== 12) hours += 12;
+                        if (currentValue.toUpperCase().includes('AM') && hours === 12) hours = 0;
+                        value = String(hours).padStart(2, '0') + ':' + minutes;
+                    }
+                } else {
+                    value = currentValue;
+                }
+            }
+            return `
+                <div class="edit-form">
+                    <input type="time" value="${value}" class="form-control form-control-sm">
+                    <div class="btn-group mt-1">
+                        <button class="btn btn-success btn-sm save-edit">Save</button>
+                        <button class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createSelectField(field, currentValue) {
+            let options = '';
+            
+            if (field === 'call_1') {
+                options = `
+                    <option value="">Select</option>
+                    <option value="Call Not Answered" ${currentValue === 'Call Not Answered' ? 'selected' : ''}>Call Not Answered</option>
+                    <option value="Switched Off" ${currentValue === 'Switched Off' ? 'selected' : ''}>Switched Off</option>
+                    <option value="Line Busy" ${currentValue === 'Line Busy' ? 'selected' : ''}>Line Busy</option>
+                    <option value="Student Asks to Call Later" ${currentValue === 'Student Asks to Call Later' ? 'selected' : ''}>Student Asks to Call Later</option>
+                    <option value="Lack of Interest in Conversation" ${currentValue === 'Lack of Interest in Conversation' ? 'selected' : ''}>Lack of Interest in Conversation</option>
+                    <option value="Wrong Contact" ${currentValue === 'Wrong Contact' ? 'selected' : ''}>Wrong Contact</option>
+                    <option value="Inconsistent Responses" ${currentValue === 'Inconsistent Responses' ? 'selected' : ''}>Inconsistent Responses</option>
+                    <option value="Task Complete" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
+                `;
+            } else if (field === 'whatsapp_group') {
+                options = `
+                    <option value="">Select</option>
+                    <option value="Not Responding" ${currentValue === 'Not Responding' ? 'selected' : ''}>Not Responding</option>
+                    <option value="Task Complete" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
+                `;
+            } else if (field === 'class_status') {
+                options = `
+                    <option value="">Select</option>
+                    <option value="Active" ${currentValue === 'Active' ? 'selected' : ''}>Active</option>
+                    <option value="In Progress" ${currentValue === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                    <option value="Inactive" ${currentValue === 'Inactive' ? 'selected' : ''}>Inactive</option>
+                    <option value="Dropped Out" ${currentValue === 'Dropped Out' ? 'selected' : ''}>Dropped Out</option>
+                    <option value="Completed" ${currentValue === 'Completed' ? 'selected' : ''}>Completed</option>
+                    <option value="Rejoining" ${currentValue === 'Rejoining' ? 'selected' : ''}>Rejoining</option>
+                `;
+            } else if (['first_pa', 'second_pa', 'third_pa', 'certification_exam'].includes(field)) {
+                options = `
+                    <option value="">Select</option>
+                    <option value="Pending" ${currentValue === 'Pending' ? 'selected' : ''}>Pending</option>
+                    <option value="Not Written" ${currentValue === 'Not Written' ? 'selected' : ''}>Not Written</option>
+                    <option value="Completed" ${currentValue === 'Completed' ? 'selected' : ''}>Completed</option>
+                `;
+            } else if (field === 'course_completion_feedback') {
+                options = `
+                    <option value="">Select</option>
+                    <option value="yes" ${currentValue === 'yes' ? 'selected' : ''}>Yes</option>
+                    <option value="no" ${currentValue === 'no' ? 'selected' : ''}>No</option>
+                `;
+            } else if (field === 'certificate_collection') {
+                options = `
+                    <option value="">Select</option>
+                    <option value="Pending" ${currentValue === 'Pending' ? 'selected' : ''}>Pending</option>
+                    <option value="Collected" ${currentValue === 'Collected' ? 'selected' : ''}>Collected</option>
+                    <option value="Not Required" ${currentValue === 'Not Required' ? 'selected' : ''}>Not Required</option>
+                `;
+            } else if (field === 'continuing_studies') {
+                options = `
+                    <option value="">Select</option>
+                    <option value="yes" ${currentValue === 'yes' ? 'selected' : ''}>Yes</option>
+                    <option value="no" ${currentValue === 'no' ? 'selected' : ''}>No</option>
+                `;
+            }
+            
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm">
+                        ${options}
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createTutorField(field, currentValue) {
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm">
+                        <option value="">Select Tutor</option>
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadTutorOptions($select, currentValue) {
+            let options = '<option value="">Select Tutor</option>';
+            @foreach($teachers as $teacher)
+                const selected{{ $teacher->id }} = String(currentValue) === '{{ $teacher->id }}' ? 'selected' : '';
+                options += `<option value="{{ $teacher->id }}" ${selected{{ $teacher->id }}}>{{ $teacher->name }}</option>`;
+            @endforeach
+            $select.html(options);
+        }
+
+        function createPhoneField(currentCode, currentPhone) {
+            const codeOptionsEl = document.getElementById('country-codes-json');
+            let codeOptions = {};
+            try {
+                codeOptions = codeOptionsEl ? JSON.parse(codeOptionsEl.textContent || '{}') : {};
+            } catch (e) {
+                codeOptions = {};
+            }
+            const buildOptions = (selected) => {
+                let opts = '<option value="">Select Country</option>';
+                for (const c in codeOptions) {
+                    const isSel = String(selected) === String(c) ? 'selected' : '';
+                    opts += `<option value="${c}" ${isSel}>${c} - ${codeOptions[c]}</option>`;
+                }
+                return opts;
+            };
+            const safePhone = (currentPhone && currentPhone !== 'N/A' && currentPhone !== '-') ? currentPhone : '';
+            return `
+                <div class="edit-form">
+                    <div class="row g-1">
+                        <div class="col-5">
+                            <select name="code" class="form-select form-select-sm">${buildOptions(currentCode)}</select>
+                        </div>
+                        <div class="col-7">
+                            <input type="text" value="${safePhone}" class="form-control form-control-sm" placeholder="Phone">
+                        </div>
+                    </div>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+    });
+</script>
+@endpush
+

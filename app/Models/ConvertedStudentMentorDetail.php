@@ -61,12 +61,38 @@ class ConvertedStudentMentorDetail extends Model
         'exam_subject_4',
         'exam_subject_5',
         'exam_subject_6',
+        // E-School and Eduthanzeel specific fields
+        'screening_date',
+        'screening_officer',
+        'class_time',
+        'tutor_phone_number',
+        'class_status',
+        'first_pa',
+        'first_pa_mark',
+        'feedback_call_1',
+        'first_pa_remarks',
+        'second_pa',
+        'second_pa_mark',
+        'feedback_call_2',
+        'second_pa_remarks',
+        'third_pa',
+        'third_pa_mark',
+        'feedback_call_3',
+        'third_pa_remarks',
+        'certification_exam',
+        'certification_exam_mark',
+        'course_completion_feedback',
+        'certificate_collection',
+        'continuing_studies',
+        'reason',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'screening_date' => 'date',
+        'class_time' => 'datetime',
     ];
 
     // Relationships
