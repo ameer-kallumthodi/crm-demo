@@ -100,9 +100,19 @@
                 <li class="pc-item {{ request()->routeIs('admin.general-managers.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.general-managers.index') }}" class="pc-link">
                         <span class="pc-micon">
-                            <i class="ti ti-user-shield"></i>
+                            <i class="ti ti-user-cog"></i>
                         </span>
                         <span class="pc-mtext">General Managers</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/auditors/index'))
+                <li class="pc-item {{ request()->routeIs('admin.auditors.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.auditors.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-clipboard-list"></i>
+                        </span>
+                        <span class="pc-mtext">Auditors</span>
                     </a>
                 </li>
                 @endif
@@ -222,8 +232,8 @@
                 </li>
                 @endif
                 
-                {{-- Super Admin Reports Section --}}
-                @if(is_super_admin())
+                {{-- Super Admin and Auditor Reports Section --}}
+                @if(is_super_admin() || is_auditor())
                 <li class="pc-item pc-caption">
                     <label>Advanced Reports</label>
                 </li>
@@ -302,7 +312,7 @@
                 @endif
                 
                 {{-- Telecaller Tracking Section --}}
-                @if(is_super_admin())
+                @if(is_super_admin() || is_auditor())
                 <li class="pc-item pc-caption">
                     <label>Telecaller Tracking</label>
                 </li>

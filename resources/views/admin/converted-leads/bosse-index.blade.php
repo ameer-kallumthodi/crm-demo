@@ -274,11 +274,11 @@
                                     <th>Phone</th>
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
-                                    <th>Status</th>
                                     <th>Registration Fee</th>
+                                    <th>Registration Status</th>
                                     <th>Course</th>
                                     <th>Application Number</th>
-                                    <th>Board Registration Number</th>
+                                    <th>Enrolment Number</th>
                                     <th>Mail</th>
                                     <th>ST</th>
                                     <th>PHY</th>

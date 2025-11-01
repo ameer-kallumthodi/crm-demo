@@ -67,7 +67,7 @@ class TelecallerController extends Controller
 
     public function destroy(User $telecaller)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -218,7 +218,7 @@ class TelecallerController extends Controller
 
     public function delete($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 

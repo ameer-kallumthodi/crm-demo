@@ -285,8 +285,16 @@
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">NIOS Converted Leads List</h5>
+                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                <div class="batch-actions-toolbar" style="display: none;">
+                    <span class="me-2 text-muted selected-count">0 selected</span>
+                    <button type="button" class="btn btn-sm btn-primary" id="batchUpdateBtn">
+                        <i class="ti ti-edit"></i> Batch Update
+                    </button>
+                </div>
+                @endif
             </div>
             <div class="card-body">
                 <!-- Desktop Table View -->
@@ -295,6 +303,11 @@
                         <table class="table table-hover data_table_basic" id="convertedLeadsTable">
                             <thead>
                                 <tr>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                    <th style="width: 40px;">
+                                        <input type="checkbox" id="selectAll" title="Select All">
+                                    </th>
+                                    @endif
                                     <th>#</th>
                                     <th>Register Number</th>
                                     <th>Converted Date</th>
@@ -308,8 +321,8 @@
                                     <th>Registered Person</th>
                                     <th>Username</th>
                                     <th>Password</th>
-                                    <th>Status</th>
                                     <th>REG. FEE</th>
+                                    <th>REG. STATUS</th>
                                     <th>EXAM FEE</th>
                                     <th>Ref No</th>
                                     <th>Enroll No</th>
@@ -323,6 +336,11 @@
                             <tbody>
                                 @forelse($convertedLeads as $index => $convertedLead)
                                 <tr>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                    <td>
+                                        <input type="checkbox" class="row-checkbox" value="{{ $convertedLead->id }}">
+                                    </td>
+                                    @endif
                                     <td>{{ $index + 1 }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="register_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->register_number }}">
@@ -384,7 +402,16 @@
                                         </div>
                                         <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}"></div>
                                     </td>
-                                    <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
+                                    <td>
+                                        <div class="inline-edit" data-field="batch_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->batch_id }}">
+                                            <span class="display-value">{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">

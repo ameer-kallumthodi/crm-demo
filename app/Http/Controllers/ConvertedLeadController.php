@@ -1984,4 +1984,86 @@ class ConvertedLeadController extends Controller
             return null;
         }
     }
+
+    /**
+     * Batch update converted leads
+     */
+    public function batchUpdate(Request $request)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant()) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Access denied.'
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:converted_leads,id',
+            'field' => 'required|string',
+            'value' => 'nullable',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'error' => $validator->errors()->first()
+            ], 422);
+        }
+
+        $ids = $request->ids;
+        $field = $request->field;
+        $value = $request->value;
+
+        // Validate field
+        $allowedFields = ['batch_id', 'admission_batch_id', 'status', 'reg_fee', 'exam_fee', 'id_card', 'tma', 'academic_assistant_id'];
+        if (!in_array($field, $allowedFields)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Field not allowed for batch update.'
+            ], 422);
+        }
+
+        try {
+            $updatedCount = 0;
+            $studentDetailFields = ['reg_fee', 'exam_fee', 'id_card', 'tma'];
+
+            foreach ($ids as $id) {
+                $convertedLead = ConvertedLead::find($id);
+                if (!$convertedLead) {
+                    continue;
+                }
+
+                if (in_array($field, $studentDetailFields)) {
+                    $studentDetail = $convertedLead->studentDetails;
+                    if (!$studentDetail) {
+                        $studentDetail = $convertedLead->studentDetails()->create([
+                            'converted_lead_id' => $convertedLead->id,
+                        ]);
+                    }
+                    $studentDetail->{$field} = $value;
+                    $studentDetail->save();
+                } else {
+                    $convertedLead->{$field} = $value;
+                    $convertedLead->updated_by = AuthHelper::getCurrentUserId();
+                    $convertedLead->save();
+                }
+
+                $updatedCount++;
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully updated {$updatedCount} record(s).",
+                'count' => $updatedCount
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Batch update error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to update records: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

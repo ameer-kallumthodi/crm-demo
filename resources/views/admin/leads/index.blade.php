@@ -232,6 +232,7 @@
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                     <th>Registration Details</th>
                                     @endif
+                                    <th>Created At</th>
                                     <th>Name</th>
                                     <th>Profile</th>
                                     <th>Phone</th>
@@ -525,6 +526,9 @@
                                     </td>
                                     @endif
                                     <td>
+                                        <small class="text-muted">{{ $lead->created_at->format('d-m-Y h:i A') }}</small>
+                                    </td>
+                                    <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avtar avtar-s rounded-circle bg-light-primary me-2 d-flex align-items-center justify-content-center">
                                                 <span class="f-16 fw-bold text-primary">{{ strtoupper(substr($lead->title, 0, 1)) }}</span>
@@ -650,6 +654,7 @@
                                         <span class="f-14 fw-bold text-primary">{{ strtoupper(substr($lead->title, 0, 1)) }}</span>
                                     </div>
                                     <div class="flex-grow-1">
+                                        <small class="text-muted d-block f-10 mb-1">{{ $lead->created_at->format('d-m-Y h:i A') }}</small>
                                         <h6 class="mb-0 fw-bold f-14">{{ $lead->title }}</h6>
                                         <small class="text-muted f-11">#{{ $index + 1 }}</small>
                                     </div>

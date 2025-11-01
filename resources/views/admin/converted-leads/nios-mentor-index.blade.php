@@ -295,7 +295,9 @@
                                     <th>Registration Number</th>
                                     <th>Name</th>
                                     <th>DOB</th>
-                                    <th>Enrolment Number</th>
+                                    @if(!\App\Helpers\RoleHelper::is_mentor())
+                                        <th>Enrolment Number</th>
+                                    @endif
                                     <th>Phone</th>
                                     <th>Subject</th>
                                     <th>Batch</th>
@@ -351,7 +353,9 @@
                                     <td>{{ $convertedLead->register_number ?? '-' }}</td>
                                     <td>{{ $convertedLead->name }}</td>
                                     <td>{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</td>
+                                    @if(!\App\Helpers\RoleHelper::is_mentor())
                                     <td>{{ $convertedLead->studentDetails?->enroll_no ?? '-' }}</td>
+                                    @endif
                                     <td>{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="subject_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->subject_id }}">

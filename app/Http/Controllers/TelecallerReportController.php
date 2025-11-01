@@ -18,13 +18,13 @@ use Maatwebsite\Excel\Facades\Excel;
 class TelecallerReportController extends Controller
 {
     /**
-     * Constructor - Check if user is super admin
+     * Constructor - Check if user is super admin or auditor
      */
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (!AuthHelper::isSuperAdmin()) {
-                abort(403, 'Access denied. Super admin access required.');
+            if (!AuthHelper::isSuperAdmin() && !\App\Helpers\RoleHelper::is_auditor()) {
+                abort(403, 'Access denied. Super admin or auditor access required.');
             }
             return $next($request);
         });

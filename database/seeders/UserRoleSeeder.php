@@ -80,6 +80,12 @@ class UserRoleSeeder extends Seeder
                 'description' => 'General Manager with extended access over leads and teams',
                 'is_active' => true,
             ],
+            [
+                'id' => 12,
+                'title' => 'Auditor',
+                'description' => 'Auditor access with read-only permissions for leads, converted leads, reports and tracking',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($roles as $role) {

@@ -17,8 +17,8 @@ class SuperAdminMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!RoleHelper::is_super_admin()) {
-            abort(403, 'Access denied. Super admin access required.');
+        if (!RoleHelper::is_super_admin() && !RoleHelper::is_auditor()) {
+            abort(403, 'Access denied. Super admin or auditor access required.');
         }
 
         return $next($request);

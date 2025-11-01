@@ -29,8 +29,8 @@ class CourseReportController extends Controller
     public function index(Request $request)
     {
         // Check if user has access to reports
-        if (!RoleHelper::is_admin() && !RoleHelper::is_super_admin() && !RoleHelper::is_team_lead() && !RoleHelper::is_admission_counsellor()) {
-            abort(403, 'Access denied. Admin, Team Lead, or Admission Counsellor access required.');
+        if (!RoleHelper::is_admin() && !RoleHelper::is_super_admin() && !RoleHelper::is_team_lead() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_auditor()) {
+            abort(403, 'Access denied. Admin, Team Lead, Admission Counsellor, or Auditor access required.');
         }
 
         // Default date range (last 30 days)

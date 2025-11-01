@@ -34,6 +34,8 @@ class PermissionHelper
             return self::has_permission_general_manager($permission);
 		} elseif (RoleHelper::is_mentor()) {
 			return self::has_permission_mentor($permission);
+        } elseif (RoleHelper::is_auditor()) {
+            return self::has_permission_auditor($permission);
         }
         
         return false;
@@ -55,6 +57,8 @@ class PermissionHelper
             return true;
         } elseif (RoleHelper::is_general_manager()) {
             return true;
+        } elseif (RoleHelper::is_auditor()) {
+            return false; // Auditor has view-only, no actions
         }
         
         return false;
@@ -233,6 +237,30 @@ class PermissionHelper
 		];
 		return in_array($permission, $permissions);
 	}
+
+    /**
+     * Auditor permissions - view only access
+     */
+    public static function has_permission_auditor($permission = '')
+    {
+        $permissions = [
+            'dashboard/index',
+            'leads/index', // View only, no actions
+            'admin/converted-leads/index', // View only, no actions
+            'leads/followup', // Followups leads
+            'admin/reports/leads', // Lead reports
+            'admin/reports/lead-efficiency', // Advanced Reports - Source Efficiency
+            'admin/reports/lead-stage-movement', // Advanced Reports - Stage Movement
+            'admin/reports/lead-aging', // Advanced Reports - Lead Aging
+            'admin/reports/team-wise', // Advanced Reports - Team-Wise Report
+            'admin/reports/course-summary', // Advanced Reports - Course Reports
+            'admin/telecaller-tracking/dashboard', // Telecaller Tracking - Dashboard
+            'admin/telecaller-tasks/index', // Telecaller Tracking - Task Management
+            'admin/auditors/index', // Auditor management (similar to general managers)
+            'profile/index',
+        ];
+        return in_array($permission, $permissions);
+    }
 
 
     /**

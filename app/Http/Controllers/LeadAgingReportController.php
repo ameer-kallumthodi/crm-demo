@@ -26,9 +26,9 @@ class LeadAgingReportController extends Controller
      */
     public function index(Request $request)
     {
-        // Check if user is super admin
-        if (!RoleHelper::is_super_admin()) {
-            abort(403, 'Access denied. Super admin access required.');
+        // Check if user is super admin or auditor
+        if (!RoleHelper::is_super_admin() && !RoleHelper::is_auditor()) {
+            abort(403, 'Access denied. Super admin or auditor access required.');
         }
 
         // Default date range (last 30 days)
@@ -224,8 +224,8 @@ class LeadAgingReportController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        if (!RoleHelper::is_super_admin()) {
-            abort(403, 'Access denied. Super admin access required.');
+        if (!RoleHelper::is_super_admin() && !RoleHelper::is_auditor()) {
+            abort(403, 'Access denied. Super admin or auditor access required.');
         }
 
         $fromDate = $request->get('date_from', Carbon::now()->subDays(30)->format('Y-m-d'));
@@ -289,8 +289,8 @@ class LeadAgingReportController extends Controller
      */
     public function leadDetail($leadId)
     {
-        if (!RoleHelper::is_super_admin()) {
-            abort(403, 'Access denied. Super admin access required.');
+        if (!RoleHelper::is_super_admin() && !RoleHelper::is_auditor()) {
+            abort(403, 'Access denied. Super admin or auditor access required.');
         }
 
         // Get lead details
@@ -401,8 +401,8 @@ class LeadAgingReportController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        if (!RoleHelper::is_super_admin()) {
-            abort(403, 'Access denied. Super admin access required.');
+        if (!RoleHelper::is_super_admin() && !RoleHelper::is_auditor()) {
+            abort(403, 'Access denied. Super admin or auditor access required.');
         }
 
         $fromDate = $request->get('date_from', Carbon::now()->subDays(30)->format('Y-m-d'));

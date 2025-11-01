@@ -83,9 +83,6 @@
                                         <i class="ti ti-file-pdf"></i> PDF
                                     </a>
                                 </div>
-                                <button type="button" class="btn btn-info" onclick="printReport()">
-                                    <i class="ti ti-printer"></i> Print
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -413,43 +410,5 @@ $(document).ready(function() {
         }
     });
 });
-
-function printReport() {
-    // Create a printable version of the report
-    const printContent = document.querySelector('.printable-report');
-    if (printContent) {
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <html>
-            <head>
-                <title>Lead Source Report - Print</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-                    .header h1 { margin: 0; color: #333; font-size: 24px; }
-                    .header p { margin: 5px 0; color: #666; }
-                    .summary { margin-bottom: 30px; }
-                    .summary h3 { color: #333; margin-bottom: 15px; }
-                    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
-                    .summary-item { text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 5px; }
-                    .summary-item h4 { margin: 0; font-size: 18px; color: #333; }
-                    .summary-item p { margin: 5px 0 0 0; color: #666; }
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    th { background-color: #f2f2f2; font-weight: bold; }
-                    .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 10px; }
-                </style>
-            </head>
-            <body>
-                ${printContent.innerHTML}
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
-    } else {
-        window.print();
-    }
-}
 </script>
 @endpush

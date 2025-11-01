@@ -376,6 +376,16 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/general-managers-change-password/{id}', [App\Http\Controllers\GeneralManagerController::class, 'changePassword'])->name('general-managers.change-password');
         Route::post('/general-managers-update-password/{id}', [App\Http\Controllers\GeneralManagerController::class, 'updatePassword'])->name('general-managers.update-password');
 
+        // Auditor routes (role_id = 12)
+        Route::resource('auditors', App\Http\Controllers\AuditorController::class);
+        Route::get('/auditors-add', [App\Http\Controllers\AuditorController::class, 'ajax_add'])->name('auditors.add');
+        Route::get('/auditors-edit/{id}', [App\Http\Controllers\AuditorController::class, 'ajax_edit'])->name('auditors.edit');
+        Route::post('/auditors-submit', [App\Http\Controllers\AuditorController::class, 'submit'])->name('auditors.submit');
+        Route::put('/auditors-update/{id}', [App\Http\Controllers\AuditorController::class, 'update'])->name('auditors.update');
+        Route::delete('/auditors-delete/{id}', [App\Http\Controllers\AuditorController::class, 'delete'])->name('auditors.delete');
+        Route::get('/auditors-change-password/{id}', [App\Http\Controllers\AuditorController::class, 'changePassword'])->name('auditors.change-password');
+        Route::post('/auditors-update-password/{id}', [App\Http\Controllers\AuditorController::class, 'updatePassword'])->name('auditors.update-password');
+
         // Academic Assistant routes (role_id = 5)
         Route::resource('academic-assistants', App\Http\Controllers\AcademicAssistantController::class);
         Route::get('/academic-assistants-add', [App\Http\Controllers\AcademicAssistantController::class, 'ajax_add'])->name('academic-assistants.add');
@@ -547,6 +557,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
         Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
         Route::post('/converted-leads/{id}/inline-update', [App\Http\Controllers\ConvertedLeadController::class, 'inlineUpdate'])->name('converted-leads.inline-update');
+        Route::post('/converted-leads/batch-update', [App\Http\Controllers\ConvertedLeadController::class, 'batchUpdate'])->name('converted-leads.batch-update');
 
         // BOSSE Mentor Converted Leads Routes
         Route::get('/mentor-bosse-converted-leads', [App\Http\Controllers\MentorConvertedLeadController::class, 'index'])->name('mentor-bosse-converted-leads.index');

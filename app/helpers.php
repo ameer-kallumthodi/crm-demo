@@ -102,6 +102,16 @@ if (!function_exists('is_general_manager')) {
     }
 }
 
+if (!function_exists('is_auditor')) {
+    /**
+     * Check if current user is Auditor
+     */
+    function is_auditor()
+    {
+        return \App\Helpers\RoleHelper::is_auditor();
+    }
+}
+
 
 if (!function_exists('is_logged_in')) {
     /**
