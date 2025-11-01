@@ -1013,6 +1013,9 @@
             if (field === 'subject_id') {
                 const courseId = container.data('course-id');
                 editForm = createSubjectSelect(courseId, currentId);
+            } else if (field === 'batch_id') {
+                const courseId = container.data('course-id');
+                editForm = createBatchSelect(courseId, currentId);
             } else if (field === 'admission_batch_id') {
                 const batchId = container.data('batch-id');
                 editForm = createAdmissionBatchSelect(batchId, currentId);
@@ -1030,7 +1033,25 @@
             container.addClass('editing');
             container.append(editForm);
             
-            container.find('input, select').first().focus();
+            // Load options for select fields that need dynamic loading
+            if (field === 'subject_id') {
+                const courseId = container.data('course-id');
+                const select = container.find('select');
+                loadSubjects(courseId, select, currentId);
+            } else if (field === 'batch_id') {
+                const courseId = container.data('course-id');
+                const select = container.find('select');
+                loadBatches(courseId, select, currentId);
+            } else if (field === 'admission_batch_id') {
+                const batchId = container.data('batch-id');
+                const select = container.find('select');
+                loadAdmissionBatches(batchId, select, currentId);
+            } else if (field === 'academic_assistant_id') {
+                const select = container.find('select');
+                loadAcademicAssistants(select, currentId);
+            } else {
+                container.find('input, select').first().focus();
+            }
         });
 
         // Save inline edit
@@ -1068,9 +1089,15 @@
                 }, extra),
                 success: function(response) {
                     if (response.success) {
-                        container.find('.display-value').text(response.value || value);
-                        // Update the data-current attribute with the new value
-                        container.data('current', response.value || value);
+                        // Update display value with the response value (which should be the title, not ID)
+                        let displayValue = response.value || 'N/A';
+                        container.find('.display-value').text(displayValue);
+                        // Update the data-current attribute with the new display value
+                        container.data('current', displayValue);
+                        // Update data-current-id for fields that use it (store the ID, not the display value)
+                        if (field === 'batch_id' || field === 'subject_id' || field === 'admission_batch_id' || field === 'academic_assistant_id') {
+                            container.data('current-id', value || '');
+                        }
                         if (field === 'phone') {
                             const codeVal = extra.code || '';
                             container.siblings('.inline-code-value').data('current', codeVal);
@@ -1248,6 +1275,20 @@
             `;
         }
 
+        function createBatchSelect(courseId, currentId) {
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm">
+                        <option value="">Loading...</option>
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
         function createAdmissionBatchSelect(batchId, currentId) {
             return `
                 <div class="edit-form">
@@ -1276,49 +1317,69 @@
             `;
         }
 
-        // Load options for select fields
-        $(document).on('click', '.edit-btn', function() {
-            const container = $(this).closest('.inline-edit');
-            const field = container.data('field');
-            const select = container.find('select');
-            const currentValue = container.data('current') !== undefined ? String(container.data('current')).trim() : container.find('.display-value').text().trim();
-            const currentId = container.data('current-id') !== undefined ? String(container.data('current-id')).trim() : '';
-            
-            if (field === 'subject_id') {
-                const courseId = container.data('course-id');
-                loadSubjects(courseId, select, currentId);
-            } else if (field === 'admission_batch_id') {
-                const batchId = container.data('batch-id');
-                loadAdmissionBatches(batchId, select, currentId);
-            } else if (field === 'academic_assistant_id') {
-                loadAcademicAssistants(select, currentId);
-            }
-        });
 
         function loadSubjects(courseId, select, currentId) {
+            if (!courseId) {
+                select.html('<option value="">No course selected</option>');
+                return;
+            }
+            
             $.get(`/api/subjects/by-course/${courseId}`)
                 .done(function(subjects) {
                     let options = '<option value="">Select Subject</option>';
                     subjects.forEach(function(subject) {
-                        const isSelected = String(currentId) === String(subject.id) ? 'selected' : '';
+                        // Only select if currentId is not empty and matches
+                        const isSelected = (currentId && String(currentId) === String(subject.id)) ? 'selected' : '';
                         options += `<option value="${subject.id}" ${isSelected}>${subject.title}</option>`;
                     });
                     select.html(options);
+                    select.focus();
                 })
                 .fail(function() {
                     select.html('<option value="">Error loading subjects</option>');
                 });
         }
 
+        function loadBatches(courseId, select, currentId) {
+            if (!courseId) {
+                select.html('<option value="">No course selected</option>');
+                return;
+            }
+            
+            $.get(`/api/batches/by-course/${courseId}`)
+                .done(function(response) {
+                    let options = '<option value="">Select Batch</option>';
+                    if (response.success && response.batches) {
+                        response.batches.forEach(function(batch) {
+                            // Only select if currentId is not empty and matches
+                            const isSelected = (currentId && String(currentId) === String(batch.id)) ? 'selected' : '';
+                            options += `<option value="${batch.id}" ${isSelected}>${batch.title}</option>`;
+                        });
+                    }
+                    select.html(options);
+                    select.focus();
+                })
+                .fail(function() {
+                    select.html('<option value="">Error loading batches</option>');
+                });
+        }
+
         function loadAdmissionBatches(batchId, select, currentId) {
+            if (!batchId) {
+                select.html('<option value="">No batch selected</option>');
+                return;
+            }
+            
             $.get(`/api/admission-batches/by-batch/${batchId}`)
                 .done(function(batches) {
                     let options = '<option value="">Select Admission Batch</option>';
                     batches.forEach(function(batch) {
-                        const isSelected = String(currentId) === String(batch.id) ? 'selected' : '';
+                        // Only select if currentId is not empty and matches
+                        const isSelected = (currentId && String(currentId) === String(batch.id)) ? 'selected' : '';
                         options += `<option value="${batch.id}" ${isSelected}>${batch.title}</option>`;
                     });
                     select.html(options);
+                    select.focus();
                 })
                 .fail(function() {
                     select.html('<option value="">Error loading admission batches</option>');
@@ -1330,10 +1391,12 @@
                 .done(function(assistants) {
                     let options = '<option value="">Select Academic Assistant</option>';
                     assistants.forEach(function(assistant) {
-                        const isSelected = String(currentId) === String(assistant.id) ? 'selected' : '';
+                        // Only select if currentId is not empty and matches
+                        const isSelected = (currentId && String(currentId) === String(assistant.id)) ? 'selected' : '';
                         options += `<option value="${assistant.id}" ${isSelected}>${assistant.name}</option>`;
                     });
                     select.html(options);
+                    select.focus();
                 })
                 .fail(function() {
                     select.html('<option value="">Error loading academic assistants</option>');

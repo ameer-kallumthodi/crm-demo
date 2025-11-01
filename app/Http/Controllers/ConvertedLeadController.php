@@ -1678,7 +1678,7 @@ class ConvertedLeadController extends Controller
     public function inlineUpdate(Request $request, $id)
     {
         // Check if user has permission to update
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_admission_counsellor()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -1715,6 +1715,7 @@ class ConvertedLeadController extends Controller
             'register_number' => 'nullable|string|max:50',
             'sub_course_id' => 'nullable|exists:sub_courses,id',
             'subject_id' => 'nullable|exists:subjects,id',
+            'batch_id' => 'nullable|exists:batches,id',
             'admission_batch_id' => 'nullable|exists:admission_batches,id',
             'academic_assistant_id' => 'nullable|exists:users,id',
             'username' => 'nullable|string|max:255',
@@ -1861,6 +1862,13 @@ class ConvertedLeadController extends Controller
         if ($field === 'sub_course_id' && $updatedValue) {
             $subCourse = \App\Models\SubCourse::find($updatedValue);
             $updatedValue = $subCourse ? $subCourse->title : $updatedValue;
+        } elseif ($field === 'batch_id') {
+            if ($updatedValue) {
+                $batch = \App\Models\Batch::find($updatedValue);
+                $updatedValue = $batch ? $batch->title : 'N/A';
+            } else {
+                $updatedValue = 'N/A';
+            }
         } elseif ($field === 'subject_id' && $updatedValue) {
             $subject = \App\Models\Subject::find($updatedValue);
             $updatedValue = $subject ? $subject->title : $updatedValue;
