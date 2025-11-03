@@ -20,10 +20,10 @@ class MailService
         $attachments = self::getStudentAttachments($student);
         
         // Send to student with full content including terms and conditions
-        send_email($student->email, $student->name, $subject, $studentBody, $attachments);
+        send_email($student->email, $student->name, $subject, $studentBody, $attachments, 'Support Team');
         
         // Send to CAO with only details and files, no terms and conditions
-        send_email('cao@natdemy.com', 'CAO', $subject, $caoBody, $attachments);
+        send_email('cao@natdemy.com', 'CAO', $subject, $caoBody, $attachments, 'Support Team');
     }
     
     public static function sendNiosStudentVerificationEmail($student, $verifier)
@@ -36,10 +36,10 @@ class MailService
         $attachments = self::getStudentAttachments($student);
         
         // Send to verifier
-        send_email($verifier->email, $verifier->name, $subject, $body, $attachments);
+        send_email($verifier->email, $verifier->name, $subject, $body, $attachments, 'Support Team');
         
         // Send copy to CAO
-        send_email('cao@natdemy.com', 'CAO', $subject, $body, $attachments);
+        send_email('cao@natdemy.com', 'CAO', $subject, $body, $attachments, 'Support Team');
     }
     
     private static function buildCAORegistrationEmailBody($student, $courseType)
@@ -389,6 +389,18 @@ class MailService
                 $filePath = storage_path('app/public/' . $student->$field);
                 if (file_exists($filePath)) {
                     $attachments[] = $filePath;
+                }
+            }
+        }
+
+        // Include multiple SSLC certificates if present via relation
+        if (isset($student->sslcCertificates) && $student->sslcCertificates->count() > 0) {
+            foreach ($student->sslcCertificates as $cert) {
+                if (!empty($cert->certificate_path)) {
+                    $filePath = storage_path('app/public/' . $cert->certificate_path);
+                    if (file_exists($filePath)) {
+                        $attachments[] = $filePath;
+                    }
                 }
             }
         }

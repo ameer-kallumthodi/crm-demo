@@ -656,7 +656,7 @@
                             </div>
                             @endif
                             
-                            @if($studentDetail->birth_certificate && isset($studentDetail->birth_certificate_verification_status))
+                            @if($studentDetail->birth_certificate)
                             <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
@@ -666,10 +666,11 @@
                                         <div class="document-info">
                                             <label class="document-label">Birth Certificate</label>
                                             <div class="verification-status">
-                                                <span class="badge bg-{{ $studentDetail->birth_certificate_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="birth_certificate">
-                                                    {{ ucfirst($studentDetail->birth_certificate_verification_status) }}
+                                                @php($birthStatus = $studentDetail->birth_certificate_verification_status ?? 'pending')
+                                                <span class="badge bg-{{ $birthStatus === 'verified' ? 'success' : 'warning' }}" data-document-type="birth_certificate">
+                                                    {{ ucfirst($birthStatus) }}
                                                 </span>
-                                                @if($studentDetail->birth_certificate_verified_at)
+                                                @if(!empty($studentDetail->birth_certificate_verified_at))
                                                 <small class="text-muted d-block">
                                                     Verified by: {{ $studentDetail->birthCertificateVerifiedBy->name ?? 'Unknown' }}<br>
                                                     Date: {{ $studentDetail->birth_certificate_verified_at->format('M d, Y h:i A') }}
