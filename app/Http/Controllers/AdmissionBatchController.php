@@ -87,7 +87,7 @@ class AdmissionBatchController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $batches = Batch::where('is_active', true)->get();
+        $batches = Batch::with('course')->where('is_active', true)->get();
         $mentors = User::where('role_id', 9)->where('is_active', true)->get();
         return view('admin.admission-batches.add', compact('batches', 'mentors'));
     }
@@ -134,7 +134,7 @@ class AdmissionBatchController extends Controller
         }
 
         $edit_data = AdmissionBatch::findOrFail($id);
-        $batches = Batch::where('is_active', true)->get();
+        $batches = Batch::with('course')->where('is_active', true)->get();
         $mentors = User::where('role_id', 9)->where('is_active', true)->get();
         return view('admin.admission-batches.edit', compact('edit_data', 'batches', 'mentors'));
     }

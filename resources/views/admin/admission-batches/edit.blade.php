@@ -8,7 +8,7 @@
                 <select class="form-control" name="batch_id" id="batch_id" required>
                     <option value="">Select Batch</option>
                     @foreach($batches as $batch)
-                        <option value="{{ $batch->id }}" {{ $edit_data->batch_id == $batch->id ? 'selected' : '' }}>{{ $batch->title }}</option>
+                        <option value="{{ $batch->id }}" {{ $edit_data->batch_id == $batch->id ? 'selected' : '' }}>{{ $batch->course ? $batch->course->title . ' - ' : '' }}{{ $batch->title }}</option>
                     @endforeach
                 </select>
             </div>
