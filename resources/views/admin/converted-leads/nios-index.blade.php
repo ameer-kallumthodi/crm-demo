@@ -59,6 +59,9 @@
                     <a href="{{ route('admin.bosse-converted-leads.index') }}" class="btn btn-outline-warning">
                         <i class="ti ti-school-2"></i> BOSSE Converted Leads
                     </a>
+                    <a href="{{ route('admin.ugpg-converted-leads.index') }}" class="btn btn-outline-warning">
+                        <i class="ti ti-graduation"></i> UG/PG Converted Leads
+                    </a>
                     <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-outline-info">
                         <i class="ti ti-building"></i> Hotel Management Converted Leads
                     </a>

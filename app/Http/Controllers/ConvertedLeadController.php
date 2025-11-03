@@ -1320,6 +1320,86 @@ class ConvertedLeadController extends Controller
     }
 
     /**
+     * Display UG/PG converted leads (course_id = 9)
+     */
+    public function ugpgIndex(Request $request)
+    {
+        $query = ConvertedLead::with(['lead', 'leadDetail.university', 'leadDetail.universityCourse', 'course', 'academicAssistant', 'createdBy'])
+            ->where('course_id', 9);
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_general_manager()) {
+                // No filtering
+            } elseif (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
+                } else {
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Can see all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                // Can see all
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
+            }
+        }
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('register_number', 'like', "%{$search}%")
+                    ->orWhereHas('leadDetail', function($sq) use ($search) {
+                        $sq->where('whatsapp_number', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->filled('university_id')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('university_id', $request->university_id);
+            });
+        }
+
+        if ($request->filled('course_type')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('course_type', $request->course_type);
+            });
+        }
+
+        // Get all results
+        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
+
+        // Get filter data
+        $universities = \App\Models\University::where('is_active', 1)->orderBy('title')->get();
+        $country_codes = get_country_code();
+
+        return view('admin.converted-leads.ugpg-index', compact('convertedLeads', 'universities', 'country_codes'));
+    }
+
+    /**
      * Display the specified converted lead
      */
     public function show($id)
@@ -1766,6 +1846,13 @@ class ConvertedLeadController extends Controller
             // phone & code inline updates
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:5',
+            // LeadDetail fields for UG/PG
+            'whatsapp_number' => 'nullable|string|max:20',
+            'whatsapp_code' => 'nullable|string|max:5',
+            'university_id' => 'nullable|exists:universities,id',
+            'course_type' => 'nullable|string|in:UG,PG',
+            'university_course_id' => 'nullable|exists:university_courses,id',
+            'passed_year' => 'nullable|integer|min:1900|max:' . date('Y'),
         ];
 
         if (!array_key_exists($field, $allowedFields)) {
@@ -1829,10 +1916,42 @@ class ConvertedLeadController extends Controller
             }
         }
 
+        // Handle fields that are in LeadDetail (for UG/PG course)
+        $leadDetailFields = ['whatsapp_number', 'whatsapp_code', 'university_id', 'course_type', 'university_course_id', 'passed_year', 'date_of_birth', 'dob'];
+        
         // Handle fields that are now in ConvertedStudentDetail
         $studentDetailFields = ['reg_fee', 'exam_fee', 'enroll_no', 'id_card', 'tma', 'registration_number', 'enrollment_number', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks', 'continuing_studies', 'reason', 'application_number', 'board_registration_number', 'st', 'phy', 'che', 'bio', 'app', 'group', 'interview', 'howmany_interview', 'call_status', 'class_information', 'orientation_class_status', 'class_starting_date', 'class_ending_date', 'whatsapp_group_status', 'class_time', 'class_status', 'complete_cancel_date', 'teacher_id', 'screening'];
         
-        if (in_array($field, $studentDetailFields)) {
+        if (in_array($field, $leadDetailFields)) {
+            // Update in LeadDetail
+            $leadDetail = $convertedLead->leadDetail;
+            if (!$leadDetail) {
+                // Create lead detail if it doesn't exist
+                $leadDetail = \App\Models\LeadDetail::create([
+                    'lead_id' => $convertedLead->lead_id,
+                    'course_id' => $convertedLead->course_id,
+                ]);
+            }
+            
+            // Special handling for whatsapp_number and whatsapp_code (similar to phone)
+            if ($field === 'whatsapp_number' && $request->filled('whatsapp_code')) {
+                $leadDetail->whatsapp_code = $request->input('whatsapp_code');
+            }
+            
+            // Special handling for date_of_birth (DOB in lead_details)
+            if ($field === 'dob') {
+                $leadDetail->date_of_birth = $value;
+            } else {
+                $leadDetail->{$field} = $value;
+            }
+            $leadDetail->save();
+            
+            // Also update converted_lead dob if field is dob
+            if ($field === 'dob') {
+                $convertedLead->dob = $value;
+                $convertedLead->save();
+            }
+        } elseif (in_array($field, $studentDetailFields)) {
             // Update in ConvertedStudentDetail
             $studentDetail = $convertedLead->studentDetails;
             if (!$studentDetail) {
@@ -1851,7 +1970,17 @@ class ConvertedLeadController extends Controller
         }
 
         // Get the updated value for response
-        if (in_array($field, $studentDetailFields)) {
+        if (in_array($field, $leadDetailFields)) {
+            // For lead detail fields, get the value from the relationship
+            $convertedLead->load('leadDetail');
+            if ($field === 'dob') {
+                $updatedValue = $convertedLead->leadDetail && $convertedLead->leadDetail->date_of_birth 
+                    ? $convertedLead->leadDetail->date_of_birth->format('Y-m-d') 
+                    : ($convertedLead->leadDetail ? $convertedLead->leadDetail->date_of_birth : $value);
+            } else {
+                $updatedValue = $convertedLead->leadDetail ? $convertedLead->leadDetail->$field : $value;
+            }
+        } elseif (in_array($field, $studentDetailFields)) {
             // For student detail fields, get the value from the relationship
             $updatedValue = $convertedLead->studentDetails ? $convertedLead->studentDetails->$field : $value;
         } else {
@@ -1897,6 +2026,29 @@ class ConvertedLeadController extends Controller
         } elseif ($field === 'continuing_studies' && $updatedValue) {
             // Format continuing_studies with ucfirst
             $updatedValue = ucfirst($updatedValue);
+        } elseif ($field === 'university_id' && $updatedValue) {
+            $university = \App\Models\University::find($updatedValue);
+            $updatedValue = $university ? $university->title : $updatedValue;
+        } elseif ($field === 'university_course_id' && $updatedValue) {
+            $universityCourse = \App\Models\UniversityCourse::find($updatedValue);
+            $updatedValue = $universityCourse ? $universityCourse->title : $updatedValue;
+        } elseif ($field === 'whatsapp_number' && $updatedValue) {
+            $leadDetail = $convertedLead->leadDetail;
+            $updatedValue = \App\Helpers\PhoneNumberHelper::display(
+                $leadDetail ? $leadDetail->whatsapp_code : '', 
+                $updatedValue
+            );
+        } elseif (in_array($field, ['whatsapp_number', 'whatsapp_code']) && !$updatedValue) {
+            $updatedValue = '-';
+        } elseif ($field === 'dob' && $updatedValue) {
+            // Format DOB for display (d-m-Y format)
+            try {
+                $updatedValue = \Carbon\Carbon::parse($updatedValue)->format('d-m-Y');
+            } catch (\Exception $e) {
+                // Keep original value if parsing fails
+            }
+        } elseif ($field === 'passed_year' && !$updatedValue) {
+            $updatedValue = '-';
         }
 
         return response()->json([

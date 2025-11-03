@@ -28,7 +28,7 @@ class RegistrationLinkController extends Controller
      */
     public function store(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -50,7 +50,7 @@ class RegistrationLinkController extends Controller
      */
     public function show(RegistrationLink $registrationLink)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -62,7 +62,7 @@ class RegistrationLinkController extends Controller
      */
     public function update(Request $request, RegistrationLink $registrationLink)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -108,7 +108,7 @@ class RegistrationLinkController extends Controller
      */
     public function ajax_add()
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -120,7 +120,7 @@ class RegistrationLinkController extends Controller
      */
     public function submit(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -144,7 +144,7 @@ class RegistrationLinkController extends Controller
      */
     public function ajax_edit($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -182,7 +182,7 @@ class RegistrationLinkController extends Controller
      */
     public function delete($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 

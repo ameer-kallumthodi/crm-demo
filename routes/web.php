@@ -50,6 +50,7 @@ Route::prefix('api/meta-leads')->group(function () {
 // Public API routes for subjects and courses (no authentication required)
 Route::get('/api/subjects/by-course/{courseId}', [App\Http\Controllers\SubjectController::class, 'getByCourse'])->name('api.subjects.by-course');
 Route::get('/api/admission-batches/by-batch/{batchId}', [App\Http\Controllers\AdmissionBatchController::class, 'getByBatch'])->name('api.admission-batches.by-batch');
+Route::get('/api/university-courses/by-university/{universityId}', [App\Http\Controllers\UniversityCourseController::class, 'getByUniversity'])->name('api.university-courses.by-university');
 
 // Public Lead Registration Routes
 Route::prefix('register')->group(function () {
@@ -540,6 +541,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
 
         // BOSSE Converted Leads Routes
         Route::get('/bosse-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'bosseIndex'])->name('bosse-converted-leads.index');
+
+        // UG/PG Converted Leads Routes
+        Route::get('/ugpg-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'ugpgIndex'])->name('ugpg-converted-leads.index');
 
         // Hotel Management Converted Leads Routes
         Route::get('/hotel-management-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'hotelManagementIndex'])->name('hotel-management-converted-leads.index');
