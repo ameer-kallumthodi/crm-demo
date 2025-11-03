@@ -858,7 +858,9 @@
 
             let editForm = '';
             
-            if (['registration_link_id', 'certificate_status'].includes(field)) {
+            if (field === 'admission_batch_id') {
+                editForm = createAdmissionBatchField(container.data('batch-id'), currentId);
+            } else if (['registration_link_id', 'certificate_status'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
             } else if (['certificate_received_date', 'certificate_issued_date'].includes(field)) {
                 editForm = createDateField(field, currentValue);
@@ -1051,6 +1053,39 @@
                     </div>
                 </div>
             `;
+        }
+
+        function createAdmissionBatchField(batchId, currentAdmissionBatchId) {
+            const form = `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm">
+                        <option value="">${batchId ? 'Loading...' : 'Select Admission Batch'}</option>
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+            // After inserting, populate options asynchronously
+            setTimeout(function() {
+                const selectEl = $('.inline-edit.editing .edit-form select');
+                if (!batchId) {
+                    selectEl.html('<option value="">Select Admission Batch</option>');
+                    return;
+                }
+                $.get(`/api/admission-batches/by-batch/${batchId}`).done(function(list) {
+                    let opts = '<option value="">Select Admission Batch</option>';
+                    list.forEach(function(i) {
+                        const sel = String(currentAdmissionBatchId) === String(i.id) ? 'selected' : '';
+                        opts += `<option value="${i.id}" ${sel}>${i.title}</option>`;
+                    });
+                    selectEl.html(opts);
+                }).fail(function() {
+                    selectEl.html('<option value="">Select Admission Batch</option>');
+                });
+            }, 0);
+            return form;
         }
     });
 </script>
