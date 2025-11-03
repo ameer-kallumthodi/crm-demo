@@ -786,7 +786,7 @@
                     'signature': 'Signature'
                 };
                 
-                const requiredFileFields = ['passport_photo', 'adhar_front', 'adhar_back', 'signature'];
+                const requiredFileFields = ['passport_photo', 'adhar_front', 'adhar_back'];
                 for (let fieldName of requiredFileFields) {
                     const field = document.getElementById(fieldName);
                     if (field && (!field.files || field.files.length === 0)) {
