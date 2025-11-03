@@ -17,7 +17,7 @@ class AdmissionBatchController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $admissionBatches = AdmissionBatch::with(['batch', 'mentor', 'createdBy', 'updatedBy'])->orderBy('created_at', 'desc')->get();
+        $admissionBatches = AdmissionBatch::with(['batch.course', 'mentor', 'createdBy', 'updatedBy'])->orderBy('created_at', 'desc')->get();
         return view('admin.admission-batches.index', compact('admissionBatches'));
     }
 

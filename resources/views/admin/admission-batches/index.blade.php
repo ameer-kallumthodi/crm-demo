@@ -44,7 +44,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Title</th>
-                                <th>Batch</th>
+                                <th>Course - Batch</th>
                                 <th>Mentor</th>
                                 <th>Description</th>
                                 <th>Status</th>
@@ -57,7 +57,10 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $admissionBatch->title }}</td>
-                                <td>{{ $admissionBatch->batch->title ?? 'N/A' }}</td>
+                                <td>
+                                    @php($batch = $admissionBatch->batch)
+                                    {{ $batch && $batch->course ? ($batch->course->title . ' - ') : '' }}{{ $batch->title ?? 'N/A' }}
+                                </td>
                                 <td>{{ $admissionBatch->mentor->name ?? 'No Mentor Assigned' }}</td>
                                 <td>{{ $admissionBatch->description ?? 'N/A' }}</td>
                                 <td>
