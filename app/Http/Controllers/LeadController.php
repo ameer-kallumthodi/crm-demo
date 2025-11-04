@@ -2057,11 +2057,18 @@ class LeadController extends Controller
     public function updateDocumentVerification(Request $request)
     {
         try {
+            // Normalize checkbox value before validation
+            if ($request->has('need_to_change_document')) {
+                $request->merge(['need_to_change_document' => $request->boolean('need_to_change_document')]);
+            } else {
+                $request->merge(['need_to_change_document' => false]);
+            }
+            
             $request->validate([
                 'lead_detail_id' => 'required|exists:leads_details,id',
                 'document_type' => 'required|in:sslc_certificate,plustwo_certificate,plus_two_certificate,ug_certificate,birth_certificate,passport_photo,adhar_front,adhar_back,signature',
                 'verification_status' => 'required|in:pending,verified',
-                'need_to_change_document' => 'nullable|boolean',
+                'need_to_change_document' => 'sometimes|boolean',
                 'new_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:1024'
             ]);
 

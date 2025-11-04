@@ -1441,6 +1441,10 @@ document.getElementById('verificationForm').addEventListener('submit', function(
     
     const formData = new FormData(this);
     
+    // Ensure need_to_change_document is sent as 1 or 0
+    const needToChangeDoc = document.getElementById('need_to_change_document').checked;
+    formData.set('need_to_change_document', needToChangeDoc ? '1' : '0');
+    
     // Debug: Log form data
     console.log('Form data being sent:');
     for (let [key, value] of formData.entries()) {
