@@ -75,6 +75,9 @@ class LeadDetail extends Model
         'signature_verification_status',
         'signature_verified_by',
         'signature_verified_at',
+        'birth_certificate_verification_status',
+        'birth_certificate_verified_by',
+        'birth_certificate_verified_at',
     ];
 
     protected $casts = [
@@ -87,6 +90,7 @@ class LeadDetail extends Model
         'adhar_front_verified_at' => 'datetime',
         'adhar_back_verified_at' => 'datetime',
         'signature_verified_at' => 'datetime',
+        'birth_certificate_verified_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -167,6 +171,11 @@ class LeadDetail extends Model
     public function signatureVerifiedBy()
     {
         return $this->belongsTo(User::class, 'signature_verified_by');
+    }
+
+    public function birthCertificateVerifiedBy()
+    {
+        return $this->belongsTo(User::class, 'birth_certificate_verified_by');
     }
 
     /**
