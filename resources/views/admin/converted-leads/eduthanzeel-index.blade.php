@@ -68,6 +68,9 @@
                     <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
                         <i class="ti ti-certificate"></i> GMVSS Converted Leads
                     </a>
+                    <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-outline-info">
+                        <i class="ti ti-user-star"></i> GMVSS Mentor List
+                    </a>
                     <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-code"></i> AI with Python Converted Leads
                     </a>
@@ -431,7 +434,7 @@
                                         @endphp
                                         
                                         @if($idCardRecord)
-                                            <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-info" title="View ID Card" target="_blank">
+                                                <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View ID Card" target="_blank">
                                                 <i class="ti ti-id"></i>
                                             </a>
                                         @elseif($convertedLead->register_number)
@@ -533,7 +536,7 @@
                                 @endphp
                                 
                                 @if($idCardRecord)
-                                    <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-info" title="View ID Card" target="_blank">
+                                                <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View ID Card" target="_blank">
                                         <i class="ti ti-id me-1"></i>View ID Card
                                     </a>
                                 @elseif($convertedLead->register_number)

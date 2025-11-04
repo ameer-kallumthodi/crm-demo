@@ -381,7 +381,7 @@
                                                 $idCardRecord = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
                                             @endphp
                                             @if($idCardRecord)
-                                                <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-info" title="View ID Card" target="_blank">
+                                                <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View ID Card" target="_blank">
                                                     <i class="ti ti-id"></i>
                                                 </a>
                                             @else

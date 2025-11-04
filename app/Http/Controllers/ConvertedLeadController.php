@@ -508,6 +508,105 @@ class ConvertedLeadController extends Controller
     }
 
     /**
+     * Display GMVSS Mentor converted leads (course_id = 16, is_mentor = true)
+     */
+    public function gmvssMentorIndex(Request $request)
+    {
+        $query = ConvertedLead::with(['lead.studentDetails', 'course', 'academicAssistant', 'createdBy', 'batch', 'admissionBatch', 'subject', 'studentDetails.registrationLink'])
+            ->where('course_id', 16);
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
+                } else {
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
+                }
+            } elseif (RoleHelper::is_mentor()) {
+                // Mentor: Filter by admission_batch_id where mentor_id matches
+                $mentorAdmissionBatchIds = \App\Models\AdmissionBatch::where('mentor_id', AuthHelper::getCurrentUserId())
+                    ->pluck('id')
+                    ->toArray();
+                if (!empty($mentorAdmissionBatchIds)) {
+                    $query->whereIn('admission_batch_id', $mentorAdmissionBatchIds);
+                } else {
+                    // If no admission batches assigned, return empty result
+                    $query->whereRaw('1 = 0');
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Can see all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                // Can see all
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
+            }
+        }
+        
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('register_number', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->filled('registration_link_id')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('registration_link_id', $request->registration_link_id);
+            });
+        }
+
+        if ($request->filled('certificate_status')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('certificate_status', $request->certificate_status);
+            });
+        }
+
+        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
+        
+        $courses = \App\Models\Course::all();
+        $batches = \App\Models\Batch::where('course_id', 16)->get();
+        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $country_codes = get_country_code();
+        $registration_links = \App\Models\RegistrationLink::all();
+
+        return view('admin.converted-leads.gmvss-mentor-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'registration_links'));
+    }
+
+    /**
      * Display AI with Python converted leads (course_id = 10)
      */
     public function aiPythonIndex(Request $request)
@@ -1758,9 +1857,13 @@ class ConvertedLeadController extends Controller
     public function inlineUpdate(Request $request, $id)
     {
         // Check if user has permission to update
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_admission_counsellor()) {
+        $isMentor = RoleHelper::is_mentor();
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_admission_counsellor() && !$isMentor) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
+        
+        // If mentor, restrict to allowed fields only
+        $mentorAllowedFields = ['enroll_no', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks'];
 
         $convertedLead = ConvertedLead::findOrFail($id);
         
@@ -1775,6 +1878,11 @@ class ConvertedLeadController extends Controller
 
         $field = $request->input('field');
         $value = $request->input('value');
+
+        // If mentor, check if field is allowed
+        if ($isMentor && !in_array($field, $mentorAllowedFields)) {
+            return response()->json(['error' => 'You do not have permission to edit this field.'], 403);
+        }
 
         // Special case: if updating phone and code together, allow updating code via same request
         if ($field === 'phone' && $request->filled('code')) {

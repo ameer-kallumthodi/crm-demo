@@ -1,0 +1,650 @@
+@extends('layouts.mantis')
+
+@section('title', 'GMVSS Mentor List')
+
+@section('content')
+<style>
+    .table td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    .table td .btn-group {
+        white-space: nowrap;
+    }
+    .table td .inline-edit {
+        white-space: nowrap;
+    }
+    .table td .display-value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+        display: inline-block;
+    }
+</style>
+<!-- [ breadcrumb ] start -->
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">GMVSS Mentor List</h5>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <ul class="breadcrumb d-flex justify-content-end">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
+                    <li class="breadcrumb-item">GMVSS Mentor</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ breadcrumb ] end -->
+
+<!-- [ Mentor List ] start -->
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-3">Mentor List</h6>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ route('admin.mentor-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Bosse Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> NIOS Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-eschool-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> E-School Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Eduthanzeel Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-outline-primary active">
+                        <i class="ti ti-user-star"></i> GMVSS Mentor List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+<!-- [ Mentor List ] end -->
+
+<!-- [ Filter Section ] start -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" action="{{ route('admin.gmvss-mentor-converted-leads.index') }}" id="filterForm">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="search" name="search"
+                                value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="batch_id" class="form-label">Batch</label>
+                            <select class="form-select" id="batch_id" name="batch_id" data-selected="{{ request('batch_id') }}">
+                                <option value="">All Batches</option>
+                                @foreach($batches as $batch)
+                                <option value="{{ $batch->id }}" {{ request('batch_id') == $batch->id ? 'selected' : '' }}>
+                                    {{ $batch->title }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="admission_batch_id" class="form-label">Admission Batch</label>
+                            <select class="form-select" id="admission_batch_id" name="admission_batch_id" data-selected="{{ request('admission_batch_id') }}">
+                                <option value="">All Admission Batches</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="registration_link_id" class="form-label">Registration Link</label>
+                            <select class="form-select" id="registration_link_id" name="registration_link_id">
+                                <option value="">All</option>
+                                @foreach($registration_links as $link)
+                                <option value="{{ $link->id }}" {{ request('registration_link_id') == $link->id ? 'selected' : '' }}>
+                                    {{ $link->title }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="certificate_status" class="form-label">Certificate</label>
+                            <select class="form-select" id="certificate_status" name="certificate_status">
+                                <option value="">All</option>
+                                <option value="In Progress" {{ request('certificate_status')==='In Progress' ? 'selected' : '' }}>In Progress</option>
+                                <option value="Online Result Not Arrived" {{ request('certificate_status')==='Online Result Not Arrived' ? 'selected' : '' }}>Online Result Not Arrived</option>
+                                <option value="One Result Arrived" {{ request('certificate_status')==='One Result Arrived' ? 'selected' : '' }}>One Result Arrived</option>
+                                <option value="Certificate Arrived" {{ request('certificate_status')==='Certificate Arrived' ? 'selected' : '' }}>Certificate Arrived</option>
+                                <option value="Not Received" {{ request('certificate_status')==='Not Received' ? 'selected' : '' }}>Not Received</option>
+                                <option value="No Admission" {{ request('certificate_status')==='No Admission' ? 'selected' : '' }}>No Admission</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="ti ti-search"></i> <span class="d-none d-sm-inline">Filter</span>
+                                </button>
+                                <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-secondary">
+                                    <i class="ti ti-x"></i> <span class="d-none d-sm-inline">Clear</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Filter Section ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">GMVSS Mentor List</h5>
+            </div>
+            <div class="card-body">
+                <!-- Desktop Table View -->
+                <div class="d-none d-lg-block">
+                    <div class="table-responsive">
+                        <table class="table table-hover data_table_basic" id="convertedLeadsTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Registration Number</th>
+                                    <th>Converted Date</th>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Batch</th>
+                                    <th>Admission Batch</th>
+                                    <th>Mail</th>
+                                    <th>Course</th>
+                                    <th>Passed Year</th>
+                                    <th>Enrollment Number</th>
+                                    <th>Registration Link</th>
+                                    <th>Certificate</th>
+                                    <th>Certificate Received Date</th>
+                                    <th>Certificate Issued Date</th>
+                                    <th>Remarks</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($convertedLeads as $index => $convertedLead)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>
+                                        <div class="inline-edit" data-field="register_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->register_number }}">
+                                            @if($convertedLead->register_number)
+                                            <span class="badge bg-success"><span class="display-value">{{ $convertedLead->register_number }}</span></span>
+                                            @else
+                                            <span class="display-value text-muted">Not Set</span>
+                                            @endif
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avtar avtar-s rounded-circle bg-light-success me-2 d-flex align-items-center justify-content-center">
+                                                <span class="f-16 fw-bold text-success">{{ strtoupper(substr($convertedLead->name, 0, 1)) }}</span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ $convertedLead->name }}</h6>
+                                                <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="phone" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->phone }}">
+                                            <span class="display-value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                        <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}"></div>
+                                    </td>
+                                    <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
+                                    <td>
+                                        <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
+                                            <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>{{ $convertedLead->email ?? 'N/A' }}</td>
+                                    <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
+                                    <td>{{ $convertedLead->lead?->studentDetails?->passed_year ?? 'N/A' }}</td>
+                                    <td>
+                                        <div class="inline-edit" data-field="enroll_no" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->enroll_no ?? $convertedLead->enroll_no }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->enroll_no ?? $convertedLead->enroll_no ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="registration_link_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->registration_link_id }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->registrationLink?->title ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="certificate_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->certificate_status }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->certificate_status ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="certificate_received_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->certificate_received_date }}">
+                                            @php
+                                                $receivedDate = $convertedLead->studentDetails?->certificate_received_date ? (strtotime($convertedLead->studentDetails->certificate_received_date) ? date('d-m-Y', strtotime($convertedLead->studentDetails->certificate_received_date)) : $convertedLead->studentDetails->certificate_received_date) : 'N/A';
+                                            @endphp
+                                            <span class="display-value">{{ $receivedDate }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="certificate_issued_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->certificate_issued_date }}">
+                                            @php
+                                                $issuedDate = $convertedLead->studentDetails?->certificate_issued_date ? (strtotime($convertedLead->studentDetails->certificate_issued_date) ? date('d-m-Y', strtotime($convertedLead->studentDetails->certificate_issued_date)) : $convertedLead->studentDetails->certificate_issued_date) : 'N/A';
+                                            @endphp
+                                            <span class="display-value">{{ $issuedDate }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="" role="group">
+                                            <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice">
+                                                <i class="ti ti-receipt"></i>
+                                            </a>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                            <button type="button" class="btn btn-sm btn-info update-register-btn" title="Update Register Number"
+                                                data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
+                                                data-title="Update Register Number">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @if($convertedLead->register_number)
+                                                @php
+                                                    $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                                @endphp
+                                                @if($idCard)
+                                                    <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View ID Card" target="_blank">
+                                                        <i class="ti ti-id"></i>
+                                                    </a>
+                                                @else
+                                                    <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
+                                                            <i class="ti ti-id"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            @endif
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="17" class="text-center">No converted leads found</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+
+<script id="registration-links-json" type="application/json">{!! json_encode($registration_links ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+
+@push('styles')
+<style>
+.spin {
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.inline-edit {
+    position: relative;
+    overflow: visible;
+}
+
+.inline-edit .edit-form {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: -8px;
+    z-index: 10;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    min-width: 320px;
+    max-width: 440px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.inline-edit.editing .edit-form {
+    display: block;
+}
+
+.inline-edit.editing .display-value {
+    display: none;
+}
+
+.inline-edit .edit-form input,
+.inline-edit .edit-form select,
+.inline-edit .edit-form textarea {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.inline-edit .edit-form input:focus,
+.inline-edit .edit-form select:focus,
+.inline-edit .edit-form textarea:focus {
+    border-color: #7366ff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(115,102,255,0.15);
+}
+
+.inline-edit .edit-form .btn-group {
+    margin-top: 5px;
+}
+
+.inline-edit .edit-form .btn {
+    padding: 2px 8px;
+    font-size: 11px;
+}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        // Handle filter form submission
+        $('#filterForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const params = new URLSearchParams();
+
+            for (let [key, value] of formData.entries()) {
+                if (value.trim() !== '') {
+                    params.append(key, value);
+                }
+            }
+
+            const url = new URL(window.location.href);
+            url.search = params.toString();
+            window.location.href = url.toString();
+        });
+
+        // Handle clear button
+        $('a[href="{{ route("admin.gmvss-mentor-converted-leads.index") }}"]').on('click', function(e) {
+            e.preventDefault();
+            window.location.href = '{{ route("admin.gmvss-mentor-converted-leads.index") }}';
+        });
+
+        // Dependent filters: load admission batches by batch
+        function loadAdmissionBatchesByBatch(batchId, selectedId) {
+            const $admission = $('#admission_batch_id');
+            $admission.html('<option value="">Loading...</option>');
+            if (!batchId) {
+                $admission.html('<option value="">All Admission Batches</option>');
+                return;
+            }
+            $.get(`/api/admission-batches/by-batch/${batchId}`).done(function(list) {
+                let opts = '<option value="">All Admission Batches</option>';
+                list.forEach(function(i) {
+                    const sel = String(selectedId) === String(i.id) ? 'selected' : '';
+                    opts += `<option value="${i.id}" ${sel}>${i.title}</option>`;
+                });
+                $admission.html(opts);
+            }).fail(function() {
+                $admission.html('<option value="">All Admission Batches</option>');
+            });
+        }
+
+        // Initialize dependent dropdowns on load
+        loadAdmissionBatchesByBatch($('#batch_id').data('selected'), $('#admission_batch_id').data('selected'));
+
+        // On batch change → reload admission batches
+        $('#batch_id').on('change', function() {
+            const bid = $(this).val();
+            loadAdmissionBatchesByBatch(bid, '');
+        });
+
+        // Helper functions for creating edit forms
+        function createSelectField(field, currentValue) {
+            let html = '<div class="edit-form"><div class="mb-2">';
+            if (field === 'registration_link_id') {
+                const links = JSON.parse($('#registration-links-json').html());
+                html += `<select class="form-select form-select-sm">`;
+                html += `<option value="">Select Registration Link</option>`;
+                links.forEach(function(link) {
+                    const selected = String(currentValue) === String(link.id) ? 'selected' : '';
+                    html += `<option value="${link.id}" ${selected}>${link.title}</option>`;
+                });
+                html += `</select>`;
+            } else if (field === 'certificate_status') {
+                html += `<select class="form-select form-select-sm">`;
+                html += `<option value="">Select Certificate Status</option>`;
+                html += `<option value="In Progress" ${currentValue === 'In Progress' ? 'selected' : ''}>In Progress</option>`;
+                html += `<option value="Online Result Not Arrived" ${currentValue === 'Online Result Not Arrived' ? 'selected' : ''}>Online Result Not Arrived</option>`;
+                html += `<option value="One Result Arrived" ${currentValue === 'One Result Arrived' ? 'selected' : ''}>One Result Arrived</option>`;
+                html += `<option value="Certificate Arrived" ${currentValue === 'Certificate Arrived' ? 'selected' : ''}>Certificate Arrived</option>`;
+                html += `<option value="Not Received" ${currentValue === 'Not Received' ? 'selected' : ''}>Not Received</option>`;
+                html += `<option value="No Admission" ${currentValue === 'No Admission' ? 'selected' : ''}>No Admission</option>`;
+                html += `</select>`;
+            }
+            html += '</div><div class="btn-group"><button type="button" class="btn btn-sm btn-primary save-edit">Save</button><button type="button" class="btn btn-sm btn-secondary cancel-edit">Cancel</button></div></div>';
+            return html;
+        }
+
+        function createDateField(field, currentValue) {
+            // Convert d-m-Y to Y-m-d for input
+            let dateValue = '';
+            if (currentValue && currentValue !== 'N/A') {
+                const parts = currentValue.split('-');
+                if (parts.length === 3) {
+                    dateValue = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                } else {
+                    dateValue = currentValue;
+                }
+            }
+            return `<div class="edit-form"><div class="mb-2"><input type="date" class="form-control form-control-sm" value="${dateValue}"></div><div class="btn-group"><button type="button" class="btn btn-sm btn-primary save-edit">Save</button><button type="button" class="btn btn-sm btn-secondary cancel-edit">Cancel</button></div></div>`;
+        }
+
+        function createInputField(field, currentValue) {
+            const value = currentValue === 'N/A' ? '' : currentValue;
+            return `<div class="edit-form"><div class="mb-2"><input type="text" class="form-control form-control-sm" value="${value}"></div><div class="btn-group"><button type="button" class="btn btn-sm btn-primary save-edit">Save</button><button type="button" class="btn btn-sm btn-secondary cancel-edit">Cancel</button></div></div>`;
+        }
+
+        function createTextareaField(field, currentValue) {
+            const value = currentValue === 'N/A' ? '' : currentValue;
+            return `<div class="edit-form"><div class="mb-2"><textarea class="form-control form-control-sm" rows="3">${value}</textarea></div><div class="btn-group"><button type="button" class="btn btn-sm btn-primary save-edit">Save</button><button type="button" class="btn btn-sm btn-secondary cancel-edit">Cancel</button></div></div>`;
+        }
+
+        // Inline editing functionality
+        $(document).on('click', '.edit-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const container = $(this).closest('.inline-edit');
+            const field = container.data('field');
+            const id = container.data('id');
+            const currentValue = container.data('current') !== undefined ? String(container.data('current')).trim() : container.find('.display-value').text().trim();
+            
+            if (container.hasClass('editing')) {
+                return;
+            }
+            
+            $('.inline-edit.editing').not(container).each(function() {
+                $(this).removeClass('editing');
+                $(this).find('.edit-form').remove();
+            });
+
+            let editForm = '';
+            
+            if (['registration_link_id', 'certificate_status'].includes(field)) {
+                editForm = createSelectField(field, currentValue);
+            } else if (['certificate_received_date', 'certificate_issued_date'].includes(field)) {
+                editForm = createDateField(field, currentValue);
+            } else if (field === 'remarks') {
+                editForm = createTextareaField(field, currentValue);
+            } else {
+                editForm = createInputField(field, currentValue);
+            }
+            
+            container.addClass('editing');
+            container.append(editForm);
+            
+            container.find('input, select, textarea').first().focus();
+        });
+
+        // Save inline edit
+        $(document).off('click.saveInline').on('click.saveInline', '.save-edit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const container = $(this).closest('.inline-edit');
+            const field = container.data('field');
+            const id = container.data('id');
+            let value = container.find('input, select, textarea').val();
+            
+            const btn = $(this);
+            if (btn.data('busy')) return;
+            btn.data('busy', true);
+            btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
+            
+            $.ajax({
+                url: `{{ route('admin.converted-leads.inline-update', ':id') }}`.replace(':id', id),
+                method: 'POST',
+                data: {
+                    field: field,
+                    value: value,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        let displayValue = response.value || value;
+                        
+                        // Special handling for date fields
+                        if (['certificate_received_date', 'certificate_issued_date'].includes(field) && displayValue) {
+                            try {
+                                const date = new Date(displayValue);
+                                if (!isNaN(date.getTime())) {
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const year = date.getFullYear();
+                                    displayValue = `${day}-${month}-${year}`;
+                                }
+                            } catch (e) {
+                                // Keep original value if conversion fails
+                            }
+                        }
+                        
+                        // Special handling for registration_link_id
+                        if (field === 'registration_link_id' && value) {
+                            const links = JSON.parse($('#registration-links-json').html());
+                            const link = links.find(l => String(l.id) === String(value));
+                            displayValue = link ? link.title : value;
+                        }
+                        
+                        container.find('.display-value').text(displayValue || 'N/A');
+                        container.data('current', response.value || value);
+                        toast_success(response.message || 'Updated successfully');
+                    } else {
+                        toast_error(response.error || 'Update failed');
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Update failed';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMessage = xhr.responseJSON.error;
+                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    toast_error(errorMessage);
+                },
+                complete: function() {
+                    btn.data('busy', false);
+                    btn.prop('disabled', false).html('Save');
+                    container.removeClass('editing');
+                    container.find('.edit-form').remove();
+                }
+            });
+        });
+        
+        // Cancel inline edit
+        $(document).off('click.cancelInline').on('click.cancelInline', '.cancel-edit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const container = $(this).closest('.inline-edit');
+            container.removeClass('editing');
+            container.find('.edit-form').remove();
+        });
+    });
+</script>
+@endpush
+@endsection
+

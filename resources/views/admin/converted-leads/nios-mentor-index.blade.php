@@ -131,6 +131,9 @@
                     <a href="{{ route('admin.mentor-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Eduthanzeel Converted Mentor List
                     </a>
+                    <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> GMVSS Mentor List
+                    </a>
                 </div>
             </div>
         </div>

@@ -65,6 +65,12 @@
                     <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-outline-info">
                         <i class="ti ti-building"></i> Hotel Management Converted Leads
                     </a>
+                    <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
+                        <i class="ti ti-certificate"></i> GMVSS Converted Leads
+                    </a>
+                    <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-outline-info">
+                        <i class="ti ti-user-star"></i> GMVSS Mentor List
+                    </a>
                     <a href="{{ route('admin.e-school-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-device-laptop"></i> E-School Converted Leads
                     </a>
