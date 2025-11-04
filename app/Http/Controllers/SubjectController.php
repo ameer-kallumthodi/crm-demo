@@ -58,7 +58,7 @@ class SubjectController extends Controller
 
     public function destroy(Subject $subject)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -151,7 +151,7 @@ class SubjectController extends Controller
 
     public function ajax_edit($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -162,7 +162,7 @@ class SubjectController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 

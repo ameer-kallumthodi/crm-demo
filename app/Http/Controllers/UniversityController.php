@@ -50,7 +50,7 @@ class UniversityController extends Controller
 
     public function show(University $university)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -171,7 +171,7 @@ class UniversityController extends Controller
 
     public function delete($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             if (request()->ajax()) {
                 return response()->json(['error' => 'Access denied.'], 403);
             }

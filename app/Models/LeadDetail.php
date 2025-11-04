@@ -31,6 +31,7 @@ class LeadDetail extends Model
         'whatsapp_code',
         'subject_id',
         'batch_id',
+        'sub_course_id',
         'class',
         'second_language',
         'passed_year',
@@ -120,6 +121,11 @@ class LeadDetail extends Model
     public function universityCourse()
     {
         return $this->belongsTo(UniversityCourse::class);
+    }
+
+    public function subCourse()
+    {
+        return $this->belongsTo(SubCourse::class, 'sub_course_id');
     }
 
     public function reviewedBy()

@@ -15,7 +15,7 @@ class SubCourseController extends Controller
      */
     public function index()
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -30,7 +30,7 @@ class SubCourseController extends Controller
      */
     public function ajax_add()
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -43,7 +43,7 @@ class SubCourseController extends Controller
      */
     public function submit(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -77,7 +77,7 @@ class SubCourseController extends Controller
      */
     public function show(string $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -90,7 +90,7 @@ class SubCourseController extends Controller
      */
     public function ajax_edit(string $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -105,7 +105,7 @@ class SubCourseController extends Controller
      */
     public function updateForm(Request $request, string $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -141,7 +141,7 @@ class SubCourseController extends Controller
      */
     public function destroy(string $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -160,5 +160,19 @@ class SubCourseController extends Controller
             'success' => true,
             'message' => 'Sub Course deleted successfully.'
         ]);
+    }
+
+    /**
+     * Get sub courses by course ID (API endpoint)
+     */
+    public function getByCourse($courseId)
+    {
+        $subCourses = SubCourse::where('course_id', $courseId)
+            ->where('is_active', true)
+            ->select('id', 'title')
+            ->orderBy('title')
+            ->get();
+
+        return response()->json($subCourses);
     }
 }

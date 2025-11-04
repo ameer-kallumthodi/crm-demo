@@ -1967,6 +1967,7 @@ class LeadController extends Controller
                 'studentDetails.course', 
                 'studentDetails.subject', 
                 'studentDetails.batch',
+                'studentDetails.subCourse',
                 'studentDetails.sslcCertificates',
                 'studentDetails.sslcCertificates.verifiedBy',
                 'course',
@@ -1984,7 +1985,15 @@ class LeadController extends Controller
             $studentDetail = $lead->studentDetails;
             $country_codes = get_country_code();
             
-            return view('admin.leads.registration-details', compact('studentDetail', 'lead', 'country_codes'));
+            // Check if course has sub courses
+            $hasSubCourses = false;
+            if ($studentDetail->course_id) {
+                $hasSubCourses = \App\Models\SubCourse::where('course_id', $studentDetail->course_id)
+                    ->where('is_active', true)
+                    ->exists();
+            }
+            
+            return view('admin.leads.registration-details', compact('studentDetail', 'lead', 'country_codes', 'hasSubCourses'));
             
         } catch (\Exception $e) {
             return view('admin.leads.registration-details', compact('lead'))
@@ -2257,7 +2266,7 @@ class LeadController extends Controller
             $allowedFields = [
                 'student_name', 'father_name', 'mother_name', 'date_of_birth', 'gender',
                 'email', 'phone', 'whatsapp', 'street', 'locality', 'post_office', 'district', 'state', 'pin_code',
-                'message'
+                'message', 'subject_id', 'batch_id', 'sub_course_id'
             ];
 
             if (!in_array($field, $allowedFields)) {
@@ -2294,15 +2303,70 @@ class LeadController extends Controller
                         'message' => 'Invalid phone number format.'
                     ], 400);
                 }
+            } elseif (in_array($field, ['subject_id', 'batch_id', 'sub_course_id'])) {
+                // Handle ID fields - validate they exist and belong to the course
+                $value = $value ? (int)$value : null;
+                
+                if ($field === 'subject_id' && $value) {
+                    $subject = \App\Models\Subject::where('id', $value)
+                        ->where('course_id', $studentDetail->course_id)
+                        ->first();
+                    if (!$subject) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Invalid subject selected.'
+                        ], 400);
+                    }
+                } elseif ($field === 'batch_id' && $value) {
+                    $batch = \App\Models\Batch::where('id', $value)
+                        ->where('course_id', $studentDetail->course_id)
+                        ->first();
+                    if (!$batch) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Invalid batch selected.'
+                        ], 400);
+                    }
+                } elseif ($field === 'sub_course_id' && $value) {
+                    $subCourse = \App\Models\SubCourse::where('id', $value)
+                        ->where('course_id', $studentDetail->course_id)
+                        ->first();
+                    if (!$subCourse) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Invalid sub course selected.'
+                        ], 400);
+                    }
+                }
+                
+                $studentDetail->update([$field => $value]);
+                
+                // Reload relationships to get updated values
+                $studentDetail->load('subject', 'batch', 'subCourse');
+                $newValue = null;
+                if ($field === 'subject_id') {
+                    $newValue = $studentDetail->subject->title ?? 'N/A';
+                } elseif ($field === 'batch_id') {
+                    $newValue = $studentDetail->batch->title ?? 'N/A';
+                } elseif ($field === 'sub_course_id') {
+                    $newValue = $studentDetail->subCourse->title ?? 'N/A';
+                }
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'new_value' => $newValue,
+                    'updated_id' => $value
+                ]);
             } else {
                 $studentDetail->update([$field => $value]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'new_value' => $value
+                ]);
             }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Registration details updated successfully.',
-                'new_value' => $value
-            ]);
 
         } catch (\Exception $e) {
             \Log::error('Registration details update error: ' . $e->getMessage());

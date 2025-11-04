@@ -457,7 +457,12 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Subject</label>
-                                        <p class="info-value">{{ $studentDetail->subject->title ?? 'N/A' }}</p>
+                                        <p class="info-value" id="subject-value">
+                                            {{ $studentDetail->subject->title ?? 'N/A' }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="subject_id" data-lead-detail-id="{{ $studentDetail->id }}" data-course-id="{{ $studentDetail->course_id }}" data-current-id="{{ $studentDetail->subject_id }}" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -468,10 +473,33 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Batch</label>
-                                        <p class="info-value">{{ $studentDetail->batch->title ?? 'N/A' }}</p>
+                                        <p class="info-value" id="batch-value">
+                                            {{ $studentDetail->batch->title ?? 'N/A' }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="batch_id" data-lead-detail-id="{{ $studentDetail->id }}" data-course-id="{{ $studentDetail->course_id }}" data-current-id="{{ $studentDetail->batch_id }}" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
                             </div>
+                            @if(isset($hasSubCourses) && $hasSubCourses)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-book-2 text-secondary"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Sub Course</label>
+                                        <p class="info-value" id="sub-course-value">
+                                            {{ $studentDetail->subCourse->title ?? 'N/A' }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="sub_course_id" data-lead-detail-id="{{ $studentDetail->id }}" data-course-id="{{ $studentDetail->course_id }}" data-current-id="{{ $studentDetail->sub_course_id ?? '' }}" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                             @if($studentDetail->ug_pg_selection)
                             <div class="col-md-6">
                                 <div class="info-card">
@@ -1583,22 +1611,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 const button = e.target.closest('.edit-field');
                 const infoValue = button.closest('.info-value');
-                const field = infoValue.dataset.field;
-                const leadDetailId = infoValue.dataset.leadDetailId;
+                const field = button.dataset.field || infoValue.dataset.field;
+                const leadDetailId = button.dataset.leadDetailId || infoValue.dataset.leadDetailId;
+                const courseId = button.dataset.courseId || infoValue.dataset.courseId;
+                const currentId = button.dataset.currentId || infoValue.dataset.currentId || '';
                 // Get the value from data attribute or text content
                 let currentValue = infoValue.dataset.value || infoValue.textContent.trim().replace(/\s*Edit\s*$/, '').trim();
                 
                 // Debug logging
                 console.log('Field:', field);
                 console.log('Current value:', currentValue);
+                console.log('Course ID:', courseId);
+                console.log('Current ID:', currentId);
                 
                 // Create edit form
-                const editForm = createEditForm(field, currentValue, leadDetailId);
-                infoValue.innerHTML = editForm;
-                
-                // Focus on input
-                const input = infoValue.querySelector('input, textarea, select');
-                if (input) input.focus();
+                if (['subject_id', 'batch_id', 'sub_course_id'].includes(field)) {
+                    createCourseDependentEditForm(field, courseId, currentId, leadDetailId, infoValue);
+                } else {
+                    const editForm = createEditForm(field, currentValue, leadDetailId);
+                    infoValue.innerHTML = editForm;
+                    
+                    // Focus on input
+                    const input = infoValue.querySelector('input, textarea, select');
+                    if (input) input.focus();
+                }
             }
         });
         
@@ -1640,6 +1676,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     const input = infoValue.querySelector('input, textarea, select');
                     value = input ? input.value : '';
+                }
+                
+                // Store field name in infoValue for save function
+                if (!infoValue.dataset.field) {
+                    infoValue.dataset.field = field;
+                }
+                if (!infoValue.dataset.leadDetailId) {
+                    infoValue.dataset.leadDetailId = leadDetailId;
                 }
                 
                 saveFieldEdit(field, value, leadDetailId, infoValue);
@@ -1693,6 +1737,80 @@ function createEditForm(field, currentValue, leadDetailId) {
             </div>
         </div>
     `;
+}
+
+// Function to create edit form for course-dependent fields (subject, batch, sub-course)
+function createCourseDependentEditForm(field, courseId, currentId, leadDetailId, infoValue) {
+    if (!courseId) {
+        toast_error('Course ID is required');
+        return;
+    }
+    
+    // Show loading state
+    infoValue.innerHTML = '<select class="form-select form-select-sm"><option>Loading...</option></select>';
+    
+    let apiUrl = '';
+    if (field === 'subject_id') {
+        apiUrl = `/api/subjects/by-course/${courseId}`;
+    } else if (field === 'batch_id') {
+        apiUrl = `/api/batches/by-course/${courseId}`;
+    } else if (field === 'sub_course_id') {
+        apiUrl = `/api/sub-courses/by-course/${courseId}`;
+    }
+    
+    if (!apiUrl) {
+        toast_error('Invalid field');
+        return;
+    }
+    
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            let options = '<option value="">Select ' + field.replace('_id', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</option>';
+            
+            // Handle different response formats
+            let items = [];
+            if (field === 'subject_id') {
+                items = data.subjects || data || [];
+            } else if (field === 'batch_id') {
+                items = data.batches || data || [];
+            } else if (field === 'sub_course_id') {
+                items = data.sub_courses || data || [];
+            } else if (Array.isArray(data)) {
+                items = data;
+            }
+            
+            items.forEach(item => {
+                const selected = String(currentId) === String(item.id) ? 'selected' : '';
+                options += `<option value="${item.id}" ${selected}>${item.title}</option>`;
+            });
+            
+            infoValue.innerHTML = `
+                <div class="edit-form">
+                    <select name="${field}" class="form-select form-select-sm" data-field="${field}" data-lead-detail-id="${leadDetailId}">
+                        ${options}
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+            
+            // Store field, leadDetailId, and courseId in infoValue for save function
+            infoValue.dataset.field = field;
+            infoValue.dataset.leadDetailId = leadDetailId;
+            infoValue.dataset.courseId = courseId;
+            
+            // Focus on select
+            const select = infoValue.querySelector('select');
+            if (select) select.focus();
+        })
+        .catch(error => {
+            console.error('Error loading options:', error);
+            toast_error('Error loading options');
+            location.reload();
+        });
 }
 
 function createPhoneEditForm(field, phoneCode, phoneNumber, leadDetailId) {
@@ -1762,7 +1880,21 @@ function saveFieldEdit(field, value, leadDetailId, infoValue) {
                 infoValue.innerHTML = `${displayValue} <button class="btn btn-sm btn-outline-primary ms-2 edit-phone-field" title="Edit"><i class="ti ti-edit"></i></button>`;
             } else {
                 const displayValue = data.new_value || value;
-                infoValue.innerHTML = `${displayValue} <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit"><i class="ti ti-edit"></i></button>`;
+                const fieldName = infoValue.dataset.field || field;
+                const leadDetailIdValue = infoValue.dataset.leadDetailId || leadDetailId;
+                const courseId = infoValue.dataset.courseId || '';
+                // Get the updated ID from the response if available, otherwise use the value we just sent
+                const updatedId = data.updated_id || value || '';
+                
+                // Rebuild the edit button with proper data attributes
+                let editButton = '';
+                if (['subject_id', 'batch_id', 'sub_course_id'].includes(fieldName)) {
+                    editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="${fieldName}" data-lead-detail-id="${leadDetailIdValue}" data-course-id="${courseId}" data-current-id="${updatedId}" title="Edit"><i class="ti ti-edit"></i></button>`;
+                } else {
+                    editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit"><i class="ti ti-edit"></i></button>`;
+                }
+                
+                infoValue.innerHTML = `${displayValue} ${editButton}`;
             }
             
             toast_success(data.message);

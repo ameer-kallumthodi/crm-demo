@@ -339,6 +339,8 @@
                                     <th>ID CARD</th>
                                     <th>TMA</th>
                                     <th>Remarks</th>
+                                    <th>Academic</th>
+                                    <th>Support</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -544,6 +546,38 @@
                                         </div>
                                     </td>
                                     <td>
+                                        @php $isVerified = (bool) ($convertedLead->is_academic_verified ?? false); @endphp
+                                        <span class="badge {{ $isVerified ? 'bg-success' : 'bg-secondary' }} me-1">
+                                            {{ $isVerified ? 'Verified' : 'Not Verified' }}
+                                        </span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                        <button type="button" class="btn btn-sm {{ $isVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-academic-verify-btn"
+                                            data-id="{{ $convertedLead->id }}"
+                                            data-name="{{ $convertedLead->name }}"
+                                            data-verified="{{ $isVerified ? 1 : 0 }}"
+                                            data-url="{{ route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) }}"
+                                            title="{{ $isVerified ? 'Unverify' : 'Verify' }} academic">
+                                            <i class="ti {{ $isVerified ? 'ti-x' : 'ti-check' }}"></i>
+                                        </button>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php $isSupportVerified = (bool) ($convertedLead->is_support_verified ?? false); @endphp
+                                        <span class="badge {{ $isSupportVerified ? 'bg-success' : 'bg-secondary' }} me-1">
+                                            {{ $isSupportVerified ? 'Verified' : 'Not Verified' }}
+                                        </span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team())
+                                        <button type="button" class="btn btn-sm {{ $isSupportVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-support-verify-btn"
+                                            data-id="{{ $convertedLead->id }}"
+                                            data-name="{{ $convertedLead->name }}"
+                                            data-verified="{{ $isSupportVerified ? 1 : 0 }}"
+                                            data-url="{{ route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) }}"
+                                            title="{{ $isSupportVerified ? 'Unverify' : 'Verify' }} support">
+                                            <i class="ti {{ $isSupportVerified ? 'ti-x' : 'ti-check' }}"></i>
+                                        </button>
+                                        @endif
+                                    </td>
+                                    <td>
                                         <div class="" role="group">
                                             <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
                                                 <i class="ti ti-eye"></i>
@@ -740,6 +774,48 @@
     </div>
 </div>
 <!-- [ Main Content ] end -->
+
+<!-- Support Verify Modal -->
+<div class="modal fade" id="supportVerifyModal" tabindex="-1" aria-labelledby="supportVerifyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="supportVerifyModalLabel">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="supportVerifyModalText" class="mb-0"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSupportVerifyBtn">
+                    <span class="confirm-text">Confirm</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Academic Verify Modal -->
+<div class="modal fade" id="academicVerifyModal" tabindex="-1" aria-labelledby="academicVerifyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="academicVerifyModalLabel">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="academicVerifyModalText" class="mb-0"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAcademicVerifyBtn">
+                    <span class="confirm-text">Confirm</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 <script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
@@ -1405,6 +1481,100 @@
                     select.html('<option value="">Error loading academic assistants</option>');
                 });
         }
+
+        // Toggle Academic Verification with confirmation modal
+        let academicVerifyUrl = null;
+        $(document).off('click', '.toggle-academic-verify-btn').on('click', '.toggle-academic-verify-btn', function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const url = $btn.data('url');
+            const name = $btn.data('name') || 'this student';
+            const isVerified = String($btn.data('verified')) === '1';
+
+            academicVerifyUrl = url;
+
+            const actionText = isVerified ? 'unverify' : 'verify';
+            const modalText = `Are you sure you want to ${actionText} academic status for <strong>${name}</strong>?`;
+            $('#academicVerifyModalText').html(modalText);
+            const $confirmBtn = $('#confirmAcademicVerifyBtn');
+            $confirmBtn.removeClass('btn-danger btn-success').addClass(isVerified ? 'btn-danger' : 'btn-success');
+            $('#academicVerifyModal').modal('show');
+        });
+
+        $('#confirmAcademicVerifyBtn').on('click', function() {
+            if (!academicVerifyUrl) return;
+            const $confirmBtn = $(this);
+            const originalHtml = $confirmBtn.html();
+            $confirmBtn.prop('disabled', true).addClass('disabled');
+            $.post(academicVerifyUrl, {_token: '{{ csrf_token() }}'})
+                .done(function(res) {
+                    if (res && res.success) {
+                        show_alert('success', res.message || 'Updated');
+                        $('#academicVerifyModal').modal('hide');
+                        setTimeout(() => { location.reload(); }, 600);
+                    } else {
+                        show_alert('error', (res && res.message) ? res.message : 'Failed to update');
+                    }
+                })
+                .fail(function(xhr){
+                    let msg = 'Failed to update';
+                    if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    }
+                    show_alert('error', msg);
+                })
+                .always(function(){
+                    $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
+                    academicVerifyUrl = null;
+                });
+        });
+
+        // Toggle Support Verification with confirmation modal
+        let supportVerifyUrl = null;
+        $(document).off('click', '.toggle-support-verify-btn').on('click', '.toggle-support-verify-btn', function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const url = $btn.data('url');
+            const name = $btn.data('name') || 'this student';
+            const isVerified = String($btn.data('verified')) === '1';
+
+            supportVerifyUrl = url;
+
+            const actionText = isVerified ? 'unverify' : 'verify';
+            const modalText = `Are you sure you want to ${actionText} support status for <strong>${name}</strong>?`;
+            $('#supportVerifyModalText').html(modalText);
+            const $confirmBtn = $('#confirmSupportVerifyBtn');
+            $confirmBtn.removeClass('btn-danger btn-success').addClass(isVerified ? 'btn-danger' : 'btn-success');
+            $('#supportVerifyModal').modal('show');
+        });
+
+        $('#confirmSupportVerifyBtn').on('click', function() {
+            if (!supportVerifyUrl) return;
+            const $confirmBtn = $(this);
+            const originalHtml = $confirmBtn.html();
+            $confirmBtn.prop('disabled', true).addClass('disabled');
+            $.post(supportVerifyUrl, {_token: '{{ csrf_token() }}'})
+                .done(function(res) {
+                    if (res && res.success) {
+                        show_alert('success', res.message || 'Updated');
+                        $('#supportVerifyModal').modal('hide');
+                        setTimeout(() => { location.reload(); }, 600);
+                    } else {
+                        show_alert('error', (res && res.message) ? res.message : 'Failed to update');
+                    }
+                })
+                .fail(function(xhr){
+                    let msg = 'Failed to update';
+                    if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    }
+                    show_alert('error', msg);
+                })
+                .always(function(){
+                    $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
+                    supportVerifyUrl = null;
+                });
+        });
     });
 </script>
 @endpush
