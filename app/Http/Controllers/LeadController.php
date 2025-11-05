@@ -14,6 +14,7 @@ use App\Models\LeadActivity;
 use App\Models\ConvertedLead;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
+use App\Exports\LeadsExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LeadController extends Controller
 {
@@ -240,6 +242,96 @@ class LeadController extends Controller
             'isAdminOrSuperAdmin', 'isTeamLeadRole', 'isGeneralManager', 'isTelecallerRole',
             'isAcademicAssistant', 'isAdmissionCounsellor', 'hasLeadActionPermission'
         ))->with('search_key', $request->search_key);
+    }
+
+    /**
+     * Export leads to Excel
+     * Uses the same filtering logic as the index method
+     */
+    public function export(Request $request)
+    {
+        // Set execution time limit for this operation
+        set_time_limit(config('timeout.max_execution_time', 300));
+        
+        // ULTRA-OPTIMIZED query - minimal selects and relationships (same as index)
+        $query = Lead::select([
+            'id', 'title', 'code', 'phone', 'email', 'lead_status_id', 'lead_source_id', 
+            'course_id', 'telecaller_id', 'team_id', 'place', 'rating', 'interest_status', 
+            'followup_date', 'remarks', 'is_converted', 'created_at', 'updated_at'
+        ])
+        ->where('is_converted', 0)
+        ->with([
+            'leadStatus:id,title', 
+            'leadSource:id,title', 
+            'course:id,title', 
+            'telecaller:id,name'
+        ]);
+
+        // Apply filters - same logic as index method
+        $fromDate = $request->get('date_from', now()->subDays(7)->format('Y-m-d'));
+        $toDate = $request->get('date_to', now()->format('Y-m-d'));
+        
+        if (!$request->filled('search_key')) {
+            $query->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
+        }
+
+        if ($request->filled('lead_status_id')) {
+            $query->where('lead_status_id', $request->lead_status_id);
+        }
+
+        if ($request->filled('lead_source_id')) {
+            $query->where('lead_source_id', $request->lead_source_id);
+        }
+
+        if ($request->filled('course_id')) {
+            $query->where('course_id', $request->course_id);
+        }
+
+        if ($request->filled('telecaller_id')) {
+            $query->where('telecaller_id', $request->telecaller_id);
+        }
+
+        if ($request->filled('rating')) {
+            $query->where('rating', $request->rating);
+        }
+
+        // Add search functionality
+        if ($request->filled('search_key')) {
+            $searchKey = $request->search_key;
+            $query->where(function($q) use ($searchKey) {
+                $q->where('title', 'LIKE', "%{$searchKey}%")
+                  ->orWhere('phone', 'LIKE', "%{$searchKey}%")
+                  ->orWhere('email', 'LIKE', "%{$searchKey}%");
+            });
+        }
+
+        $currentUser = AuthHelper::getCurrentUser();
+        
+        // Role-based lead filtering (same as index)
+        if ($currentUser) {
+            if (AuthHelper::isTeamLead() == 1) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                    $teamMemberIds[] = AuthHelper::getCurrentUserId();
+                    $query->whereIn('telecaller_id', $teamMemberIds);
+                } else {
+                    $query->where('telecaller_id', AuthHelper::getCurrentUserId());
+                }
+            } elseif (AuthHelper::isTelecaller()) {
+                $query->where('telecaller_id', AuthHelper::getCurrentUserId());
+            } elseif ($request->filled('telecaller_id') && !AuthHelper::isTelecaller()) {
+                $query->where('telecaller_id', $request->telecaller_id);
+            }
+        }
+
+        // Get all leads (no pagination for export)
+        $leads = $query->orderBy('id', 'desc')->get();
+
+        // Generate filename with date range
+        $filename = 'leads_export_' . ($fromDate ? $fromDate : 'all') . '_to_' . ($toDate ? $toDate : 'all') . '_' . date('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(new LeadsExport($leads), $filename);
     }
 
     /**

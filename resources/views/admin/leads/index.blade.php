@@ -155,6 +155,10 @@
                 <div class="d-none d-md-flex justify-content-between align-items-center">
                     <h5 class="mb-0">All Leads</h5>
                     <div class="d-flex gap-2">
+                        <a href="{{ route('leads.export', request()->query()) }}" class="btn btn-outline-info btn-sm px-3"
+                            title="Export to Excel">
+                            <i class="ti ti-download"></i> Export Excel
+                        </a>
                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_general_manager())
                         <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
                             onclick="show_ajax_modal('{{ route('leads.add') }}', 'Add New Lead')">
@@ -188,6 +192,15 @@
                             <i class="ti ti-plus"></i> Add
                         </a>
                         @endif
+                    </div>
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-12">
+                            <a href="{{ route('leads.export', request()->query()) }}" class="btn btn-outline-info btn-sm w-100"
+                                title="Export to Excel">
+                                <i class="ti ti-download me-1"></i> Export Excel
+                            </a>
+                        </div>
                     </div>
 
                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_general_manager())
