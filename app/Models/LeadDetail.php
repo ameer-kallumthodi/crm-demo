@@ -46,6 +46,7 @@ class LeadDetail extends Model
         'adhar_front',
         'adhar_back',
         'signature',
+        'other_document',
         'plustwo_certificate',
         'sslc_certificate',
         'message',
@@ -75,6 +76,9 @@ class LeadDetail extends Model
         'signature_verification_status',
         'signature_verified_by',
         'signature_verified_at',
+        'other_document_verification_status',
+        'other_document_verified_by',
+        'other_document_verified_at',
         'birth_certificate_verification_status',
         'birth_certificate_verified_by',
         'birth_certificate_verified_at',
@@ -90,6 +94,7 @@ class LeadDetail extends Model
         'adhar_front_verified_at' => 'datetime',
         'adhar_back_verified_at' => 'datetime',
         'signature_verified_at' => 'datetime',
+        'other_document_verified_at' => 'datetime',
         'birth_certificate_verified_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -171,6 +176,11 @@ class LeadDetail extends Model
     public function signatureVerifiedBy()
     {
         return $this->belongsTo(User::class, 'signature_verified_by');
+    }
+
+    public function otherDocumentVerifiedBy()
+    {
+        return $this->belongsTo(User::class, 'other_document_verified_by');
     }
 
     public function birthCertificateVerifiedBy()

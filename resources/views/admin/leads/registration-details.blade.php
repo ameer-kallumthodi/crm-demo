@@ -791,6 +791,30 @@
                                     </div>
                                 </div>
                             </div>
+                            @else
+                            {{-- Show upload option if other_document is missing --}}
+                            <div class="col-12 col-md-6">
+                                <div class="document-card border-dashed">
+                                    <div class="document-icon">
+                                        <i class="ti ti-file-upload text-muted"></i>
+                                    </div>
+                                    <div class="document-content">
+                                        <div class="document-info">
+                                            <label class="document-label">Other Document</label>
+                                            <div class="verification-status">
+                                                <span class="badge bg-secondary">Not Uploaded</span>
+                                            </div>
+                                        </div>
+                                        <div class="document-actions">
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                            <button class="btn btn-sm btn-primary w-100 w-md-auto" onclick="openUploadOtherDocumentModal()">
+                                                <i class="ti ti-upload me-1"></i><span class="d-none d-md-inline">Upload </span>Document
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             @endif
                             @else
                             {{-- For other courses: Show Aadhaar Front and Back --}}
@@ -984,6 +1008,43 @@
     </div>
 </div>
 
+<!-- Upload Other Document Modal -->
+<div class="modal fade" id="uploadOtherDocumentModal" tabindex="-1" aria-labelledby="uploadOtherDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadOtherDocumentModalLabel">
+                    <i class="ti ti-upload me-2"></i>Upload Other Document
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="uploadOtherDocumentForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" name="lead_detail_id" value="{{ $studentDetail->id }}">
+                    <input type="hidden" name="document_type" value="other_document">
+                    <input type="hidden" name="verification_status" value="pending">
+                    <input type="hidden" name="need_to_change_document" value="1">
+                    
+                    <div class="mb-3">
+                        <label for="other_document_file" class="form-label">Upload Other Document <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="other_document_file" name="new_file" accept=".pdf,.jpg,.jpeg,.png" required>
+                        <small class="text-muted d-block mt-1">PDF, JPG, PNG (Max 2MB)</small>
+                        <div id="other_document_file_preview" class="mt-2"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="ti ti-x me-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-upload me-1"></i>Upload Document
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- SSLC Certificate Verification Modal -->
 <div class="modal fade" id="sslcVerificationModal" tabindex="-1" aria-labelledby="sslcVerificationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
@@ -1143,6 +1204,13 @@
         border-radius: 10px;
         border: 1px solid #e9ecef;
         transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .document-card.border-dashed {
+        border: 2px dashed #dee2e6;
+        background: #f8f9fa;
     }
     
     .document-card:hover {
@@ -1173,10 +1241,12 @@
         justify-content: space-between;
         align-items: flex-start;
         gap: 1rem;
+        min-width: 0; /* Prevents flex items from overflowing */
     }
     
     .document-info {
         flex-grow: 1;
+        min-width: 0; /* Allows text to wrap */
     }
     
     .document-label {
@@ -1184,6 +1254,7 @@
         color: #6c757d;
         margin-bottom: 0.5rem;
         font-weight: 500;
+        word-wrap: break-word;
     }
     
     .verification-status {
@@ -1195,6 +1266,11 @@
         flex-direction: column;
         gap: 0.5rem;
         flex-shrink: 0;
+        min-width: fit-content;
+    }
+    
+    .document-actions .btn {
+        white-space: nowrap;
     }
     
     .registration-details-container .nav-tabs .nav-link {
@@ -1247,6 +1323,8 @@
             flex-direction: column;
             text-align: center;
             padding: 0.75rem;
+            width: 100%;
+            max-width: 100%;
         }
         
         .info-icon, .document-icon {
@@ -1263,7 +1341,13 @@
         .document-content {
             flex-direction: column;
             gap: 0.75rem;
-            align-items: center;
+            align-items: stretch;
+            width: 100%;
+        }
+        
+        .document-info {
+            width: 100%;
+            text-align: center;
         }
         
         .document-actions {
@@ -1271,6 +1355,15 @@
             justify-content: center;
             gap: 0.5rem;
             flex-wrap: wrap;
+            width: 100%;
+        }
+        
+        .document-actions .btn {
+            flex: 1 1 auto;
+            min-width: 0;
+            max-width: 100%;
+            white-space: normal;
+            word-wrap: break-word;
         }
         
         .responsive-tabs {
@@ -1305,9 +1398,38 @@
         }
     }
     
+    /* Upload modal responsive styles */
+    @media (max-width: 768px) {
+        #uploadOtherDocumentModal .modal-dialog {
+            margin: 0.5rem;
+            max-width: calc(100% - 1rem);
+        }
+        
+        #uploadOtherDocumentModal .modal-footer {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        #uploadOtherDocumentModal .modal-footer .btn {
+            width: 100%;
+            margin: 0;
+        }
+    }
+    
+    /* Spinning loader animation */
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
     @media (max-width: 576px) {
         .info-card, .document-card {
-            padding: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
         }
         
         .responsive-tabs .nav-link {
@@ -1322,20 +1444,36 @@
         
         .btn-sm {
             font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
+            padding: 0.375rem 0.625rem;
+            white-space: normal;
+            word-wrap: break-word;
         }
         
         .modal-dialog {
             margin: 0.5rem;
         }
         
+        .document-content {
+            gap: 0.5rem;
+        }
+        
         .document-actions {
             flex-direction: column;
             width: 100%;
+            gap: 0.5rem;
         }
         
         .document-actions .btn {
             width: 100%;
+            max-width: 100%;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+        
+        /* Ensure document cards don't overflow */
+        .col-12.col-md-6 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
         }
     }
 </style>
@@ -1343,6 +1481,124 @@
 
 @push('scripts')
 <script>
+// Handle Upload Other Document form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadOtherDocumentForm = document.getElementById('uploadOtherDocumentForm');
+    if (uploadOtherDocumentForm) {
+        // File preview handler
+        const fileInput = document.getElementById('other_document_file');
+        const previewDiv = document.getElementById('other_document_file_preview');
+        
+        if (fileInput && previewDiv) {
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file size (2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        toast_error('File size must not exceed 2MB.');
+                        e.target.value = '';
+                        previewDiv.innerHTML = '';
+                        return;
+                    }
+                    
+                    // Validate file type
+                    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                    if (!allowedTypes.includes(file.type)) {
+                        toast_error('Invalid file type. Please upload PDF, JPG, or PNG files only.');
+                        e.target.value = '';
+                        previewDiv.innerHTML = '';
+                        return;
+                    }
+                    
+                    // Show file preview
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                    previewDiv.innerHTML = `
+                        <div class="alert alert-info mb-0">
+                            <i class="ti ti-file me-2"></i>
+                            <strong>Selected:</strong> ${file.name} (${fileSize} MB)
+                        </div>
+                    `;
+                } else {
+                    previewDiv.innerHTML = '';
+                }
+            });
+        }
+        
+        // Form submission handler
+        uploadOtherDocumentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('other_document_file');
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                toast_error('Please select a file to upload.');
+                return;
+            }
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (!submitBtn) {
+                toast_error('Submit button not found.');
+                return;
+            }
+            
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="ti ti-loader-2 spin me-1"></i> Uploading...';
+            
+            fetch('{{ route("leads.update-document-verification") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    toast_success(data.message || 'Document uploaded successfully!');
+                    const modalElement = document.getElementById('uploadOtherDocumentModal');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+                    // Reload page to show uploaded document
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    toast_error(data.message || 'Failed to upload document. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toast_error('An error occurred while uploading the document. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        });
+        
+        // Reset form when modal is hidden
+        const modalElement = document.getElementById('uploadOtherDocumentModal');
+        if (modalElement) {
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                uploadOtherDocumentForm.reset();
+                const previewDiv = document.getElementById('other_document_file_preview');
+                if (previewDiv) {
+                    previewDiv.innerHTML = '';
+                }
+            });
+        }
+    }
+});
+
 // Handle tab navigation on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Try URL parameter first, then localStorage
@@ -1414,6 +1670,22 @@ function updateStatus(status) {
         // Add your status update logic here
         console.log('Updating status to:', status);
         // You can implement AJAX call to update the status
+    }
+}
+
+function openUploadOtherDocumentModal() {
+    const fileInput = document.getElementById('other_document_file');
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    const modalElement = document.getElementById('uploadOtherDocumentModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } else {
+        console.error('Upload modal not found');
+        toast_error('Upload modal could not be opened. Please refresh the page.');
     }
 }
 

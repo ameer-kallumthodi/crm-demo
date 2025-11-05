@@ -2231,10 +2231,10 @@ class LeadController extends Controller
             
             $request->validate([
                 'lead_detail_id' => 'required|exists:leads_details,id',
-                'document_type' => 'required|in:sslc_certificate,plustwo_certificate,plus_two_certificate,ug_certificate,birth_certificate,passport_photo,adhar_front,adhar_back,signature',
+                'document_type' => 'required|in:sslc_certificate,plustwo_certificate,plus_two_certificate,ug_certificate,birth_certificate,passport_photo,adhar_front,adhar_back,signature,other_document',
                 'verification_status' => 'required|in:pending,verified',
                 'need_to_change_document' => 'sometimes|boolean',
-                'new_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:1024'
+                'new_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048'
             ]);
 
             $leadDetail = LeadDetail::findOrFail($request->lead_detail_id);
@@ -2272,7 +2272,8 @@ class LeadController extends Controller
                 'passport_photo' => 'passport_photo',
                 'adhar_front' => 'adhar_front',
                 'adhar_back' => 'adhar_back',
-                'signature' => 'signature'
+                'signature' => 'signature',
+                'other_document' => 'other_document'
             ];
             
             $baseField = $fieldMapping[$documentType] ?? $documentType;
@@ -2289,8 +2290,10 @@ class LeadController extends Controller
             // Handle file upload if provided
             if ($request->hasFile('new_file')) {
                 $file = $request->file('new_file');
-                $fileName = $documentType . '_' . time() . '.' . $file->getClientOriginalExtension();
-                $filePath = $file->storeAs('documents', $fileName, 'public');
+                // Use UUID for file naming to avoid conflicts
+                $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                // Use student-documents directory for consistency with registration forms
+                $filePath = $file->storeAs('student-documents', $fileName, 'public');
                 
                 // Map document type to actual database field
                 $fileFieldMapping = [
@@ -2302,7 +2305,8 @@ class LeadController extends Controller
                     'passport_photo' => 'passport_photo',
                     'adhar_front' => 'adhar_front',
                     'adhar_back' => 'adhar_back',
-                    'signature' => 'signature'
+                    'signature' => 'signature',
+                    'other_document' => 'other_document'
                 ];
                 
                 $fileField = $fileFieldMapping[$documentType] ?? $documentType;
