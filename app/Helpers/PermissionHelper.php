@@ -83,6 +83,11 @@ class PermissionHelper
         $permissions = [
             'admin/settings/index',
             'admin/website/settings',
+            // Advanced Reports - only lead-stage-movement is allowed
+            'admin/reports/lead-efficiency',
+            'admin/reports/lead-aging',
+            'admin/reports/team-wise',
+            'admin/reports/course-summary',
         ];
         return !in_array($permission, $permissions);
     }

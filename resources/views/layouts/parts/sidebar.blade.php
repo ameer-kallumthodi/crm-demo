@@ -232,19 +232,14 @@
                 </li>
                 @endif
                 
-                {{-- Super Admin and Auditor Reports Section --}}
-                @if(is_super_admin() || is_auditor())
+                {{-- Advanced Reports Section --}}
+                @if(has_permission('admin/reports/lead-stage-movement') || has_permission('admin/reports/lead-efficiency') || has_permission('admin/reports/lead-aging') || has_permission('admin/reports/team-wise') || has_permission('admin/reports/course-summary'))
                 <li class="pc-item pc-caption">
                     <label>Advanced Reports</label>
                 </li>
-                <li class="pc-item {{ request()->routeIs('admin.reports.lead-efficiency*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.reports.lead-efficiency') }}" class="pc-link">
-                        <span class="pc-micon">
-                            <i class="ti ti-chart-line"></i>
-                        </span>
-                        <span class="pc-mtext">Source Efficiency</span>
-                    </a>
-                </li>
+                
+                {{-- Stage Movement - Available to Admin, Super Admin, and Auditor --}}
+                @if(has_permission('admin/reports/lead-stage-movement'))
                 <li class="pc-item {{ request()->routeIs('admin.reports.lead-stage-movement*') ? 'active' : '' }}">
                     <a href="{{ route('admin.reports.lead-stage-movement') }}" class="pc-link">
                         <span class="pc-micon">
@@ -253,6 +248,20 @@
                         <span class="pc-mtext">Stage Movement</span>
                     </a>
                 </li>
+                @endif
+                
+                {{-- Other Advanced Reports - Only for Super Admin and Auditor --}}
+                @if(has_permission('admin/reports/lead-efficiency'))
+                <li class="pc-item {{ request()->routeIs('admin.reports.lead-efficiency*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.lead-efficiency') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-chart-line"></i>
+                        </span>
+                        <span class="pc-mtext">Source Efficiency</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/reports/lead-aging'))
                 <li class="pc-item {{ request()->routeIs('admin.reports.lead-aging*') ? 'active' : '' }}">
                     <a href="{{ route('admin.reports.lead-aging') }}" class="pc-link">
                         <span class="pc-micon">
@@ -261,6 +270,8 @@
                         <span class="pc-mtext">Lead Aging</span>
                     </a>
                 </li>
+                @endif
+                @if(has_permission('admin/reports/team-wise'))
                 <li class="pc-item {{ request()->routeIs('admin.reports.team-wise*') ? 'active' : '' }}">
                     <a href="{{ route('admin.reports.team-wise') }}" class="pc-link">
                         <span class="pc-micon">
@@ -269,6 +280,7 @@
                         <span class="pc-mtext">Team-Wise Report</span>
                     </a>
                 </li>
+                @endif
                 @if(has_permission('admin/reports/course-summary'))
                 <li class="pc-item {{ request()->routeIs('admin.reports.course-summary*') || request()->routeIs('admin.reports.course-leads*') || request()->routeIs('admin.reports.course-converted-leads*') ? 'active' : '' }}">
                     <a href="{{ route('admin.reports.course-summary') }}" class="pc-link">
