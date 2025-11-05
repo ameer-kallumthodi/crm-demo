@@ -322,9 +322,15 @@ class Lead extends Model
     /**
      * Calculate profile completeness percentage
      * Based on all basic lead details fields
+     * Uses pre-calculated value if available for performance
      */
     public function getProfileCompletenessAttribute()
     {
+        // Use pre-calculated value if available (set in controller for performance)
+        if (isset($this->attributes['_profile_completeness'])) {
+            return $this->attributes['_profile_completeness'];
+        }
+        
         $requiredFields = [
             'title', 'gender', 'age', 'phone', 'code', 'whatsapp', 'whatsapp_code',
             'email', 'qualification', 'country_id', 'interest_status', 'lead_status_id',
@@ -343,22 +349,31 @@ class Lead extends Model
 
     /**
      * Check if profile is incomplete
+     * Uses pre-calculated value if available for performance
      */
     public function isProfileIncomplete()
     {
-        return $this->profile_completeness < 100;
+        $completeness = $this->attributes['_profile_completeness'] ?? $this->profile_completeness;
+        return $completeness < 100;
     }
 
     /**
      * Get profile completeness status
+     * Uses pre-calculated value if available for performance
      */
     public function getProfileStatusAttribute()
     {
-        if ($this->profile_completeness == 100) {
+        // Use pre-calculated value if available
+        if (isset($this->attributes['_profile_status'])) {
+            return $this->attributes['_profile_status'];
+        }
+        
+        $completeness = $this->profile_completeness;
+        if ($completeness == 100) {
             return 'complete';
-        } elseif ($this->profile_completeness >= 75) {
+        } elseif ($completeness >= 75) {
             return 'almost_complete';
-        } elseif ($this->profile_completeness >= 50) {
+        } elseif ($completeness >= 50) {
             return 'partial';
         } else {
             return 'incomplete';
@@ -404,9 +419,15 @@ class Lead extends Model
 
     /**
      * Get missing fields for profile completion
+     * Uses pre-calculated value if available for performance
      */
     public function getMissingFields()
     {
+        // Use pre-calculated value if available (set in controller for performance)
+        if (isset($this->attributes['_missing_fields'])) {
+            return $this->attributes['_missing_fields'];
+        }
+        
         $completion = $this->getFieldCompletionStatus();
         $missing = [];
         

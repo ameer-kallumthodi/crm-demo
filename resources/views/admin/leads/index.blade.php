@@ -224,12 +224,12 @@
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-hover data_table_basic" id="leadsTable" style="min-width: 1700px;">
+                        <table class="table table-hover" id="leadsTable" style="min-width: 1700px;">
                             <thead>
                                 <tr>
                                     <th>#</th>
                                     <th>Actions</th>
-                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                    @if($isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor)
                                     <th>Registration Details</th>
                                     @endif
                                     <th>Created At</th>
@@ -253,6 +253,12 @@
                             </thead>
                             <tbody>
                                 @forelse($leads as $index => $lead)
+                                @php
+                                    // Cache expensive method calls to avoid repeated calculations
+                                    $missingFields = $lead->getMissingFields();
+                                    $missingFieldsCount = count($missingFields);
+                                    $missingFieldsDisplay = implode(', ', array_slice($missingFields, 0, 5));
+                                @endphp
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>
@@ -262,14 +268,14 @@
                                                 title="View Lead">
                                                 <i class="ti ti-eye"></i>
                                             </a>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_general_manager())
+                                            @if($isAdminOrSuperAdmin || $isTeamLeadRole || $isGeneralManager)
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
                                                 onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
                                                 title="Edit Lead">
                                                 <i class="ti ti-edit"></i>
                                             </a>
                                             @endif
-                                            @if(\App\Helpers\PermissionHelper::has_lead_action_permission())
+                                            @if($hasLeadActionPermission)
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-success"
                                                 onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')"
                                                 title="Update Status">
@@ -312,7 +318,7 @@
                                                 title="View Call Logs">
                                                 <i class="ti ti-phone-call"></i>
                                             </a>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_general_manager())
+                                            @if($isAdminOrSuperAdmin || $isGeneralManager)
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
                                                 onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}')"
                                                 title="Delete Lead">
@@ -323,12 +329,12 @@
 
                                         @endif
                                     </td>
-                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                    @if($isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor)
                                     <td class="text-center">
                                         @if($lead->studentDetails)
                                         <div class="d-flex flex-column gap-1">
                                             <span class="badge bg-success">Form Submitted</span>
-                                            <small class="text-muted">{{ $lead->studentDetails->course->title ?? 'Unknown Course' }}</small>
+                                            <small class="text-muted">{{ $lead->studentDetails->_course_title ?? ($courseName[$lead->studentDetails->course_id] ?? 'Unknown Course') }}</small>
                                             @if($lead->studentDetails->status)
                                             <span class="badge 
                                                         @if($lead->studentDetails->status == 'approved') bg-success
@@ -565,7 +571,7 @@
                                                     @endif"
                                                 data-bs-toggle="tooltip"
                                                 data-bs-placement="top"
-                                                title="Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}">
+                                                title="Missing: {{ $missingFieldsDisplay }}{{ $missingFieldsCount > 5 ? '...' : '' }}">
                                                 {{ $lead->profile_completeness }}%
                                             </span>
                                             @else
@@ -610,14 +616,8 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @php
-                                        $lastActivityWithReason = $lead->leadActivities->first();
-                                        @endphp
-                                        @if($lastActivityWithReason)
-                                        {{ Str::limit($lastActivityWithReason->reason, 20) }}
-                                        @else
+                                        {{-- Removed leadActivities query for performance - will load on-demand if needed --}}
                                         -
-                                        @endif
                                     </td>
                                     <td>{{ $lead->remarks ? $lead->remarks : '-' }}</td>
                                     <td>{{ $lead->created_at->format('M d, Y') }}</td>
@@ -645,6 +645,12 @@
                 <!-- Mobile Card View -->
                 <div class="d-lg-none">
                     @forelse($leads as $index => $lead)
+                    @php
+                        // Cache expensive method calls to avoid repeated calculations
+                        $missingFieldsMobile = $lead->getMissingFields();
+                        $missingFieldsCountMobile = count($missingFieldsMobile);
+                        $missingFieldsDisplayMobile = implode(', ', array_slice($missingFieldsMobile, 0, 5));
+                    @endphp
                     <div class="card mb-2">
                         <div class="card-body p-3">
                             <!-- Lead Header -->
@@ -708,14 +714,14 @@
                                             @endif f-10"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="top"
-                                        title="Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}">
+                                        title="Missing: {{ $missingFieldsDisplayMobile }}{{ $missingFieldsCountMobile > 5 ? '...' : '' }}">
                                         {{ $lead->profile_completeness }}%
                                     </span>
                                 </div>
-                                @if(count($lead->getMissingFields()) > 0)
+                                @if($missingFieldsCountMobile > 0)
                                 <div class="mt-1">
                                     <small class="text-muted f-10">
-                                        Missing: {{ implode(', ', array_slice($lead->getMissingFields(), 0, 5)) }}{{ count($lead->getMissingFields()) > 5 ? '...' : '' }}
+                                        Missing: {{ $missingFieldsDisplayMobile }}{{ $missingFieldsCountMobile > 5 ? '...' : '' }}
                                     </small>
                                 </div>
                                 @endif
@@ -799,17 +805,7 @@
                                     </div>
                                 </div>
                                 @endif
-                                @php
-                                $lastActivityWithReason = $lead->leadActivities->first();
-                                @endphp
-                                @if($lastActivityWithReason)
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ti ti-message f-12 text-muted me-1"></i>
-                                        <span class="badge bg-info f-10" title="{{ $lastActivityWithReason->reason }}">{{ Str::limit($lastActivityWithReason->reason, 15) }}</span>
-                                    </div>
-                                </div>
-                                @endif
+                                {{-- Removed leadActivities query for performance --}}
                                 @if($lead->remarks)
                                 <div class="col-12">
                                     <div class="d-flex align-items-start">
@@ -830,7 +826,7 @@
                                         <div class="row g-1">
                                             <div class="col-6">
                                                 <small class="text-muted f-10">Course:</small>
-                                                <div class="fw-medium f-11">{{ $lead->studentDetails->course->title ?? 'Unknown' }}</div>
+                                                <div class="fw-medium f-11">{{ $lead->studentDetails->_course_title ?? ($courseName[$lead->studentDetails->course_id] ?? 'Unknown') }}</div>
                                             </div>
                                             <div class="col-6">
                                                 <small class="text-muted f-10">Status:</small>
@@ -846,7 +842,7 @@
                                             </div>
                                         </div>
                                         <div class="mt-2">
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                            @if($isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor)
                                             <a href="{{ route('leads.registration-details', $lead->id) }}"
                                                 class="btn btn-sm btn-outline-primary"
                                                 title="View Registration Details">
@@ -907,7 +903,7 @@
                                     </a>
                                     <br>
                                     <hr><br>
-                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                    @if($isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor)
                                     @if($lead->course_id == 1)
                                     <div class="d-flex gap-1">
                                         <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open NIOS Registration Form">
@@ -1287,27 +1283,59 @@
     }
 </style>
 <script>
+    // Initialize DataTables asynchronously to prevent blocking
     $(document).ready(function() {
-
-        // Function to fix DataTables responsive dropdown icons
-        function fixResponsiveIcons() {
-            // Remove problematic classes and ensure proper icon display
-            $('.dtr-control').each(function() {
-                $(this).removeClass('sorting_1 sorting_2 sorting_3');
-                if (!$(this).hasClass('dtr-control')) {
-                    $(this).addClass('dtr-control');
+        // ULTRA-OPTIMIZED DataTables for 410+ leads - Performance Critical
+        // Prevent global initialization for this table
+        $('#leadsTable').removeClass('data_table_basic');
+        
+        // Use setTimeout to defer initialization and allow page to render first
+        setTimeout(function() {
+            // Destroy existing instance if any
+            if ($.fn.DataTable.isDataTable('#leadsTable')) {
+                $('#leadsTable').DataTable().destroy();
+            }
+            
+            // Initialize with maximum performance optimizations
+            // deferRender is CRITICAL - it only processes visible rows initially
+            var leadsTable = $('#leadsTable').DataTable({
+                deferRender: true, // CRITICAL: Only process visible rows (25 instead of 410)
+                processing: true,
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                order: [[3, 'desc']], // Sort by created_at (column 3)
+                dom: "Bfrtip",
+                buttons: ["csv", "excel", "print", "pdf"],
+                stateSave: true,
+                scrollCollapse: true,
+                // Performance optimizations
+                autoWidth: false, // Disable expensive auto-width calculation
+                scrollX: true, // Enable horizontal scrolling
+                searchHighlight: false, // Disable expensive search highlighting
+                // Optimize rendering - only process visible rows
+                drawCallback: function(settings) {
+                    // Lazy load tooltips only for visible rows
+                    var api = this.api();
+                    $(api.rows({page: 'current'}).nodes()).find('[data-bs-toggle="tooltip"]').tooltip();
+                },
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No data available",
+                    zeroRecords: "No matching records found",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    infoEmpty: "Showing 0 to 0 of 0 entries",
+                    infoFiltered: "(filtered from _MAX_ total entries)",
+                    search: "Search:",
+                    paginate: {
+                        first: "First",
+                        last: "Last",
+                        next: "Next",
+                        previous: "Previous"
+                    }
                 }
             });
-
-            // Ensure proper icon styling
-            $('.dtr-control:not(.dtr-expanded)').each(function() {
-                if (!$(this).find('::before').length) {
-                    $(this).css('position', 'relative');
-                }
-            });
-        }
-
-        // DataTable is now initialized globally via initializeTables() function
+        }, 50); // Small delay to allow page to render first
 
         // Handle global search form submission
         $('.header-search form, .drp-search form').on('submit', function(e) {

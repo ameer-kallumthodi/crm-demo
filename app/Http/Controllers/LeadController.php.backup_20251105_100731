@@ -30,32 +30,34 @@ class LeadController extends Controller
         // Set execution time limit for this operation
         set_time_limit(config('timeout.max_execution_time', 300));
         
-        // ULTRA-OPTIMIZED query - minimal selects and relationships
         $query = Lead::select([
             'id', 'title', 'code', 'phone', 'email', 'lead_status_id', 'lead_source_id', 
             'course_id', 'telecaller_id', 'team_id', 'place', 'rating', 'interest_status', 
-            'followup_date', 'remarks', 'is_converted', 'created_at', 'updated_at',
-            'gender', 'age', 'whatsapp', 'whatsapp_code', 'qualification', 'country_id', 
-            'address' // Added for profile completeness calculation
+            'followup_date', 'remarks', 'is_converted', 'created_at', 'updated_at'
         ])
-        ->where('is_converted', 0) // Direct condition instead of scope for better performance
         ->with([
             'leadStatus:id,title', 
             'leadSource:id,title', 
             'course:id,title', 
             'telecaller:id,name', 
-            // Simplified studentDetails - removed nested course eager loading to avoid extra query
-            'studentDetails:id,lead_id,status,course_id'
-        ]);
+            'studentDetails:id,lead_id,status,course_id',
+            'leadActivities' => function($query) {
+                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type')
+                      ->whereNotNull('reason')
+                      ->where('reason', '!=', '')
+                      ->orderBy('created_at', 'desc');
+            }
+        ])
+        ->notConverted()
+        ->notDropped();
 
-        // Apply filters - optimized date range query
+        // Apply filters
         // Only apply date filters if search_key is not provided (to allow searching across all dates)
         $fromDate = $request->get('date_from', now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', now()->format('Y-m-d'));
         
         if (!$request->filled('search_key')) {
-            // Use direct whereBetween for better performance than scope
-            $query->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
+            $query->byDateRange($fromDate, $toDate);
         } else {
             // When searching, clear the date values to show search is across all dates
             $fromDate = '';
@@ -119,89 +121,15 @@ class LeadController extends Controller
             }
         }
 
-        // Execute query with optimized ordering
-        $startTime = microtime(true);
+        // Get all leads without pagination
         $leads = $query->orderBy('id', 'desc')->get();
-        $queryTime = microtime(true) - $startTime;
 
-        // Pre-calculate role checks ONCE to avoid repeated calls in view (huge performance gain)
-        $isAdminOrSuperAdmin = RoleHelper::is_admin_or_super_admin();
-        $isTeamLeadRole = RoleHelper::is_team_lead();
-        $isGeneralManager = RoleHelper::is_general_manager();
-        $isTelecallerRole = RoleHelper::is_telecaller();
-        $isAcademicAssistant = RoleHelper::is_academic_assistant();
-        $isAdmissionCounsellor = RoleHelper::is_admission_counsellor();
-        $hasLeadActionPermission = \App\Helpers\PermissionHelper::has_lead_action_permission();
-
-        // OPTIMIZED: Pre-calculate profile data in bulk - faster than each()
-        $fieldLabels = [
-            'title' => 'Name', 'gender' => 'Gender', 'age' => 'Age', 'phone' => 'Phone',
-            'code' => 'Country Code', 'whatsapp' => 'WhatsApp', 'whatsapp_code' => 'WhatsApp Code',
-            'email' => 'Email', 'qualification' => 'Qualification', 'country_id' => 'Country',
-            'interest_status' => 'Interest Status', 'lead_status_id' => 'Lead Status',
-            'lead_source_id' => 'Lead Source', 'address' => 'Address',
-            'telecaller_id' => 'Telecaller', 'team_id' => 'Team', 'place' => 'Place'
-        ];
-        $requiredFields = array_keys($fieldLabels);
-        $totalFields = count($requiredFields);
-        
-        $calcStart = microtime(true);
-        foreach ($leads as $lead) {
-            // Fast calculation using array access
-            $completedFields = 0;
-            $missingFields = [];
-            
-            foreach ($requiredFields as $field) {
-                if (!empty($lead->$field)) {
-                    $completedFields++;
-                } else {
-                    $missingFields[] = $fieldLabels[$field];
-                }
-            }
-            
-            $profileCompleteness = round(($completedFields / $totalFields) * 100);
-            
-            // Store as attributes
-            $lead->setAttribute('_profile_completeness', $profileCompleteness);
-            $lead->setAttribute('_profile_status', $profileCompleteness == 100 ? 'complete' : 
-                ($profileCompleteness >= 75 ? 'almost_complete' : 
-                ($profileCompleteness >= 50 ? 'partial' : 'incomplete')));
-            $lead->setAttribute('_missing_fields', $missingFields);
-        }
-        $calcTime = microtime(true) - $calcStart;
-        
-        // Log performance (remove in production)
-        if (config('app.debug')) {
-            Log::info("Leads Index Performance", [
-                'query_time' => round($queryTime, 3),
-                'calc_time' => round($calcTime, 3),
-                'total_leads' => $leads->count(),
-                'total_time' => round($queryTime + $calcTime, 3)
-            ]);
-        }
-
-        // Get filter options (cached for better performance - cache for 1 hour)
-        $leadStatuses = cache()->remember('lead_statuses_list', 3600, function() {
-            return LeadStatus::select('id', 'title')->orderBy('title')->get();
-        });
-        $leadSources = cache()->remember('lead_sources_list', 3600, function() {
-            return LeadSource::select('id', 'title')->orderBy('title')->get();
-        });
-        $countries = cache()->remember('countries_list', 3600, function() {
-            return Country::select('id', 'title')->orderBy('title')->get();
-        });
-        $courses = cache()->remember('courses_list', 3600, function() {
-            return Course::select('id', 'title')->orderBy('title')->get();
-        });
-        
-        // Cache telecallers query based on role (reuse $currentUser from above)
-        $cacheKey = 'telecallers_list_' . ($currentUser ? $currentUser->id : 'guest');
-        $telecallers = cache()->remember($cacheKey, 1800, function() {
-            return User::select('id', 'name')
-                      ->where('role_id', 3)
-                      ->orderBy('name')
-                      ->get();
-        });
+        // Get filter options (optimized with select only needed fields)
+        $leadStatuses = LeadStatus::select('id', 'title')->get();
+        $leadSources = LeadSource::select('id', 'title')->get();
+        $countries = Country::select('id', 'title')->get();
+        $courses = Course::select('id', 'title')->get();
+        $telecallers = User::select('id', 'name')->where('role_id', 3)->get();
 
         // Create lookup arrays
         $leadStatusList = $leadStatuses->pluck('title', 'id')->toArray();
@@ -209,7 +137,8 @@ class LeadController extends Controller
         $courseName = $courses->pluck('title', 'id')->toArray();
         $telecallerList = $telecallers->pluck('name', 'id')->toArray();
 
-        // Get role flags (reuse $currentUser from above)
+        // Get current user for role checking
+        $currentUser = AuthHelper::getCurrentUser();
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
         $isTeamLead = $currentUser && AuthHelper::isTeamLead();
         
@@ -236,9 +165,7 @@ class LeadController extends Controller
         return view('admin.leads.index', compact(
             'leads', 'leadStatuses', 'leadSources', 'countries', 'courses', 'telecallers',
             'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList',
-            'fromDate', 'toDate', 'isTelecaller', 'isTeamLead',
-            'isAdminOrSuperAdmin', 'isTeamLeadRole', 'isGeneralManager', 'isTelecallerRole',
-            'isAcademicAssistant', 'isAdmissionCounsellor', 'hasLeadActionPermission'
+            'fromDate', 'toDate', 'isTelecaller', 'isTeamLead'
         ))->with('search_key', $request->search_key);
     }
 
