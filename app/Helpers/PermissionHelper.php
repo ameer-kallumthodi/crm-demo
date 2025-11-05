@@ -129,6 +129,11 @@ class PermissionHelper
             'admin/batches/index',
             'admin/admission-batches/index',
             'leads/registration-form-submitted',
+            // User Management permissions
+            'admin/teachers/index',
+            'admin/academic-assistants/index',
+            'admin/support-team/index',
+            'admin/mentor/index',
         ];
         return in_array($permission, $permissions);
     }

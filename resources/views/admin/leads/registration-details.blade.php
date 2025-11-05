@@ -755,6 +755,46 @@
                                 </div>
                             </div>
                             
+                            @if($studentDetail->course_id == 5 || $studentDetail->course_id == 6)
+                            {{-- For ESchool (5) and Eduthanzeel (6): Show Other Document instead of Aadhaar --}}
+                            @if($studentDetail->other_document)
+                            <div class="col-12 col-md-6">
+                                <div class="document-card">
+                                    <div class="document-icon">
+                                        <i class="ti ti-file text-info"></i>
+                                    </div>
+                                    <div class="document-content">
+                                        <div class="document-info">
+                                            <label class="document-label">Other Document</label>
+                                            <div class="verification-status">
+                                                <span class="badge bg-{{ $studentDetail->other_document_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="other_document">
+                                                    {{ ucfirst($studentDetail->other_document_verification_status ?? 'pending') }}
+                                                </span>
+                                                @if($studentDetail->other_document_verified_at)
+                                                <small class="text-muted d-block">
+                                                    Verified by: {{ $studentDetail->otherDocumentVerifiedBy->name ?? 'Unknown' }}<br>
+                                                    Date: {{ $studentDetail->other_document_verified_at->format('M d, Y h:i A') }}
+                                                </small>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="document-actions">
+                                            <a href="{{ Storage::url($studentDetail->other_document) }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                                <i class="ti ti-eye me-1"></i>View
+                                            </a>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
+                                            <button class="btn btn-sm btn-success" onclick="openVerificationModal('other_document', '{{ $studentDetail->other_document_verification_status ?? 'pending' }}')">
+                                                <i class="ti ti-check me-1"></i>Verify
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @else
+                            {{-- For other courses: Show Aadhaar Front and Back --}}
+                            @if($studentDetail->adhar_front)
                             <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
@@ -788,7 +828,9 @@
                                     </div>
                                 </div>
                             </div>
+                            @endif
                             
+                            @if($studentDetail->adhar_back)
                             <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
@@ -822,7 +864,12 @@
                                     </div>
                                 </div>
                             </div>
+                            @endif
+                            @endif
                             
+                            @if($studentDetail->course_id != 5 && $studentDetail->course_id != 6)
+                            {{-- Show signature only for courses other than ESchool (5) and Eduthanzeel (6) --}}
+                            @if($studentDetail->signature)
                             <div class="col-12 col-md-6">
                                 <div class="document-card">
                                     <div class="document-icon">
@@ -856,6 +903,8 @@
                                     </div>
                                 </div>
                             </div>
+                            @endif
+                            @endif
                         </div>
                     </div>
                 </div>

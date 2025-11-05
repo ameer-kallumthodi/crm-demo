@@ -562,41 +562,14 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Aadhar Front <span class="required">*</span></label>
-                                <div class="file-upload-area" onclick="document.getElementById('adhar_front').click()">
+                                <label class="form-label">Other Document <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('other_document').click()">
                                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                     <p class="mb-0">Click to upload or drag & drop</p>
                                     <small class="text-muted">PDF, JPG, PNG (Max 2MB)</small>
                                 </div>
-                                <input type="file" id="adhar_front" name="adhar_front" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
-                                <div class="file-preview" id="adhar_front_preview"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Aadhar Back <span class="required">*</span></label>
-                                <div class="file-upload-area" onclick="document.getElementById('adhar_back').click()">
-                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                    <p class="mb-0">Click to upload or drag & drop</p>
-                                    <small class="text-muted">PDF, JPG, PNG (Max 2MB)</small>
-                                </div>
-                                <input type="file" id="adhar_back" name="adhar_back" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
-                                <div class="file-preview" id="adhar_back_preview"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Signature</label>
-                                <div class="file-upload-area" onclick="document.getElementById('signature').click()">
-                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                    <p class="mb-0">Click to upload or drag & drop</p>
-                                    <small class="text-muted">JPG, PNG (Max 2MB)</small>
-                                </div>
-                                <input type="file" id="signature" name="signature" accept=".jpg,.jpeg,.png" style="display: none;">
-                                <div class="file-preview" id="signature_preview"></div>
+                                <input type="file" id="other_document" name="other_document" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
+                                <div class="file-preview" id="other_document_preview"></div>
                             </div>
                         </div>
                     </div>
@@ -781,12 +754,10 @@
             if (currentStep === 3) {
                 const fileFieldNames = {
                     'passport_photo': 'Passport photo',
-                    'adhar_front': 'Aadhar front',
-                    'adhar_back': 'Aadhar back',
-                    'signature': 'Signature'
+                    'other_document': 'Other document'
                 };
                 
-                const requiredFileFields = ['passport_photo', 'adhar_front', 'adhar_back'];
+                const requiredFileFields = ['passport_photo', 'other_document'];
                 for (let fieldName of requiredFileFields) {
                     const field = document.getElementById(fieldName);
                     if (field && (!field.files || field.files.length === 0)) {
@@ -857,7 +828,7 @@
                 }
                 
                 // Validate file type
-                const allowedTypes = inputId === 'passport_photo' || inputId === 'signature' 
+                const allowedTypes = inputId === 'passport_photo' 
                     ? ['image/jpeg', 'image/jpg', 'image/png']
                     : ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
                 
@@ -891,9 +862,7 @@
 
         // Setup file uploads
         setupFileUpload('passport_photo');
-        setupFileUpload('adhar_front');
-        setupFileUpload('adhar_back');
-        setupFileUpload('signature');
+        setupFileUpload('other_document');
 
         // Form submission
         document.getElementById('registrationForm').addEventListener('submit', function(e) {

@@ -62,9 +62,7 @@ class LeadEduthanzeelRegistrationController extends Controller
             'state' => 'required|string|max:255',
             'pin_code' => 'required|string|regex:/^[0-9]{6}$/',
             'passport_photo' => 'required|file|mimes:jpg,jpeg,png|max:2048',
-            'adhar_front' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'adhar_back' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'signature' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'other_document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'message' => 'nullable|string',
         ], [
             'lead_id.required' => 'Lead ID is required.',
@@ -93,23 +91,16 @@ class LeadEduthanzeelRegistrationController extends Controller
             'passport_photo.file' => 'Passport photo must be a valid file.',
             'passport_photo.mimes' => 'Passport photo must be an image file (JPG, PNG).',
             'passport_photo.max' => 'Passport photo file size must not exceed 2MB.',
-            'adhar_front.required' => 'Aadhar front is required.',
-            'adhar_front.file' => 'Aadhar front must be a valid file.',
-            'adhar_front.mimes' => 'Aadhar front must be a PDF or image file.',
-            'adhar_front.max' => 'Aadhar front file size must not exceed 2MB.',
-            'adhar_back.required' => 'Aadhar back is required.',
-            'adhar_back.file' => 'Aadhar back must be a valid file.',
-            'adhar_back.mimes' => 'Aadhar back must be a PDF or image file.',
-            'adhar_back.max' => 'Aadhar back file size must not exceed 2MB.',
-            'signature.file' => 'Signature must be a valid file.',
-            'signature.mimes' => 'Signature must be an image file (JPG, PNG).',
-            'signature.max' => 'Signature file size must not exceed 2MB.',
+            'other_document.required' => 'Other document is required.',
+            'other_document.file' => 'Other document must be a valid file.',
+            'other_document.mimes' => 'Other document must be a PDF or image file.',
+            'other_document.max' => 'Other document file size must not exceed 2MB.',
         ]);
         
         try {
             // Handle file uploads
             $filePaths = [];
-            $fileFields = ['passport_photo', 'adhar_front', 'adhar_back', 'signature'];
+            $fileFields = ['passport_photo', 'other_document'];
             
             foreach ($fileFields as $field) {
                 if ($request->hasFile($field)) {
@@ -153,9 +144,7 @@ class LeadEduthanzeelRegistrationController extends Controller
                 'state' => $request->state,
                 'pin_code' => $request->pin_code,
                 'passport_photo' => $filePaths['passport_photo'] ?? null,
-                'adhar_front' => $filePaths['adhar_front'] ?? null,
-                'adhar_back' => $filePaths['adhar_back'] ?? null,
-                'signature' => $filePaths['signature'] ?? null,
+                'other_document' => $filePaths['other_document'] ?? null,
                 'message' => $request->message,
                 'status' => 'pending',
             ]);
