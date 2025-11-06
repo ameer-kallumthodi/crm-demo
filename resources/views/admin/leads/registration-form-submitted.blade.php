@@ -221,7 +221,7 @@
                                                 title="View Lead">
                                                 <i class="ti ti-eye"></i>
                                             </a>
-                                            @if(\App\Helpers\PermissionHelper::has_lead_action_permission())
+                                            @if(isset($canEditLead) && $canEditLead)
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
                                                 onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
                                                 title="Edit Lead">
@@ -527,11 +527,13 @@
                                         title="View Lead">
                                         <i class="ti ti-eye f-12"></i>
                                     </a>
+                                    @if(isset($canEditLead) && $canEditLead)
                                     <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
                                         onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
                                         title="Edit Lead">
                                         <i class="ti ti-edit f-12"></i>
                                     </a>
+                                    @endif
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
                                     <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
                                         onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}')"

@@ -45,9 +45,11 @@
                 <a href="{{ route('leads.call-logs', $lead) }}" class="btn btn-info">
                     <i class="fas fa-phone-alt"></i> Call Logs
                 </a>
+                @if(isset($canEditLead) && $canEditLead)
                 <a href="{{ route('leads.edit', $lead) }}" class="btn btn-primary">
                     <i class="fas fa-edit"></i> Edit Lead
                 </a>
+                @endif
                 <a href="{{ route('leads.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back to Leads
                 </a>
