@@ -1680,6 +1680,7 @@ class LeadController extends Controller
         $isTeamLead = $currentUser && AuthHelper::isTeamLead();
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
         $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+        $isGeneralManager = RoleHelper::is_general_manager();
         
         if (!$teamId) {
             return response()->json(['telecallers' => []]);
@@ -1687,8 +1688,8 @@ class LeadController extends Controller
 
         if ($teamId === 'all') {
             // Get telecallers based on role
-            if ($isTeamLead) {
-                // Team Lead: Show only their team members
+            if ($isTeamLead && !$isSeniorManager) {
+                // Team Lead (not senior manager): Show only their team members
                 $userTeamId = $currentUser->team_id;
                 if ($userTeamId) {
                     $teamMemberIds = AuthHelper::getTeamMemberIds($userTeamId);
@@ -1706,7 +1707,7 @@ class LeadController extends Controller
                 // Regular Telecaller: Show only themselves
                 $telecallers = collect([$currentUser]);
             } else {
-                // Admin/Super Admin/Senior Manager: Show all telecallers
+                // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers
                 $telecallers = User::where('role_id', 3)
                                   ->where('is_active', true)
                                   ->with('team:id,name')
@@ -1718,10 +1719,11 @@ class LeadController extends Controller
             $query = User::where('team_id', $teamId)
                         ->where('role_id', 3) // Telecaller role
                         ->where('is_active', true)
-                        ->select('id', 'name', 'email');
+                        ->with('team:id,name')
+                        ->select('id', 'name', 'email', 'team_id');
             
-            if ($isTeamLead) {
-                // Team Lead: Only show if it's their team
+            if ($isTeamLead && !$isSeniorManager) {
+                // Team Lead (not senior manager): Only show if it's their team
                 $userTeamId = $currentUser->team_id;
                 if ($teamId != $userTeamId) {
                     $telecallers = collect([]);
@@ -1732,7 +1734,7 @@ class LeadController extends Controller
                 // Regular Telecaller: Only show themselves
                 $telecallers = $query->where('id', $currentUser->id)->get();
             } else {
-                // Admin/Super Admin/Senior Manager: Show all
+                // Admin/Super Admin/Senior Manager/General Manager: Show all
                 $telecallers = $query->get();
             }
         }
