@@ -606,6 +606,8 @@ class LeadController extends Controller
         $currentUser = AuthHelper::getCurrentUser();
         $isTeamLead = $currentUser && AuthHelper::isTeamLead();
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+        $isGeneralManager = RoleHelper::is_general_manager();
         
         // Filter telecallers based on role
         if ($isTeamLead) {
@@ -618,11 +620,11 @@ class LeadController extends Controller
             } else {
                 $telecallers = collect([$currentUser]); // Only themselves if no team
             }
-        } elseif ($isTelecaller) {
-            // Telecaller: Show only themselves
+        } elseif ($isTelecaller && !$isSeniorManager) {
+            // Regular Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
         } else {
-            // Admin/Super Admin: Show all telecallers
+            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers
             $telecallers = User::where('role_id', 3)->get();
         }
         
@@ -640,8 +642,8 @@ class LeadController extends Controller
             } else {
                 $teams = collect(); // No teams if not assigned to any team
             }
-        } elseif ($isTelecaller) {
-            // Telecaller: Show only their team
+        } elseif ($isTelecaller && !$isSeniorManager) {
+            // Regular Telecaller: Show only their team
             $teamId = $currentUser->team_id;
             if ($teamId) {
                 $teams = Team::where('id', $teamId)->get();
@@ -649,7 +651,7 @@ class LeadController extends Controller
                 $teams = collect(); // No teams if not assigned to any team
             }
         } else {
-            // Admin/Super Admin: Show all teams
+            // Admin/Super Admin/Senior Manager/General Manager: Show all teams
             $teams = Team::all();
         }
         
@@ -665,9 +667,11 @@ class LeadController extends Controller
         $currentUser = AuthHelper::getCurrentUser();
         $isTeamLead = $currentUser && AuthHelper::isTeamLead();
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+        $isGeneralManager = RoleHelper::is_general_manager();
         
         // Filter telecallers based on role
-        if ($isTeamLead) {
+        if ($isTeamLead && !$isSeniorManager) {
             // Team Lead: Show only their team members
             $teamId = $currentUser->team_id;
             if ($teamId) {
@@ -677,11 +681,11 @@ class LeadController extends Controller
             } else {
                 $telecallers = collect([$currentUser]); // Only themselves if no team
             }
-        } elseif ($isTelecaller) {
-            // Telecaller: Show only themselves
+        } elseif ($isTelecaller && !$isSeniorManager) {
+            // Regular Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
         } else {
-            // Admin/Super Admin: Show all telecallers
+            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers
             $telecallers = User::where('role_id', 3)->get();
         }
         
@@ -699,8 +703,8 @@ class LeadController extends Controller
             } else {
                 $teams = collect(); // No teams if not assigned to any team
             }
-        } elseif ($isTelecaller) {
-            // Telecaller: Show only their team
+        } elseif ($isTelecaller && !$isSeniorManager) {
+            // Regular Telecaller: Show only their team
             $teamId = $currentUser->team_id;
             if ($teamId) {
                 $teams = Team::where('id', $teamId)->get();
@@ -708,7 +712,7 @@ class LeadController extends Controller
                 $teams = collect(); // No teams if not assigned to any team
             }
         } else {
-            // Admin/Super Admin: Show all teams
+            // Admin/Super Admin/Senior Manager/General Manager: Show all teams
             $teams = Team::all();
         }
         
@@ -1014,12 +1018,26 @@ class LeadController extends Controller
 
     public function edit(Lead $lead)
     {
+        // Check edit permission: Admin/Super Admin, General Manager, Team Lead, or Senior Manager only
+        // Regular telecallers (without team lead, senior manager, admin, or general manager roles) cannot edit
+        $canEditLead = RoleHelper::is_admin_or_super_admin() || 
+                       RoleHelper::is_general_manager() || 
+                       RoleHelper::is_team_lead() || 
+                       RoleHelper::is_senior_manager();
+        
+        if (!$canEditLead) {
+            return redirect()->route('leads.index')
+                ->with('error', 'You do not have permission to edit leads.');
+        }
+        
         $currentUser = AuthHelper::getCurrentUser();
         $isTeamLead = $currentUser && AuthHelper::isTeamLead();
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+        $isGeneralManager = RoleHelper::is_general_manager();
         
         // Filter telecallers based on role
-        if ($isTeamLead) {
+        if ($isTeamLead && !$isSeniorManager) {
             // Team Lead: Show only their team members
             $teamId = $currentUser->team_id;
             if ($teamId) {
@@ -1029,11 +1047,11 @@ class LeadController extends Controller
             } else {
                 $telecallers = collect([$currentUser]); // Only themselves if no team
             }
-        } elseif ($isTelecaller) {
-            // Telecaller: Show only themselves
+        } elseif ($isTelecaller && !$isSeniorManager) {
+            // Regular Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
         } else {
-            // Admin/Super Admin: Show all telecallers
+            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers
             $telecallers = User::where('role_id', 3)->get();
         }
         
@@ -1043,7 +1061,7 @@ class LeadController extends Controller
         $courses = Course::all();
         
         // Filter teams based on role
-        if ($isTeamLead) {
+        if ($isTeamLead && !$isSeniorManager) {
             // Team Lead: Show only their team
             $teamId = $currentUser->team_id;
             if ($teamId) {
@@ -1051,8 +1069,8 @@ class LeadController extends Controller
             } else {
                 $teams = collect(); // No teams if not assigned to any team
             }
-        } elseif ($isTelecaller) {
-            // Telecaller: Show only their team
+        } elseif ($isTelecaller && !$isSeniorManager) {
+            // Regular Telecaller: Show only their team
             $teamId = $currentUser->team_id;
             if ($teamId) {
                 $teams = Team::where('id', $teamId)->get();
@@ -1060,7 +1078,7 @@ class LeadController extends Controller
                 $teams = collect(); // No teams if not assigned to any team
             }
         } else {
-            // Admin/Super Admin: Show all teams
+            // Admin/Super Admin/Senior Manager/General Manager: Show all teams
             $teams = Team::all();
         }
         
@@ -1073,12 +1091,28 @@ class LeadController extends Controller
 
     public function ajax_edit(Lead $lead)
     {
+        // Check edit permission: Admin/Super Admin, General Manager, Team Lead, or Senior Manager only
+        // Regular telecallers (without team lead, senior manager, admin, or general manager roles) cannot edit
+        $canEditLead = RoleHelper::is_admin_or_super_admin() || 
+                       RoleHelper::is_general_manager() || 
+                       RoleHelper::is_team_lead() || 
+                       RoleHelper::is_senior_manager();
+        
+        if (!$canEditLead) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to edit leads.'
+            ], 403);
+        }
+        
         $currentUser = AuthHelper::getCurrentUser();
         $isTeamLead = $currentUser && AuthHelper::isTeamLead();
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+        $isGeneralManager = RoleHelper::is_general_manager();
         
         // Filter telecallers based on role
-        if ($isTeamLead) {
+        if ($isTeamLead && !$isSeniorManager) {
             // Team Lead: Show only their team members
             $teamId = $currentUser->team_id;
             if ($teamId) {
@@ -1088,23 +1122,23 @@ class LeadController extends Controller
             } else {
                 $telecallers = collect([$currentUser]); // Only themselves if no team
             }
-        } elseif ($isTelecaller) {
-            // Telecaller: Show only themselves
+        } elseif ($isTelecaller && !$isSeniorManager) {
+            // Regular Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
         } else {
-            // Admin/Super Admin: Show all telecallers
+            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers
             $telecallers = User::where('role_id', 3)->get();
         }
         
         // Filter teams based on role
-        if ($isTeamLead) {
+        if ($isTeamLead && !$isSeniorManager) {
             // Team Lead: Show only their team
             $teams = Team::where('id', $currentUser->team_id)->get();
-        } elseif ($isTelecaller) {
-            // Telecaller: Show only their team (if any)
+        } elseif ($isTelecaller && !$isSeniorManager) {
+            // Regular Telecaller: Show only their team (if any)
             $teams = Team::where('id', $currentUser->team_id)->get();
         } else {
-            // Admin/Super Admin: Show all teams
+            // Admin/Super Admin/Senior Manager/General Manager: Show all teams
             $teams = Team::all();
         }
         
@@ -1307,7 +1341,7 @@ class LeadController extends Controller
         $courses = Course::where('is_active', true)->get();
         
         // Filter teams and telecallers based on role
-        if ($isTeamLead) {
+        if ($isTeamLead && !$isSeniorManager) {
             // Team Lead: Show only their team
             $userTeamId = $currentUser->team_id;
             $teams = Team::where('id', $userTeamId)->where('is_active', true)->get();
@@ -1315,8 +1349,8 @@ class LeadController extends Controller
                               ->where('team_id', $userTeamId)
                               ->where('is_active', true)
                               ->get();
-        } elseif ($isSeniorManager || RoleHelper::is_admin_or_super_admin()) {
-            // Senior Manager/Admin/Super Admin: Show all teams and telecallers
+        } elseif ($isSeniorManager || RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager()) {
+            // Senior Manager/General Manager/Admin/Super Admin: Show all teams and telecallers
             $teams = Team::where('is_active', true)->get();
             $telecallers = User::where('role_id', 3)->where('is_active', true)->get();
         } else {
@@ -1358,6 +1392,18 @@ class LeadController extends Controller
 
     public function bulkUploadSubmit(Request $request)
     {
+        // Check permission: Admin/Super Admin, General Manager, Team Lead, or Senior Manager only
+        $canBulkUpload = RoleHelper::is_admin_or_super_admin() || 
+                        RoleHelper::is_general_manager() || 
+                        RoleHelper::is_team_lead() || 
+                        RoleHelper::is_senior_manager();
+        
+        if (!$canBulkUpload) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to bulk upload leads.'
+            ], 403);
+        }
 
         // Handle POST request - process the bulk upload
         // Set execution time limit for bulk operations
@@ -1752,6 +1798,17 @@ class LeadController extends Controller
      */
     public function bulkReassign(Request $request)
     {
+        // Check permission: Admin/Super Admin, General Manager, Team Lead, or Senior Manager only
+        $canBulkReassign = RoleHelper::is_admin_or_super_admin() || 
+                          RoleHelper::is_general_manager() || 
+                          RoleHelper::is_team_lead() || 
+                          RoleHelper::is_senior_manager();
+        
+        if (!$canBulkReassign) {
+            return redirect()->back()
+                ->with('error', 'You do not have permission to bulk reassign leads.');
+        }
+        
         $validator = Validator::make($request->all(), [
             'telecaller_id' => 'required|exists:users,id',
             'lead_source_id' => 'required|exists:lead_sources,id',
@@ -1853,6 +1910,16 @@ class LeadController extends Controller
      */
     public function bulkDelete(Request $request)
     {
+        // Check permission: Admin/Super Admin, General Manager, or Senior Manager only
+        $canBulkDelete = RoleHelper::is_admin_or_super_admin() || 
+                        RoleHelper::is_general_manager() || 
+                        RoleHelper::is_senior_manager();
+        
+        if (!$canBulkDelete) {
+            return redirect()->back()
+                ->with('error', 'You do not have permission to bulk delete leads.');
+        }
+        
         $validator = Validator::make($request->all(), [
             'telecaller_id' => 'required|exists:users,id',
             'lead_date' => 'required|date',
