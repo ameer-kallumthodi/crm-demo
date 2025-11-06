@@ -288,7 +288,6 @@
                                 <th>Phone</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
-                                <th>Sub Course</th>
                                 <th>Email</th>
                                 <th>Tutor</th>
                                 <th>Class Time</th>
@@ -327,10 +326,9 @@
                                     </div>
                                     <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}"></div>
                                 </td>
-                                <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
                                 <td>
-                                    <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
-                                        <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
+                                    <div class="inline-edit" data-field="batch_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->batch_id }}">
+                                        <span class="display-value">{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -339,8 +337,8 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="inline-edit" data-field="sub_course_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->sub_course_id }}">
-                                        <span class="display-value">{{ $convertedLead->subCourse?->title ?: '-' }}</span>
+                                    <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
+                                        <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -737,8 +735,6 @@
             } else if (field === 'admission_batch_id') {
                 const batchId = container.data('batch-id');
                 editForm = createAdmissionBatchField(batchId, currentValue);
-            } else if (field === 'sub_course_id') {
-                editForm = createSubCourseField(field, currentValue);
             } else if (field === 'teacher_id') {
                 editForm = createTeacherField(field, currentValue);
             } else {
@@ -845,27 +841,6 @@
             return `
                 <div class="edit-form">
                     <input type="text" value="${displayValue}" class="form-control form-control-sm" autocomplete="off" autocapitalize="off" spellcheck="false">
-                    <div class="btn-group mt-1">
-                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function createSubCourseField(field, currentValue) {
-            let options = `
-                <option value="">Select Sub Course</option>
-                @foreach($sub_courses as $sub_course)
-                <option value="{{ $sub_course->id }}" ${String(currentValue) === '{{ $sub_course->id }}' ? 'selected' : ''}>{{ $sub_course->title }}</option>
-                @endforeach
-            `;
-            
-            return `
-                <div class="edit-form">
-                    <select class="form-select form-select-sm">
-                        ${options}
-                    </select>
                     <div class="btn-group mt-1">
                         <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
                         <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>

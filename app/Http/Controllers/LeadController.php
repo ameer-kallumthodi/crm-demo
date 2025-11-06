@@ -2151,8 +2151,9 @@ class LeadController extends Controller
             $country_codes = get_country_code();
             
             // Check if course has sub courses
+            // Exclude E-School (course_id = 5) and Eduthanzeel (course_id = 6) from showing sub courses
             $hasSubCourses = false;
-            if ($studentDetail->course_id) {
+            if ($studentDetail->course_id && !in_array($studentDetail->course_id, [5, 6])) {
                 $hasSubCourses = \App\Models\SubCourse::where('course_id', $studentDetail->course_id)
                     ->where('is_active', true)
                     ->exists();

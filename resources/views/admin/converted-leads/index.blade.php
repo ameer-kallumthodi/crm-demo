@@ -367,8 +367,26 @@
                                     </td>
                                     <td>{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</td>
                                     <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
-                                    <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
-                                    <td>{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</td>
+                                    <td>
+                                        <div class="inline-edit" data-field="batch_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->batch_id }}">
+                                            <span class="display-value">{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
+                                            <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>
                                         @php $isVerified = (bool) ($convertedLead->is_academic_verified ?? false); @endphp
@@ -1022,6 +1040,229 @@
                     supportVerifyUrl = null;
                 });
         });
+
+        // Inline editing functionality
+        $(document).on('click', '.edit-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const container = $(this).closest('.inline-edit');
+            const field = container.data('field');
+            const id = container.data('id');
+            const currentValue = container.data('current') !== undefined ? String(container.data('current')).trim() : container.find('.display-value').text().trim();
+            const currentId = container.data('current-id') !== undefined ? String(container.data('current-id')).trim() : '';
+            
+            if (container.hasClass('editing')) {
+                return;
+            }
+            
+            $('.inline-edit.editing').not(container).each(function() {
+                $(this).removeClass('editing');
+                $(this).find('.edit-form').remove();
+            });
+
+            let editForm = '';
+            
+            if (field === 'batch_id') {
+                const courseId = container.data('course-id');
+                editForm = createBatchSelect(courseId, currentId);
+            } else if (field === 'admission_batch_id') {
+                const batchId = container.data('batch-id');
+                editForm = createAdmissionBatchSelect(batchId, currentId);
+            } else {
+                editForm = createInputField(field, currentValue);
+            }
+            
+            container.addClass('editing');
+            container.append(editForm);
+            
+            // Load options for select fields that need dynamic loading
+            if (field === 'batch_id') {
+                const courseId = container.data('course-id');
+                const select = container.find('select');
+                loadBatches(courseId, select, currentId);
+            } else if (field === 'admission_batch_id') {
+                const batchId = container.data('batch-id');
+                const select = container.find('select');
+                loadAdmissionBatches(batchId, select, currentId);
+            } else {
+                container.find('input, select').first().focus();
+            }
+        });
+
+        // Save inline edit
+        $(document).off('click.saveInline').on('click.saveInline', '.save-edit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const container = $(this).closest('.inline-edit');
+            const field = container.data('field');
+            const id = container.data('id');
+            const value = container.find('input, select').val();
+            
+            const btn = $(this);
+            if (btn.data('busy')) return;
+            btn.data('busy', true);
+            btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
+            
+            $.ajax({
+                url: `/admin/converted-leads/${id}/inline-update`,
+                method: 'POST',
+                data: {
+                    field: field,
+                    value: value,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update display value with the response value (which should be the title, not ID)
+                        let displayValue = response.value || 'N/A';
+                        container.find('.display-value').text(displayValue);
+                        // Update the data-current attribute with the new display value
+                        container.data('current', displayValue);
+                        // Update data-current-id for fields that use it (store the ID, not the display value)
+                        if (field === 'batch_id' || field === 'admission_batch_id') {
+                            container.data('current-id', value || '');
+                        }
+                        
+                        // If batch_id changed, update the admission_batch_id container's data-batch-id
+                        if (field === 'batch_id') {
+                            const row = container.closest('tr');
+                            const admissionBatchContainer = row.find('.inline-edit[data-field="admission_batch_id"]');
+                            if (admissionBatchContainer.length) {
+                                admissionBatchContainer.data('batch-id', value || '');
+                                // Clear admission batch if batch changed
+                                admissionBatchContainer.find('.display-value').text('N/A');
+                                admissionBatchContainer.data('current-id', '');
+                            }
+                        }
+                        
+                        toast_success(response.message);
+                    } else {
+                        toast_error(response.error || 'Update failed');
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Update failed';
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.error) {
+                            errorMessage = xhr.responseJSON.error;
+                        } else if (xhr.responseJSON.errors) {
+                            const errors = xhr.responseJSON.errors;
+                            const fieldErrors = Object.values(errors).flat();
+                            errorMessage = fieldErrors.join(', ');
+                        }
+                    }
+                    toast_error(errorMessage);
+                },
+                complete: function() {
+                    btn.data('busy', false);
+                    container.removeClass('editing');
+                    container.find('.edit-form').remove();
+                }
+            });
+        });
+
+        // Cancel inline edit
+        $(document).on('click', '.cancel-edit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const container = $(this).closest('.inline-edit');
+            container.removeClass('editing');
+            container.find('.edit-form').remove();
+        });
+
+        // Helper functions for creating form elements
+        function createInputField(field, currentValue) {
+            const inputType = 'text';
+            const displayValue = currentValue === 'N/A' ? '' : currentValue;
+            const commonAttrs = 'autocomplete="off" autocapitalize="off" spellcheck="false" name="inline-temp"';
+            const valueAttr = `value="${displayValue}"`;
+            return `
+                <div class="edit-form">
+                    <input type="${inputType}" ${valueAttr} ${commonAttrs} class="form-control form-control-sm">
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createBatchSelect(courseId, currentId) {
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm">
+                        <option value="">Loading...</option>
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createAdmissionBatchSelect(batchId, currentId) {
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm">
+                        <option value="">Loading...</option>
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadBatches(courseId, select, currentId) {
+            if (!courseId) {
+                select.html('<option value="">No course selected</option>');
+                return;
+            }
+            
+            $.get(`/api/batches/by-course/${courseId}`)
+                .done(function(response) {
+                    let options = '<option value="">Select Batch</option>';
+                    if (response.success && response.batches) {
+                        response.batches.forEach(function(batch) {
+                            // Only select if currentId is not empty and matches
+                            const isSelected = (currentId && String(currentId) === String(batch.id)) ? 'selected' : '';
+                            options += `<option value="${batch.id}" ${isSelected}>${batch.title}</option>`;
+                        });
+                    }
+                    select.html(options);
+                    select.focus();
+                })
+                .fail(function() {
+                    select.html('<option value="">Error loading batches</option>');
+                });
+        }
+
+        function loadAdmissionBatches(batchId, select, currentId) {
+            if (!batchId) {
+                select.html('<option value="">No batch selected</option>');
+                return;
+            }
+            
+            $.get(`/api/admission-batches/by-batch/${batchId}`)
+                .done(function(batches) {
+                    let options = '<option value="">Select Admission Batch</option>';
+                    batches.forEach(function(batch) {
+                        // Only select if currentId is not empty and matches
+                        const isSelected = (currentId && String(currentId) === String(batch.id)) ? 'selected' : '';
+                        options += `<option value="${batch.id}" ${isSelected}>${batch.title}</option>`;
+                    });
+                    select.html(options);
+                    select.focus();
+                })
+                .fail(function() {
+                    select.html('<option value="">Error loading admission batches</option>');
+                });
+        }
     });
 </script>
 @endpush

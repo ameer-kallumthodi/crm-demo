@@ -217,17 +217,6 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="sub_course_id" class="form-label">Sub Course</label>
-                            <select class="form-select" id="sub_course_id" name="sub_course_id">
-                                <option value="">All Sub Courses</option>
-                                @foreach($sub_courses as $sub_course)
-                                    <option value="{{ $sub_course->id }}" {{ request('sub_course_id') == $sub_course->id ? 'selected' : '' }}>
-                                        {{ $sub_course->title }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-3">
                             <label for="subject_id" class="form-label">Subject</label>
                             <select class="form-select" id="subject_id" name="subject_id">
                                 <option value="">All Subjects</option>
@@ -303,7 +292,6 @@
                                 <th>Tutor</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
-                                <th>Sub Course</th>
                                 <th>Subject</th>
                                 <th>Screening Date</th>
                                 <th>Class Time</th>
@@ -350,10 +338,9 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>{{ $convertedLead->batch?->title ?: '-' }}</td>
                                 <td>
-                                    <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->admission_batch_id }}" data-batch-id="{{ $convertedLead->batch_id }}">
-                                        <span class="display-value">{{ $convertedLead->admissionBatch?->title ?: '-' }}</span>
+                                    <div class="inline-edit" data-field="batch_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->batch_id }}">
+                                        <span class="display-value">{{ $convertedLead->batch?->title ?: '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -362,8 +349,8 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="inline-edit" data-field="sub_course_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->sub_course_id }}">
-                                        <span class="display-value">{{ $convertedLead->subCourse?->title ?: '-' }}</span>
+                                    <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->admission_batch_id }}" data-batch-id="{{ $convertedLead->batch_id }}">
+                                        <span class="display-value">{{ $convertedLead->admissionBatch?->title ?: '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -498,10 +485,6 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Batch</small>
                                     <span class="fw-medium">{{ $convertedLead->batch?->title ?: 'N/A' }}</span>
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Sub Course</small>
-                                    <span class="fw-medium">{{ $convertedLead->subCourse?->title ?: 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Subject</small>
@@ -689,7 +672,7 @@
             } else if (field === 'admission_batch_id') {
                 const batchId = container.data('batch-id');
                 editForm = createAdmissionBatchField(batchId, currentValue);
-            } else if (['teacher_id', 'sub_course_id', 'subject_id'].includes(field)) {
+            } else if (['teacher_id', 'subject_id'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
             } else {
                 editForm = createInputField(field, currentValue);
@@ -706,7 +689,7 @@
             }
             
             // Load options for select fields
-            if (['teacher_id', 'sub_course_id', 'subject_id', 'class_status', 'continuing_studies'].includes(field)) {
+            if (['teacher_id', 'subject_id', 'class_status', 'continuing_studies'].includes(field)) {
                 const $select = container.find('select');
                 loadSelectOptions($select, field, currentValue);
             }
@@ -888,11 +871,6 @@
                 @foreach($teachers as $teacher)
                     const selected{{ $teacher->id }} = String(currentValue) === '{{ $teacher->id }}' ? 'selected' : '';
                     options += `<option value="{{ $teacher->id }}" ${selected{{ $teacher->id }}}>{{ $teacher->name }}</option>`;
-                @endforeach
-            } else if (field === 'sub_course_id') {
-                @foreach($sub_courses as $sub_course)
-                    const selected{{ $sub_course->id }} = String(currentValue) === '{{ $sub_course->id }}' ? 'selected' : '';
-                    options += `<option value="{{ $sub_course->id }}" ${selected{{ $sub_course->id }}}>{{ $sub_course->title }}</option>`;
                 @endforeach
             } else if (field === 'subject_id') {
                 @foreach($subjects as $subject)
