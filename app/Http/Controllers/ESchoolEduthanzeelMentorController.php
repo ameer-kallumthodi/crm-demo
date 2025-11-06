@@ -202,18 +202,25 @@ class ESchoolEduthanzeelMentorController extends Controller
                     $teacher = User::find($value);
                     if ($teacher && $teacher->phone) {
                         $mentorDetails->tutor_phone_number = $teacher->phone;
+                    } else {
+                        $mentorDetails->tutor_phone_number = null;
                     }
+                } else {
+                    // Set tutor phone number to null when tutor is removed
+                    $mentorDetails->tutor_phone_number = null;
                 }
                 
                 $mentorDetails->save();
 
-                $teacherName = $teacher ? $teacher->name : '';
-                $tutorPhoneDisplay = $teacher ? \App\Helpers\PhoneNumberHelper::display($teacher->code, $teacher->phone) : '';
+                // Always return teacher NAME in 'value' field, and formatted phone in 'tutor_phone' field
+                $teacherName = ($teacher && $teacher->name) ? trim($teacher->name) : '-';
+                $tutorPhoneDisplay = ($teacher && $teacher->phone) ? \App\Helpers\PhoneNumberHelper::display($teacher->code, $teacher->phone) : '-';
+                
                 return response()->json([
                     'success' => true,
                     'message' => 'Updated successfully',
-                    'value' => $teacherName,
-                    'tutor_phone' => $tutorPhoneDisplay
+                    'value' => $teacherName,  // This MUST be the teacher name, not phone
+                    'tutor_phone' => $tutorPhoneDisplay  // This MUST be the formatted phone number
                 ]);
             }
 

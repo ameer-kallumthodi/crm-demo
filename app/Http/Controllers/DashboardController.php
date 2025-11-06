@@ -271,9 +271,22 @@ class DashboardController extends Controller
         $weeklyLeadsQuery = Lead::whereBetween('created_at', [$weekStart, $weekEnd]);
         $weeklyLeads = $this->applyRoleBasedFilter($weeklyLeadsQuery)->count();
         
+        // Get weekly converted leads (conversions created this week)
+        $weeklyConvertedLeadsQuery = \App\Models\ConvertedLead::whereBetween('created_at', [$weekStart, $weekEnd]);
+        $weeklyConvertedLeads = $this->applyRoleBasedFilterToConvertedLeads($weeklyConvertedLeadsQuery)->count();
+        
+        // Calculate active leads this week (leads created this week that are not converted)
+        // Get leads created this week that don't have a corresponding ConvertedLead
+        $convertedLeadIds = \App\Models\ConvertedLead::pluck('lead_id')->toArray();
+        $activeLeadsThisWeekQuery = Lead::whereBetween('created_at', [$weekStart, $weekEnd])
+            ->whereNotIn('id', $convertedLeadIds);
+        $activeLeadsThisWeek = $this->applyRoleBasedFilter($activeLeadsThisWeekQuery)->count();
+        
         return [
             'totalLeads' => $weeklyLeads, // Weekly leads for the weekly stat
             'convertedLeads' => $convertedLeads, // Total converted leads (all time)
+            'weeklyConvertedLeads' => $weeklyConvertedLeads, // Weekly converted leads
+            'activeLeadsThisWeek' => $activeLeadsThisWeek, // Active leads this week (not converted)
             'conversionRate' => $totalLeads > 0 ? round(($convertedLeads / $totalLeads) * 100, 2) : 0,
         ];
     }

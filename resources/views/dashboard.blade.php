@@ -57,9 +57,10 @@
                 <h4 class="mb-2">{{ $totalLeads - ($weeklyStats['convertedLeads'] ?? 0) }}</h4>
                 <div class="d-flex align-items-center">
                     <span class="badge bg-light-success border border-success me-2">
-                        <i class="ti ti-trending-up"></i> Active
+                        <i class="ti ti-trending-up"></i> {{ $weeklyStats['activeLeadsThisWeek'] ?? 0 }}
                     </span>
-                    <small class="text-muted">Currently active</small>
+                    <small class="text-muted">This week.</small>
+                    <small class="text-muted ms-2">Not-converted leads</small>
                 </div>
             </div>
         </div>
