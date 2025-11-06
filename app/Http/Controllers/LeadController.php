@@ -221,7 +221,7 @@ class LeadController extends Controller
         $isTeamLead = $currentUser && AuthHelper::isTeamLead();
         
         // Filter telecallers based on role
-        if ($isTeamLead) {
+        if ($isTeamLead && !$isSeniorManager) {
             // Team Lead: Show only their team members
             $teamId = $currentUser->team_id;
             if ($teamId) {
@@ -231,7 +231,7 @@ class LeadController extends Controller
             } else {
                 $telecallers = collect([$currentUser]); // Only themselves if no team
             }
-        } elseif ($isTelecaller) {
+        } elseif ($isTelecaller && !$isSeniorManager) {
             // Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
         }

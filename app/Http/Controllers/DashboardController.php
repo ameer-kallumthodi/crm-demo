@@ -77,29 +77,35 @@ class DashboardController extends Controller
      */
     private function getTopTelecallers()
     {
-        // Optimized query to get telecallers with lead counts in a single query
-        $telecallers = User::select('users.id', 'users.name', 'users.phone', 'users.profile_picture')
-            ->selectRaw('COUNT(leads.id) as lead_count')
-            ->leftJoin('leads', 'users.id', '=', 'leads.telecaller_id')
-            ->where('users.role_id', 3)
+        // Get all telecallers first
+        $telecallers = User::where('users.role_id', 3)
             ->whereNull('users.deleted_at')
-            ->whereNull('leads.deleted_at')
-            ->groupBy('users.id', 'users.name', 'users.phone', 'users.profile_picture')
-            ->having('lead_count', '>', 0)
-            ->orderByDesc('lead_count')
-            ->limit(5)
-            ->get()
-            ->map(function ($telecaller) {
-                return [
-                    'id' => $telecaller->id,
-                    'name' => $telecaller->name,
-                    'phone' => $telecaller->phone,
-                    'profile_picture' => $telecaller->profile_picture,
-                    'count' => $telecaller->lead_count,
-                ];
-            });
+            ->select('users.id', 'users.name', 'users.phone', 'users.profile_picture')
+            ->get();
+        
+        // Calculate lead count for each telecaller with role-based filtering
+        $telecallersWithCounts = $telecallers->map(function ($telecaller) {
+            $leadsQuery = Lead::where('telecaller_id', $telecaller->id)
+                ->whereNull('deleted_at');
+            $this->applyRoleBasedFilter($leadsQuery);
+            $leadCount = $leadsQuery->count();
+            
+            return [
+                'id' => $telecaller->id,
+                'name' => $telecaller->name,
+                'phone' => $telecaller->phone,
+                'profile_picture' => $telecaller->profile_picture,
+                'count' => $leadCount,
+            ];
+        })
+        ->filter(function ($telecaller) {
+            return $telecaller['count'] > 0;
+        })
+        ->sortByDesc('count')
+        ->take(5)
+        ->values();
 
-        return $telecallers;
+        return $telecallersWithCounts;
     }
 
     /**
@@ -107,8 +113,8 @@ class DashboardController extends Controller
      */
     private function getTopCountries()
     {
-        // Optimized query to get countries with lead counts in a single query
-        $countries = Country::select('countries.id', 'countries.title')
+        // Build query with role-based filtering
+        $query = Country::select('countries.id', 'countries.title')
             ->selectRaw('COUNT(leads.id) as lead_count')
             ->leftJoin('leads', 'countries.id', '=', 'leads.country_id')
             ->whereNull('countries.deleted_at')
@@ -116,8 +122,12 @@ class DashboardController extends Controller
             ->groupBy('countries.id', 'countries.title')
             ->having('lead_count', '>', 0)
             ->orderByDesc('lead_count')
-            ->limit(5)
-            ->get()
+            ->limit(5);
+        
+        // Apply role-based filtering to the leads in the join
+        $this->applyRoleBasedFilter($query);
+        
+        $countries = $query->get()
             ->map(function ($country) {
                 return [
                     'id' => $country->id,
@@ -355,6 +365,8 @@ class DashboardController extends Controller
         
         // Roles that can see all leads (same as admin)
         if (RoleHelper::is_admin_or_super_admin() || 
+            RoleHelper::is_general_manager() ||
+            RoleHelper::is_senior_manager() ||
             RoleHelper::is_admission_counsellor() || 
             RoleHelper::is_finance() || 
             RoleHelper::is_academic_assistant() || 
@@ -370,14 +382,15 @@ class DashboardController extends Controller
                 $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
                 // Include current user's ID in the team member IDs
                 $teamMemberIds[] = AuthHelper::getCurrentUserId();
-                $query->whereIn('telecaller_id', $teamMemberIds);
+                // Use qualified column name to work with joins
+                $query->whereIn('leads.telecaller_id', $teamMemberIds);
             } else {
                 // If no team assigned, only show their own leads
-                $query->where('telecaller_id', AuthHelper::getCurrentUserId());
+                $query->where('leads.telecaller_id', AuthHelper::getCurrentUserId());
             }
         } elseif (AuthHelper::isTelecaller()) {
             // Telecaller: Can only see their own leads
-            $query->where('telecaller_id', AuthHelper::getCurrentUserId());
+            $query->where('leads.telecaller_id', AuthHelper::getCurrentUserId());
         }
         
         return $query;
@@ -392,6 +405,18 @@ class DashboardController extends Controller
         
         // If no user is logged in, return all converted leads (for admin view)
         if (!$currentUser) {
+            return $query;
+        }
+        
+        // Roles that can see all converted leads (same as admin)
+        if (RoleHelper::is_admin_or_super_admin() || 
+            RoleHelper::is_general_manager() ||
+            RoleHelper::is_senior_manager() ||
+            RoleHelper::is_admission_counsellor() || 
+            RoleHelper::is_finance() || 
+            RoleHelper::is_academic_assistant() || 
+            RoleHelper::is_post_sales()) {
+            // Can see all converted leads
             return $query;
         }
         
