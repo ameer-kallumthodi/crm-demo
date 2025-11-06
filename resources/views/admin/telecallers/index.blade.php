@@ -65,6 +65,11 @@
                                                 <i class="ti ti-crown me-1"></i>Team Lead
                                             </span>
                                         @endif
+                                        @if($telecaller->is_senior_manager)
+                                            <span class="badge bg-info ms-2">
+                                                <i class="ti ti-user-star me-1"></i>Senior Manager
+                                            </span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td>{{ $telecaller->email }}</td>

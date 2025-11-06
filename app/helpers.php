@@ -51,6 +51,16 @@ if (!function_exists('is_telecaller')) {
     }
 }
 
+if (!function_exists('is_senior_manager')) {
+    /**
+     * Check if current user is Senior Manager (must be telecaller and is_senior_manager = 1)
+     */
+    function is_senior_manager()
+    {
+        return \App\Helpers\RoleHelper::is_senior_manager();
+    }
+}
+
 if (!function_exists('is_admission_counsellor')) {
     /**
      * Check if current user is Admission Counsellor

@@ -29,6 +29,7 @@ class User extends Authenticatable
         'is_team_lead',
         'is_team_manager',
         'is_head',
+        'is_senior_manager',
         'current_role',
         'team_id',
         'is_active',
@@ -59,6 +60,7 @@ class User extends Authenticatable
             'is_team_lead' => 'boolean',
             'is_team_manager' => 'boolean',
             'is_head' => 'boolean',
+            'is_senior_manager' => 'boolean',
             'is_active' => 'boolean',
             'joining_date' => 'date',
         ];

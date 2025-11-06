@@ -83,6 +83,16 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_senior_manager" id="is_senior_manager" value="1" {{ $edit_data->is_senior_manager ? 'checked' : '' }}>
+                        <label class="form-check-label" for="is_senior_manager">
+                            <i class="ti ti-user-star me-1"></i>Is Senior Manager
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <button type="submit" class="btn btn-success float-end">Update</button>

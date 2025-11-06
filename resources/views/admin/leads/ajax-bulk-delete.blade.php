@@ -1,6 +1,21 @@
 <form action="{{ route('admin.leads.bulk-delete.submit') }}" method="post" enctype="multipart/form-data">
     @csrf
     <div class="row g-3">
+        @if($isSeniorManager && $teams->count() > 0)
+        <div class="col-lg-4">
+            <div class="p-1">
+                <label for="filter_team_id" class="form-label">Filter by Team</label>
+                <select class="form-control" name="filter_team_id" id="filter_team_id">
+                    <option value="">All Teams</option>
+                    <option value="all">All Teams</option>
+                    @foreach ($teams as $team)
+                    <option value="{{ $team->id }}">{{ $team->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+        @endif
+        
         <div class="col-lg-4">
             <div class="p-1">
                 <label for="telecaller_id" class="form-label">Telecaller</label>
@@ -79,6 +94,35 @@
         var anyChecked = $('#lead_table_body input[type="checkbox"]:checked').length > 0;
         $('#reassign_btn').prop('disabled', !anyChecked);
     }
+
+    // Handle team filter change for senior managers
+    @if($isSeniorManager && $teams->count() > 0)
+    $('#filter_team_id').on('change', function() {
+        var teamId = $(this).val();
+        var telecallerSelect = $('#telecaller_id');
+        
+        if (teamId) {
+            $.get('{{ route("leads.telecallers-by-team") }}', { team_id: teamId })
+                .done(function(data) {
+                    telecallerSelect.empty();
+                    telecallerSelect.append('<option value="">Select Tele Caller</option>');
+                    $.each(data.telecallers, function(index, telecaller) {
+                        telecallerSelect.append('<option value="' + telecaller.id + '">' + telecaller.name + (telecaller.team_name ? ' (' + telecaller.team_name + ')' : '') + '</option>');
+                    });
+                })
+                .fail(function() {
+                    console.log('Error fetching telecallers');
+                });
+        } else {
+            // Reset to all telecallers
+            telecallerSelect.empty();
+            telecallerSelect.append('<option value="">Select Tele Caller</option>');
+            @foreach ($telecallers as $telecaller)
+            telecallerSelect.append('<option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>');
+            @endforeach
+        }
+    });
+    @endif
 
     // AJAX to fetch leads based on lead source
     $('#telecaller_id, #lead_source_id, #lead_date').on('change', function() {

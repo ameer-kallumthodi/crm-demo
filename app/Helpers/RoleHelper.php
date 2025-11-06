@@ -86,6 +86,24 @@ class RoleHelper
     }
 
     /**
+     * Check if current user is Senior Manager (must be telecaller and is_senior_manager = 1)
+     */
+    public static function is_senior_manager()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        // Check if user is telecaller (role_id == 3) and is_senior_manager == 1
+        return $user->role_id == 3 && $user->is_senior_manager == 1;
+    }
+
+    /**
      * Check if current user is Admission Counsellor
      */
     public static function is_admission_counsellor()
