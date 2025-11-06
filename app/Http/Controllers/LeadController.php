@@ -1211,8 +1211,18 @@ class LeadController extends Controller
                 'university_id', 'followup_date', 'add_date', 'add_time', 'remarks'
             ]);
             
-            // Set default values
-            $data['lead_status_id'] = $data['lead_status_id'] ?? 1;
+            // Check if telecaller_id is being changed (reassignment)
+            $isReassignment = isset($data['telecaller_id']) && 
+                             $data['telecaller_id'] != $lead->telecaller_id;
+            
+            // If reassigning, set lead_status_id to 1
+            if ($isReassignment) {
+                $data['lead_status_id'] = 1;
+            } else {
+                // Set default values
+                $data['lead_status_id'] = $data['lead_status_id'] ?? 1;
+            }
+            
             $data['add_date'] = $data['add_date'] ?? date('Y-m-d');
             $data['add_time'] = $data['add_time'] ?? date('H:i');
             
@@ -1222,7 +1232,29 @@ class LeadController extends Controller
             
             $data['updated_by'] = AuthHelper::getCurrentUserId();
 
+            // Store old telecaller_id before update
+            $oldTelecallerId = $lead->telecaller_id;
+
             if ($lead->update($data)) {
+                // If telecaller was changed, create activity log
+                if ($isReassignment && isset($data['telecaller_id'])) {
+                    $fromTelecaller = $oldTelecallerId ? \App\Models\User::find($oldTelecallerId) : null;
+                    $toTelecaller = \App\Models\User::find($data['telecaller_id']);
+                    
+                    $fromTelecallerName = $fromTelecaller ? $fromTelecaller->name : 'Unassigned';
+                    $toTelecallerName = $toTelecaller ? $toTelecaller->name : 'Unknown';
+                    
+                    \App\Models\LeadActivity::create([
+                        'lead_id' => $lead->id,
+                        'lead_status_id' => 1, // Set status to 1 when reassigned
+                        'activity_type' => 'reassign',
+                        'description' => 'Lead reassigned',
+                        'remarks' => "Lead has been reassigned from telecaller {$fromTelecallerName} to telecaller {$toTelecallerName}.",
+                        'created_by' => AuthHelper::getCurrentUserId(),
+                        'updated_by' => AuthHelper::getCurrentUserId(),
+                    ]);
+                }
+                
                 if (request()->ajax()) {
                     return response()->json([
                         'success' => true,
@@ -1724,7 +1756,7 @@ class LeadController extends Controller
         $validator = Validator::make($request->all(), [
             'telecaller_id' => 'required|exists:users,id',
             'lead_source_id' => 'required|exists:lead_sources,id',
-            'lead_status_id' => 'required|exists:lead_statuses,id',
+            // lead_status_id is not required as it's always set to 1 when reassigning
             'from_telecaller_id' => 'required|exists:users,id',
             'lead_from_date' => 'required|date',
             'lead_to_date' => 'required|date',
@@ -1746,10 +1778,11 @@ class LeadController extends Controller
         $successCount = 0;
         foreach ($request->lead_id as $leadId) {
             // Update the lead directly without loading the full model
+            // Set lead_status_id to 1 when reassigning
             $updated = Lead::where('id', $leadId)->update([
                 'telecaller_id' => $request->telecaller_id,
                 'lead_source_id' => $request->lead_source_id,
-                'lead_status_id' => $request->lead_status_id,
+                'lead_status_id' => 1, // Always set to 1 when reassigned
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
 
@@ -1757,7 +1790,7 @@ class LeadController extends Controller
                 // Create lead activity history
                 \App\Models\LeadActivity::create([
                     'lead_id' => $leadId,
-                    'lead_status_id' => $request->lead_status_id,
+                    'lead_status_id' => 1, // Set status to 1 when reassigned
                     'activity_type' => 'bulk_reassign',
                     'description' => 'Lead reassigned via bulk operation',
                     'remarks' => "Lead has been reassigned from telecaller {$fromTelecallerName} to telecaller {$toTelecallerName}.",

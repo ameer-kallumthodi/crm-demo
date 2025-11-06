@@ -243,6 +243,7 @@ class Lead extends Model
     {
         $this->update([
             'telecaller_id' => $telecallerId,
+            'lead_status_id' => 1, // Set status to 1 when reassigned
             'updated_by' => AuthHelper::getCurrentUserId()
         ]);
 
@@ -259,7 +260,7 @@ class Lead extends Model
         // Create activity log
         LeadActivity::create([
             'lead_id' => $this->id,
-            'lead_status_id' => 23, // Reassigned status
+            'lead_status_id' => 1, // Set status to 1 when reassigned
             'remarks' => 'Lead has been reassigned from telecaller ' . $fromTelecallerName . 
                         ' to telecaller ' . $toTelecallerName . '.',
             'created_by' => AuthHelper::getCurrentUserId(),
