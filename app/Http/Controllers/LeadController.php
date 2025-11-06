@@ -95,12 +95,19 @@ class LeadController extends Controller
         }
 
         $currentUser = AuthHelper::getCurrentUser();
+        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+        $isGeneralManager = RoleHelper::is_general_manager();
         
         // Role-based lead filtering
         if ($currentUser) {
-            
-             if (AuthHelper::isTeamLead() == 1) {
-                
+            // Senior Manager and General Manager: Can see all leads (no filtering)
+            if ($isSeniorManager || $isGeneralManager || RoleHelper::is_admin_or_super_admin()) {
+                // No filtering - can see all leads
+                // Only apply telecaller filter if explicitly requested
+                if ($request->filled('telecaller_id')) {
+                    $query->where('telecaller_id', $request->telecaller_id);
+                }
+            } elseif (AuthHelper::isTeamLead() == 1) {
                 // Team Lead: Can see their own leads + their team members' leads
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
@@ -115,9 +122,6 @@ class LeadController extends Controller
             } elseif (AuthHelper::isTelecaller()) {
                 // Telecaller: Can only see their own leads
                 $query->where('telecaller_id', AuthHelper::getCurrentUserId());
-            }elseif ($request->filled('telecaller_id') && !AuthHelper::isTelecaller()) {
-                // Admin/Super Admin: Can filter by specific telecaller
-                $query->where('telecaller_id', $request->telecaller_id);
             }
         }
 
@@ -130,6 +134,7 @@ class LeadController extends Controller
         $isAdminOrSuperAdmin = RoleHelper::is_admin_or_super_admin();
         $isTeamLeadRole = RoleHelper::is_team_lead();
         $isGeneralManager = RoleHelper::is_general_manager();
+        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
         $isTelecallerRole = RoleHelper::is_telecaller();
         $isAcademicAssistant = RoleHelper::is_academic_assistant();
         $isAdmissionCounsellor = RoleHelper::is_admission_counsellor();
@@ -239,7 +244,7 @@ class LeadController extends Controller
             'leads', 'leadStatuses', 'leadSources', 'countries', 'courses', 'telecallers',
             'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList',
             'fromDate', 'toDate', 'isTelecaller', 'isTeamLead',
-            'isAdminOrSuperAdmin', 'isTeamLeadRole', 'isGeneralManager', 'isTelecallerRole',
+            'isAdminOrSuperAdmin', 'isTeamLeadRole', 'isGeneralManager', 'isSeniorManager', 'isTelecallerRole',
             'isAcademicAssistant', 'isAdmissionCounsellor', 'hasLeadActionPermission'
         ))->with('search_key', $request->search_key);
     }
@@ -1709,7 +1714,7 @@ class LeadController extends Controller
         $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
         
         // Filter telecallers based on role
-        if ($isTeamLead) {
+        if ($isTeamLead && !$isSeniorManager) {
             // Team Lead: Show only their team members
             $teamId = $currentUser->team_id;
             if ($teamId) {
@@ -1719,7 +1724,7 @@ class LeadController extends Controller
             } else {
                 $telecallers = collect([$currentUser]); // Only themselves if no team
             }
-        } elseif ($isTelecaller && !$isSeniorManager) {
+        } elseif ($isTelecaller && !$isSeniorManager && !$isTeamLead) {
             // Regular Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
         } else {
@@ -1727,17 +1732,11 @@ class LeadController extends Controller
             $telecallers = User::where('role_id', 3)->get();
         }
         
-        // Get teams for senior managers and admins
-        $teams = collect();
-        if ($isSeniorManager || RoleHelper::is_admin_or_super_admin()) {
-            $teams = Team::all();
-        } elseif ($isTeamLead && $currentUser->team_id) {
-            $teams = Team::where('id', $currentUser->team_id)->get();
-        }
+        // No team selection needed for bulk reassign - removed teams
+        // Senior managers and admins can see all telecallers
         
         $data = [
             'telecallers' => $telecallers,
-            'teams' => $teams,
             'isSeniorManager' => $isSeniorManager,
             'leadStatuses' => LeadStatus::where('is_active', 1)->get(),
             'leadSources' => LeadSource::where('is_active', 1)->get(),
@@ -1834,17 +1833,11 @@ class LeadController extends Controller
             $telecallers = User::where('role_id', 3)->get();
         }
         
-        // Get teams for senior managers and admins
-        $teams = collect();
-        if ($isSeniorManager || RoleHelper::is_admin_or_super_admin()) {
-            $teams = Team::all();
-        } elseif ($isTeamLead && $currentUser->team_id) {
-            $teams = Team::where('id', $currentUser->team_id)->get();
-        }
+        // No team selection needed for bulk delete - removed teams
+        // Senior managers and admins can see all telecallers
         
         $data = [
             'telecallers' => $telecallers,
-            'teams' => $teams,
             'isSeniorManager' => $isSeniorManager,
             'leadStatuses' => LeadStatus::where('is_active', 1)->get(),
             'leadSources' => LeadSource::where('is_active', 1)->get(),

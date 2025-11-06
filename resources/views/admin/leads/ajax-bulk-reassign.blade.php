@@ -1,21 +1,6 @@
 <form action="{{ route('admin.leads.bulk-reassign.submit') }}" method="post" enctype="multipart/form-data">
     @csrf
     <div class="row g-3">
-        @if($isSeniorManager && $teams->count() > 0)
-        <div class="col-lg-2">
-            <div class="p-1">
-                <label for="filter_team_id" class="form-label">Filter by Team</label>
-                <select class="form-control" name="filter_team_id" id="filter_team_id">
-                    <option value="">All Teams</option>
-                    <option value="all">All Teams</option>
-                    @foreach ($teams as $team)
-                    <option value="{{ $team->id }}">{{ $team->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-        @endif
-        
         <div class="col-lg-2">
             <div class="p-1">
                 <label for="telecaller_id" class="form-label">Re-assign To</label>
@@ -63,21 +48,6 @@
                 </select>
             </div>
         </div>
-        
-        @if($isSeniorManager && $teams->count() > 0)
-        <div class="col-lg-2">
-            <div class="p-1">
-                <label for="filter_from_team_id" class="form-label">Filter From Team</label>
-                <select class="form-control" name="filter_from_team_id" id="filter_from_team_id">
-                    <option value="">All Teams</option>
-                    <option value="all">All Teams</option>
-                    @foreach ($teams as $team)
-                    <option value="{{ $team->id }}">{{ $team->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-        @endif
 
         <div class="col-lg-2">
             <div class="p-1">
@@ -167,60 +137,7 @@ $(document).ready(function() {
         toggleSubmitButton();
     });
 
-    // Handle team filter change for senior managers
-    @if($isSeniorManager && $teams->count() > 0)
-    $('#filter_team_id').on('change', function() {
-        var teamId = $(this).val();
-        var telecallerSelect = $('#telecaller_id');
-        
-        if (teamId) {
-            $.get('{{ route("leads.telecallers-by-team") }}', { team_id: teamId })
-                .done(function(data) {
-                    telecallerSelect.empty();
-                    telecallerSelect.append('<option value="">Select Telecaller</option>');
-                    $.each(data.telecallers, function(index, telecaller) {
-                        telecallerSelect.append('<option value="' + telecaller.id + '">' + telecaller.name + (telecaller.team_name ? ' (' + telecaller.team_name + ')' : '') + '</option>');
-                    });
-                })
-                .fail(function() {
-                    console.log('Error fetching telecallers');
-                });
-        } else {
-            // Reset to all telecallers
-            telecallerSelect.empty();
-            telecallerSelect.append('<option value="">Select Telecaller</option>');
-            @foreach ($telecallers as $telecaller)
-            telecallerSelect.append('<option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>');
-            @endforeach
-        }
-    });
-    
-    $('#filter_from_team_id').on('change', function() {
-        var teamId = $(this).val();
-        var telecallerSelect = $('#from_telecaller_id');
-        
-        if (teamId) {
-            $.get('{{ route("leads.telecallers-by-team") }}', { team_id: teamId })
-                .done(function(data) {
-                    telecallerSelect.empty();
-                    telecallerSelect.append('<option value="">Select Telecaller</option>');
-                    $.each(data.telecallers, function(index, telecaller) {
-                        telecallerSelect.append('<option value="' + telecaller.id + '">' + telecaller.name + (telecaller.team_name ? ' (' + telecaller.team_name + ')' : '') + '</option>');
-                    });
-                })
-                .fail(function() {
-                    console.log('Error fetching telecallers');
-                });
-        } else {
-            // Reset to all telecallers
-            telecallerSelect.empty();
-            telecallerSelect.append('<option value="">Select Telecaller</option>');
-            @foreach ($telecallers as $telecaller)
-            telecallerSelect.append('<option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>');
-            @endforeach
-        }
-    });
-    @endif
+    // Team selection removed - senior managers can see all telecallers directly
     
     // AJAX to fetch leads
     $('#from_telecaller_id, #lead_source_id, #lead_from_date, #lead_to_date, #lead_status_id').on('change', function() {
