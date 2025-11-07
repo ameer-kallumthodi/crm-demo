@@ -113,6 +113,11 @@ class Lead extends Model
         return $this->hasMany(LeadActivity::class, 'lead_id');
     }
 
+    public function latestFollowupActivity()
+    {
+        return $this->hasOne(LeadActivity::class, 'lead_id')->latestOfMany('created_at');
+    }
+
     public function studentDetails()
     {
         return $this->hasOne(LeadDetail::class, 'lead_id');

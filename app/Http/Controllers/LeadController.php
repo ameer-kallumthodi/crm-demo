@@ -1536,8 +1536,9 @@ class LeadController extends Controller
                 'course_id' => 'nullable|exists:courses,id',
             ];
 
-            // Only add followup_date validation if status is 2
-            if ($request->lead_status_id == 2) {
+            // Only add followup_date validation if status requires it
+            $followupRequiredStatuses = [2, 7, 8, 9];
+            if (in_array((int) $request->lead_status_id, $followupRequiredStatuses, true)) {
                 $rules['followup_date'] = 'required|date|after_or_equal:today';
             } else {
                 $rules['followup_date'] = 'nullable|date';
@@ -1574,8 +1575,8 @@ class LeadController extends Controller
                 $leadUpdateData['course_id'] = $request->course_id;
             }
             
-            // If status is 2 (followup), store followup date
-            if ($request->lead_status_id == 2 && $request->followup_date) {
+            // If status requires followup, store followup date
+            if (in_array((int) $request->lead_status_id, $followupRequiredStatuses, true) && $request->followup_date) {
                 $leadUpdateData['followup_date'] = $request->followup_date;
             }
             
@@ -1605,8 +1606,8 @@ class LeadController extends Controller
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ];
             
-            // If status is 2 (followup), store followup date in activity
-            if ($request->lead_status_id == 2 && $request->followup_date) {
+            // If status requires followup, store followup date in activity
+            if (in_array((int) $request->lead_status_id, $followupRequiredStatuses, true) && $request->followup_date) {
                 $activityData['followup_date'] = $request->followup_date;
             }
             
@@ -2472,6 +2473,98 @@ class LeadController extends Controller
         }
 
         return redirect()->back()->with('message_success', "Successfully reassigned {$successCount} leads!");
+    }
+
+    /**
+     * Show followup leads modal with filters.
+     */
+    public function followupLeadsModal(Request $request)
+    {
+        $canViewFollowupModal = RoleHelper::is_admin_or_super_admin() ||
+            RoleHelper::is_general_manager() ||
+            RoleHelper::is_senior_manager();
+
+        if (!$canViewFollowupModal) {
+            abort(403, 'You do not have permission to view followup leads.');
+        }
+
+        $followupStatusIds = [2, 7, 8, 9];
+
+        $telecallers = User::select('id', 'name')
+            ->where('role_id', 3)
+            ->orderBy('name')
+            ->get();
+
+        $leadSources = LeadSource::select('id', 'title')
+            ->where('is_active', 1)
+            ->orderBy('title')
+            ->get()
+            ->unique('title')
+            ->values();
+
+        $filtersApplied = $request->filled('followup_date')
+            || $request->filled('telecaller_id')
+            || $request->filled('lead_source_id');
+
+        $leads = collect();
+
+        if ($filtersApplied) {
+            $leadsQuery = Lead::select('leads.*')
+                ->with([
+                    'telecaller:id,name',
+                    'latestFollowupActivity' => function ($query) use ($followupStatusIds) {
+                        $query->whereIn('lead_status_id', $followupStatusIds);
+                    }
+                ])
+                ->whereIn('lead_status_id', $followupStatusIds)
+                ->whereNull('deleted_at');
+
+            if ($request->filled('followup_date')) {
+                $leadsQuery->whereDate('followup_date', $request->followup_date);
+            }
+
+            if ($request->filled('telecaller_id')) {
+                $leadsQuery->where('telecaller_id', $request->telecaller_id);
+            }
+
+            if ($request->filled('lead_source_id')) {
+                $leadsQuery->where('lead_source_id', $request->lead_source_id);
+            }
+
+            $leads = $leadsQuery
+                ->distinct('leads.id')
+                ->orderByRaw('followup_date IS NULL')
+                ->orderBy('followup_date')
+                ->orderByDesc('updated_at')
+                ->get();
+        }
+
+        if ($request->ajax() && $request->boolean('refresh')) {
+            $html = view('admin.leads.partials.followup-leads-table', [
+                'leads' => $leads,
+                'followupStatusIds' => $followupStatusIds,
+                'filtersApplied' => $filtersApplied,
+            ])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'count' => $leads->count(),
+            ]);
+        }
+
+        return view('admin.leads.followup-leads-modal', [
+            'leads' => $leads,
+            'telecallers' => $telecallers,
+            'leadSources' => $leadSources,
+            'filters' => [
+                'followup_date' => $request->followup_date,
+                'telecaller_id' => $request->telecaller_id,
+                'lead_source_id' => $request->lead_source_id,
+            ],
+            'followupStatusIds' => $followupStatusIds,
+            'filtersApplied' => $filtersApplied,
+        ]);
     }
 
     /**

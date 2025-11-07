@@ -172,7 +172,11 @@
                             onclick="show_large_modal('{{ route('admin.leads.bulk-reassign') }}', 'Bulk Reassign Leads')">
                             <i class="ti ti-users"></i> Bulk Reassign
                         </a>
-                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_general_manager() || \App\Helpers\RoleHelper::is_senior_manager())
+                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_general_manager() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_team_lead())
+                        <a href="javascript:void(0);" class="btn btn-outline-warning btn-sm px-3"
+                            onclick="show_large_modal('{{ route('admin.leads.followup') }}', 'Followup Leads')">
+                            <i class="ti ti-calendar-event"></i> Followup Leads
+                        </a>
                         <a href="javascript:void(0);" class="btn btn-outline-danger btn-sm px-3"
                             onclick="show_ajax_modal('{{ route('admin.leads.bulk-delete') }}', 'Bulk Delete Leads')">
                             <i class="ti ti-trash"></i> Bulk Delete
@@ -217,7 +221,13 @@
                                 <i class="ti ti-users me-1"></i> Reassign
                             </a>
                         </div>
-                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_general_manager() || \App\Helpers\RoleHelper::is_senior_manager())
+                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_general_manager() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_team_lead())
+                        <div class="col-6">
+                            <a href="javascript:void(0);" class="btn btn-outline-warning btn-sm w-100"
+                                onclick="show_large_modal('{{ route('admin.leads.followup') }}', 'Followup Leads')">
+                                <i class="ti ti-calendar-event me-1"></i> Followup
+                            </a>
+                        </div>
                         <div class="col-6">
                             <a href="javascript:void(0);" class="btn btn-outline-danger btn-sm w-100"
                                 onclick="show_ajax_modal('{{ route('admin.leads.bulk-delete') }}', 'Bulk Delete Leads')">
@@ -225,9 +235,6 @@
                             </a>
                         </div>
                         @endif
-                        <div class="col-6">
-                            <!-- Empty space for better layout -->
-                        </div>
                     </div>
                     @endif
                 </div>

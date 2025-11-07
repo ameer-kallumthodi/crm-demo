@@ -1,6 +1,10 @@
 <!-- Status Update Modal Content -->
 <form id="statusChangeForm">
     @csrf
+    @php
+        $previousReason = optional($lead->leadActivities->firstWhere('reason', '!=', null))->reason;
+        $followupStatusIds = [2, 7, 8, 9];
+    @endphp
     <div class="modal-body">
         <!-- Lead Information Card -->
         <div class="card mb-4">
@@ -67,7 +71,7 @@
                 min="1" max="10" required placeholder="Enter rating between 1 and 10">
         </div>
 
-        <!-- Followup Date Section - Only shown when status 2 is selected -->
+        <!-- Followup Date Section - Only shown when followup-required statuses are selected -->
         <div class="mb-3" id="followupDateSection" style="display: none;">
             <div class="alert alert-warning d-flex align-items-center">
                 <i class="ti ti-calendar me-2"></i>
@@ -79,7 +83,7 @@
                 <div class="col-md-12">
                     <label class="form-label" for="followup_date">Followup Date <span class="text-danger">*</span></label>
                     <input type="date" class="form-control" name="followup_date" id="followup_date"
-                        min="{{ date('Y-m-d') }}">
+                        min="{{ date('Y-m-d') }}" value="{{ optional($lead->followup_date)->format('Y-m-d') }}">
                 </div>
             </div>
         </div>
@@ -108,7 +112,7 @@
 
         <div class="mb-3">
             <label class="form-label" for="reason">Reason for Status Change <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" name="reason" id="reason" required placeholder="Enter reason for status change..." />
+            <input type="text" class="form-control" name="reason" id="reason" required placeholder="Enter reason for status change..." value="{{ old('reason', $previousReason) }}" />
         </div>
 
         <div class="mb-3">
@@ -170,7 +174,7 @@
                                     @if($activity->description)
                                     <p class="mb-1 text-muted f-13">{{ $activity->description }}</p>
                                     @endif
-                                    @if($activity->lead_status_id == 2 && $activity->followup_date)
+                                    @if(in_array($activity->lead_status_id, $followupStatusIds) && $activity->followup_date)
                                     <p class="mb-1 f-13"><strong>Followup Date:</strong> <span class="badge bg-warning">{{ $activity->followup_date->format('d M Y') }}</span></p>
                                     @endif
                                     @if($activity->remarks)
@@ -209,6 +213,8 @@
         console.log('Followup input exists:', $('#followup_date').length > 0);
         console.log('Status select exists:', $('#lead_status_id').length > 0);
 
+        const followupStatuses = @json(array_map('strval', $followupStatusIds));
+
         // Initialize form state - ensure followup_date is not required initially
         $('#followup_date').prop('required', false);
 
@@ -233,9 +239,9 @@
                 followupInput.prop('required', false); // remove required
                 updateStatusBtn.html('Complete Demo Booking First');
                 formCompleted = false;
-            } else if (selectedStatus == '2') {
+            } else if (followupStatuses.includes(selectedStatus)) {
                 // Show followup date section
-                console.log('Showing followup section for status 2');
+                console.log('Showing followup section for followup-required status');
                 followupDateSection.css('display', 'block');
                 followupDateSection.show();
                 console.log('Followup section visible:', followupDateSection.is(':visible'));
@@ -291,7 +297,7 @@
             }
 
             // Check if status 2 is selected and followup date is not provided
-            if (selectedStatus == '2') {
+            if (followupStatuses.includes(selectedStatus)) {
                 const followupDate = $('#followup_date').val();
                 if (!followupDate) {
                     if (typeof toast_error === 'function') {
@@ -388,7 +394,7 @@
             // Don't disable the button if current status is already 6
             $('#updateStatusBtn').prop('disabled', false).html('Update Status');
             formCompleted = true; // Allow immediate submission since current status is 6
-        } else if (initialStatus == '2') {
+        } else if (followupStatuses.includes(initialStatus)) {
             $('#followupDateSection').show();
             $('#followup_date').prop('required', true).attr('required', 'required');
             // Don't disable the button if current status is already 2

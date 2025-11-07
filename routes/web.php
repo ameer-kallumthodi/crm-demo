@@ -526,6 +526,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/leads/bulk-delete', [App\Http\Controllers\LeadController::class, 'bulkDelete'])->name('leads.bulk-delete.submit');
         Route::get('/leads/bulk-convert', [App\Http\Controllers\LeadController::class, 'ajaxBulkConvert'])->name('leads.bulk-convert');
         Route::post('/leads/bulk-convert', [App\Http\Controllers\LeadController::class, 'bulkConvert'])->name('leads.bulk-convert.submit');
+        Route::get('/leads/followup', [App\Http\Controllers\LeadController::class, 'followupLeadsModal'])->name('leads.followup');
 
         // AJAX routes for bulk operations
         Route::post('/leads/get-leads-by-source', [App\Http\Controllers\LeadController::class, 'getLeadsBySource'])->name('leads.get-by-source');
