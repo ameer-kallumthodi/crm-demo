@@ -870,6 +870,10 @@ $columns = array_merge($columns, [
                 // Initialize tooltips and event handlers for mobile cards
                 container.find('[data-bs-toggle="tooltip"]').tooltip();
                 container.find('.copy-link-btn').off('click').on('click', handleCopyLink);
+                // Re-bind voxbay call buttons for mobile cards
+                container.find('.voxbay-call-btn').off('click').on('click', function() {
+                    // Voxbay handler will be triggered via document delegation
+                });
                 
                 // Show record count
                 updateMobileViewInfo();
@@ -1085,7 +1089,11 @@ $columns = array_merge($columns, [
                 }
                 cardHtml += '</div>';
                 cardHtml += '<div class="d-flex gap-1">';
-                // WhatsApp button (replacing View Call Logs position)
+                // Call button
+                if (data.permissions && data.permissions.can_call && data.permissions.telecaller_id > 0) {
+                    cardHtml += '<button class="btn btn-sm btn-outline-success voxbay-call-btn" data-lead-id="' + data.id + '" data-telecaller-id="' + data.permissions.telecaller_id + '" title="Call Lead"><i class="ti ti-phone f-12"></i></button>';
+                }
+                // WhatsApp button
                 if (data.code && data.phone_number) {
                     const phoneNumber = (data.code + data.phone_number).replace(/\D/g, '');
                     const leadName = data.title || 'there';

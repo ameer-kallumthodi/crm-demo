@@ -786,7 +786,9 @@ class LeadController extends Controller
                 'can_delete' => $isAdminOrSuperAdmin || RoleHelper::is_general_manager(),
                 'can_update_status' => $hasLeadActionPermission,
                 'can_convert' => !$lead->is_converted && $lead->studentDetails && (strtolower($lead->studentDetails->status ?? '') === 'approved'),
-                'can_view_registration' => $isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor
+                'can_view_registration' => $isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor,
+                'can_call' => $lead->phone && is_telecaller(),
+                'telecaller_id' => $lead->phone && is_telecaller() ? (session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0)) : 0
             ]
         ];
         
