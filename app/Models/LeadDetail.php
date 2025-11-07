@@ -195,4 +195,67 @@ class LeadDetail extends Model
     {
         return $this->hasMany(SSLCertificate::class);
     }
+
+    /**
+     * Get document verification status
+     * Returns 'verified' if all uploaded documents are verified, 'pending' otherwise
+     */
+    public function getDocumentVerificationStatus()
+    {
+        $documentTypes = [
+            'sslc_certificate' => ['field' => 'sslc_certificate', 'status' => 'sslc_verification_status'],
+            'plustwo_certificate' => ['field' => 'plustwo_certificate', 'status' => 'plustwo_verification_status'],
+            'ug_certificate' => ['field' => 'ug_certificate', 'status' => 'ug_verification_status'],
+            'birth_certificate' => ['field' => 'birth_certificate', 'status' => 'birth_certificate_verification_status'],
+            'passport_photo' => ['field' => 'passport_photo', 'status' => 'passport_photo_verification_status'],
+            'adhar_front' => ['field' => 'adhar_front', 'status' => 'adhar_front_verification_status'],
+            'adhar_back' => ['field' => 'adhar_back', 'status' => 'adhar_back_verification_status'],
+            'signature' => ['field' => 'signature', 'status' => 'signature_verification_status'],
+            'other_document' => ['field' => 'other_document', 'status' => 'other_document_verification_status'],
+        ];
+
+        $uploadedDocuments = [];
+        $hasPending = false;
+        $hasVerified = false;
+
+        foreach ($documentTypes as $type => $config) {
+            $field = $config['field'];
+            $statusField = $config['status'];
+            
+            // Check if document is uploaded
+            if (!empty($this->$field)) {
+                $uploadedDocuments[] = $type;
+                $verificationStatus = $this->$statusField ?? 'pending';
+                
+                if ($verificationStatus === 'verified') {
+                    $hasVerified = true;
+                } else {
+                    $hasPending = true;
+                }
+            }
+        }
+
+        // Check SSLC certificates (separate table)
+        if ($this->sslcCertificates && $this->sslcCertificates->count() > 0) {
+            foreach ($this->sslcCertificates as $certificate) {
+                $uploadedDocuments[] = 'sslc_certificate';
+                $verificationStatus = $certificate->verification_status ?? 'pending';
+                
+                if ($verificationStatus === 'verified') {
+                    $hasVerified = true;
+                } else {
+                    $hasPending = true;
+                }
+            }
+        }
+
+        // If no documents uploaded, return null
+        if (empty($uploadedDocuments)) {
+            return null;
+        }
+
+        // If all uploaded documents are verified, return 'verified'
+        // Otherwise return 'pending'
+        return $hasPending ? 'pending' : 'verified';
+    }
 }

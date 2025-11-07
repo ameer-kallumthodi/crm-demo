@@ -134,8 +134,20 @@ class LeadController extends Controller
             'leadSource:id,title', 
             'course:id,title', 
             'telecaller:id,name', 
-            // Simplified studentDetails - removed nested course eager loading to avoid extra query
-            'studentDetails:id,lead_id,status,course_id'
+            // Load studentDetails with document fields for verification status
+            'studentDetails' => function($query) {
+                $query->select([
+                    'id', 'lead_id', 'status', 'course_id',
+                    'sslc_certificate', 'plustwo_certificate', 'ug_certificate',
+                    'birth_certificate', 'passport_photo', 'adhar_front', 'adhar_back',
+                    'signature', 'other_document',
+                    'sslc_verification_status', 'plustwo_verification_status', 'ug_verification_status',
+                    'birth_certificate_verification_status', 'passport_photo_verification_status',
+                    'adhar_front_verification_status', 'adhar_back_verification_status',
+                    'signature_verification_status', 'other_document_verification_status'
+                ]);
+            },
+            'studentDetails.sslcCertificates:id,lead_detail_id,verification_status'
         ]);
 
         // Apply filters - optimized date range query
@@ -540,6 +552,14 @@ class LeadController extends Controller
             $html .= '<span class="badge bg-success">Form Submitted</span>';
             $html .= '<small class="text-muted">' . ($lead->studentDetails->_course_title ?? ($courseName[$lead->studentDetails->course_id] ?? 'Unknown Course')) . '</small>';
             
+            // Document verification status
+            $docVerificationStatus = $lead->studentDetails->getDocumentVerificationStatus();
+            if ($docVerificationStatus !== null) {
+                $badgeClass = $docVerificationStatus === 'verified' ? 'bg-success' : 'bg-warning';
+                $badgeText = $docVerificationStatus === 'verified' ? 'Documents Verified' : 'Documents Pending';
+                $html .= '<span class="badge ' . $badgeClass . ' mt-1">' . $badgeText . '</span>';
+            }
+            
             if ($lead->studentDetails->status) {
                 $statusClass = $lead->studentDetails->status == 'approved' ? 'bg-success' : 
                     ($lead->studentDetails->status == 'rejected' ? 'bg-danger' : 'bg-warning');
@@ -767,7 +787,8 @@ class LeadController extends Controller
             ],
             'student_details' => $lead->studentDetails ? [
                 'status' => $lead->studentDetails->status,
-                'course_title' => $this->cleanUtf8($lead->studentDetails->_course_title ?? ($courseName[$lead->studentDetails->course_id] ?? 'Unknown Course'))
+                'course_title' => $this->cleanUtf8($lead->studentDetails->_course_title ?? ($courseName[$lead->studentDetails->course_id] ?? 'Unknown Course')),
+                'document_verification_status' => $lead->studentDetails->getDocumentVerificationStatus()
             ] : null,
             'course_id' => $lead->course_id,
             'lead_status_id' => $lead->lead_status_id,
@@ -903,7 +924,19 @@ class LeadController extends Controller
             'leadSource:id,title', 
             'course:id,title', 
             'telecaller:id,name', 
-            'studentDetails:id,lead_id,status,course_id',
+            'studentDetails' => function($query) {
+                $query->select([
+                    'id', 'lead_id', 'status', 'course_id',
+                    'sslc_certificate', 'plustwo_certificate', 'ug_certificate',
+                    'birth_certificate', 'passport_photo', 'adhar_front', 'adhar_back',
+                    'signature', 'other_document',
+                    'sslc_verification_status', 'plustwo_verification_status', 'ug_verification_status',
+                    'birth_certificate_verification_status', 'passport_photo_verification_status',
+                    'adhar_front_verification_status', 'adhar_back_verification_status',
+                    'signature_verification_status', 'other_document_verification_status'
+                ]);
+            },
+            'studentDetails.sslcCertificates:id,lead_detail_id,verification_status',
             'leadActivities' => function($query) {
                 $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type')
                       ->whereNotNull('reason')

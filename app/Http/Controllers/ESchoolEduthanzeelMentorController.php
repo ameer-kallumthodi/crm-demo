@@ -259,6 +259,7 @@ class ESchoolEduthanzeelMentorController extends Controller
     {
         $rules = [
             'call_1' => 'nullable|in:Call Not Answered,Switched Off,Line Busy,Student Asks to Call Later,Lack of Interest in Conversation,Wrong Contact,Inconsistent Responses,Task Complete',
+            'app' => 'nullable|in:Provided app,OTP Problem,Task Completed,Not Respond',
             'whatsapp_group' => 'nullable|in:Not Responding,Task Complete',
             'screening_date' => 'nullable|date',
             'screening_officer' => 'nullable|string|max:255',

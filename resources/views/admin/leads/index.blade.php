@@ -1062,6 +1062,13 @@ $columns = array_merge($columns, [
                     const statusBadge = (studentStatus === 'approved') ? 'bg-success' : ((studentStatus === 'rejected') ? 'bg-danger' : 'bg-warning');
                     const statusText = studentStatus ? (studentStatus.charAt(0).toUpperCase() + studentStatus.slice(1)) : 'Pending';
                     cardHtml += '<div class="col-6"><small class="text-muted f-10">Status:</small><div><span class="badge ' + statusBadge + ' f-10">' + escapeHtml(statusText) + '</span></div></div>';
+                    // Document verification status
+                    const docVerificationStatus = data.student_details.document_verification_status;
+                    if (docVerificationStatus !== null && docVerificationStatus !== undefined) {
+                        const docBadge = docVerificationStatus === 'verified' ? 'bg-success' : 'bg-warning';
+                        const docText = docVerificationStatus === 'verified' ? 'Documents Verified' : 'Documents Pending';
+                        cardHtml += '<div class="col-12"><small class="text-muted f-10">Documents:</small><div><span class="badge ' + docBadge + ' f-10">' + escapeHtml(docText) + '</span></div></div>';
+                    }
                     cardHtml += '</div>';
                     const regDetailsRoute = (data.routes && data.routes.registration_details) ? data.routes.registration_details : '#';
                     if (data.permissions && data.permissions.can_view_registration) {

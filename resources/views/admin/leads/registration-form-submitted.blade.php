@@ -286,6 +286,14 @@
                                         <div class="d-flex flex-column gap-1">
                                             <span class="badge bg-success">Form Submitted</span>
                                             <small class="text-muted">{{ $lead->studentDetails->course->title ?? 'Unknown Course' }}</small>
+                                            @php
+                                                $docVerificationStatus = $lead->studentDetails->getDocumentVerificationStatus();
+                                            @endphp
+                                            @if($docVerificationStatus !== null)
+                                            <span class="badge {{ $docVerificationStatus === 'verified' ? 'bg-success' : 'bg-warning' }}">
+                                                {{ $docVerificationStatus === 'verified' ? 'Documents Verified' : 'Documents Pending' }}
+                                            </span>
+                                            @endif
                                             @if($lead->studentDetails->status)
                                             <span class="badge 
                                                         @if($lead->studentDetails->status == 'approved') bg-success
