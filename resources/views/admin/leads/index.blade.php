@@ -265,387 +265,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($leads as $index => $lead)
-                                @php
-                                    // Cache expensive method calls to avoid repeated calculations
-                                    $missingFields = $lead->getMissingFields();
-                                    $missingFieldsCount = count($missingFields);
-                                    $missingFieldsDisplay = implode(', ', array_slice($missingFields, 0, 5));
-                                @endphp
-                                <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary"
-                                                onclick="show_large_modal('{{ route('leads.ajax-show', $lead->id) }}', 'View Lead')"
-                                                title="View Lead">
-                                                <i class="ti ti-eye"></i>
-                                            </a>
-                                            @if($isAdminOrSuperAdmin || $isTeamLeadRole || $isGeneralManager)
-                                            <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
-                                                onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
-                                                title="Edit Lead">
-                                                <i class="ti ti-edit"></i>
-                                            </a>
-                                            @endif
-                                            @if($hasLeadActionPermission)
-                                            <a href="javascript:void(0);" class="btn btn-sm btn-outline-success"
-                                                onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')"
-                                                title="Update Status">
-                                                <i class="ti ti-arrow-up"></i>
-                                            </a>
-                                            @if(!$lead->is_converted && $lead->studentDetails && (strtolower($lead->studentDetails->status ?? '') === 'approved'))
-                                            <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning"
-                                                onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
-                                                title="Convert Lead">
-                                                <i class="ti ti-refresh"></i>
-                                            </a>
-                                            @endif
-                                        </div>
-                                        <br>
-                                        <hr><br>
-                                        <div class="btn-group" role="group">
-                                            @if($lead->lead_status_id == 6)
-                                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link"
-                                                target="_blank"
-                                                class="btn btn-sm btn-outline-info"
-                                                title="Demo Conduction Form">
-                                                <i class="ti ti-file-text"></i>
-                                            </a>
-                                            @endif
-                                            @if($lead->phone && is_telecaller())
-                                            @php
-                                            $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
-                                            @endphp
-                                            @if($currentUserId > 0)
-                                            <button class="btn btn-sm btn-outline-success voxbay-call-btn"
-                                                data-lead-id="{{ $lead->id }}"
-                                                data-telecaller-id="{{ $currentUserId }}"
-                                                title="Call Lead">
-                                                <i class="ti ti-phone"></i>
-                                            </button>
-                                            @endif
-                                            @endif
-                                            <a href="{{ route('leads.call-logs', $lead) }}"
-                                                class="btn btn-sm btn-outline-info"
-                                                title="View Call Logs">
-                                                <i class="ti ti-phone-call"></i>
-                                            </a>
-                                            @if($isAdminOrSuperAdmin || $isGeneralManager)
-                                            <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
-                                                onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}')"
-                                                title="Delete Lead">
-                                                <i class="ti ti-trash"></i>
-                                            </a>
-                                            @endif
-                                        </div>
-
-                                        @endif
-                                    </td>
-                                    @if($isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor)
-                                    <td class="text-center">
-                                        @if($lead->studentDetails)
-                                        <div class="d-flex flex-column gap-1">
-                                            <span class="badge bg-success">Form Submitted</span>
-                                            <small class="text-muted">{{ $lead->studentDetails->_course_title ?? ($courseName[$lead->studentDetails->course_id] ?? 'Unknown Course') }}</small>
-                                            @if($lead->studentDetails->status)
-                                            <span class="badge 
-                                                        @if($lead->studentDetails->status == 'approved') bg-success
-                                                        @elseif($lead->studentDetails->status == 'rejected') bg-danger
-                                                        @else bg-warning
-                                                        @endif">
-                                                {{ ucfirst($lead->studentDetails->status) }}
-                                            </span>
-                                            @endif
-                                            <a href="{{ route('leads.registration-details', $lead->id) }}"
-                                                class="btn btn-sm btn-outline-primary mt-1"
-                                                title="View Registration Details">
-                                                <i class="ti ti-eye me-1"></i>View Details
-                                            </a>
-                                        </div>
-                                        @else
-                                        @if($lead->course_id == 1)
-                                        <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open NIOS Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.nios.register', $lead->id) }}" 
-                                                    title="Copy NIOS Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 2)
-                                        <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.bosse.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open BOSSE Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.bosse.register', $lead->id) }}" 
-                                                    title="Copy BOSSE Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 3)
-                                        <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.medical-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Medical Coding Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.medical-coding.register', $lead->id) }}" 
-                                                    title="Copy Medical Coding Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 4)
-                                        <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.hospital-admin.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Hospital Administration Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.hospital-admin.register', $lead->id) }}" 
-                                                    title="Copy Hospital Administration Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 5)
-                                        <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.eschool.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open E-School Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.eschool.register', $lead->id) }}" 
-                                                    title="Copy E-School Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 6)
-                                        <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Eduthanzeel Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" 
-                                                    title="Copy Eduthanzeel Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 7)
-                                        <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.ttc.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open TTC Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.ttc.register', $lead->id) }}" 
-                                                    title="Copy TTC Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 8)
-                                        <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Hotel Management Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" 
-                                                    title="Copy Hotel Management Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 9)
-                                        <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.ugpg.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open UG/PG Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.ugpg.register', $lead->id) }}" 
-                                                    title="Copy UG/PG Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 10)
-                                        <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.python.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Python Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.python.register', $lead->id) }}" 
-                                                    title="Copy Python Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 11)
-                                        <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.digital-marketing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Digital Marketing Registration Form">
-                                            <i class="ti ti-external-link"></i>
-                                        </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.digital-marketing.register', $lead->id) }}" 
-                                                    title="Copy Digital Marketing Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 12)
-                                        <div class="d-flex gap-1">
-                                            <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open AI Automation Registration Form">
-                                                <i class="ti ti-external-link"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.ai-automation.register', $lead->id) }}" 
-                                                    title="Copy AI Automation Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 13)
-                                        <div class="d-flex gap-1">
-                                            <a href="{{ route('public.lead.web-dev.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Web Development & Designing Registration Form">
-                                                <i class="ti ti-external-link"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.web-dev.register', $lead->id) }}" 
-                                                    title="Copy Web Development & Designing Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 14)
-                                        <div class="d-flex gap-1">
-                                            <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Vibe Coding Registration Form">
-                                                <i class="ti ti-external-link"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.vibe-coding.register', $lead->id) }}" 
-                                                    title="Copy Vibe Coding Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 15)
-                                        <div class="d-flex gap-1">
-                                            <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Graphic Designing Registration Form">
-                                                <i class="ti ti-external-link"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.graphic-designing.register', $lead->id) }}" 
-                                                    title="Copy Graphic Designing Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @elseif($lead->course_id == 16)
-                                        <div class="d-flex gap-1">
-                                            <a href="{{ route('public.lead.gmvss.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open GMVSS Registration Form">
-                                                <i class="ti ti-external-link"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.gmvss.register', $lead->id) }}" 
-                                                    title="Copy GMVSS Registration Link">
-                                                <i class="ti ti-copy"></i>
-                                            </button>
-                                        </div>
-                                        @endif
-                                        @endif
-                                    </td>
-                                    @endif
-                                    <td>
-                                        <small class="text-muted">{{ $lead->created_at->format('d-m-Y h:i A') }}</small>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avtar avtar-s rounded-circle bg-light-primary me-2 d-flex align-items-center justify-content-center">
-                                                <span class="f-16 fw-bold text-primary">{{ strtoupper(substr($lead->title, 0, 1)) }}</span>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0">{{ $lead->title }}</h6>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            @if($lead->isProfileIncomplete())
-                                            <div class="me-2">
-                                                <div class="progress" style="width: 60px; height: 8px;">
-                                                    <div class="progress-bar 
-                                                            @if($lead->profile_status == 'incomplete') bg-danger
-                                                            @elseif($lead->profile_status == 'partial') bg-warning
-                                                            @elseif($lead->profile_status == 'almost_complete') bg-info
-                                                            @else bg-success
-                                                            @endif"
-                                                        role="progressbar"
-                                                        style="width: {{ $lead->profile_completeness }}%"
-                                                        aria-valuenow="{{ $lead->profile_completeness }}"
-                                                        aria-valuemin="0"
-                                                        aria-valuemax="100">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <span class="badge 
-                                                    @if($lead->profile_status == 'incomplete') bg-danger
-                                                    @elseif($lead->profile_status == 'partial') bg-warning
-                                                    @elseif($lead->profile_status == 'almost_complete') bg-info
-                                                    @else bg-success
-                                                    @endif"
-                                                data-bs-toggle="tooltip"
-                                                data-bs-placement="top"
-                                                title="Missing: {{ $missingFieldsDisplay }}{{ $missingFieldsCount > 5 ? '...' : '' }}">
-                                                {{ $lead->profile_completeness }}%
-                                            </span>
-                                            @else
-                                            <span class="badge bg-success">
-                                                <i class="ti ti-check"></i> Complete
-                                            </span>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</td>
-                                    <td>{{ $lead->email ?? '-' }}</td>
-                                    <td>
-                                        <span class="badge {{ \App\Helpers\StatusHelper::getLeadStatusColorClass($lead->leadStatus->id) }}">
-                                            {{ $lead->leadStatus->title }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @if($lead->interest_status)
-                                        <span class="badge bg-{{ $lead->interest_status_color }}">
-                                            {{ $lead->interest_status_label }}
-                                        </span>
-                                        @else
-                                        <span class="badge bg-secondary">Not Set</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($lead->rating)
-                                        <span class="badge bg-primary">{{ $lead->rating }}/10</span>
-                                        @else
-                                        <span class="badge bg-secondary">Not Rated</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $lead->leadSource->title ?? '-' }}</td>
-                                    <td>{{ $lead->course->title ?? '-' }}</td>
-                                    <td>{{ $lead->telecaller->name ?? 'Unassigned' }}</td>
-                                    <td>{{ $lead->place ?? '-' }}</td>
-                                    <td>
-                                        @if($lead->followup_date)
-                                        <span class="badge bg-warning">{{ $lead->followup_date->format('M d, Y') }}</span>
-                                        @else
-                                        -
-                                        @endif
-                                    </td>
-                                    <td>
-                                        {{-- Removed leadActivities query for performance - will load on-demand if needed --}}
-                                        -
-                                    </td>
-                                    <td>{{ $lead->remarks ? $lead->remarks : '-' }}</td>
-                                    <td>{{ $lead->created_at->format('M d, Y') }}</td>
-                                    <td>{{ $lead->created_at->format('h:i A') }}</td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="19" class="text-center py-4">
-                                        <div class="text-muted">
-                                            <i class="ti ti-inbox f-48 mb-3 d-block"></i>
-                                            No leads found
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforelse
+                                <!-- Data will be loaded via AJAX -->
                             </tbody>
                         </table>
                     </div>
@@ -656,458 +276,8 @@
                 <br>
 
                 <!-- Mobile Card View -->
-                <div class="d-lg-none">
-                    @forelse($leads as $index => $lead)
-                    @php
-                        // Cache expensive method calls to avoid repeated calculations
-                        $missingFieldsMobile = $lead->getMissingFields();
-                        $missingFieldsCountMobile = count($missingFieldsMobile);
-                        $missingFieldsDisplayMobile = implode(', ', array_slice($missingFieldsMobile, 0, 5));
-                    @endphp
-                    <div class="card mb-2">
-                        <div class="card-body p-3">
-                            <!-- Lead Header -->
-                            <div class="d-flex align-items-start justify-content-between mb-2">
-                                <div class="d-flex align-items-center flex-grow-1">
-                                    <div class="avtar avtar-s rounded-circle bg-light-primary me-2 d-flex align-items-center justify-content-center">
-                                        <span class="f-14 fw-bold text-primary">{{ strtoupper(substr($lead->title, 0, 1)) }}</span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <small class="text-muted d-block f-10 mb-1">{{ $lead->created_at->format('d-m-Y h:i A') }}</small>
-                                        <h6 class="mb-0 fw-bold f-14">{{ $lead->title }}</h6>
-                                        <small class="text-muted f-11">#{{ $index + 1 }}</small>
-                                    </div>
-                                </div>
-                                <!-- Action buttons in header -->
-                                <div class="d-flex gap-1">
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary"
-                                        onclick="show_large_modal('{{ route('leads.ajax-show', $lead->id) }}', 'View Lead')"
-                                        title="View Lead">
-                                        <i class="ti ti-eye f-12"></i>
-                                    </a>
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
-                                        onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
-                                        title="Edit Lead">
-                                        <i class="ti ti-edit f-12"></i>
-                                    </a>
-                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
-                                        onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}')"
-                                        title="Delete Lead">
-                                        <i class="ti ti-trash f-12"></i>
-                                    </a>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- Profile Completeness Indicator -->
-                            <div class="mb-2">
-                                @if($lead->isProfileIncomplete())
-                                <div class="d-flex align-items-center">
-                                    <small class="text-muted me-2 f-11">Profile:</small>
-                                    <div class="progress me-2" style="width: 80px; height: 6px;">
-                                        <div class="progress-bar 
-                                                @if($lead->profile_status == 'incomplete') bg-danger
-                                                @elseif($lead->profile_status == 'partial') bg-warning
-                                                @elseif($lead->profile_status == 'almost_complete') bg-info
-                                                @else bg-success
-                                                @endif"
-                                            role="progressbar"
-                                            style="width: {{ $lead->profile_completeness }}%"
-                                            aria-valuenow="{{ $lead->profile_completeness }}"
-                                            aria-valuemin="0"
-                                            aria-valuemax="100">
-                                        </div>
-                                    </div>
-                                    <span class="badge 
-                                            @if($lead->profile_status == 'incomplete') bg-danger
-                                            @elseif($lead->profile_status == 'partial') bg-warning
-                                            @elseif($lead->profile_status == 'almost_complete') bg-info
-                                            @else bg-success
-                                            @endif f-10"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        title="Missing: {{ $missingFieldsDisplayMobile }}{{ $missingFieldsCountMobile > 5 ? '...' : '' }}">
-                                        {{ $lead->profile_completeness }}%
-                                    </span>
-                                </div>
-                                @if($missingFieldsCountMobile > 0)
-                                <div class="mt-1">
-                                    <small class="text-muted f-10">
-                                        Missing: {{ $missingFieldsDisplayMobile }}{{ $missingFieldsCountMobile > 5 ? '...' : '' }}
-                                    </small>
-                                </div>
-                                @endif
-                                @else
-                                <div class="d-flex align-items-center">
-                                    <small class="text-muted me-2 f-11">Profile:</small>
-                                    <span class="badge bg-success f-10">
-                                        <i class="ti ti-check me-1"></i> Complete
-                                    </span>
-                                </div>
-                                @endif
-                            </div>
-
-                            <!-- Lead Details - Compact Layout -->
-                            <div class="row g-1 mb-2">
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ti ti-phone f-12 text-muted me-1"></i>
-                                        <small class="text-muted f-11">{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</small>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ti ti-mail f-12 text-muted me-1"></i>
-                                        <small class="text-muted f-11">{{ $lead->email ?? '-' }}</small>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ti ti-circle f-12 text-muted me-1"></i>
-                                        <span class="badge {{ \App\Helpers\StatusHelper::getLeadStatusColorClass($lead->leadStatus->id) }} f-11">
-                                            {{ $lead->leadStatus->title }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ti ti-flame f-12 text-muted me-1"></i>
-                                        @if($lead->interest_status)
-                                        <span class="badge bg-{{ $lead->interest_status_color }} f-10">
-                                            {{ $lead->interest_status_label }}
-                                        </span>
-                                        @else
-                                        <span class="badge bg-secondary f-10">Not Set</span>
-                                        @endif
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ti ti-star f-12 text-muted me-1"></i>
-                                        @if($lead->rating)
-                                        <span class="badge bg-primary f-10">{{ $lead->rating }}/10</span>
-                                        @else
-                                        <span class="badge bg-secondary f-10">Not Rated</span>
-                                        @endif
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ti ti-user f-12 text-muted me-1"></i>
-                                        <small class="text-muted f-11">{{ $lead->telecaller->name ?? 'Unassigned' }}</small>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ti ti-book f-12 text-muted me-1"></i>
-                                        <small class="text-muted f-11">{{ $lead->course->title ?? '-' }}</small>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ti ti-calendar f-12 text-muted me-1"></i>
-                                        <small class="text-muted f-11">{{ $lead->created_at->format('M d') }}</small>
-                                    </div>
-                                </div>
-                                @if($lead->followup_date)
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ti ti-clock f-12 text-muted me-1"></i>
-                                        <span class="badge bg-warning f-10">{{ $lead->followup_date->format('M d') }}</span>
-                                    </div>
-                                </div>
-                                @endif
-                                {{-- Removed leadActivities query for performance --}}
-                                @if($lead->remarks)
-                                <div class="col-12">
-                                    <div class="d-flex align-items-start">
-                                        <i class="ti ti-note f-12 text-muted me-1 mt-1"></i>
-                                        <small class="text-muted f-11" title="{{ $lead->remarks }}">{{ Str::limit($lead->remarks, 50) }}</small>
-                                    </div>
-                                </div>
-                                @endif
-
-                                <!-- Registration Details Section -->
-                                @if($lead->studentDetails)
-                                <div class="col-12 mt-2">
-                                    <div class="border-top pt-2">
-                                        <div class="d-flex align-items-center justify-content-between mb-2">
-                                            <small class="text-muted f-11 fw-bold">Registration Details:</small>
-                                            <span class="badge bg-success f-10">Form Submitted</span>
-                                        </div>
-                                        <div class="row g-1">
-                                            <div class="col-6">
-                                                <small class="text-muted f-10">Course:</small>
-                                                <div class="fw-medium f-11">{{ $lead->studentDetails->_course_title ?? ($courseName[$lead->studentDetails->course_id] ?? 'Unknown') }}</div>
-                                            </div>
-                                            <div class="col-6">
-                                                <small class="text-muted f-10">Status:</small>
-                                                <div>
-                                                    <span class="badge 
-                                                        @if($lead->studentDetails->status == 'approved') bg-success
-                                                        @elseif($lead->studentDetails->status == 'rejected') bg-danger
-                                                        @else bg-warning
-                                                        @endif f-10">
-                                                        {{ ucfirst($lead->studentDetails->status ?? 'Pending') }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="mt-2">
-                                            @if($isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor)
-                                            <a href="{{ route('leads.registration-details', $lead->id) }}"
-                                                class="btn btn-sm btn-outline-primary"
-                                                title="View Registration Details">
-                                                <i class="ti ti-eye me-1"></i>View Details
-                                            </a>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                                @endif
-                            </div>
-
-                            <!-- Action Buttons - Enhanced -->
-                            <div class="d-flex gap-1 flex-wrap justify-content-between">
-                                <!-- Left side - Status and Convert buttons -->
-                                <div class="d-flex gap-1">
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning"
-                                        onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')"
-                                        title="Update Status">
-                                        <i class="ti ti-arrow-up f-12"></i>
-                                    </a>
-                                    @if(!$lead->is_converted && $lead->studentDetails && (strtolower($lead->studentDetails->status ?? '') === 'approved'))
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-success"
-                                        onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
-                                        title="Convert Lead">
-                                        <i class="ti ti-refresh f-12"></i>
-                                    </a>
-                                    @endif
-                                    @if($lead->lead_status_id == 6)
-                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link"
-                                        target="_blank"
-                                        class="btn btn-sm btn-outline-info"
-                                        title="Demo Conduction Form">
-                                        <i class="ti ti-file-text f-12"></i>
-                                    </a>
-                                    @endif
-                                </div>
-
-                                <!-- Right side - Call and Logs buttons -->
-                                <div class="d-flex gap-1">
-                                    @if($lead->phone && is_telecaller())
-                                    @php
-                                    $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
-                                    @endphp
-                                    @if($currentUserId > 0)
-                                    <button class="btn btn-sm btn-success voxbay-call-btn"
-                                        data-lead-id="{{ $lead->id }}"
-                                        data-telecaller-id="{{ $currentUserId }}"
-                                        title="Call Lead">
-                                        <i class="ti ti-phone f-12"></i>
-                                    </button>
-                                    @endif
-                                    @endif
-                                    <a href="{{ route('leads.call-logs', $lead) }}"
-                                        class="btn btn-sm btn-info"
-                                        title="View Call Logs">
-                                        <i class="ti ti-phone-call f-12"></i>
-                                    </a>
-                                    <br>
-                                    <hr><br>
-                                    @if($isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor)
-                                    @if($lead->course_id == 1)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open NIOS Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.nios.register', $lead->id) }}" 
-                                                title="Copy NIOS Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 2)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.bosse.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open BOSSE Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.bosse.register', $lead->id) }}" 
-                                                title="Copy BOSSE Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 3)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.medical-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Medical Coding Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.medical-coding.register', $lead->id) }}" 
-                                                title="Copy Medical Coding Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 4)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.hospital-admin.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Hospital Administration Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.hospital-admin.register', $lead->id) }}" 
-                                                title="Copy Hospital Administration Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 5)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.eschool.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open E-School Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.eschool.register', $lead->id) }}" 
-                                                title="Copy E-School Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 6)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Eduthanzeel Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" 
-                                                title="Copy Eduthanzeel Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 7)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.ttc.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open TTC Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.ttc.register', $lead->id) }}" 
-                                                title="Copy TTC Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 8)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Hotel Management Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.hotel-mgmt.register', $lead->id) }}" 
-                                                title="Copy Hotel Management Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 9)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.ugpg.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open UG/PG Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.ugpg.register', $lead->id) }}" 
-                                                title="Copy UG/PG Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 10)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.python.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Python Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.python.register', $lead->id) }}" 
-                                                title="Copy Python Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 11)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.digital-marketing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Digital Marketing Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.digital-marketing.register', $lead->id) }}" 
-                                                title="Copy Digital Marketing Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 12)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open AI Automation Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.ai-automation.register', $lead->id) }}" 
-                                                title="Copy AI Automation Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 13)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.web-dev.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Web Development & Designing Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.web-dev.register', $lead->id) }}" 
-                                                title="Copy Web Development & Designing Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 14)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Vibe Coding Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.vibe-coding.register', $lead->id) }}" 
-                                                title="Copy Vibe Coding Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 15)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Graphic Designing Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.graphic-designing.register', $lead->id) }}" 
-                                                title="Copy Graphic Designing Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @elseif($lead->course_id == 16)
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.gmvss.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open GMVSS Registration Form">
-                                            <i class="ti ti-external-link f-12"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                data-url="{{ route('public.lead.gmvss.register', $lead->id) }}" 
-                                                title="Copy GMVSS Registration Link">
-                                            <i class="ti ti-copy f-12"></i>
-                                        </button>
-                                    </div>
-                                    @endif
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @empty
-                    <div class="text-center py-4">
-                        <div class="text-muted">
-                            <i class="ti ti-inbox f-48 mb-3 d-block"></i>
-                            <h5>No leads found</h5>
-                            <p>Try adjusting your filters or add a new lead.</p>
-                        </div>
-                    </div>
-                    @endforelse
+                <div class="d-lg-none" id="mobileLeadsContainer">
+                    <!-- Data will be loaded via AJAX with lazy loading -->
                 </div>
 
             </div>
@@ -1116,6 +286,37 @@
 </div>
 <!-- [ Main Content ] end -->
 
+@php
+// Build columns array for DataTables
+$columns = [
+    ['data' => 'index', 'name' => 'index', 'orderable' => false, 'searchable' => false],
+    ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
+];
+
+if ($isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor) {
+    $columns[] = ['data' => 'registration_details', 'name' => 'registration_details', 'orderable' => false, 'searchable' => false];
+}
+
+$columns = array_merge($columns, [
+    ['data' => 'created_at', 'name' => 'created_at'],
+    ['data' => 'name', 'name' => 'name'],
+    ['data' => 'profile', 'name' => 'profile', 'orderable' => false, 'searchable' => false],
+    ['data' => 'phone', 'name' => 'phone'],
+    ['data' => 'email', 'name' => 'email'],
+    ['data' => 'status', 'name' => 'status', 'orderable' => false, 'searchable' => false],
+    ['data' => 'interest', 'name' => 'interest', 'orderable' => false, 'searchable' => false],
+    ['data' => 'rating', 'name' => 'rating', 'orderable' => false, 'searchable' => false],
+    ['data' => 'source', 'name' => 'source'],
+    ['data' => 'course', 'name' => 'course'],
+    ['data' => 'telecaller', 'name' => 'telecaller'],
+    ['data' => 'place', 'name' => 'place'],
+    ['data' => 'followup_date', 'name' => 'followup_date'],
+    ['data' => 'last_reason', 'name' => 'last_reason', 'orderable' => false, 'searchable' => false],
+    ['data' => 'remarks', 'name' => 'remarks'],
+    ['data' => 'date', 'name' => 'date'],
+    ['data' => 'time', 'name' => 'time']
+]);
+@endphp
 
 @endsection
 
@@ -1309,11 +510,103 @@
                 $('#leadsTable').DataTable().destroy();
             }
             
-            // Initialize with maximum performance optimizations
-            // deferRender is CRITICAL - it only processes visible rows initially
+            // Get filter values from form
+            function getFilterParams() {
+                return {
+                    date_from: $('#date_from').val() || '',
+                    date_to: $('#date_to').val() || '',
+                    lead_status_id: $('#filter_lead_status_id').val() || '',
+                    lead_source_id: $('#filter_lead_source_id').val() || '',
+                    course_id: $('#course_id').val() || '',
+                    rating: $('#rating').val() || '',
+                    telecaller_id: $('#telecaller_id_filter').val() || '',
+                    search_key: getUrlParameter('search_key') || '{{ request('search_key') }}' || ''
+                };
+            }
+            
+            // Get URL parameter
+            function getUrlParameter(name) {
+                name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+                var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+                var results = regex.exec(location.search);
+                return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+            }
+            
+            // Update URL with filter parameters
+            function updateUrlWithFilters() {
+                var filters = getFilterParams();
+                var params = new URLSearchParams();
+                
+                Object.keys(filters).forEach(function(key) {
+                    if (filters[key]) {
+                        params.append(key, filters[key]);
+                    }
+                });
+                
+                var newUrl = window.location.pathname;
+                if (params.toString()) {
+                    newUrl += '?' + params.toString();
+                }
+                
+                // Update URL without reloading page
+                window.history.pushState({path: newUrl}, '', newUrl);
+            }
+            
+            // Load filters from URL on page load
+            function loadFiltersFromUrl() {
+                var urlParams = new URLSearchParams(window.location.search);
+                
+                if (urlParams.get('date_from')) {
+                    $('#date_from').val(urlParams.get('date_from'));
+                }
+                if (urlParams.get('date_to')) {
+                    $('#date_to').val(urlParams.get('date_to'));
+                }
+                if (urlParams.get('lead_status_id')) {
+                    $('#filter_lead_status_id').val(urlParams.get('lead_status_id'));
+                }
+                if (urlParams.get('lead_source_id')) {
+                    $('#filter_lead_source_id').val(urlParams.get('lead_source_id'));
+                }
+                if (urlParams.get('course_id')) {
+                    $('#course_id').val(urlParams.get('course_id'));
+                }
+                if (urlParams.get('rating')) {
+                    $('#rating').val(urlParams.get('rating'));
+                }
+                if (urlParams.get('telecaller_id')) {
+                    $('#telecaller_id_filter').val(urlParams.get('telecaller_id'));
+                }
+            }
+            
+            // Load filters from URL on page load
+            loadFiltersFromUrl();
+
+            // Store last JSON response for mobile view
+            var lastJsonResponse = null;
+            
+            // Initialize with AJAX - maximum performance optimizations
             var leadsTable = $('#leadsTable').DataTable({
-                deferRender: true, // CRITICAL: Only process visible rows (25 instead of 410)
                 processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '{{ route('leads.data') }}',
+                    type: 'GET',
+                    data: function(d) {
+                        // Merge DataTables parameters with filter parameters
+                        var filters = getFilterParams();
+                        $.extend(d, filters);
+                    },
+                    dataSrc: function(json) {
+                        // Store JSON response for mobile view
+                        lastJsonResponse = json;
+                        return json.data;
+                    },
+                    error: function(xhr, error, thrown) {
+                        console.error('DataTables error:', error);
+                        showToast('Error loading leads data. Please try again.', 'error');
+                    }
+                },
                 pageLength: 25,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                 order: [[3, 'desc']], // Sort by created_at (column 3)
@@ -1322,14 +615,28 @@
                 stateSave: true,
                 scrollCollapse: true,
                 // Performance optimizations
-                autoWidth: false, // Disable expensive auto-width calculation
-                scrollX: true, // Enable horizontal scrolling
-                searchHighlight: false, // Disable expensive search highlighting
-                // Optimize rendering - only process visible rows
+                autoWidth: false,
+                scrollX: true,
+                searchHighlight: false,
+                columns: @json($columns),
+                // Optimize rendering
                 drawCallback: function(settings) {
-                    // Lazy load tooltips only for visible rows
+                    // Initialize tooltips for visible rows
                     var api = this.api();
                     $(api.rows({page: 'current'}).nodes()).find('[data-bs-toggle="tooltip"]').tooltip();
+                    
+                    // Re-initialize copy link buttons
+                    $(api.rows({page: 'current'}).nodes()).find('.copy-link-btn').off('click').on('click', handleCopyLink);
+                    
+                    // Re-initialize voxbay call buttons
+                    $(api.rows({page: 'current'}).nodes()).find('.voxbay-call-btn').off('click').on('click', function() {
+                        // Existing voxbay call handler
+                    });
+                    
+                    // Load mobile view data on first draw only
+                    if (lastJsonResponse && settings.iDraw === 1) {
+                        loadMobileView(lastJsonResponse);
+                    }
                 },
                 language: {
                     processing: "Loading...",
@@ -1348,6 +655,463 @@
                     }
                 }
             });
+            
+            // Reload table when filters change
+            $('#dateFilterForm').on('submit', function(e) {
+                e.preventDefault();
+                updateUrlWithFilters();
+                // Reset mobile view state
+                mobileViewState.allData = [];
+                mobileViewState.currentPage = 1;
+                mobileViewState.hasMore = true;
+                leadsTable.ajax.reload();
+            });
+            
+            // Reload on filter change
+            $('#filter_lead_status_id, #filter_lead_source_id, #course_id, #rating, #telecaller_id_filter').on('change', function() {
+                updateUrlWithFilters();
+                // Reset mobile view state
+                mobileViewState.allData = [];
+                mobileViewState.currentPage = 1;
+                mobileViewState.hasMore = true;
+                leadsTable.ajax.reload();
+            });
+            
+            // Handle copy link functionality
+            function handleCopyLink(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if ($(this).hasClass('processing')) {
+                    return false;
+                }
+                
+                $(this).addClass('processing');
+                const url = $(this).data('url');
+                const fullUrl = url.startsWith('http') ? url : window.location.origin + url;
+                
+                const tempInput = document.createElement('input');
+                tempInput.value = fullUrl;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                tempInput.setSelectionRange(0, 99999);
+                
+                try {
+                    document.execCommand('copy');
+                    const originalIcon = $(this).find('i').attr('class');
+                    $(this).find('i').removeClass().addClass('ti ti-check');
+                    $(this).removeClass('btn-outline-info btn-info').addClass('btn-success');
+                    showToast('Registration link copied to clipboard!', 'success');
+                    
+                    setTimeout(() => {
+                        $(this).find('i').removeClass().addClass(originalIcon);
+                        $(this).removeClass('btn-success').addClass('btn-outline-info');
+                        $(this).removeClass('processing');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                    showToast('Failed to copy link. Please try again.', 'error');
+                    $(this).removeClass('processing');
+                }
+                
+                document.body.removeChild(tempInput);
+            }
+            
+            // Mobile view pagination state
+            var mobileViewState = {
+                currentPage: 1,
+                pageSize: 25,
+                totalRecords: 0,
+                allData: [],
+                isLoading: false,
+                hasMore: true
+            };
+            
+            // Load all mobile view data from server
+            function loadAllMobileViewData(page = 1, append = false) {
+                if (mobileViewState.isLoading) return;
+                
+                mobileViewState.isLoading = true;
+                mobileViewState.currentPage = page;
+                const container = $('#mobileLeadsContainer');
+                
+                if (!append) {
+                    container.empty();
+                    mobileViewState.allData = [];
+                    mobileViewState.currentPage = 1;
+                }
+                
+                // Show loading indicator only on first load
+                if (!append) {
+                    container.html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading leads...</p></div>');
+                } else {
+                    // Show loading on button when appending
+                    const btn = $('.load-more-mobile-btn');
+                    if (btn.length > 0) {
+                        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Loading...');
+                    }
+                }
+                
+                // Prepare request data
+                const requestData = {
+                    draw: page,
+                    start: (page - 1) * mobileViewState.pageSize,
+                    length: mobileViewState.pageSize,
+                    order: [{column: 3, dir: 'desc'}],
+                    search: {value: '', regex: false}
+                };
+                
+                // Merge with filter parameters
+                const filters = getFilterParams();
+                $.extend(requestData, filters);
+                
+                // Make AJAX request to load all data
+                $.ajax({
+                    url: '{{ route('leads.data') }}',
+                    type: 'GET',
+                    data: requestData,
+                    success: function(response) {
+                        mobileViewState.isLoading = false;
+                        
+                        if (!response || !response.data) {
+                            if (!append && mobileViewState.allData.length === 0) {
+                                container.html('<div class="text-center py-4"><div class="text-muted"><i class="ti ti-inbox f-48 mb-3 d-block"></i><h5>No leads found</h5><p>Try adjusting your filters or add a new lead.</p></div></div>');
+                            }
+                            return;
+                        }
+                        
+                        // Update total records
+                        mobileViewState.totalRecords = response.recordsFiltered || response.recordsTotal || 0;
+                        
+                        // Process and store data
+                        if (response.data && Array.isArray(response.data)) {
+                            response.data.forEach(function(row) {
+                                if (row && row.mobile_view) {
+                                    try {
+                                        const mobileData = typeof row.mobile_view === 'string' ? JSON.parse(row.mobile_view) : row.mobile_view;
+                                        if (mobileData && mobileData.id) {
+                                            mobileViewState.allData.push({
+                                                data: mobileData,
+                                                index: row.index || mobileViewState.allData.length + 1
+                                            });
+                                        }
+                                    } catch (e) {
+                                        console.error('Error parsing mobile view data:', e, row);
+                                    }
+                                }
+                            });
+                        }
+                        
+                        // Check if there's more data to load
+                        mobileViewState.hasMore = mobileViewState.allData.length < mobileViewState.totalRecords;
+                        
+                        // Render all loaded data
+                        renderMobileViewCards();
+                        
+                        // Always show load more button if there's more data
+                        if (mobileViewState.hasMore && mobileViewState.totalRecords > mobileViewState.allData.length) {
+                            // Small delay to ensure rendering is complete
+                            setTimeout(function() {
+                                showLoadMoreButton();
+                            }, 100);
+                        } else {
+                            // Remove load more button if all data is loaded
+                            $('.load-more-mobile-btn').parent().remove();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        mobileViewState.isLoading = false;
+                        console.error('Error loading mobile view data:', error);
+                        if (!append && mobileViewState.allData.length === 0) {
+                            container.html('<div class="text-center py-4"><div class="alert alert-danger"><i class="ti ti-alert-circle me-2"></i>Error loading leads. Please try again.</div></div>');
+                        }
+                    }
+                });
+            }
+            
+            // Render all mobile view cards
+            function renderMobileViewCards() {
+                const container = $('#mobileLeadsContainer');
+                
+                // Only clear on first page load
+                if (mobileViewState.currentPage === 1) {
+                    container.empty();
+                }
+                
+                if (mobileViewState.allData.length === 0 && !mobileViewState.isLoading) {
+                    container.html('<div class="text-center py-4"><div class="text-muted"><i class="ti ti-inbox f-48 mb-3 d-block"></i><h5>No leads found</h5><p>Try adjusting your filters or add a new lead.</p></div></div>');
+                    return;
+                }
+                
+                // Remove existing info before rendering (but keep load more button)
+                container.find('.mobile-view-info').remove();
+                
+                // Clear existing cards only on first page
+                if (mobileViewState.currentPage === 1) {
+                    container.find('.card[data-lead-id]').remove();
+                }
+                
+                // Render all cards (avoid duplicates by checking data-lead-id)
+                mobileViewState.allData.forEach(function(item) {
+                    // Check if card already exists to avoid duplicates
+                    const existingCard = container.find('[data-lead-id="' + item.data.id + '"]');
+                    if (existingCard.length === 0) {
+                        const cardHtml = renderMobileCard(item.data, item.index);
+                        // Insert before load more button if it exists
+                        const loadMoreBtn = container.find('.load-more-mobile-btn').parent();
+                        if (loadMoreBtn.length > 0) {
+                            loadMoreBtn.before(cardHtml);
+                        } else {
+                            container.append(cardHtml);
+                        }
+                    }
+                });
+                
+                // Initialize tooltips and event handlers for mobile cards
+                container.find('[data-bs-toggle="tooltip"]').tooltip();
+                container.find('.copy-link-btn').off('click').on('click', handleCopyLink);
+                
+                // Show record count
+                updateMobileViewInfo();
+            }
+            
+            // Show load more button
+            function showLoadMoreButton() {
+                const container = $('#mobileLeadsContainer');
+                if (!container || container.length === 0) {
+                    console.error('Mobile container not found');
+                    return;
+                }
+                
+                // Calculate remaining records
+                const remaining = mobileViewState.totalRecords - mobileViewState.allData.length;
+                
+                if (remaining <= 0) {
+                    // Remove button if no more records
+                    $('.load-more-mobile-btn').parent().remove();
+                    return;
+                }
+                
+                const existingButton = container.find('.load-more-mobile-btn');
+                
+                if (existingButton.length > 0) {
+                    // Update existing button
+                    existingButton.html('<i class="ti ti-arrow-down me-2"></i>Load More (' + remaining + ' remaining)');
+                    existingButton.prop('disabled', false).show();
+                } else {
+                    // Create new button - make it prominent and visible
+                    const loadMoreHtml = '<div class="text-center py-4" style="clear: both; border-top: 1px solid #dee2e6; margin-top: 20px;"><button class="btn btn-outline-primary btn-lg load-more-mobile-btn" onclick="loadMoreMobileData()" style="min-width: 250px; padding: 12px 24px; font-size: 16px;"><i class="ti ti-arrow-down me-2"></i>Load More (' + remaining + ' remaining)</button></div>';
+                    container.append(loadMoreHtml);
+                }
+            }
+            
+            // Load more mobile data
+            window.loadMoreMobileData = function() {
+                if (mobileViewState.hasMore && !mobileViewState.isLoading) {
+                    const nextPage = Math.floor(mobileViewState.allData.length / mobileViewState.pageSize) + 1;
+                    const btn = $('.load-more-mobile-btn');
+                    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Loading...');
+                    loadAllMobileViewData(nextPage, true);
+                }
+            };
+            
+            // Update mobile view info
+            function updateMobileViewInfo() {
+                const infoHtml = '<div class="alert alert-info mb-3 mobile-view-info"><small><i class="ti ti-info-circle me-1"></i>Showing ' + mobileViewState.allData.length + ' of ' + mobileViewState.totalRecords + ' leads</small></div>';
+                const container = $('#mobileLeadsContainer');
+                const existingInfo = container.find('.mobile-view-info');
+                if (existingInfo.length > 0) {
+                    existingInfo.replaceWith(infoHtml);
+                } else {
+                    container.prepend(infoHtml);
+                }
+            }
+            
+            // Load mobile view with current page data (for initial display)
+            function loadMobileView(jsonData) {
+                if (!jsonData || !jsonData.data) return;
+                
+                // Update total records
+                const newTotalRecords = jsonData.recordsFiltered || jsonData.recordsTotal || 0;
+                
+                // Always reload if total records changed or if we haven't loaded anything yet
+                if (mobileViewState.totalRecords !== newTotalRecords || mobileViewState.allData.length === 0) {
+                    mobileViewState.totalRecords = newTotalRecords;
+                    mobileViewState.allData = [];
+                    mobileViewState.currentPage = 1;
+                    mobileViewState.hasMore = true;
+                    mobileViewState.isLoading = false;
+                    
+                    // Load all data for mobile view - start with first page
+                    if (mobileViewState.totalRecords > 0) {
+                        loadAllMobileViewData(1, false);
+                    } else {
+                        const container = $('#mobileLeadsContainer');
+                        container.html('<div class="text-center py-4"><div class="text-muted"><i class="ti ti-inbox f-48 mb-3 d-block"></i><h5>No leads found</h5><p>Try adjusting your filters or add a new lead.</p></div></div>');
+                    }
+                }
+            }
+            
+            // Render mobile card HTML
+            function renderMobileCard(data, index) {
+                // Validate data
+                if (!data || !data.id) {
+                    console.error('Invalid data in renderMobileCard:', data);
+                    return '';
+                }
+                
+                // Add data attribute to track lead ID and avoid duplicates
+                let cardHtml = '<div class="card mb-2" data-lead-id="' + (data.id || '') + '">';
+                
+                const profileStatusClass = (data.profile && data.profile.status === 'incomplete') ? 'bg-danger' : 
+                    ((data.profile && data.profile.status === 'partial') ? 'bg-warning' : 
+                    ((data.profile && data.profile.status === 'almost_complete') ? 'bg-info' : 'bg-success'));
+                
+                cardHtml += '<div class="card-body p-3">';
+                
+                // Header
+                cardHtml += '<div class="d-flex align-items-start justify-content-between mb-2">';
+                cardHtml += '<div class="d-flex align-items-center flex-grow-1">';
+                cardHtml += '<div class="avtar avtar-s rounded-circle bg-light-primary me-2 d-flex align-items-center justify-content-center">';
+                const title = data.title || 'N/A';
+                const firstChar = title && title.length > 0 ? title.charAt(0).toUpperCase() : '?';
+                cardHtml += '<span class="f-14 fw-bold text-primary">' + firstChar + '</span>';
+                cardHtml += '</div>';
+                cardHtml += '<div class="flex-grow-1">';
+                cardHtml += '<small class="text-muted d-block f-10 mb-1">' + (data.created_at || '') + '</small>';
+                cardHtml += '<h6 class="mb-0 fw-bold f-14">' + escapeHtml(title) + '</h6>';
+                cardHtml += '<small class="text-muted f-11">#' + (index || '') + '</small>';
+                cardHtml += '</div></div>';
+                
+                // Action buttons
+                cardHtml += '<div class="d-flex gap-1">';
+                const viewRoute = (data.routes && data.routes.view) ? data.routes.view : '#';
+                const editRoute = (data.routes && data.routes.edit) ? data.routes.edit : '#';
+                const deleteRoute = (data.routes && data.routes.delete) ? data.routes.delete : '#';
+                cardHtml += '<a href="javascript:void(0);" class="btn btn-sm btn-outline-primary" onclick="show_large_modal(\'' + viewRoute + '\', \'View Lead\')" title="View Lead"><i class="ti ti-eye f-12"></i></a>';
+                if (data.permissions && data.permissions.can_edit) {
+                    cardHtml += '<a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary" onclick="show_ajax_modal(\'' + editRoute + '\', \'Edit Lead\')" title="Edit Lead"><i class="ti ti-edit f-12"></i></a>';
+                }
+                if (data.permissions && data.permissions.can_delete) {
+                    cardHtml += '<a href="javascript:void(0);" class="btn btn-sm btn-outline-danger" onclick="delete_modal(\'' + deleteRoute + '\')" title="Delete Lead"><i class="ti ti-trash f-12"></i></a>';
+                }
+                cardHtml += '</div></div>';
+                
+                // Profile completeness
+                cardHtml += '<div class="mb-2">';
+                const profileCompleteness = (data.profile && data.profile.completeness) ? data.profile.completeness : 0;
+                if (profileCompleteness < 100) {
+                    cardHtml += '<div class="d-flex align-items-center">';
+                    cardHtml += '<small class="text-muted me-2 f-11">Profile:</small>';
+                    cardHtml += '<div class="progress me-2" style="width: 80px; height: 6px;">';
+                    cardHtml += '<div class="progress-bar ' + profileStatusClass + '" role="progressbar" style="width: ' + profileCompleteness + '%"></div>';
+                    cardHtml += '</div>';
+                    const missingFields = (data.profile && data.profile.missing_fields) ? data.profile.missing_fields : '';
+                    cardHtml += '<span class="badge ' + profileStatusClass + ' f-10" title="Missing: ' + escapeHtml(missingFields) + '">' + profileCompleteness + '%</span>';
+                    cardHtml += '</div>';
+                    const missingCount = (data.profile && data.profile.missing_count) ? data.profile.missing_count : 0;
+                    if (missingCount > 0) {
+                        cardHtml += '<div class="mt-1"><small class="text-muted f-10">Missing: ' + escapeHtml(missingFields) + (missingCount > 5 ? '...' : '') + '</small></div>';
+                    }
+                } else {
+                    cardHtml += '<div class="d-flex align-items-center">';
+                    cardHtml += '<small class="text-muted me-2 f-11">Profile:</small>';
+                    cardHtml += '<span class="badge bg-success f-10"><i class="ti ti-check me-1"></i> Complete</span>';
+                    cardHtml += '</div>';
+                }
+                cardHtml += '</div>';
+                
+                // Lead details
+                cardHtml += '<div class="row g-1 mb-2">';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-phone f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.phone || '-') + '</small></div></div>';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-mail f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.email || '-') + '</small></div></div>';
+                const statusColor = (data.status && data.status.color_class) ? data.status.color_class : 'bg-secondary';
+                const statusTitle = (data.status && data.status.title) ? data.status.title : 'Unknown';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-circle f-12 text-muted me-1"></i><span class="badge ' + statusColor + ' f-11">' + escapeHtml(statusTitle) + '</span></div></div>';
+                const interestColor = (data.interest && data.interest.color) ? data.interest.color : 'secondary';
+                const interestLabel = (data.interest && data.interest.label) ? data.interest.label : 'Not Set';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-flame f-12 text-muted me-1"></i><span class="badge bg-' + interestColor + ' f-10">' + escapeHtml(interestLabel) + '</span></div></div>';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-star f-12 text-muted me-1"></i><span class="badge bg-primary f-10">' + escapeHtml(data.rating || 'Not Rated') + '</span></div></div>';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-user f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.telecaller || 'Unassigned') + '</small></div></div>';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-book f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.course || '-') + '</small></div></div>';
+                const createdDate = data.created_at ? (data.created_at.split(' ')[0] || '') : '';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-calendar f-12 text-muted me-1"></i><small class="text-muted f-11">' + createdDate + '</small></div></div>';
+                if (data.followup_date) {
+                    cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-clock f-12 text-muted me-1"></i><span class="badge bg-warning f-10">' + escapeHtml(data.followup_date) + '</span></div></div>';
+                }
+                if (data.remarks) {
+                    const remarksText = data.remarks.length > 50 ? data.remarks.substring(0, 50) + '...' : data.remarks;
+                    cardHtml += '<div class="col-12"><div class="d-flex align-items-start"><i class="ti ti-note f-12 text-muted me-1 mt-1"></i><small class="text-muted f-11" title="' + escapeHtml(data.remarks) + '">' + escapeHtml(remarksText) + '</small></div></div>';
+                }
+                
+                // Registration details
+                if (data.student_details) {
+                    cardHtml += '<div class="col-12 mt-2"><div class="border-top pt-2">';
+                    cardHtml += '<div class="d-flex align-items-center justify-content-between mb-2">';
+                    cardHtml += '<small class="text-muted f-11 fw-bold">Registration Details:</small>';
+                    cardHtml += '<span class="badge bg-success f-10">Form Submitted</span>';
+                    cardHtml += '</div>';
+                    cardHtml += '<div class="row g-1">';
+                    const courseTitle = (data.student_details.course_title) ? data.student_details.course_title : 'Unknown Course';
+                    cardHtml += '<div class="col-6"><small class="text-muted f-10">Course:</small><div class="fw-medium f-11">' + escapeHtml(courseTitle) + '</div></div>';
+                    const studentStatus = data.student_details.status || 'pending';
+                    const statusBadge = (studentStatus === 'approved') ? 'bg-success' : ((studentStatus === 'rejected') ? 'bg-danger' : 'bg-warning');
+                    const statusText = studentStatus ? (studentStatus.charAt(0).toUpperCase() + studentStatus.slice(1)) : 'Pending';
+                    cardHtml += '<div class="col-6"><small class="text-muted f-10">Status:</small><div><span class="badge ' + statusBadge + ' f-10">' + escapeHtml(statusText) + '</span></div></div>';
+                    cardHtml += '</div>';
+                    const regDetailsRoute = (data.routes && data.routes.registration_details) ? data.routes.registration_details : '#';
+                    if (data.permissions && data.permissions.can_view_registration) {
+                        cardHtml += '<div class="mt-2"><a href="' + regDetailsRoute + '" class="btn btn-sm btn-outline-primary" title="View Registration Details"><i class="ti ti-eye me-1"></i>View Details</a></div>';
+                    }
+                    cardHtml += '</div></div>';
+                }
+                
+                cardHtml += '</div>';
+                
+                // Action buttons
+                cardHtml += '<div class="d-flex gap-1 flex-wrap justify-content-between">';
+                cardHtml += '<div class="d-flex gap-1">';
+                const statusUpdateRoute = (data.routes && data.routes.status_update) ? data.routes.status_update : '#';
+                const convertRoute = (data.routes && data.routes.convert) ? data.routes.convert : '#';
+                const callLogsRoute = (data.routes && data.routes.call_logs) ? data.routes.call_logs : '#';
+                if (data.permissions && data.permissions.can_update_status) {
+                    cardHtml += '<a href="javascript:void(0);" class="btn btn-sm btn-outline-warning" onclick="show_ajax_modal(\'' + statusUpdateRoute + '\', \'Update Status\')" title="Update Status"><i class="ti ti-arrow-up f-12"></i></a>';
+                }
+                if (data.permissions && data.permissions.can_convert) {
+                    cardHtml += '<a href="javascript:void(0);" class="btn btn-sm btn-outline-success" onclick="show_ajax_modal(\'' + convertRoute + '\', \'Convert Lead\')" title="Convert Lead"><i class="ti ti-refresh f-12"></i></a>';
+                }
+                if (data.lead_status_id == 6) {
+                    cardHtml += '<a href="https://docs.google.com/forms/d/e/1FAIpQLSchtc8xlKUJehZNmzoKTkRvwLwk4-SGjzKSHM2UFToAhgdTlQ/viewform?usp=sf_link" target="_blank" class="btn btn-sm btn-outline-info" title="Demo Conduction Form"><i class="ti ti-file-text f-12"></i></a>';
+                }
+                cardHtml += '</div>';
+                cardHtml += '<div class="d-flex gap-1">';
+                // WhatsApp button (replacing View Call Logs position)
+                if (data.code && data.phone_number) {
+                    const phoneNumber = (data.code + data.phone_number).replace(/\D/g, '');
+                    const leadName = data.title || 'there';
+                    const message = encodeURIComponent('Hi ' + leadName);
+                    const whatsappUrl = 'https://wa.me/' + phoneNumber + '?text=' + message;
+                    cardHtml += '<a href="' + whatsappUrl + '" target="_blank" class="btn btn-sm btn-success" title="WhatsApp"><i class="ti ti-brand-whatsapp f-12"></i></a>';
+                }
+                cardHtml += '<a href="' + callLogsRoute + '" class="btn btn-sm btn-info" title="View Call Logs"><i class="ti ti-phone-call f-12"></i></a>';
+                cardHtml += '</div></div>';
+                
+                cardHtml += '</div></div>';
+                
+                return cardHtml;
+            }
+            
+            function escapeHtml(text) {
+                if (!text) return '';
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return String(text).replace(/[&<>"']/g, m => map[m]);
+            }
         }, 50); // Small delay to allow page to render first
 
         // Handle global search form submission
