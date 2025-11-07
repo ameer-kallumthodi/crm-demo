@@ -1166,14 +1166,8 @@ $(document).ready(function() {
         } else if (field === 'telegram_group') {
             options = `
                 <option value=\"\">Select Telegram Group Status</option>
-                <option value=\"Call not answered\" ${currentValue === 'Call not answered' ? 'selected' : ''}>Call not answered</option>
-                <option value=\"switched off\" ${currentValue === 'switched off' ? 'selected' : ''}>switched off</option>
-                <option value=\"line busy\" ${currentValue === 'line busy' ? 'selected' : ''}>line busy</option>
-                <option value=\"student asks to call later\" ${currentValue === 'student asks to call later' ? 'selected' : ''}>student asks to call later</option>
-                <option value=\"lack of interest in conversation\" ${currentValue === 'lack of interest in conversation' ? 'selected' : ''}>lack of interest in conversation</option>
-                <option value=\"wrong contact\" ${currentValue === 'wrong contact' ? 'selected' : ''}>wrong contact</option>
-                <option value=\"inconsistent responses\" ${currentValue === 'inconsistent responses' ? 'selected' : ''}>inconsistent responses</option>
-                <option value=\"task complete\" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
+                <option value=\"Sent link\" ${currentValue === 'Sent link' ? 'selected' : ''}>Sent link</option>
+                <option value=\"task complete\" ${currentValue === 'task complete' ? 'selected' : ''}>Task complete</option>
             `;
         } else if (field === 'first_live' || field === 'second_live' || field === 'model_exam_live') {
             options = `

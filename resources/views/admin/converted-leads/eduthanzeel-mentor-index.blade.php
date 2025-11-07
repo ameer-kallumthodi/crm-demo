@@ -990,13 +990,7 @@
             } else if (field === 'telegram_group') {
                 options = `
                     <option value="">Select</option>
-                    <option value="Call not answered" ${currentValue === 'Call not answered' ? 'selected' : ''}>Call not answered</option>
-                    <option value="switched off" ${currentValue === 'switched off' ? 'selected' : ''}>Switched off</option>
-                    <option value="line busy" ${currentValue === 'line busy' ? 'selected' : ''}>Line busy</option>
-                    <option value="student asks to call later" ${currentValue === 'student asks to call later' ? 'selected' : ''}>Student asks to call later</option>
-                    <option value="lack of interest in conversation" ${currentValue === 'lack of interest in conversation' ? 'selected' : ''}>Lack of interest in conversation</option>
-                    <option value="wrong contact" ${currentValue === 'wrong contact' ? 'selected' : ''}>Wrong contact</option>
-                    <option value="inconsistent responses" ${currentValue === 'inconsistent responses' ? 'selected' : ''}>Inconsistent responses</option>
+                    <option value="Sent link" ${currentValue === 'Sent link' ? 'selected' : ''}>Sent link</option>
                     <option value="task complete" ${currentValue === 'task complete' ? 'selected' : ''}>Task complete</option>
                 `;
             } else if (field === 'class_status') {
