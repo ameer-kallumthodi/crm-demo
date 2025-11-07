@@ -36,7 +36,10 @@ class NiosMentorConvertedLeadController extends Controller
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
         if ($currentUser) {
-            if (RoleHelper::is_mentor()) {
+            if (RoleHelper::is_admin_or_super_admin()) {
+                // Admins and super admins can see all support verified leads
+                // No additional filtering needed
+            } elseif (RoleHelper::is_mentor()) {
                 // Mentor: Filter by admission_batch_id where mentor_id matches
                 $mentorAdmissionBatchIds = AdmissionBatch::where('mentor_id', AuthHelper::getCurrentUserId())
                     ->pluck('id')

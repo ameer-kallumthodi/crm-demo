@@ -800,7 +800,8 @@ class LeadController extends Controller
                 'convert' => route('leads.convert', $lead->id),
                 'call_logs' => route('leads.call-logs', $lead),
                 'delete' => route('leads.destroy', $lead->id),
-                'registration_details' => route('leads.registration-details', $lead->id)
+                'registration_details' => route('leads.registration-details', $lead->id),
+                'registration_link' => $this->getRegistrationLinkRoute($lead)
             ],
             'permissions' => [
                 'can_edit' => $isAdminOrSuperAdmin || RoleHelper::is_team_lead() || RoleHelper::is_general_manager(),
@@ -814,6 +815,37 @@ class LeadController extends Controller
         ];
         
         return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * Get registration link route for a lead based on course_id
+     */
+    private function getRegistrationLinkRoute($lead)
+    {
+        $courseRoutes = [
+            1 => 'public.lead.nios.register',
+            2 => 'public.lead.bosse.register',
+            3 => 'public.lead.medical-coding.register',
+            4 => 'public.lead.hospital-admin.register',
+            5 => 'public.lead.eschool.register',
+            6 => 'public.lead.eduthanzeel.register',
+            7 => 'public.lead.ttc.register',
+            8 => 'public.lead.hotel-mgmt.register',
+            9 => 'public.lead.ugpg.register',
+            10 => 'public.lead.python.register',
+            11 => 'public.lead.digital-marketing.register',
+            12 => 'public.lead.ai-automation.register',
+            13 => 'public.lead.web-dev.register',
+            14 => 'public.lead.vibe-coding.register',
+            15 => 'public.lead.graphic-designing.register',
+            16 => 'public.lead.gmvss.register'
+        ];
+        
+        if (isset($courseRoutes[$lead->course_id])) {
+            return route($courseRoutes[$lead->course_id], $lead->id);
+        }
+        
+        return null;
     }
 
     /**

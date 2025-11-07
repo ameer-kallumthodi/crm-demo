@@ -55,11 +55,15 @@ class ESchoolEduthanzeelMentorController extends Controller
             'batch',
             'admissionBatch',
             'subCourse'
-        ])->where('course_id', $courseId);
+        ])->where('course_id', $courseId)
+          ->where('is_academic_verified', 1); // Academic must be verified for all
         
         // For mentors, only show support verified leads
-        // For admins and admission counsellors, show all leads
+        // For admins and admission counsellors, show all leads where both support and academic are verified
         if (RoleHelper::is_mentor()) {
+            $query->where('is_support_verified', 1);
+        } elseif (RoleHelper::is_admin_or_super_admin() || RoleHelper::is_admission_counsellor()) {
+            // Admins and admission counsellors see all leads where both support and academic are verified
             $query->where('is_support_verified', 1);
         }
 

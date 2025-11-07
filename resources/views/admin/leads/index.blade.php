@@ -1075,6 +1075,15 @@ $columns = array_merge($columns, [
                         cardHtml += '<div class="mt-2"><a href="' + regDetailsRoute + '" class="btn btn-sm btn-outline-primary" title="View Registration Details"><i class="ti ti-eye me-1"></i>View Details</a></div>';
                     }
                     cardHtml += '</div></div>';
+                } else if (data.routes && data.routes.registration_link && data.permissions && data.permissions.can_view_registration) {
+                    // Show registration link and copy link buttons when form hasn't been submitted
+                    cardHtml += '<div class="col-12 mt-2"><div class="border-top pt-2">';
+                    cardHtml += '<small class="text-muted f-11 fw-bold mb-2 d-block">Registration Details:</small>';
+                    cardHtml += '<div class="d-flex gap-1">';
+                    cardHtml += '<a href="' + data.routes.registration_link + '" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Registration Form"><i class="ti ti-external-link f-12"></i></a>';
+                    cardHtml += '<button type="button" class="btn btn-sm btn-outline-info copy-link-btn" data-url="' + data.routes.registration_link + '" title="Copy Registration Link"><i class="ti ti-copy f-12"></i></button>';
+                    cardHtml += '</div>';
+                    cardHtml += '</div></div>';
                 }
                 
                 cardHtml += '</div>';
