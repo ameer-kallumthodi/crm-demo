@@ -1147,7 +1147,59 @@ $(document).ready(function() {
                 <option value=\"Inconsistent Responses\" ${currentValue === 'Inconsistent Responses' ? 'selected' : ''}>Inconsistent Responses</option>
                 <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
             `;
-        } else if (field === 'app' || field === 'whatsapp_group' || field === 'telegram_group' || field === 'first_live' || field === 'second_live' || field === 'model_exam_live' || field === 'assignment' || field === 'exam_fees' || field === 'pcp_class') {
+        } else if (field === 'app') {
+            options = `
+                <option value=\"\">Select APP Status</option>
+                <option value=\"Provided app\" ${currentValue === 'Provided app' ? 'selected' : ''}>Provided app</option>
+                <option value=\"OTP Problem\" ${currentValue === 'OTP Problem' ? 'selected' : ''}>OTP Problem</option>
+                <option value=\"Task Completed\" ${currentValue === 'Task Completed' ? 'selected' : ''}>Task Completed</option>
+                <option value=\"Not Respond\" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
+            `;
+        } else if (field === 'whatsapp_group') {
+            options = `
+                <option value=\"\">Select WhatsApp Group Status</option>
+                <option value=\"Sent link\" ${currentValue === 'Sent link' ? 'selected' : ''}>Sent link</option>
+                <option value=\"Task Completed\" ${currentValue === 'Task Completed' ? 'selected' : ''}>Task Completed</option>
+                <option value=\"Not Responding\" ${currentValue === 'Not Responding' ? 'selected' : ''}>Not Responding</option>
+                <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
+            `;
+        } else if (field === 'telegram_group') {
+            options = `
+                <option value=\"\">Select Telegram Group Status</option>
+                <option value=\"Call not answered\" ${currentValue === 'Call not answered' ? 'selected' : ''}>Call not answered</option>
+                <option value=\"switched off\" ${currentValue === 'switched off' ? 'selected' : ''}>switched off</option>
+                <option value=\"line busy\" ${currentValue === 'line busy' ? 'selected' : ''}>line busy</option>
+                <option value=\"student asks to call later\" ${currentValue === 'student asks to call later' ? 'selected' : ''}>student asks to call later</option>
+                <option value=\"lack of interest in conversation\" ${currentValue === 'lack of interest in conversation' ? 'selected' : ''}>lack of interest in conversation</option>
+                <option value=\"wrong contact\" ${currentValue === 'wrong contact' ? 'selected' : ''}>wrong contact</option>
+                <option value=\"inconsistent responses\" ${currentValue === 'inconsistent responses' ? 'selected' : ''}>inconsistent responses</option>
+                <option value=\"task complete\" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
+            `;
+        } else if (field === 'first_live' || field === 'second_live' || field === 'model_exam_live') {
+            options = `
+                <option value=\"\">Select Live Status</option>
+                <option value=\"Not Respond\" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
+                <option value=\"1 subject attend\" ${currentValue === '1 subject attend' ? 'selected' : ''}>1 subject attend</option>
+                <option value=\"2 subject attend\" ${currentValue === '2 subject attend' ? 'selected' : ''}>2 subject attend</option>
+                <option value=\"3 subject attend\" ${currentValue === '3 subject attend' ? 'selected' : ''}>3 subject attend</option>
+                <option value=\"4 subject attend\" ${currentValue === '4 subject attend' ? 'selected' : ''}>4 subject attend</option>
+                <option value=\"5 subject attend\" ${currentValue === '5 subject attend' ? 'selected' : ''}>5 subject attend</option>
+                <option value=\"6 subject attend\" ${currentValue === '6 subject attend' ? 'selected' : ''}>6 subject attend</option>
+                <option value=\"Task complete\" ${currentValue === 'Task complete' ? 'selected' : ''}>Task complete</option>
+            `;
+        } else if (field === 'first_exam' || field === 'second_exam' || field === 'model_exam' || field === 'assignment') {
+            options = `
+                <option value=\"\">Select Exam Status</option>
+                <option value=\"not respond\" ${currentValue === 'not respond' ? 'selected' : ''}>not respond</option>
+                <option value=\"1 subject attend\" ${currentValue === '1 subject attend' ? 'selected' : ''}>1 subject attend</option>
+                <option value=\"2 subject attend\" ${currentValue === '2 subject attend' ? 'selected' : ''}>2 subject attend</option>
+                <option value=\"3 subject attend\" ${currentValue === '3 subject attend' ? 'selected' : ''}>3 subject attend</option>
+                <option value=\"4 subject attend\" ${currentValue === '4 subject attend' ? 'selected' : ''}>4 subject attend</option>
+                <option value=\"5 subject attend\" ${currentValue === '5 subject attend' ? 'selected' : ''}>5 subject attend</option>
+                <option value=\"6 subject attend\" ${currentValue === '6 subject attend' ? 'selected' : ''}>6 subject attend</option>
+                <option value=\"task complete\" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
+            `;
+        } else if (field === 'exam_fees' || field === 'pcp_class') {
             options = `
                 <option value=\"\">Select Status</option>
                 <option value=\"Not Respond\" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>

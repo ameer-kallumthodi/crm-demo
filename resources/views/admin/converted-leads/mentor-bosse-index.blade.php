@@ -1189,12 +1189,15 @@
                     <option value="Provided app" ${currentValue === 'Provided app' ? 'selected' : ''}>Provided app</option>
                     <option value="OTP Problem" ${currentValue === 'OTP Problem' ? 'selected' : ''}>OTP Problem</option>
                     <option value="Task Completed" ${currentValue === 'Task Completed' ? 'selected' : ''}>Task Completed</option>
+                    <option value="Not Respond" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
                 `;
             } else if (field === 'whatsapp_group') {
                 options = `
                     <option value="">Select WhatsApp Group Status</option>
                     <option value="Sent link" ${currentValue === 'Sent link' ? 'selected' : ''}>Sent link</option>
                     <option value="Task Completed" ${currentValue === 'Task Completed' ? 'selected' : ''}>Task Completed</option>
+                    <option value="Not Responding" ${currentValue === 'Not Responding' ? 'selected' : ''}>Not Responding</option>
+                    <option value="Task Complete" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
                 `;
             } else if (field === 'telegram_group') {
                 options = `

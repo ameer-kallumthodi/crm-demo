@@ -56,6 +56,12 @@ class ESchoolEduthanzeelMentorController extends Controller
             'admissionBatch',
             'subCourse'
         ])->where('course_id', $courseId);
+        
+        // For mentors, only show support verified leads
+        // For admins and admission counsellors, show all leads
+        if (RoleHelper::is_mentor()) {
+            $query->where('is_support_verified', 1);
+        }
 
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
@@ -260,7 +266,8 @@ class ESchoolEduthanzeelMentorController extends Controller
         $rules = [
             'call_1' => 'nullable|in:Call Not Answered,Switched Off,Line Busy,Student Asks to Call Later,Lack of Interest in Conversation,Wrong Contact,Inconsistent Responses,Task Complete',
             'app' => 'nullable|in:Provided app,OTP Problem,Task Completed,Not Respond',
-            'whatsapp_group' => 'nullable|in:Not Responding,Task Complete',
+            'whatsapp_group' => 'nullable|in:Sent link,Task Completed,Not Responding,Task Complete',
+            'telegram_group' => 'nullable|in:Call not answered,switched off,line busy,student asks to call later,lack of interest in conversation,wrong contact,inconsistent responses,task complete',
             'screening_date' => 'nullable|date',
             'screening_officer' => 'nullable|string|max:255',
             'class_time' => 'nullable|date_format:H:i',

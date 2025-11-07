@@ -282,6 +282,9 @@
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
                                 <th>Subcourse</th>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                <th>Support Verified</th>
+                                @endif
                                 <th>Call 1</th>
                                 <th>WhatsApp Group</th>
                                 <th>Screening Date</th>
@@ -340,6 +343,17 @@
                                 <td>{{ $convertedLead->batch?->title ?: '-' }}</td>
                                 <td>{{ $convertedLead->admissionBatch?->title ?: '-' }}</td>
                                 <td>{{ $convertedLead->subCourse?->title ?: '-' }}</td>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                <td>
+                                    @php $isSupportVerified = (bool) ($convertedLead->is_support_verified ?? false); @endphp
+                                    <span class="badge {{ $isSupportVerified ? 'bg-success' : 'bg-secondary' }}">
+                                        {{ $isSupportVerified ? 'Verified' : 'Not Verified' }}
+                                    </span>
+                                    @if($isSupportVerified && $convertedLead->support_verified_at)
+                                    <br><small class="text-muted">{{ \Carbon\Carbon::parse($convertedLead->support_verified_at)->format('d-m-Y') }}</small>
+                                    @endif
+                                </td>
+                                @endif
                                 <td>
                                     <div class="inline-edit" data-field="call_1" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->call_1 }}">
                                         <span class="display-value">{{ $convertedLead->mentorDetails?->call_1 ?: '-' }}</span>
@@ -754,7 +768,7 @@
             if (field === 'phone') {
                 const currentCode = container.find('.inline-code-value').data('current') || '';
                 editForm = createPhoneField(currentCode, currentValue);
-            } else if (['call_1', 'whatsapp_group', 'class_status', 'first_pa', 'second_pa', 'third_pa', 'certification_exam', 'course_completion_feedback', 'certificate_collection', 'continuing_studies'].includes(field)) {
+            } else if (['call_1', 'whatsapp_group', 'telegram_group', 'class_status', 'first_pa', 'second_pa', 'third_pa', 'certification_exam', 'course_completion_feedback', 'certificate_collection', 'continuing_studies'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
             } else if (field === 'screening_date') {
                 editForm = createDateField(field, currentValue);
@@ -968,8 +982,22 @@
             } else if (field === 'whatsapp_group') {
                 options = `
                     <option value="">Select</option>
+                    <option value="Sent link" ${currentValue === 'Sent link' ? 'selected' : ''}>Sent link</option>
+                    <option value="Task Completed" ${currentValue === 'Task Completed' ? 'selected' : ''}>Task Completed</option>
                     <option value="Not Responding" ${currentValue === 'Not Responding' ? 'selected' : ''}>Not Responding</option>
                     <option value="Task Complete" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
+                `;
+            } else if (field === 'telegram_group') {
+                options = `
+                    <option value="">Select</option>
+                    <option value="Call not answered" ${currentValue === 'Call not answered' ? 'selected' : ''}>Call not answered</option>
+                    <option value="switched off" ${currentValue === 'switched off' ? 'selected' : ''}>Switched off</option>
+                    <option value="line busy" ${currentValue === 'line busy' ? 'selected' : ''}>Line busy</option>
+                    <option value="student asks to call later" ${currentValue === 'student asks to call later' ? 'selected' : ''}>Student asks to call later</option>
+                    <option value="lack of interest in conversation" ${currentValue === 'lack of interest in conversation' ? 'selected' : ''}>Lack of interest in conversation</option>
+                    <option value="wrong contact" ${currentValue === 'wrong contact' ? 'selected' : ''}>Wrong contact</option>
+                    <option value="inconsistent responses" ${currentValue === 'inconsistent responses' ? 'selected' : ''}>Inconsistent responses</option>
+                    <option value="task complete" ${currentValue === 'task complete' ? 'selected' : ''}>Task complete</option>
                 `;
             } else if (field === 'class_status') {
                 options = `

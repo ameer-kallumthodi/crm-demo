@@ -235,17 +235,17 @@ class NiosMentorConvertedLeadController extends Controller
 
         // Add other field rules
         $otherFields = [
-            'app' => 'nullable|in:Not Respond,Task Complete',
-            'whatsapp_group' => 'nullable|in:Not Respond,Task Complete',
-            'telegram_group' => 'nullable|in:Not Respond,Task Complete',
-            'first_live' => 'nullable|in:Not Respond,Task Complete',
-            'first_exam' => 'nullable|in:Did not log in on time,missed the exam,technical issue,task complete',
-            'second_live' => 'nullable|in:Not Respond,Task Complete',
-            'second_exam' => 'nullable|in:Did not log in on time,missed the exam,technical issue,task complete',
-            'model_exam_live' => 'nullable|in:Not Respond,Task Complete',
-            'model_exam' => 'nullable|in:Did not log in on time,missed the exam,technical issue,task complete',
-            'assignment' => 'nullable|in:Not Respond,Task Complete',
-            'admit_card' => 'nullable|in:Did Not,Task Complete',
+            'app' => 'nullable|in:Provided app,OTP Problem,Task Completed,Not Respond',
+            'whatsapp_group' => 'nullable|in:Sent link,Task Completed,Not Responding,Task Complete',
+            'telegram_group' => 'nullable|in:Call not answered,switched off,line busy,student asks to call later,lack of interest in conversation,wrong contact,inconsistent responses,task complete',
+            'first_live' => 'nullable|in:Not Respond,1 subject attend,2 subject attend,3 subject attend,4 subject attend,5 subject attend,6 subject attend,Task complete',
+            'first_exam' => 'nullable|in:not respond,1 subject attend,2 subject attend,3 subject attend,4 subject attend,5 subject attend,6 subject attend,task complete',
+            'second_live' => 'nullable|in:Not Respond,1 subject attend,2 subject attend,3 subject attend,4 subject attend,5 subject attend,6 subject attend,Task complete',
+            'second_exam' => 'nullable|in:not respond,1 subject attend,2 subject attend,3 subject attend,4 subject attend,5 subject attend,6 subject attend,task complete',
+            'model_exam_live' => 'nullable|in:not respond,1 subject attend,2 subject attend,3 subject attend,4 subject attend,5 subject attend,6 subject attend,task complete',
+            'model_exam' => 'nullable|in:not respond,1 subject attend,2 subject attend,3 subject attend,4 subject attend,5 subject attend,6 subject attend,task complete',
+            'assignment' => 'nullable|in:not respond,1 subject attend,2 subject attend,3 subject attend,4 subject attend,5 subject attend,6 subject attend,task complete',
+            'admit_card' => 'nullable|in:Did not,Task complete',
         ];
 
         $rules = array_merge($rules, $otherFields);
