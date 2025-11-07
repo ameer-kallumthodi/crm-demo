@@ -29,7 +29,7 @@ class LeadReportController extends Controller
         // Get filter options
         $leadStatuses = LeadStatus::select('id', 'title', 'color')->get();
         $leadSources = LeadSource::select('id', 'title')->get();
-        $teams = Team::select('id', 'name as title')->get();
+        $teams = Team::select('id', 'name as title')->nonMarketing()->get();
         
         // Get reports data
         $reports = [
@@ -129,7 +129,7 @@ class LeadReportController extends Controller
             $teams = Team::where('id', $teamId)->select('id', 'name')->get();
         } else {
             // Admin/Super Admin: Show all teams
-            $teams = Team::select('id', 'name')->get();
+            $teams = Team::select('id', 'name')->nonMarketing()->get();
         }
         
         // Get reports data
@@ -286,7 +286,7 @@ class LeadReportController extends Controller
             }
         } else {
             // Admin/Super Admin: Show all teams
-            $allTeams = Team::select('id', 'name as title')->get();
+            $allTeams = Team::select('id', 'name as title')->nonMarketing()->get();
             
             foreach ($allTeams as $team) {
                 // Get lead count for this team through telecallers

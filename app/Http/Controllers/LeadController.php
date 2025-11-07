@@ -1073,7 +1073,7 @@ class LeadController extends Controller
         $leadSources = LeadSource::select('id', 'title')->get();
         $countries = Country::select('id', 'title')->get();
         $courses = Course::select('id', 'title')->get();
-        $telecallers = User::select('id', 'name')->where('role_id', 3)->get();
+        $telecallers = User::select('id', 'name')->nonMarketingTelecallers()->get();
 
         // Create lookup arrays
         $leadStatusList = $leadStatuses->pluck('title', 'id')->toArray();
@@ -1207,7 +1207,7 @@ class LeadController extends Controller
         $leadSources = LeadSource::select('id', 'title')->get();
         $countries = Country::select('id', 'title')->get();
         $courses = Course::select('id', 'title')->get();
-        $telecallers = User::select('id', 'name')->where('role_id', 3)->get();
+        $telecallers = User::select('id', 'name')->nonMarketingTelecallers()->get();
 
         return view('admin.leads.followup', compact('leads', 'leadStatuses', 'leadSources', 'countries', 'courses', 'telecallers', 'isTelecaller', 'isTeamLead'));
     }
@@ -1235,8 +1235,8 @@ class LeadController extends Controller
             // Regular Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
         } else {
-            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers
-            $telecallers = User::where('role_id', 3)->get();
+            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers (excluding marketing teams)
+            $telecallers = User::nonMarketingTelecallers()->get();
         }
         
         $leadStatuses = LeadStatus::where('is_active', true)->get();
@@ -1262,8 +1262,8 @@ class LeadController extends Controller
                 $teams = collect(); // No teams if not assigned to any team
             }
         } else {
-            // Admin/Super Admin/Senior Manager/General Manager: Show all teams
-            $teams = Team::all();
+            // Admin/Super Admin/Senior Manager/General Manager: Show all teams (excluding marketing teams)
+            $teams = Team::nonMarketing()->get();
         }
         
         $country_codes = get_country_code();
@@ -1296,8 +1296,8 @@ class LeadController extends Controller
             // Regular Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
         } else {
-            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers
-            $telecallers = User::where('role_id', 3)->get();
+            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers (excluding marketing teams)
+            $telecallers = User::nonMarketingTelecallers()->get();
         }
         
         $leadStatuses = LeadStatus::where('is_active', true)->get();
@@ -1323,8 +1323,8 @@ class LeadController extends Controller
                 $teams = collect(); // No teams if not assigned to any team
             }
         } else {
-            // Admin/Super Admin/Senior Manager/General Manager: Show all teams
-            $teams = Team::all();
+            // Admin/Super Admin/Senior Manager/General Manager: Show all teams (excluding marketing teams)
+            $teams = Team::nonMarketing()->get();
         }
         
         $country_codes = get_country_code();
@@ -1663,8 +1663,8 @@ class LeadController extends Controller
             // Regular Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
         } else {
-            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers
-            $telecallers = User::where('role_id', 3)->get();
+            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers (excluding marketing teams)
+            $telecallers = User::nonMarketingTelecallers()->get();
         }
         
         $leadStatuses = LeadStatus::all();
@@ -1690,8 +1690,8 @@ class LeadController extends Controller
                 $teams = collect(); // No teams if not assigned to any team
             }
         } else {
-            // Admin/Super Admin/Senior Manager/General Manager: Show all teams
-            $teams = Team::all();
+            // Admin/Super Admin/Senior Manager/General Manager: Show all teams (excluding marketing teams)
+            $teams = Team::nonMarketing()->get();
         }
         
         $country_codes = get_country_code();
@@ -1738,8 +1738,8 @@ class LeadController extends Controller
             // Regular Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
         } else {
-            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers
-            $telecallers = User::where('role_id', 3)->get();
+            // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers (excluding marketing teams)
+            $telecallers = User::nonMarketingTelecallers()->get();
         }
         
         // Filter teams based on role
@@ -1751,7 +1751,7 @@ class LeadController extends Controller
             $teams = Team::where('id', $currentUser->team_id)->get();
         } else {
             // Admin/Super Admin/Senior Manager/General Manager: Show all teams
-            $teams = Team::all();
+            $teams = Team::nonMarketing()->get();
         }
         
         $leadStatuses = LeadStatus::all();
@@ -1962,9 +1962,11 @@ class LeadController extends Controller
                               ->where('is_active', true)
                               ->get();
         } elseif ($isSeniorManager || RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager()) {
-            // Senior Manager/General Manager/Admin/Super Admin: Show all teams and telecallers
-            $teams = Team::where('is_active', true)->get();
-            $telecallers = User::where('role_id', 3)->where('is_active', true)->get();
+            // Senior Manager/General Manager/Admin/Super Admin: Show all teams and telecallers (excluding marketing teams)
+            $teams = Team::where('is_active', true)->nonMarketing()->get();
+            $telecallers = User::nonMarketingTelecallers()
+                              ->where('is_active', true)
+                              ->get();
         } else {
             // Regular telecaller: Show only their team
             $userTeamId = $currentUser ? $currentUser->team_id : null;
@@ -2084,10 +2086,19 @@ class LeadController extends Controller
             if ($request->assign_to_all) {
                 // When assigning to all, get telecallers from the selected team or all teams
                 if ($request->team_id === 'all') {
-                    $telecallers = User::where('role_id', 3)
+                    $telecallers = User::nonMarketingTelecallers()
                         ->where('is_active', true)
                         ->pluck('id')->toArray();
                 } else {
+                    // Check if team is marketing team
+                    $team = Team::find($request->team_id);
+                    if ($team && $team->marketing_team) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Cannot assign leads to marketing team.',
+                            'errors' => ['team_id' => ['Marketing teams cannot be assigned leads']]
+                        ], 422);
+                    }
                     $telecallers = User::where('team_id', $request->team_id)
                         ->where('role_id', 3)
                         ->where('is_active', true)
@@ -2319,8 +2330,8 @@ class LeadController extends Controller
                 // Regular Telecaller: Show only themselves
                 $telecallers = collect([$currentUser]);
             } else {
-                // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers
-                $telecallers = User::where('role_id', 3)
+                // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers (excluding marketing teams)
+                $telecallers = User::nonMarketingTelecallers()
                                   ->where('is_active', true)
                                   ->with('team:id,name')
                                   ->select('id', 'name', 'email', 'team_id')

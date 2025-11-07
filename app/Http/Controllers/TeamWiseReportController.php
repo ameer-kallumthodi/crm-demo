@@ -21,7 +21,7 @@ class TeamWiseReportController extends Controller
      */
     public function index(Request $request)
     {
-        $teams = Team::with('teamLead')->get();
+        $teams = Team::with('teamLead')->nonMarketing()->get();
         $leadStatuses = LeadStatus::all();
         $courses = Course::all();
         $countries = Country::all();
@@ -44,7 +44,7 @@ class TeamWiseReportController extends Controller
      */
     private function getTeamWiseReportData($fromDate, $toDate, $teamId = null)
     {
-        $query = Team::with(['users', 'teamLead'])
+        $query = Team::with(['users', 'teamLead'])->nonMarketing()
             ->withCount(['users as total_members'])
             ->withCount(['users as active_members' => function($q) {
                 $q->where('is_active', true);
@@ -303,7 +303,7 @@ class TeamWiseReportController extends Controller
             return redirect()->route('admin.reports.team-wise')->with('error', 'Team ID is required');
         }
         
-        $team = Team::with(['users', 'teamLead'])->findOrFail($teamId);
+        $team = Team::with(['users', 'teamLead'])->nonMarketing()->findOrFail($teamId);
         $leadStatuses = LeadStatus::all();
         $courses = Course::all();
         $countries = Country::all();

@@ -13,6 +13,7 @@ use App\Http\Controllers\CountryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TelecallerController;
+use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\SettingsController;
@@ -353,6 +354,15 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::delete('/telecallers-delete/{id}', [TelecallerController::class, 'delete'])->name('telecallers.delete');
         Route::get('/telecallers-change-password/{id}', [TelecallerController::class, 'changePassword'])->name('telecallers.change-password');
         Route::post('/telecallers-update-password/{id}', [TelecallerController::class, 'updatePassword'])->name('telecallers.update-password');
+
+        Route::resource('marketing', MarketingController::class);
+        Route::get('/marketing-add', [MarketingController::class, 'ajax_add'])->name('marketing.add');
+        Route::get('/marketing-edit/{id}', [MarketingController::class, 'ajax_edit'])->name('marketing.edit');
+        Route::post('/marketing-submit', [MarketingController::class, 'submit'])->name('marketing.submit');
+        Route::put('/marketing-update/{id}', [MarketingController::class, 'update'])->name('marketing.update');
+        Route::delete('/marketing-delete/{id}', [MarketingController::class, 'delete'])->name('marketing.delete');
+        Route::get('/marketing-change-password/{id}', [MarketingController::class, 'changePassword'])->name('marketing.change-password');
+        Route::post('/marketing-update-password/{id}', [MarketingController::class, 'updatePassword'])->name('marketing.update-password');
 
         // Teacher routes (role_id = 10)
         Route::resource('teachers', App\Http\Controllers\TeacherController::class);

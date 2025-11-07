@@ -31,11 +31,13 @@ class TeamController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'marketing_team' => 'nullable|boolean',
         ]);
 
         $team = Team::create([
             'name' => $request->name,
             'description' => $request->description,
+            'marketing_team' => $request->has('marketing_team') ? (bool)$request->marketing_team : false,
             'created_by' => AuthHelper::getCurrentUserId(),
         ]);
 
@@ -98,11 +100,13 @@ class TeamController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'marketing_team' => 'nullable|boolean',
         ]);
 
         $team = Team::create([
             'name' => $request->name,
             'description' => $request->description,
+            'marketing_team' => $request->has('marketing_team') ? (bool)$request->marketing_team : false,
             'created_by' => AuthHelper::getCurrentUserId(),
         ]);
 
@@ -139,12 +143,14 @@ class TeamController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'marketing_team' => 'nullable|boolean',
         ]);
 
         $team = Team::findOrFail($id);
         $team->update([
             'name' => $request->name,
             'description' => $request->description,
+            'marketing_team' => $request->has('marketing_team') ? (bool)$request->marketing_team : false,
             'updated_by' => AuthHelper::getCurrentUserId(),
         ]);
 
@@ -185,9 +191,18 @@ class TeamController extends Controller
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
-        $team = Team::with(['teamLead', 'users' => function($query) {
-            $query->where('role_id', 3); // Only telecallers
-        }])->findOrFail($id);
+        $team = Team::with('teamLead')->findOrFail($id);
+        
+        // Load users based on team type
+        if ($team->marketing_team) {
+            $team->load(['users' => function($query) {
+                $query->where('role_id', 13); // Marketing users
+            }]);
+        } else {
+            $team->load(['users' => function($query) {
+                $query->where('role_id', 3); // Telecallers
+            }]);
+        }
 
         // Get all team members including the team lead
         $allTeamMembers = collect();
@@ -203,13 +218,22 @@ class TeamController extends Controller
         // Remove duplicates (in case team lead is also in users)
         $allTeamMembers = $allTeamMembers->unique('id');
 
-        // Get available telecallers (not assigned to any team)
-        $availableTelecallers = User::where('role_id', 3)
-            ->whereNull('team_id')
-            ->whereNull('deleted_at')
-            ->get();
+        // Get available users based on team type
+        if ($team->marketing_team) {
+            // For marketing teams, show marketing users (role_id 13)
+            $availableUsers = User::where('role_id', 13)
+                ->whereNull('team_id')
+                ->whereNull('deleted_at')
+                ->get();
+        } else {
+            // For sales teams, show telecallers (role_id 3)
+            $availableUsers = User::where('role_id', 3)
+                ->whereNull('team_id')
+                ->whereNull('deleted_at')
+                ->get();
+        }
 
-        return view('admin.teams.members', compact('team', 'allTeamMembers', 'availableTelecallers'));
+        return view('admin.teams.members', compact('team', 'allTeamMembers', 'availableUsers'));
     }
 
     /**

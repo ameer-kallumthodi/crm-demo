@@ -86,6 +86,12 @@ class UserRoleSeeder extends Seeder
                 'description' => 'Auditor access with read-only permissions for leads, converted leads, reports and tracking',
                 'is_active' => true,
             ],
+            [
+                'id' => 13,
+                'title' => 'Marketing',
+                'description' => 'Marketing team access for marketing activities',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($roles as $role) {

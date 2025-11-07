@@ -44,6 +44,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Name</th>
+                                <th>Type</th>
                                 <th>Description</th>
                                 <th>Team Lead</th>
                                 <th>Members</th>
@@ -63,6 +64,17 @@
                                             <h6 class="mb-0 fw-semibold">{{ $team->name }}</h6>
                                         </div>
                                     </div>
+                                </td>
+                                <td>
+                                    @if($team->marketing_team)
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="ti ti-marketing me-1"></i>Marketing
+                                        </span>
+                                    @else
+                                        <span class="badge bg-success text-white">
+                                            <i class="ti ti-shopping-cart me-1"></i>Sales
+                                        </span>
+                                    @endif
                                 </td>
                                 <td>
                                     <span class="text-muted">{{ $team->description ?? 'No description' }}</span>

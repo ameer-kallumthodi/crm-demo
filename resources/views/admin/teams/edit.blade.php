@@ -16,6 +16,18 @@
                     <textarea name="description" class="form-control" id="description" rows="3" placeholder="Enter Description">{{ $edit_data->description }}</textarea>
                 </div>
             </div>
+
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="marketing_team" id="marketing_team" value="1" {{ $edit_data->marketing_team ? 'checked' : '' }}>
+                        <label class="form-check-label" for="marketing_team">
+                            Marketing Team
+                        </label>
+                        <small class="form-text text-muted d-block">Marketing teams will be excluded from telecaller assignments and lead management.</small>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="d-flex justify-content-end gap-2">

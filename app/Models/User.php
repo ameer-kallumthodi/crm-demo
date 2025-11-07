@@ -123,6 +123,20 @@ class User extends Authenticatable
     }
 
     /**
+     * Scope to exclude telecallers in marketing teams
+     */
+    public function scopeNonMarketingTelecallers($query)
+    {
+        return $query->where('role_id', 3)
+            ->where(function($q) {
+                $q->whereHas('team', function($q2) {
+                    $q2->where('marketing_team', false)->orWhereNull('marketing_team');
+                })
+                ->orWhereNull('team_id');
+            });
+    }
+
+    /**
      * Login method
      */
     public static function login($email, $password)

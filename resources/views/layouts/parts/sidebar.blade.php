@@ -72,7 +72,7 @@
 
                 
                 {{-- User Management Section --}}
-                @if(has_permission('admin/telecallers/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index') || has_permission('admin/teachers/index') || has_permission('admin/support-team/index') || has_permission('admin/mentor/index'))
+                @if(has_permission('admin/telecallers/index') || has_permission('admin/marketing/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index') || has_permission('admin/teachers/index') || has_permission('admin/support-team/index') || has_permission('admin/mentor/index'))
                 <li class="pc-item pc-caption">
                     <label>User Management</label>
                 </li>
@@ -83,6 +83,16 @@
                             <i class="ti ti-phone"></i>
                         </span>
                         <span class="pc-mtext">Telecallers</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/marketing/index'))
+                <li class="pc-item {{ request()->routeIs('admin.marketing.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.marketing.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-briefcase"></i>
+                        </span>
+                        <span class="pc-mtext">Marketing</span>
                     </a>
                 </li>
                 @endif
@@ -100,7 +110,7 @@
                 <li class="pc-item {{ request()->routeIs('admin.general-managers.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.general-managers.index') }}" class="pc-link">
                         <span class="pc-micon">
-                            <i class="ti ti-user-cog"></i>
+                            <i class="ti ti-users-group"></i>
                         </span>
                         <span class="pc-mtext">General Managers</span>
                     </a>

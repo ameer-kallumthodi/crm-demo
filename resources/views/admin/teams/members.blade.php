@@ -139,8 +139,8 @@
                             <i class="ti ti-users display-6"></i>
                         </div>
                         <h6 class="text-muted mb-2">No team members assigned</h6>
-                        <p class="text-muted mb-3">Click "Add Member" to assign telecallers to this team</p>
-                        <button type="button" class="btn btn-primary" onclick="show_small_modal('{{ route('admin.telecallers.add') }}?team_id={{ $team->id }}', 'Add Team Member')">
+                        <p class="text-muted mb-3">Click "Add Member" to assign {{ $team->marketing_team ? 'marketing users' : 'telecallers' }} to this team</p>
+                        <button type="button" class="btn btn-primary" onclick="show_small_modal('{{ $team->marketing_team ? route('admin.marketing.add') : route('admin.telecallers.add') }}?team_id={{ $team->id }}', 'Add Team Member')">
                             <i class="ti ti-plus me-1"></i> Add First Member
                         </button>
                     </div>
@@ -150,14 +150,14 @@
     </div>
 </div>
 
-<!-- Available Telecallers Section -->
-@if($availableTelecallers->count() > 0)
+<!-- Available Users Section -->
+@if($availableUsers->count() > 0)
     <div class="row mt-4">
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-light">
                     <h6 class="mb-0">
-                        <i class="ti ti-user-plus me-2"></i>Available Telecallers
+                        <i class="ti ti-user-plus me-2"></i>Available {{ $team->marketing_team ? 'Marketing Users' : 'Telecallers' }}
                     </h6>
                 </div>
                 <div class="card-body">
@@ -173,7 +173,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($availableTelecallers as $index => $telecaller)
+                                @foreach($availableUsers as $index => $user)
                                     <tr>
                                         <td>
                                             <span class="badge bg-light text-dark fw-bold">{{ $index + 1 }}</span>
@@ -183,14 +183,14 @@
                                                 <div class="bg-light text-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
                                                     <i class="ti ti-user"></i>
                                                 </div>
-                                                <span>{{ $telecaller->name }}</span>
+                                                <span>{{ $user->name }}</span>
                                             </div>
                                         </td>
-                                        <td>{{ $telecaller->email }}</td>
-                                        <td>{{ $telecaller->phone ?? 'N/A' }}</td>
+                                        <td>{{ $user->email }}</td>
+                                        <td>{{ $user->phone ?? 'N/A' }}</td>
                                         <td class="text-end">
                                             <button type="button" class="btn btn-success btn-sm" 
-                                                    onclick="addTeamMember({{ $telecaller->id }}, {{ $team->id }}, '{{ $telecaller->name }}')"
+                                                    onclick="addTeamMember({{ $user->id }}, {{ $team->id }}, '{{ $user->name }}')"
                                                     title="Add to Team">
                                                 <i class="ti ti-user-plus me-1"></i> Add
                                             </button>
@@ -267,7 +267,8 @@ function openAddMemberModal() {
     $('.modal').modal('hide');
     // Wait for modal to close, then open the add member modal
     setTimeout(function() {
-        show_small_modal('{{ route('admin.telecallers.add') }}?team_id={{ $team->id }}', 'Add Team Member');
+        var addUrl = '{{ $team->marketing_team ? route('admin.marketing.add') : route('admin.telecallers.add') }}?team_id={{ $team->id }}';
+        show_small_modal(addUrl, 'Add Team Member');
     }, 300);
 }
 </script>

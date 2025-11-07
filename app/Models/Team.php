@@ -21,6 +21,7 @@ class Team extends Model
         'created_by',
         'updated_by',
         'deleted_by',
+        'marketing_team',
     ];
 
     /**
@@ -52,6 +53,14 @@ class Team extends Model
     public function deletedBy()
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    /**
+     * Scope to exclude marketing teams
+     */
+    public function scopeNonMarketing($query)
+    {
+        return $query->where('marketing_team', false)->orWhereNull('marketing_team');
     }
 
     /**
