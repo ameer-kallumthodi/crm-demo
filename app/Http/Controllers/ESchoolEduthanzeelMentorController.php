@@ -271,7 +271,7 @@ class ESchoolEduthanzeelMentorController extends Controller
             'call_1' => 'nullable|in:Call Not Answered,Switched Off,Line Busy,Student Asks to Call Later,Lack of Interest in Conversation,Wrong Contact,Inconsistent Responses,Task Complete',
             'app' => 'nullable|in:Provided app,OTP Problem,Task Completed,Not Respond',
             'whatsapp_group' => 'nullable|in:Sent link,Task Completed,Not Responding,Task Complete',
-            'telegram_group' => 'nullable|in:Call not answered,switched off,line busy,student asks to call later,lack of interest in conversation,wrong contact,inconsistent responses,task complete',
+            'telegram_group' => 'nullable|in:Sent link,task complete',
             'screening_date' => 'nullable|date',
             'screening_officer' => 'nullable|string|max:255',
             'class_time' => 'nullable|date_format:H:i',

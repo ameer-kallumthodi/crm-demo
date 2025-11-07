@@ -195,6 +195,7 @@ class MentorConvertedLeadController extends Controller
             'technology_side' => 'nullable|in:No Knowledge,Limited Knowledge,Moderate Knowledge,High Knowledge',
             'student_status' => 'nullable|in:Low Level,Below Medium,Medium Level,Advanced Level',
             'problems' => 'nullable|string|max:1000',
+            'telegram_group' => 'nullable|in:Sent link,task complete',
         ];
 
         // Add call status rules

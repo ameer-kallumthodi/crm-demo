@@ -240,7 +240,7 @@ class NiosMentorConvertedLeadController extends Controller
         $otherFields = [
             'app' => 'nullable|in:Provided app,OTP Problem,Task Completed,Not Respond',
             'whatsapp_group' => 'nullable|in:Sent link,Task Completed,Not Responding,Task Complete',
-            'telegram_group' => 'nullable|in:Call not answered,switched off,line busy,student asks to call later,lack of interest in conversation,wrong contact,inconsistent responses,task complete',
+            'telegram_group' => 'nullable|in:Sent link,task complete',
             'first_live' => 'nullable|in:Not Respond,1 subject attend,2 subject attend,3 subject attend,4 subject attend,5 subject attend,6 subject attend,Task complete',
             'first_exam' => 'nullable|in:not respond,1 subject attend,2 subject attend,3 subject attend,4 subject attend,5 subject attend,6 subject attend,task complete',
             'second_live' => 'nullable|in:Not Respond,1 subject attend,2 subject attend,3 subject attend,4 subject attend,5 subject attend,6 subject attend,Task complete',
