@@ -22,6 +22,7 @@ use App\Http\Controllers\VoxbayController;
 use App\Http\Controllers\VoxbayCallLogController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MetaLeadController;
+use App\Http\Controllers\GoogleFormController;
 
 // Public routes
 Route::get('/', [AuthController::class, 'index'])->name('login');
@@ -47,6 +48,9 @@ Route::prefix('api/meta-leads')->group(function () {
     Route::get('/statistics', [MetaLeadController::class, 'statistics'])->name('api.meta-leads.statistics');
     Route::get('/list', [MetaLeadController::class, 'index'])->name('api.meta-leads.list');
 });
+
+// Public Google Form API route (no authentication required)
+Route::post('/api/google-form-response', [GoogleFormController::class, 'handleFormSubmission'])->name('api.google-form-response');
 
 // Public API routes for subjects and courses (no authentication required)
 Route::get('/api/subjects/by-course/{courseId}', [App\Http\Controllers\SubjectController::class, 'getByCourse'])->name('api.subjects.by-course');

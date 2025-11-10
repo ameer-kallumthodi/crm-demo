@@ -1939,9 +1939,6 @@ class LeadController extends Controller
         }
     }
 
-
-
-
     public function bulkUploadView()
     {
         $currentUser = AuthHelper::getCurrentUser();
