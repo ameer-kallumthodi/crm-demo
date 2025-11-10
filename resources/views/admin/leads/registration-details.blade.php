@@ -459,7 +459,7 @@
                                         <label class="info-label">Subject</label>
                                         <p class="info-value" id="subject-value">
                                             {{ $studentDetail->subject->title ?? 'N/A' }}
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="subject_id" data-lead-detail-id="{{ $studentDetail->id }}" data-course-id="{{ $studentDetail->course_id }}" data-current-id="{{ $studentDetail->subject_id }}" title="Edit"><i class="ti ti-edit"></i></button>
                                             @endif
                                         </p>
@@ -475,7 +475,7 @@
                                         <label class="info-label">Batch</label>
                                         <p class="info-value" id="batch-value">
                                             {{ $studentDetail->batch->title ?? 'N/A' }}
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="batch_id" data-lead-detail-id="{{ $studentDetail->id }}" data-course-id="{{ $studentDetail->course_id }}" data-current-id="{{ $studentDetail->batch_id }}" title="Edit"><i class="ti ti-edit"></i></button>
                                             @endif
                                         </p>
@@ -492,7 +492,7 @@
                                         <label class="info-label">Sub Course</label>
                                         <p class="info-value" id="sub-course-value">
                                             {{ $studentDetail->subCourse->title ?? 'N/A' }}
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="sub_course_id" data-lead-detail-id="{{ $studentDetail->id }}" data-course-id="{{ $studentDetail->course_id }}" data-current-id="{{ $studentDetail->sub_course_id ?? '' }}" title="Edit"><i class="ti ti-edit"></i></button>
                                             @endif
                                         </p>
@@ -509,6 +509,24 @@
                                     <div class="info-content">
                                         <label class="info-label">UG/PG Selection</label>
                                         <p class="info-value">{{ ucfirst($studentDetail->ug_pg_selection) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if($studentDetail->course_id == 16)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-calendar-event text-danger"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Pass Year</label>
+                                        <p class="info-value" data-field="passed_year" data-lead-detail-id="{{ $studentDetail->id }}">
+                                            {{ $studentDetail->passed_year ?? 'N/A' }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
                             </div>

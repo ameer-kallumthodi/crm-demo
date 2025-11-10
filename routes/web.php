@@ -363,6 +363,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::delete('/marketing-delete/{id}', [MarketingController::class, 'delete'])->name('marketing.delete');
         Route::get('/marketing-change-password/{id}', [MarketingController::class, 'changePassword'])->name('marketing.change-password');
         Route::post('/marketing-update-password/{id}', [MarketingController::class, 'updatePassword'])->name('marketing.update-password');
+        Route::get('/marketing-d2d-form', [MarketingController::class, 'd2dForm'])->name('marketing.d2d-form');
+        Route::post('/marketing-d2d-submit', [MarketingController::class, 'd2dSubmit'])->name('marketing.d2d-submit');
 
         // Teacher routes (role_id = 10)
         Route::resource('teachers', App\Http\Controllers\TeacherController::class);

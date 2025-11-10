@@ -1575,13 +1575,33 @@ class LeadController extends Controller
                 $leadUpdateData['course_id'] = $request->course_id;
             }
             
-            // If status requires followup, store followup date
-            if (in_array((int) $request->lead_status_id, $followupRequiredStatuses, true) && $request->followup_date) {
-                $leadUpdateData['followup_date'] = $request->followup_date;
+            // Handle followup_date based on new status
+            if (in_array((int) $request->lead_status_id, $followupRequiredStatuses, true)) {
+                // New status requires followup - set followup date if provided
+                if ($request->followup_date) {
+                    $leadUpdateData['followup_date'] = $request->followup_date;
+                }
+            } else {
+                // New status doesn't require followup - clear followup date
+                $leadUpdateData['followup_date'] = null;
             }
             
             // Update lead
-            $lead->update($leadUpdateData);
+            $updated = $lead->update($leadUpdateData);
+            
+            if (!$updated) {
+                Log::error('Failed to update lead', [
+                    'lead_id' => $lead->id,
+                    'update_data' => $leadUpdateData
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update lead status. Please try again.'
+                ], 500);
+            }
+            
+            // Refresh lead to get updated data
+            $lead->refresh();
 
             // Generate automatic status change remark
             $statusChangeRemark = "Status changed from '{$currentStatus}' to '{$newStatus}'";
@@ -1609,21 +1629,48 @@ class LeadController extends Controller
             // If status requires followup, store followup date in activity
             if (in_array((int) $request->lead_status_id, $followupRequiredStatuses, true) && $request->followup_date) {
                 $activityData['followup_date'] = $request->followup_date;
+            } else {
+                // Clear followup_date in activity if status doesn't require it
+                $activityData['followup_date'] = null;
             }
             
             // Create lead activity
-            LeadActivity::create($activityData);
+            try {
+                LeadActivity::create($activityData);
+            } catch (\Exception $e) {
+                Log::error('Failed to create lead activity', [
+                    'lead_id' => $lead->id,
+                    'activity_data' => $activityData,
+                    'error' => $e->getMessage()
+                ]);
+                // Don't fail the entire request if activity creation fails
+            }
+
+            // Log successful update
+            Log::info('Lead status updated successfully', [
+                'lead_id' => $lead->id,
+                'old_status' => $currentStatus,
+                'new_status' => $newStatus,
+                'new_status_id' => $request->lead_status_id
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Lead status updated successfully!',
-                'data' => $lead->fresh(['leadStatus'])
+                'data' => $lead->fresh(['leadStatus', 'leadSource'])
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Error updating lead status', [
+                'lead_id' => $lead->id ?? null,
+                'request_data' => $request->all(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while updating the status. Please try again.'
+                'message' => 'An error occurred while updating the status: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -3287,7 +3334,7 @@ class LeadController extends Controller
             $allowedFields = [
                 'student_name', 'father_name', 'mother_name', 'date_of_birth', 'gender',
                 'email', 'phone', 'whatsapp', 'street', 'locality', 'post_office', 'district', 'state', 'pin_code',
-                'message', 'subject_id', 'batch_id', 'sub_course_id'
+                'message', 'subject_id', 'batch_id', 'sub_course_id', 'passed_year'
             ];
 
             if (!in_array($field, $allowedFields)) {
@@ -3378,6 +3425,16 @@ class LeadController extends Controller
                     'message' => 'Registration details updated successfully.',
                     'new_value' => $newValue,
                     'updated_id' => $value
+                ]);
+            } elseif ($field === 'passed_year') {
+                // Handle passed_year as integer
+                $value = $value ? (int)$value : null;
+                $studentDetail->update([$field => $value]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'new_value' => $value ?? 'N/A'
                 ]);
             } else {
                 $studentDetail->update([$field => $value]);
