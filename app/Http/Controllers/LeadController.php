@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\JsonResponse;
+use Carbon\Carbon;
 
 class LeadController extends Controller
 {
@@ -1532,7 +1533,7 @@ class LeadController extends Controller
                 'remarks' => 'required|string|max:1000',
                 'rating' => 'required|integer|min:1|max:10',
                 'date' => 'required|date',
-                'time' => 'required',
+                'time' => 'required|date_format:H:i',
                 'course_id' => 'nullable|exists:courses,id',
             ];
 
@@ -1555,56 +1556,50 @@ class LeadController extends Controller
             }
 
             // Get current status before updating
-            $currentStatus = $lead->leadStatus->title;
-            $newStatusId = $request->lead_status_id;
-            $newStatus = LeadStatus::find($newStatusId)->title;
-
-            // Get interest_status from new lead_status
+            $currentStatusTitle = optional($lead->leadStatus)->title ?? 'Unknown';
+            $newStatusId = (int) $request->lead_status_id;
             $leadStatus = LeadStatus::find($newStatusId);
-            $interestStatus = $leadStatus ? $leadStatus->interest_status : null;
+
+            if (!$leadStatus) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selected status is no longer available. Please refresh and try again.'
+                ], 422);
+            }
+
+            $newStatusTitle = $leadStatus->title;
+            $interestStatus = $leadStatus->interest_status;
+            $currentUserId = AuthHelper::getCurrentUserId();
+
+            try {
+                $activityTimestamp = Carbon::parse($request->date . ' ' . $request->time);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid activity date or time provided.'
+                ], 422);
+            }
 
             // Prepare lead update data
             $leadUpdateData = [
-                'lead_status_id' => $request->lead_status_id,
+                'lead_status_id' => $newStatusId,
                 'interest_status' => $interestStatus,
                 'rating' => $request->rating,
                 'remarks' => $request->remarks,
-                'updated_by' => AuthHelper::getCurrentUserId()
+                'updated_by' => $currentUserId,
+                'followup_date' => null,
             ];
+
             if ($request->filled('course_id')) {
                 $leadUpdateData['course_id'] = $request->course_id;
             }
-            
-            // Handle followup_date based on new status
-            if (in_array((int) $request->lead_status_id, $followupRequiredStatuses, true)) {
-                // New status requires followup - set followup date if provided
-                if ($request->followup_date) {
-                    $leadUpdateData['followup_date'] = $request->followup_date;
-                }
-            } else {
-                // New status doesn't require followup - clear followup date
-                $leadUpdateData['followup_date'] = null;
+
+            if (in_array($newStatusId, $followupRequiredStatuses, true) && $request->followup_date) {
+                $leadUpdateData['followup_date'] = $request->followup_date;
             }
-            
-            // Update lead
-            $updated = $lead->update($leadUpdateData);
-            
-            if (!$updated) {
-                Log::error('Failed to update lead', [
-                    'lead_id' => $lead->id,
-                    'update_data' => $leadUpdateData
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to update lead status. Please try again.'
-                ], 500);
-            }
-            
-            // Refresh lead to get updated data
-            $lead->refresh();
 
             // Generate automatic status change remark
-            $statusChangeRemark = "Status changed from '{$currentStatus}' to '{$newStatus}'";
+            $statusChangeRemark = "Status changed from '{$currentStatusTitle}' to '{$newStatusTitle}'";
             
             // Combine with user remarks if provided
             $finalRemarks = $statusChangeRemark;
@@ -1612,52 +1607,51 @@ class LeadController extends Controller
                 $finalRemarks .= " | User Note: " . $request->remarks;
             }
 
-            // Prepare lead activity data
-            $activityData = [
+            $activityPayload = [
                 'lead_id' => $lead->id,
-                'lead_status_id' => $request->lead_status_id,
+                'lead_status_id' => $newStatusId,
                 'activity_type' => 'status_update',
-                'description' => 'Status updated to ' . $newStatus,
-                'followup_date' => $request->date,
+                'description' => 'Status updated to ' . $newStatusTitle,
                 'reason' => $request->reason,
                 'rating' => $request->rating,
                 'remarks' => $finalRemarks,
-                'created_by' => AuthHelper::getCurrentUserId(),
-                'updated_by' => AuthHelper::getCurrentUserId(),
+                'created_by' => $currentUserId,
+                'updated_by' => $currentUserId,
             ];
-            
-            // If status requires followup, store followup date in activity
-            if (in_array((int) $request->lead_status_id, $followupRequiredStatuses, true) && $request->followup_date) {
-                $activityData['followup_date'] = $request->followup_date;
-            } else {
-                // Clear followup_date in activity if status doesn't require it
-                $activityData['followup_date'] = null;
-            }
-            
-            // Create lead activity
-            try {
-                LeadActivity::create($activityData);
-            } catch (\Exception $e) {
-                Log::error('Failed to create lead activity', [
-                    'lead_id' => $lead->id,
-                    'activity_data' => $activityData,
-                    'error' => $e->getMessage()
-                ]);
-                // Don't fail the entire request if activity creation fails
+
+            if (in_array($newStatusId, $followupRequiredStatuses, true) && $request->followup_date) {
+                $activityPayload['followup_date'] = $request->followup_date;
             }
 
-            // Log successful update
+            $updatedLead = DB::transaction(function () use ($lead, $leadUpdateData, $activityPayload, $activityTimestamp) {
+                $leadUpdatePayload = $leadUpdateData;
+                $leadUpdatePayload['updated_at'] = $activityTimestamp;
+
+                $updated = Lead::where('id', $lead->id)->update($leadUpdatePayload);
+
+                if (!$updated) {
+                    throw new \RuntimeException('Failed to update lead record.');
+                }
+
+                $lead->leadActivities()->create(array_merge($activityPayload, [
+                    'created_at' => $activityTimestamp,
+                    'updated_at' => $activityTimestamp,
+                ]));
+
+                return $lead->fresh(['leadStatus', 'leadSource']);
+            });
+
             Log::info('Lead status updated successfully', [
                 'lead_id' => $lead->id,
-                'old_status' => $currentStatus,
-                'new_status' => $newStatus,
-                'new_status_id' => $request->lead_status_id
+                'old_status' => $currentStatusTitle,
+                'new_status' => $newStatusTitle,
+                'new_status_id' => $newStatusId
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Lead status updated successfully!',
-                'data' => $lead->fresh(['leadStatus', 'leadSource'])
+                'data' => $updatedLead
             ]);
 
         } catch (\Exception $e) {
