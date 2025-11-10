@@ -240,6 +240,23 @@ class RoleHelper
         return $user->role_id == 12;
     }
 
+    /**
+     * Check if current user is Marketing
+     */
+    public static function is_marketing()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        return $user->role_id == 13;
+    }
+
 
     /**
      * Check if current user has admin or super admin role

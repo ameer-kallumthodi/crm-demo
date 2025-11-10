@@ -10,9 +10,11 @@ use App\Models\LeadStatus;
 use App\Models\LeadSource;
 use App\Models\LeadActivity;
 use App\Models\Course;
+use App\Models\MarketingLead;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use App\Helpers\RoleHelper;
 use App\Helpers\AuthHelper;
 
@@ -300,15 +302,18 @@ class MarketingController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        // Get marketing users (role_id = 13)
-        $marketingUsers = User::where('role_id', 13)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+        // Get marketing users (role_id = 13) - only if not marketing user
+        $marketingUsers = collect();
+        if (!$isMarketing) {
+            $marketingUsers = User::where('role_id', 13)
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get();
+        }
         
         $country_codes = get_country_code();
 
-        return view('admin.marketing.d2d-form', compact('marketingUsers', 'country_codes'));
+        return view('admin.marketing.d2d-form', compact('marketingUsers', 'country_codes', 'isMarketing', 'currentUser'));
     }
 
     /**
@@ -330,8 +335,35 @@ class MarketingController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
+        // Determine marketing_bde_id
+        $marketingBdeId = null;
+        if ($isMarketing) {
+            // If marketing user is logged in, use their ID
+            $marketingBdeId = $currentUser->id;
+        } else {
+            // If admin/manager, require BDE selection
+            $validator = Validator::make($request->all(), [
+                'bde_id' => 'required|exists:users,id',
+            ]);
+            
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->with('message_danger', $validator->errors()->first())
+                    ->withInput();
+            }
+            
+            // Verify BDE is a marketing user
+            $bde = User::findOrFail($request->bde_id);
+            if ($bde->role_id != 13) {
+                return redirect()->back()
+                    ->with('message_danger', 'Selected BDE must be a marketing user.')
+                    ->withInput();
+            }
+            
+            $marketingBdeId = $request->bde_id;
+        }
+
         $validator = Validator::make($request->all(), [
-            'bde_id' => 'required|exists:users,id',
             'date_of_visit' => 'required|date',
             'location' => 'required|string|max:255',
             'house_number' => 'nullable|string|max:255',
@@ -353,119 +385,375 @@ class MarketingController extends Controller
                 ->withInput();
         }
 
-        // Verify BDE is a marketing user
-        $bde = User::findOrFail($request->bde_id);
-        if ($bde->role_id != 13) {
-            return redirect()->back()
-                ->with('message_danger', 'Selected BDE must be a marketing user.')
-                ->withInput();
-        }
-
-        // Get or create D2D lead source
-        $leadSource = LeadSource::where('title', 'LIKE', '%Door-to-Door%')
-            ->orWhere('title', 'LIKE', '%D2D%')
-            ->first();
-        
-        if (!$leadSource) {
-            // Try to get any active lead source as fallback
-            $leadSource = LeadSource::where('is_active', true)->first();
-            if (!$leadSource) {
-                return redirect()->back()
-                    ->with('message_danger', 'No active lead source found. Please contact administrator.')
-                    ->withInput();
-            }
-        }
-
-        // Get default lead status (usually id 1 for new)
-        $leadStatus = LeadStatus::where('is_active', true)->first();
-        if (!$leadStatus) {
-            return redirect()->back()
-                ->with('message_danger', 'No active lead status found. Please contact administrator.')
-                ->withInput();
-        }
-
-        // Prepare remarks with additional information
-        $remarks = $request->remarks ?? '';
-        $additionalInfo = [];
-        
-        if ($request->filled('location')) {
-            $additionalInfo[] = "Location: " . $request->location;
-        }
-        if ($request->filled('house_number')) {
-            $additionalInfo[] = "House Number: " . $request->house_number;
-        }
-        if ($request->filled('date_of_visit')) {
-            $additionalInfo[] = "Date of Visit: " . $request->date_of_visit;
-        }
-        if ($request->filled('lead_type')) {
-            $additionalInfo[] = "Lead Type: " . $request->lead_type;
-        }
-        if (!empty($request->interested_courses)) {
-            $additionalInfo[] = "Interested Courses: " . implode(', ', $request->interested_courses);
-        }
-        
-        if (!empty($additionalInfo)) {
-            $remarks = (!empty($remarks) ? $remarks . "\n\n" : '') . "D2D Campaign Details:\n" . implode("\n", $additionalInfo);
-        }
-
-        // Try to get a default course if interested courses are selected
-        // This is optional since D2D leads can have multiple courses
-        $courseId = null;
-        if (!empty($request->interested_courses)) {
-            // Try to match first interested course with database courses
-            $firstCourse = $request->interested_courses[0];
-            $course = Course::where('title', 'LIKE', '%' . $firstCourse . '%')
-                ->where('is_active', true)
-                ->first();
-            if ($course) {
-                $courseId = $course->id;
-            }
-        }
-
-        // Create lead data
-        $leadData = [
-            'title' => $request->lead_name,
+        // Prepare marketing lead data
+        $marketingLeadData = [
+            'marketing_bde_id' => $marketingBdeId,
+            'date_of_visit' => $request->date_of_visit,
+            'location' => $request->location,
+            'house_number' => $request->house_number,
+            'lead_name' => $request->lead_name,
             'code' => $request->code,
             'phone' => $request->phone,
             'whatsapp_code' => $request->whatsapp_code,
             'whatsapp' => $request->whatsapp,
             'address' => $request->address,
-            'lead_status_id' => $leadStatus->id,
-            'lead_source_id' => $leadSource->id,
-            'course_id' => $courseId, // Can be null for D2D leads with multiple courses
-            'interest_status' => $leadStatus->interest_status,
-            'remarks' => $remarks,
-            'add_date' => $request->date_of_visit,
-            'add_time' => date('H:i'),
+            'lead_type' => $request->lead_type,
+            'interested_courses' => $request->interested_courses ?? [],
+            'remarks' => $request->remarks,
+            'is_telecaller_assigned' => false,
             'created_by' => AuthHelper::getCurrentUserId(),
             'updated_by' => AuthHelper::getCurrentUserId(),
         ];
 
-        // Set BDE's team if available
-        if ($bde->team_id) {
-            $leadData['team_id'] = $bde->team_id;
-        }
+        // Create the marketing lead
+        $marketingLead = MarketingLead::create($marketingLeadData);
 
-        // Create the lead
-        $lead = Lead::create($leadData);
-
-        if ($lead) {
-            // Create lead activity
-            LeadActivity::create([
-                'lead_id' => $lead->id,
-                'lead_status_id' => $leadStatus->id,
-                'remarks' => $remarks,
-                'created_by' => AuthHelper::getCurrentUserId(),
-                'updated_by' => AuthHelper::getCurrentUserId()
-            ]);
-
+        if ($marketingLead) {
             return redirect()->route('admin.marketing.d2d-form')
-                ->with('message_success', 'D2D lead created successfully!');
+                ->with('message_success', 'D2D form submitted successfully!');
         }
 
         return redirect()->back()
             ->with('message_danger', 'Something went wrong! Please try again.')
             ->withInput();
+    }
+
+    /**
+     * Display Marketing Leads listing
+     */
+    public function marketingLeads(Request $request)
+    {
+        $currentUser = AuthHelper::getCurrentUser();
+        
+        // Allow access to: Admin, Super Admin, General Manager, and Marketing users (role_id = 13)
+        if (!$currentUser) {
+            return redirect()->route('dashboard')->with('message_danger', 'Please login to access this page.');
+        }
+        
+        $isMarketing = $currentUser->role_id == 13;
+        $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+        
+        if (!$isMarketing && !$isAdminOrManager) {
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
+        }
+
+        // Get marketing leads
+        $query = MarketingLead::with(['marketingBde:id,name', 'createdBy:id,name']);
+        
+        // If marketing user, only show their own leads
+        if ($isMarketing) {
+            $query->where('marketing_bde_id', $currentUser->id);
+        }
+        
+        // Apply filters if any
+        if ($request->filled('date_from')) {
+            $query->where('date_of_visit', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->where('date_of_visit', '<=', $request->date_to);
+        }
+        if ($request->filled('bde_id')) {
+            $query->where('marketing_bde_id', $request->bde_id);
+        }
+        if ($request->filled('is_assigned')) {
+            $query->where('is_telecaller_assigned', $request->is_assigned == '1');
+        }
+        
+        // Get marketing users for filter (only if admin/manager)
+        $marketingUsers = collect();
+        if (!$isMarketing) {
+            $marketingUsers = User::where('role_id', 13)
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get();
+        }
+
+        return view('admin.marketing.marketing-leads', compact('marketingUsers', 'isMarketing', 'currentUser'));
+    }
+
+    /**
+     * Show edit form for marketing lead
+     */
+    public function editMarketingLead($id)
+    {
+        $currentUser = AuthHelper::getCurrentUser();
+        
+        if (!$currentUser) {
+            return response()->json(['error' => 'Please login to access this page.'], 403);
+        }
+        
+        $isMarketing = $currentUser->role_id == 13;
+        $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+        
+        if (!$isMarketing && !$isAdminOrManager) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $marketingLead = MarketingLead::findOrFail($id);
+        
+        // If marketing user, only allow editing their own leads
+        if ($isMarketing && $marketingLead->marketing_bde_id != $currentUser->id) {
+            return response()->json(['error' => 'Access denied. You can only edit your own leads.'], 403);
+        }
+
+        $country_codes = get_country_code();
+        
+        // Get marketing users for BDE selection (only if admin/manager)
+        $marketingUsers = collect();
+        if (!$isMarketing) {
+            $marketingUsers = User::where('role_id', 13)
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get();
+        }
+
+        return view('admin.marketing.edit-marketing-lead', compact('marketingLead', 'country_codes', 'marketingUsers', 'isMarketing', 'currentUser'));
+    }
+
+    /**
+     * Update marketing lead
+     */
+    public function updateMarketingLead(Request $request, $id)
+    {
+        $currentUser = AuthHelper::getCurrentUser();
+        
+        if (!$currentUser) {
+            return response()->json(['error' => 'Please login to access this page.'], 403);
+        }
+        
+        $isMarketing = $currentUser->role_id == 13;
+        $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+        
+        if (!$isMarketing && !$isAdminOrManager) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $marketingLead = MarketingLead::findOrFail($id);
+        
+        // If marketing user, only allow editing their own leads
+        if ($isMarketing && $marketingLead->marketing_bde_id != $currentUser->id) {
+            return response()->json(['error' => 'Access denied. You can only edit your own leads.'], 403);
+        }
+
+        // Determine marketing_bde_id
+        $marketingBdeId = $marketingLead->marketing_bde_id; // Keep existing by default
+        if (!$isMarketing && $request->filled('bde_id')) {
+            // If admin/manager, allow changing BDE
+            $bde = User::findOrFail($request->bde_id);
+            if ($bde->role_id != 13) {
+                return response()->json(['error' => 'Selected BDE must be a marketing user.'], 422);
+            }
+            $marketingBdeId = $request->bde_id;
+        }
+
+        $validator = Validator::make($request->all(), [
+            'date_of_visit' => 'required|date',
+            'location' => 'required|string|max:255',
+            'house_number' => 'nullable|string|max:255',
+            'lead_name' => 'required|string|max:255',
+            'code' => 'required|string|max:10',
+            'phone' => 'required|string|max:20',
+            'whatsapp_code' => 'nullable|string|max:10',
+            'whatsapp' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:500',
+            'lead_type' => 'required|string|in:Student,Parent,Working Professional,Institution Representative,Others',
+            'interested_courses' => 'nullable|array',
+            'interested_courses.*' => 'string|max:255',
+            'remarks' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        // Update marketing lead
+        $marketingLead->update([
+            'marketing_bde_id' => $marketingBdeId,
+            'date_of_visit' => $request->date_of_visit,
+            'location' => $request->location,
+            'house_number' => $request->house_number,
+            'lead_name' => $request->lead_name,
+            'code' => $request->code,
+            'phone' => $request->phone,
+            'whatsapp_code' => $request->whatsapp_code,
+            'whatsapp' => $request->whatsapp,
+            'address' => $request->address,
+            'lead_type' => $request->lead_type,
+            'interested_courses' => $request->interested_courses ?? [],
+            'remarks' => $request->remarks,
+            'updated_by' => AuthHelper::getCurrentUserId(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Marketing lead updated successfully!',
+            'redirect' => route('admin.marketing.marketing-leads')
+        ]);
+    }
+
+    /**
+     * AJAX endpoint for DataTables to fetch marketing leads data
+     */
+    public function getMarketingLeadsData(Request $request): \Illuminate\Http\JsonResponse
+    {
+        try {
+            set_time_limit(config('timeout.max_execution_time', 300));
+
+            $currentUser = AuthHelper::getCurrentUser();
+            
+            if (!$currentUser) {
+                return response()->json(['error' => 'Please login to access this page.'], 403);
+            }
+            
+            $isMarketing = $currentUser->role_id == 13;
+            $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+            
+            if (!$isMarketing && !$isAdminOrManager) {
+                return response()->json(['error' => 'Access denied.'], 403);
+            }
+
+            // Build base query
+            $query = MarketingLead::with(['marketingBde:id,name', 'createdBy:id,name']);
+            
+            // If marketing user, only show their own leads
+            if ($isMarketing) {
+                $query->where('marketing_bde_id', $currentUser->id);
+            }
+            
+            // Get total count before filtering
+            $totalRecords = $query->count();
+            
+            // Apply filters
+            if ($request->filled('date_from')) {
+                $query->where('date_of_visit', '>=', $request->date_from);
+            }
+            if ($request->filled('date_to')) {
+                $query->where('date_of_visit', '<=', $request->date_to);
+            }
+            if ($request->filled('bde_id')) {
+                $query->where('marketing_bde_id', $request->bde_id);
+            }
+            if ($request->filled('is_assigned')) {
+                $query->where('is_telecaller_assigned', $request->is_assigned == '1');
+            }
+            
+            // Apply DataTables search (from DataTables search box)
+            if ($request->filled('search') && is_array($request->search) && isset($request->search['value']) && !empty($request->search['value'])) {
+                $searchValue = $request->search['value'];
+                $query->where(function($q) use ($searchValue) {
+                    $q->where('lead_name', 'LIKE', "%{$searchValue}%")
+                      ->orWhere('phone', 'LIKE', "%{$searchValue}%")
+                      ->orWhere('whatsapp', 'LIKE', "%{$searchValue}%")
+                      ->orWhere('location', 'LIKE', "%{$searchValue}%")
+                      ->orWhere('address', 'LIKE', "%{$searchValue}%")
+                      ->orWhere('remarks', 'LIKE', "%{$searchValue}%");
+                });
+            }
+            
+            // Get filtered count
+            $filteredCount = $query->count();
+            
+            // Column mapping for ordering
+            $columns = [
+                0 => 'id', // Index
+                1 => 'date_of_visit', // Date of Visit
+                2 => 'marketing_bde_id', // BDE Name
+                3 => 'lead_name', // Lead Name
+                4 => 'phone', // Phone
+                5 => 'whatsapp', // WhatsApp
+                6 => 'address', // Address
+                7 => 'location', // Location
+                8 => 'house_number', // House Number
+                9 => 'lead_type', // Lead Type
+                10 => 'id', // Interested Courses (no sorting)
+                11 => 'remarks', // Remarks
+                12 => 'is_telecaller_assigned', // Assignment Status
+                13 => 'assigned_at', // Assigned At
+                14 => 'created_at', // Created At
+                15 => 'id', // Actions (no sorting)
+            ];
+            
+            // Apply ordering
+            $order = $request->get('order', []);
+            $orderColumn = isset($order[0]['column']) ? (int)$order[0]['column'] : 14; // Default to created_at
+            $orderDir = isset($order[0]['dir']) ? $order[0]['dir'] : 'desc';
+            
+            $orderColumnName = $columns[$orderColumn] ?? 'created_at';
+            if ($orderColumnName !== 'id') {
+                $query->orderBy($orderColumnName, $orderDir);
+            } else {
+                $query->orderBy('created_at', 'desc');
+            }
+            
+            // Apply pagination
+            $start = $request->get('start', 0);
+            $length = $request->get('length', 25);
+            $marketingLeads = $query->skip($start)->take($length)->get();
+            
+            // Build data array
+            $data = [];
+            foreach ($marketingLeads as $index => $lead) {
+                $interestedCoursesHtml = '-';
+                if ($lead->interested_courses && count($lead->interested_courses) > 0) {
+                    $badges = [];
+                    foreach ($lead->interested_courses as $course) {
+                        $badges[] = '<span class="badge bg-secondary me-1">' . htmlspecialchars($course) . '</span>';
+                    }
+                    $interestedCoursesHtml = implode('', $badges);
+                }
+                
+                $remarksHtml = '-';
+                if ($lead->remarks) {
+                    $remarksHtml = '<span class="text-truncate d-inline-block" style="max-width: 200px;" title="' . htmlspecialchars($lead->remarks) . '">' . 
+                                   htmlspecialchars(Str::limit($lead->remarks, 50)) . '</span>';
+                }
+                
+                $row = [
+                    'index' => $start + $index + 1,
+                    'date_of_visit' => $lead->date_of_visit ? $lead->date_of_visit->format('M d, Y') : '-',
+                    'bde_name' => $lead->marketingBde ? htmlspecialchars($lead->marketingBde->name) : '-',
+                    'lead_name' => htmlspecialchars($lead->lead_name),
+                    'phone' => ($lead->code ? htmlspecialchars($lead->code) . ' ' : '') . htmlspecialchars($lead->phone),
+                    'whatsapp' => $lead->whatsapp ? (($lead->whatsapp_code ? htmlspecialchars($lead->whatsapp_code) . ' ' : '') . htmlspecialchars($lead->whatsapp)) : '-',
+                    'address' => $lead->address ? htmlspecialchars($lead->address) : '-',
+                    'location' => htmlspecialchars($lead->location),
+                    'house_number' => $lead->house_number ? htmlspecialchars($lead->house_number) : '-',
+                    'lead_type' => '<span class="badge bg-info">' . htmlspecialchars($lead->lead_type) . '</span>',
+                    'interested_courses' => $interestedCoursesHtml,
+                    'remarks' => $remarksHtml,
+                    'assignment_status' => $lead->is_telecaller_assigned 
+                        ? '<span class="badge bg-success">Assigned</span>' 
+                        : '<span class="badge bg-warning">Not Assigned</span>',
+                    'assigned_at' => $lead->assigned_at ? $lead->assigned_at->format('M d, Y H:i') : '-',
+                    'created_at' => $lead->created_at ? $lead->created_at->format('M d, Y H:i') : '-',
+                    'actions' => '<button type="button" class="btn btn-warning btn-sm" ' .
+                                'onclick="show_ajax_modal(\'' . route('admin.marketing.marketing-leads.edit', $lead->id) . '\', \'Edit Marketing Lead\')" ' .
+                                'title="Edit"><i class="ti ti-edit"></i></button>'
+                ];
+                
+                $data[] = $row;
+            }
+            
+            // Build response array
+            $responseData = [
+                'draw' => intval($request->get('draw')),
+                'recordsTotal' => $totalRecords,
+                'recordsFiltered' => $filteredCount,
+                'data' => $data
+            ];
+            
+            return response()->json($responseData);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error fetching marketing leads data: ' . $e->getMessage());
+            return response()->json([
+                'draw' => intval($request->get('draw', 1)),
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+                'error' => 'Error loading data. Please try again.'
+            ], 500);
+        }
     }
 }
 

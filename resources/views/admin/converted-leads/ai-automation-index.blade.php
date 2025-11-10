@@ -316,6 +316,7 @@
                                 <th>Phone</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
+                                <th>Academic</th>
                                 <th>Email</th>
                                 <th>Call Status</th>
                                 <th>Class Information</th>
@@ -333,6 +334,10 @@
                         <tbody>
                             @forelse($convertedLeads as $index => $convertedLead)
                             <tr>
+                                @php
+                                    $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                    $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                                @endphp
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                 <td>
@@ -376,6 +381,22 @@
                                         </button>
                                         @endif
                                     </div>
+                                </td>
+                                <td>
+                                    @include('admin.converted-leads.partials.status-badge', [
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'academic',
+                                        'showToggle' => $canToggleAcademic,
+                                        'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null
+                                    ])
+                                </td>
+                                <td>
+                                    @include('admin.converted-leads.partials.status-badge', [
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'support',
+                                        'showToggle' => $canToggleSupport,
+                                        'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null
+                                    ])
                                 </td>
                                 <td>{{ $convertedLead->email ?? '-' }}</td>
                                 <td>
@@ -509,7 +530,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="19" class="text-center">No AI Automation converted leads found</td>
+                                <td colspan="20" class="text-center">No AI Automation converted leads found</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -522,6 +543,10 @@
                     @forelse($convertedLeads as $index => $convertedLead)
                     <div class="card mb-3">
                         <div class="card-body">
+                            @php
+                                $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                            @endphp
                             <!-- Lead Header -->
                             <div class="d-flex align-items-center mb-3">
                                 <div class="avtar avtar-s rounded-circle bg-light-primary me-3 d-flex align-items-center justify-content-center">
@@ -571,6 +596,31 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Registration Number</small>
                                     <span class="fw-medium">{{ $convertedLead->studentDetails?->registration_number ?? 'N/A' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Academic</small>
+                                    @include('admin.converted-leads.partials.status-badge', [
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'academic',
+                                        'showToggle' => $canToggleAcademic,
+                                        'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null
+                                    ])
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Support</small>
+                                    @include('admin.converted-leads.partials.status-badge', [
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'support',
+                                        'showToggle' => $canToggleSupport,
+                                        'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null
+                                    ])
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Academic</small>
+                                    @include('admin.converted-leads.partials.status-badge', [
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'academic'
+                                    ])
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>

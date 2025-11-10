@@ -70,6 +70,29 @@
                 </li>
                 @endif
 
+                {{-- D2D Form - Above User Management --}}
+                @if(has_permission('admin/marketing/d2d-form'))
+                <li class="pc-item {{ request()->routeIs('admin.marketing.d2d-form') || request()->routeIs('admin.marketing.d2d-submit') ? 'active' : '' }}">
+                    <a href="{{ route('admin.marketing.d2d-form') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-clipboard"></i>
+                        </span>
+                        <span class="pc-mtext">D2D Form</span>
+                    </a>
+                </li>
+                @endif
+                {{-- Marketing Leads - Above User Management --}}
+                @if(has_permission('admin/marketing/marketing-leads'))
+                <li class="pc-item {{ request()->routeIs('admin.marketing.marketing-leads') ? 'active' : '' }}">
+                    <a href="{{ route('admin.marketing.marketing-leads') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-list"></i>
+                        </span>
+                        <span class="pc-mtext">Marketing Leads</span>
+                    </a>
+                </li>
+                @endif
+
                 {{-- User Management Section --}}
                 @if(has_permission('admin/telecallers/index') || has_permission('admin/marketing/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index') || has_permission('admin/teachers/index') || has_permission('admin/support-team/index') || has_permission('admin/mentor/index'))
                 <li class="pc-item pc-caption">
@@ -86,7 +109,7 @@
                 </li>
                 @endif
                 @if(has_permission('admin/marketing/index'))
-                <li class="pc-item {{ request()->routeIs('admin.marketing.*') ? 'active' : '' }}">
+                <li class="pc-item {{ request()->routeIs('admin.marketing.*') && !request()->routeIs('admin.marketing.d2d-form') ? 'active' : '' }}">
                     <a href="{{ route('admin.marketing.index') }}" class="pc-link">
                         <span class="pc-micon">
                             <i class="ti ti-briefcase"></i>
@@ -109,7 +132,7 @@
                 <li class="pc-item {{ request()->routeIs('admin.general-managers.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.general-managers.index') }}" class="pc-link">
                         <span class="pc-micon">
-                            <i class="ti ti-users-group"></i>
+                            <i class="ti ti-users"></i>
                         </span>
                         <span class="pc-mtext">General Managers</span>
                     </a>

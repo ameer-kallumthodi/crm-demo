@@ -284,8 +284,11 @@
                                     <th>Name</th>
                                     <th>DOB</th>
                                     <th>Phone</th>
-                                    <th>Batch</th>
-                                    <th>Admission Batch</th>
+                                <th>Batch</th>
+                                <th>Admission Batch</th>
+                                <th>Subject</th>
+                                <th>Academic</th>
+                                <th>Support</th>
                                     <th>Registration Fee</th>
                                     <th>Registration Status</th>
                                     <th>Course</th>
@@ -303,6 +306,10 @@
                             <tbody>
                                 @forelse($convertedLeads as $index => $convertedLead)
                                 <tr>
+                                    @php
+                                        $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                        $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                                    @endphp
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>
@@ -373,6 +380,32 @@
                                             </button>
                                             @endif
                                         </div>
+                                    </td>
+                                <td>
+                                    <div class="inline-edit" data-field="subject_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->subject_id }}">
+                                        <span class="display-value">{{ $convertedLead->subject?->title ?? '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                    <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
+                                            'convertedLead' => $convertedLead,
+                                            'type' => 'academic',
+                                            'showToggle' => $canToggleAcademic,
+                                            'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null
+                                        ])
+                                    </td>
+                                    <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
+                                            'convertedLead' => $convertedLead,
+                                            'type' => 'support',
+                                            'showToggle' => $canToggleSupport,
+                                            'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null
+                                        ])
                                     </td>
                                     <td>
                                         <div class="inline-edit" data-field="status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->status }}">
@@ -503,7 +536,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="20" class="text-center">No BOSSE converted leads found</td>
+                                <td colspan="23" class="text-center">No BOSSE converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -516,6 +549,10 @@
                     @forelse($convertedLeads as $index => $convertedLead)
                     <div class="card mb-3">
                         <div class="card-body">
+                            @php
+                                $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                            @endphp
                             <!-- Lead Header -->
                             <div class="d-flex align-items-center mb-3">
                                 <div class="avtar avtar-s rounded-circle bg-light-success me-3 d-flex align-items-center justify-content-center">
@@ -587,6 +624,28 @@
                                     @else
                                     <span class="text-muted">Not Set</span>
                                     @endif
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Subject</small>
+                                    <span class="fw-medium">{{ $convertedLead->subject?->title ?? 'N/A' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Academic</small>
+                                    @include('admin.converted-leads.partials.status-badge', [
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'academic',
+                                        'showToggle' => $canToggleAcademic,
+                                        'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null
+                                    ])
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Support</small>
+                                    @include('admin.converted-leads.partials.status-badge', [
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'support',
+                                        'showToggle' => $canToggleSupport,
+                                        'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null
+                                    ])
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
@@ -772,13 +831,19 @@
 #convertedLeadsTable thead th:nth-child(16),
 #convertedLeadsTable tbody td:nth-child(16) { min-width: 140px; }
 #convertedLeadsTable thead th:nth-child(17),
-#convertedLeadsTable tbody td:nth-child(17) { min-width: 200px; }
+#convertedLeadsTable tbody td:nth-child(17) { min-width: 140px; }
 #convertedLeadsTable thead th:nth-child(18),
-#convertedLeadsTable tbody td:nth-child(18) { min-width: 120px; }
+#convertedLeadsTable tbody td:nth-child(18) { min-width: 200px; }
 #convertedLeadsTable thead th:nth-child(19),
 #convertedLeadsTable tbody td:nth-child(19) { min-width: 120px; }
 #convertedLeadsTable thead th:nth-child(20),
-#convertedLeadsTable tbody td:nth-child(20) { min-width: 140px; }
+#convertedLeadsTable tbody td:nth-child(20) { min-width: 120px; }
+#convertedLeadsTable thead th:nth-child(21),
+#convertedLeadsTable tbody td:nth-child(21) { min-width: 180px; }
+#convertedLeadsTable thead th:nth-child(22),
+#convertedLeadsTable tbody td:nth-child(22) { min-width: 140px; }
+#convertedLeadsTable thead th:nth-child(23),
+#convertedLeadsTable tbody td:nth-child(23) { min-width: 140px; }
 </style>
 @endpush
 

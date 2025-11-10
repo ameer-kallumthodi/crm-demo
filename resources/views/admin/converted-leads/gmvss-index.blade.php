@@ -296,6 +296,8 @@
                                     <th>Phone</th>
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
+                                    <th>Academic</th>
+                                    <th>Support</th>
                                     <th>Mail</th>
                                     <th>Course</th>
                                     <th>Passed Year</th>
@@ -311,6 +313,10 @@
                             <tbody>
                                 @forelse($convertedLeads as $index => $convertedLead)
                                 <tr>
+                                    @php
+                                        $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                        $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                                    @endphp
                                     <td>{{ $index + 1 }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="register_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->register_number }}">
@@ -368,6 +374,22 @@
                                             </button>
                                             @endif
                                         </div>
+                                    </td>
+                                    <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
+                                            'convertedLead' => $convertedLead,
+                                            'type' => 'academic',
+                                            'showToggle' => $canToggleAcademic,
+                                            'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null
+                                        ])
+                                    </td>
+                                    <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
+                                            'convertedLead' => $convertedLead,
+                                            'type' => 'support',
+                                            'showToggle' => $canToggleSupport,
+                                            'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null
+                                        ])
                                     </td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
@@ -472,7 +494,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="17" class="text-center">No GMVSS converted leads found</td>
+                                    <td colspan="19" class="text-center">No GMVSS converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -485,6 +507,10 @@
                     @forelse($convertedLeads as $index => $convertedLead)
                     <div class="card mb-3">
                         <div class="card-body">
+                            @php
+                                $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                            @endphp
                             <!-- Lead Header -->
                             <div class="d-flex align-items-center mb-3">
                                 <div class="avtar avtar-s rounded-circle bg-light-success me-3 d-flex align-items-center justify-content-center">
@@ -556,6 +582,24 @@
                                     @else
                                     <span class="text-muted">Not Set</span>
                                     @endif
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Academic</small>
+                                    @include('admin.converted-leads.partials.status-badge', [
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'academic',
+                                        'showToggle' => $canToggleAcademic,
+                                        'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null
+                                    ])
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Support</small>
+                                    @include('admin.converted-leads.partials.status-badge', [
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'support',
+                                        'showToggle' => $canToggleSupport,
+                                        'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null
+                                    ])
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
@@ -718,27 +762,35 @@
 #convertedLeadsTable thead th:nth-child(4),
 #convertedLeadsTable tbody td:nth-child(4) { min-width: 220px; }
 #convertedLeadsTable thead th:nth-child(5),
-#convertedLeadsTable tbody td:nth-child(5) { min-width: 140px; }
+#convertedLeadsTable tbody td:nth-child(5) { min-width: 160px; }
 #convertedLeadsTable thead th:nth-child(6),
-#convertedLeadsTable tbody td:nth-child(6) { min-width: 180px; }
+#convertedLeadsTable tbody td:nth-child(6) { min-width: 160px; }
 #convertedLeadsTable thead th:nth-child(7),
 #convertedLeadsTable tbody td:nth-child(7) { min-width: 180px; }
 #convertedLeadsTable thead th:nth-child(8),
-#convertedLeadsTable tbody td:nth-child(8) { min-width: 120px; }
+#convertedLeadsTable tbody td:nth-child(8) { min-width: 140px; }
 #convertedLeadsTable thead th:nth-child(9),
 #convertedLeadsTable tbody td:nth-child(9) { min-width: 140px; }
 #convertedLeadsTable thead th:nth-child(10),
-#convertedLeadsTable tbody td:nth-child(10) { min-width: 160px; }
+#convertedLeadsTable tbody td:nth-child(10) { min-width: 200px; }
 #convertedLeadsTable thead th:nth-child(11),
-#convertedLeadsTable tbody td:nth-child(11) { min-width: 140px; }
+#convertedLeadsTable tbody td:nth-child(11) { min-width: 180px; }
 #convertedLeadsTable thead th:nth-child(12),
-#convertedLeadsTable tbody td:nth-child(12) { min-width: 180px; }
+#convertedLeadsTable tbody td:nth-child(12) { min-width: 120px; }
 #convertedLeadsTable thead th:nth-child(13),
-#convertedLeadsTable tbody td:nth-child(13) { min-width: 180px; }
+#convertedLeadsTable tbody td:nth-child(13) { min-width: 160px; }
 #convertedLeadsTable thead th:nth-child(14),
 #convertedLeadsTable tbody td:nth-child(14) { min-width: 200px; }
 #convertedLeadsTable thead th:nth-child(15),
-#convertedLeadsTable tbody td:nth-child(15) { min-width: 120px; }
+#convertedLeadsTable tbody td:nth-child(15) { min-width: 160px; }
+#convertedLeadsTable thead th:nth-child(16),
+#convertedLeadsTable tbody td:nth-child(16) { min-width: 200px; }
+#convertedLeadsTable thead th:nth-child(17),
+#convertedLeadsTable tbody td:nth-child(17) { min-width: 200px; }
+#convertedLeadsTable thead th:nth-child(18),
+#convertedLeadsTable tbody td:nth-child(18) { min-width: 220px; }
+#convertedLeadsTable thead th:nth-child(19),
+#convertedLeadsTable tbody td:nth-child(19) { min-width: 140px; }
 </style>
 @endpush
 

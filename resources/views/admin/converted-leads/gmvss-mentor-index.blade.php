@@ -231,6 +231,16 @@
                         </div>
 
                         <div class="col-12 col-sm-6 col-md-2">
+                            <label for="date_from" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}">
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="date_to" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request('date_to') }}">
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-2">
                             <label for="certificate_status" class="form-label">Certificate</label>
                             <select class="form-select" id="certificate_status" name="certificate_status">
                                 <option value="">All</option>

@@ -555,6 +555,7 @@
                                         </span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                         <button type="button" class="btn btn-sm {{ $isVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-academic-verify-btn"
+                                            data-use-modal="1"
                                             data-id="{{ $convertedLead->id }}"
                                             data-name="{{ $convertedLead->name }}"
                                             data-verified="{{ $isVerified ? 1 : 0 }}"
@@ -571,6 +572,7 @@
                                         </span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team())
                                         <button type="button" class="btn btn-sm {{ $isSupportVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-support-verify-btn"
+                                            data-use-modal="1"
                                             data-id="{{ $convertedLead->id }}"
                                             data-name="{{ $convertedLead->name }}"
                                             data-verified="{{ $isSupportVerified ? 1 : 0 }}"

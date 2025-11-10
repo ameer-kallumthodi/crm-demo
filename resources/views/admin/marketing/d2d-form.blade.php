@@ -29,7 +29,12 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">D2D SKILL PARK</h5>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">D2D SKILL PARK</h5>
+                    <a href="{{ route('admin.marketing.marketing-leads') }}" class="btn btn-secondary btn-sm">
+                        <i class="ti ti-arrow-left"></i> Back to Marketing Leads
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <div class="mb-4">
@@ -41,7 +46,8 @@
                 <form action="{{ route('admin.marketing.d2d-submit') }}" method="post">
                     @csrf
                     <div class="row">
-                        <!-- BDE Name -->
+                        <!-- BDE Name - Only show if user is not marketing -->
+                        @if(!$isMarketing)
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="bde_id" class="form-label">BDE Name <span class="text-danger">*</span></label>
@@ -56,9 +62,13 @@
                                 @enderror
                             </div>
                         </div>
+                        @else
+                        <!-- Hidden field to store marketing user ID -->
+                        <input type="hidden" name="marketing_bde_id" value="{{ $currentUser->id }}">
+                        @endif
 
                         <!-- Date Of Visit -->
-                        <div class="col-md-6">
+                        <div class="{{ $isMarketing ? 'col-md-12' : 'col-md-6' }}">
                             <div class="form-group mb-3">
                                 <label for="date_of_visit" class="form-label">Date Of Visit <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control @error('date_of_visit') is-invalid @enderror" id="date_of_visit" name="date_of_visit" value="{{ old('date_of_visit', date('Y-m-d')) }}" required />

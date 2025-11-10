@@ -321,6 +321,8 @@
                                 <th>Phone</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
+                                <th>Academic</th>
+                                <th>Support</th>
                                 <th>App</th>
                                 <th>Group</th>
                                 <th>Interview</th>
@@ -332,6 +334,10 @@
                         <tbody>
                             @forelse($convertedLeads as $index => $convertedLead)
                             <tr>
+                                @php
+                                    $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                    $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                                @endphp
                                 <td>{{ $convertedLeads->firstItem() + $index }}</td>
                                 <td>
                                     <div class="inline-edit" data-field="registration_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->registration_number }}">
@@ -390,6 +396,22 @@
                                         </button>
                                         @endif
                                     </div>
+                                </td>
+                                <td>
+                                    @include('admin.converted-leads.partials.status-badge', [
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'academic',
+                                        'showToggle' => $canToggleAcademic,
+                                        'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null
+                                    ])
+                                </td>
+                                <td>
+                                    @include('admin.converted-leads.partials.status-badge', [
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'support',
+                                        'showToggle' => $canToggleSupport,
+                                        'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null
+                                    ])
                                 </td>
                                 <td>
                                     <div class="inline-edit" data-field="app" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->app }}">
@@ -472,7 +494,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="14" class="text-center">No Hotel Management converted leads found</td>
+                                <td colspan="16" class="text-center">No Hotel Management converted leads found</td>
                             </tr>
                             @endforelse
                         </tbody>

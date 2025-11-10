@@ -314,6 +314,7 @@
                                     </span>
                                     @if(\App\Helpers\RoleHelper::is_support_team())
                                     <button type="button" class="btn btn-sm {{ $isSupportVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-support-verify-btn"
+                                        data-use-modal="1"
                                         data-id="{{ $convertedLead->id }}"
                                         data-name="{{ $convertedLead->name }}"
                                         data-verified="{{ $isSupportVerified ? 1 : 0 }}"

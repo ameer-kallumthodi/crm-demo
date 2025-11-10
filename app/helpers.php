@@ -122,6 +122,16 @@ if (!function_exists('is_auditor')) {
     }
 }
 
+if (!function_exists('is_marketing')) {
+    /**
+     * Check if current user is Marketing
+     */
+    function is_marketing()
+    {
+        return \App\Helpers\RoleHelper::is_marketing();
+    }
+}
+
 
 if (!function_exists('is_logged_in')) {
     /**

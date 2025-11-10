@@ -36,6 +36,8 @@ class PermissionHelper
 			return self::has_permission_mentor($permission);
         } elseif (RoleHelper::is_auditor()) {
             return self::has_permission_auditor($permission);
+        } elseif (RoleHelper::is_marketing()) {
+            return self::has_permission_marketing($permission);
         }
         
         return false;
@@ -89,6 +91,8 @@ class PermissionHelper
             'admin/reports/team-wise',
             'admin/reports/course-summary',
         ];
+        // Admin has access to everything except the permissions listed above
+        // This includes admin/marketing/d2d-form
         return !in_array($permission, $permissions);
     }
 
@@ -231,6 +235,8 @@ class PermissionHelper
             // User Management (index pages; actions are guarded in controllers)
             'admin/telecallers/index',
             'admin/post-sales/index',
+            'admin/marketing/d2d-form', // D2D Form access
+            'admin/marketing/marketing-leads', // Marketing Leads listing
             'profile/index',
         ];
         return in_array($permission, $permissions);
@@ -269,6 +275,20 @@ class PermissionHelper
             'admin/telecaller-tracking/dashboard', // Telecaller Tracking - Dashboard
             'admin/telecaller-tasks/index', // Telecaller Tracking - Task Management
             'admin/auditors/index', // Auditor management (similar to general managers)
+            'profile/index',
+        ];
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * Marketing permissions
+     */
+    public static function has_permission_marketing($permission = '')
+    {
+        $permissions = [
+            'dashboard/index',
+            'admin/marketing/d2d-form', // D2D Form access
+            'admin/marketing/marketing-leads', // Marketing Leads listing
             'profile/index',
         ];
         return in_array($permission, $permissions);

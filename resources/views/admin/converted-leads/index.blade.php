@@ -322,6 +322,8 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
+                                    <th>Academic</th>
+                                    <th>Support</th>
                                     <th>Register Number</th>
                                     <th>Date</th>
                                     <th>DOB</th>
@@ -331,8 +333,6 @@
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
                                     <th>Mail</th>
-                                    <th>Academic</th>
-                                    <th>Support</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -340,6 +340,30 @@
                                 @forelse($convertedLeads as $index => $convertedLead)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
+                                    @php
+                                        $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                        $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                                    @endphp
+                                    <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
+                                            'convertedLead' => $convertedLead,
+                                            'type' => 'academic',
+                                            'showToggle' => $canToggleAcademic,
+                                            'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null,
+                                            'title' => 'academic',
+                                            'useModal' => true
+                                        ])
+                                    </td>
+                                    <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
+                                            'convertedLead' => $convertedLead,
+                                            'type' => 'support',
+                                            'showToggle' => $canToggleSupport,
+                                            'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null,
+                                            'title' => 'support',
+                                            'useModal' => true
+                                        ])
+                                    </td>
                                     <td>
                                         @if($convertedLead->register_number)
                                         <span class="badge bg-success">{{ $convertedLead->register_number }}</span>
@@ -389,38 +413,6 @@
                                     </td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>
-                                        @php $isVerified = (bool) ($convertedLead->is_academic_verified ?? false); @endphp
-                                        <span class="badge {{ $isVerified ? 'bg-success' : 'bg-secondary' }} me-1">
-                                            {{ $isVerified ? 'Verified' : 'Not Verified' }}
-                                        </span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                        <button type="button" class="btn btn-sm {{ $isVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-academic-verify-btn"
-                                            data-id="{{ $convertedLead->id }}"
-                                            data-name="{{ $convertedLead->name }}"
-                                            data-verified="{{ $isVerified ? 1 : 0 }}"
-                                            data-url="{{ route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) }}"
-                                            title="{{ $isVerified ? 'Unverify' : 'Verify' }} academic">
-                                            <i class="ti {{ $isVerified ? 'ti-x' : 'ti-check' }}"></i>
-                                        </button>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @php $isSupportVerified = (bool) ($convertedLead->is_support_verified ?? false); @endphp
-                                        <span class="badge {{ $isSupportVerified ? 'bg-success' : 'bg-secondary' }} me-1">
-                                            {{ $isSupportVerified ? 'Verified' : 'Not Verified' }}
-                                        </span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team())
-                                        <button type="button" class="btn btn-sm {{ $isSupportVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-support-verify-btn"
-                                            data-id="{{ $convertedLead->id }}"
-                                            data-name="{{ $convertedLead->name }}"
-                                            data-verified="{{ $isSupportVerified ? 1 : 0 }}"
-                                            data-url="{{ route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) }}"
-                                            title="{{ $isSupportVerified ? 'Unverify' : 'Verify' }} support">
-                                            <i class="ti {{ $isSupportVerified ? 'ti-x' : 'ti-check' }}"></i>
-                                        </button>
-                                        @endif
-                                    </td>
-                                    <td>
                                         <div class="" role="group">
                                             <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
                                                 <i class="ti ti-eye"></i>
@@ -457,7 +449,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="text-center">No converted leads found</td>
+                                    <td colspan="13" class="text-center">No converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -792,21 +784,27 @@
 #convertedLeadsTable thead th:nth-child(2),
 #convertedLeadsTable tbody td:nth-child(2) { min-width: 140px; }
 #convertedLeadsTable thead th:nth-child(3),
-#convertedLeadsTable tbody td:nth-child(3) { min-width: 120px; }
+#convertedLeadsTable tbody td:nth-child(3) { min-width: 140px; }
 #convertedLeadsTable thead th:nth-child(4),
-#convertedLeadsTable tbody td:nth-child(4) { min-width: 120px; }
+#convertedLeadsTable tbody td:nth-child(4) { min-width: 160px; }
 #convertedLeadsTable thead th:nth-child(5),
-#convertedLeadsTable tbody td:nth-child(5) { min-width: 220px; }
+#convertedLeadsTable tbody td:nth-child(5) { min-width: 140px; }
 #convertedLeadsTable thead th:nth-child(6),
 #convertedLeadsTable tbody td:nth-child(6) { min-width: 140px; }
 #convertedLeadsTable thead th:nth-child(7),
-#convertedLeadsTable tbody td:nth-child(7) { min-width: 180px; }
+#convertedLeadsTable tbody td:nth-child(7) { min-width: 220px; }
 #convertedLeadsTable thead th:nth-child(8),
-#convertedLeadsTable tbody td:nth-child(8) { min-width: 180px; }
+#convertedLeadsTable tbody td:nth-child(8) { min-width: 160px; }
 #convertedLeadsTable thead th:nth-child(9),
 #convertedLeadsTable tbody td:nth-child(9) { min-width: 200px; }
 #convertedLeadsTable thead th:nth-child(10),
 #convertedLeadsTable tbody td:nth-child(10) { min-width: 200px; }
+#convertedLeadsTable thead th:nth-child(11),
+#convertedLeadsTable tbody td:nth-child(11) { min-width: 220px; }
+#convertedLeadsTable thead th:nth-child(12),
+#convertedLeadsTable tbody td:nth-child(12) { min-width: 220px; }
+#convertedLeadsTable thead th:nth-child(13),
+#convertedLeadsTable tbody td:nth-child(13) { min-width: 200px; }
 </style>
 @endpush
 

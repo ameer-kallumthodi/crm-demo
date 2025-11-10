@@ -215,16 +215,18 @@
 
         const followupStatuses = @json(array_map('strval', $followupStatusIds));
 
-        // Initialize form state - ensure followup_date is not required initially
-        $('#followup_date').prop('required', false);
+        const followupInput = $('#followup_date');
+        const followupDateSection = $('#followupDateSection');
+        const demoBookingSection = $('#demoBookingSection');
+        const updateStatusBtn = $('#updateStatusBtn');
 
-        // Handle status selection change
-        $('#lead_status_id').on('change', function() {
-            const selectedStatus = $(this).val();
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        function updateFollowupUI(selectedStatus) {
             const demoBookingSection = $('#demoBookingSection');
             const followupDateSection = $('#followupDateSection');
-            const updateStatusBtn = $('#updateStatusBtn');
             const followupInput = $('#followup_date');
+            const updateStatusBtn = $('#updateStatusBtn');
 
             console.log('Status changed to:', selectedStatus);
             console.log('Followup section element:', followupDateSection);
@@ -247,8 +249,16 @@
                 console.log('Followup section visible:', followupDateSection.is(':visible'));
                 console.log('Followup section display style:', followupDateSection.css('display'));
                 demoBookingSection.hide();
+                followupInput.prop('disabled', false);
                 followupInput.prop('required', true); // make required
                 followupInput.attr('required', 'required'); // ensure required attribute is set
+                followupInput.attr('min', todayStr);
+                if (followupInput.val() && followupInput.val() < todayStr) {
+                    followupInput.val(todayStr);
+                }
+                if (!followupInput.val()) {
+                    followupInput.val(todayStr);
+                }
                 // Enable update button
                 updateStatusBtn.prop('disabled', false);
                 updateStatusBtn.html('Update Status');
@@ -260,10 +270,22 @@
                 // Enable update button
                 followupInput.prop('required', false); // remove required
                 followupInput.removeAttr('required'); // ensure required attribute is removed
+                followupInput.prop('disabled', true);
+                followupInput.removeAttr('min');
+                followupInput.val('');
                 updateStatusBtn.prop('disabled', false);
                 updateStatusBtn.html('Update Status');
                 formCompleted = true;
             }
+        }
+
+        // Initialize form state - ensure followup_date is not required initially
+        followupInput.prop('required', false).prop('disabled', true).removeAttr('min');
+
+        // Handle status selection change
+        $('#lead_status_id').on('change', function() {
+            const selectedStatus = $(this).val();
+            updateFollowupUI(selectedStatus);
         });
 
         // Handle demo booking form button click
@@ -388,19 +410,7 @@
         });
 
         // Initialize form state on page load
-        const initialStatus = $('#lead_status_id').val();
-        if (initialStatus == '6') {
-            $('#demoBookingSection').show();
-            // Don't disable the button if current status is already 6
-            $('#updateStatusBtn').prop('disabled', false).html('Update Status');
-            formCompleted = true; // Allow immediate submission since current status is 6
-        } else if (followupStatuses.includes(initialStatus)) {
-            $('#followupDateSection').show();
-            $('#followup_date').prop('required', true).attr('required', 'required');
-            // Don't disable the button if current status is already 2
-            $('#updateStatusBtn').prop('disabled', false).html('Update Status');
-            formCompleted = true; // Allow immediate submission since current status is 2
-        }
+        updateFollowupUI($('#lead_status_id').val());
         // Rating input validation
         $('#rating').on('input', function() {
             let value = parseInt($(this).val(), 10);

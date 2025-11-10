@@ -261,8 +261,10 @@
                                     <th>Name</th>
                                     <th>DOB</th>
                                     <th>Phone</th>
-                                    <th>WhatsApp Number</th>
-                                    <th>Email</th>
+                                <th>WhatsApp Number</th>
+                                <th>Email</th>
+                                <th>Academic</th>
+                                <th>Support</th>
                                     <th>Board/University</th>
                                     <th>Course Type</th>
                                     <th>Course Name</th>
@@ -273,6 +275,10 @@
                             <tbody>
                                 @forelse($convertedLeads as $index => $convertedLead)
                                 <tr>
+                                    @php
+                                        $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                        $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                                    @endphp
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>
@@ -342,6 +348,22 @@
                                     </td>
                                     <td>{{ $convertedLead->email ?? '-' }}</td>
                                     <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
+                                            'convertedLead' => $convertedLead,
+                                            'type' => 'academic',
+                                            'showToggle' => $canToggleAcademic,
+                                            'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null
+                                        ])
+                                    </td>
+                                    <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
+                                            'convertedLead' => $convertedLead,
+                                            'type' => 'support',
+                                            'showToggle' => $canToggleSupport,
+                                            'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null
+                                        ])
+                                    </td>
+                                    <td>
                                         <div class="inline-edit" data-field="university_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->leadDetail?->university_id }}">
                                             <span class="display-value">{{ $convertedLead->leadDetail?->university?->title ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
@@ -391,7 +413,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="13" class="text-center">No UG/PG converted leads found</td>
+                                    <td colspan="15" class="text-center">No UG/PG converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
