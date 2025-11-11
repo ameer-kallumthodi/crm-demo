@@ -231,7 +231,7 @@ class PermissionHelper
             'leads/registration-form-submitted',
             'admin/converted-leads/index',
             'admin/reports/leads',
-            'admin/general-managers/index',
+            'admin/marketing/index',
             // User Management (index pages; actions are guarded in controllers)
             'admin/telecallers/index',
             'admin/post-sales/index',
