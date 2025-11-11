@@ -5,8 +5,7 @@
             <a href="{{ route('dashboard') }}" class="b-brand text-primary">
                 <!-- ========   Change your logo from here   ============ -->
                 <img src="{{ asset('storage/logo.png') }}" class="img-fluid logo-lg" alt="logo" 
-                     style="height: 200px !important; width: 100px !important; object-fit: contain; padding: 10px !important;"
-                     onerror="this.src='{{ asset('assets/mantis/images/logo-dark.svg') }}'">
+                     style="height: 200px !important; width: 100px !important; object-fit: contain; padding: 10px !important;">
             </a>
         </div>
         <div class="navbar-content">
@@ -66,6 +65,18 @@
                             <i class="ti ti-user-check"></i>
                         </span>
                         <span class="pc-mtext">Converted Leads</span>
+                    </a>
+                </li>
+                @endif
+
+                {{-- Payments Overview --}}
+                @if(has_permission('admin/payments/list'))
+                <li class="pc-item {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.payments.list') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-cash"></i>
+                        </span>
+                        <span class="pc-mtext">Payments</span>
                     </a>
                 </li>
                 @endif

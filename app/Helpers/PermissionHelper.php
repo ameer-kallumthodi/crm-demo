@@ -174,6 +174,7 @@ class PermissionHelper
             'leads/index',
             'profile/index',
             'admin/converted-leads/index',
+            'admin/payments/list',
         ];
         return in_array($permission, $permissions);
     }

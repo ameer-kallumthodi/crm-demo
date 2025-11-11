@@ -666,6 +666,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/invoices/store/{studentId}', [App\Http\Controllers\InvoiceController::class, 'store'])->name('invoices.store');
 
         // Payment Routes
+        Route::get('/payments', [App\Http\Controllers\PaymentController::class, 'listAll'])->name('payments.list');
         Route::get('/payments/invoice/{invoiceId}', [App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/create/{invoiceId}', [App\Http\Controllers\PaymentController::class, 'create'])->name('payments.create');
         Route::post('/payments/store/{invoiceId}', [App\Http\Controllers\PaymentController::class, 'store'])->name('payments.store');

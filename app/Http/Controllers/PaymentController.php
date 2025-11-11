@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\Invoice;
 use App\Models\ConvertedLead;
 use App\Helpers\AuthHelper;
+use App\Helpers\RoleHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -34,6 +35,75 @@ class PaymentController extends Controller
             ->first();
 
         return view('admin.payments.index', compact('invoice', 'payments', 'firstPayment'));
+    }
+
+    /**
+     * Display a consolidated list of payments grouped by status
+     */
+    public function listAll(Request $request)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_finance()) {
+            abort(403, 'Access denied.');
+        }
+
+        $filters = [
+            'from_date' => $request->input('from_date'),
+            'to_date' => $request->input('to_date'),
+            'student_id' => $request->input('student_id'),
+            'search' => $request->input('search'),
+        ];
+
+        $students = ConvertedLead::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        $withRelations = [
+            'invoice.student.lead',
+            'invoice.course',
+            'invoice.batch',
+            'createdBy',
+        ];
+
+        $pendingQuery = Payment::with($withRelations)->pending();
+        $pendingPayments = $this->applyFilters($pendingQuery, $filters, 'pending')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $approvedQuery = Payment::with(array_merge($withRelations, [
+            'approvedBy',
+            'invoice.payments' => function ($query) {
+                $query->approved()->orderBy('created_at', 'asc');
+            },
+        ]))->approved();
+
+        $approvedPayments = $this->applyFilters($approvedQuery, $filters, 'approved')
+            ->orderByDesc('approved_date')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $rejectedQuery = Payment::with(array_merge($withRelations, [
+            'rejectedBy',
+        ]))->where('status', 'Rejected');
+
+        $rejectedPayments = $this->applyFilters($rejectedQuery, $filters, 'rejected')
+            ->orderByDesc('rejected_date')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $counts = [
+            'pending' => $pendingPayments->count(),
+            'approved' => $approvedPayments->count(),
+            'rejected' => $rejectedPayments->count(),
+        ];
+
+        return view('admin.payments.list', compact(
+            'pendingPayments',
+            'approvedPayments',
+            'counts',
+            'filters',
+            'students',
+            'rejectedPayments'
+        ));
     }
 
     /**
@@ -520,5 +590,57 @@ class PaymentController extends Controller
             default:
                 abort(403, 'Access denied.');
         }
+    }
+
+    /**
+     * Apply filter conditions for payment listings
+     */
+    private function applyFilters($query, array $filters, string $status)
+    {
+        if (!empty($filters['student_id'])) {
+            $studentId = (int) $filters['student_id'];
+            $query->whereHas('invoice', function ($invoiceQuery) use ($studentId) {
+                $invoiceQuery->where('student_id', $studentId);
+            });
+        }
+
+        if (!empty($filters['search'])) {
+            $search = '%' . trim($filters['search']) . '%';
+
+            $query->where(function ($paymentQuery) use ($search) {
+                $paymentQuery->whereHas('invoice', function ($invoiceQuery) use ($search) {
+                    $invoiceQuery->where('invoice_number', 'like', $search)
+                        ->orWhereHas('student', function ($studentQuery) use ($search) {
+                            $studentQuery->where('name', 'like', $search)
+                                ->orWhere('phone', 'like', $search);
+                        })
+                        ->orWhereHas('student.lead', function ($leadQuery) use ($search) {
+                            $leadQuery->where('title', 'like', $search)
+                                ->orWhere('phone', 'like', $search);
+                        });
+                });
+            });
+        }
+
+        switch ($status) {
+            case 'approved':
+                $dateColumn = 'approved_date';
+                break;
+            case 'rejected':
+                $dateColumn = 'rejected_date';
+                break;
+            default:
+                $dateColumn = 'created_at';
+        }
+
+        if (!empty($filters['from_date'])) {
+            $query->whereDate($dateColumn, '>=', $filters['from_date']);
+        }
+
+        if (!empty($filters['to_date'])) {
+            $query->whereDate($dateColumn, '<=', $filters['to_date']);
+        }
+
+        return $query;
     }
 }

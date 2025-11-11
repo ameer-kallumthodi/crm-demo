@@ -232,7 +232,7 @@ $(document).ready(function() {
         const $convertBtn = $('#convertLeadBtn');
         
         const totalAmountValue = @json($totalAmount);
-
+        
         @if(!$course || !$course->title)
         // Hide payment section if no course is available
         $paymentCheckbox.closest('.card').hide();
@@ -278,7 +278,7 @@ $(document).ready(function() {
     function updateTotalAmount() {
         @if($course && $course->title)
         let amount = totalAmountValue;
-
+        
         $totalAmountDisplay.val('₹' + amount.toLocaleString('en-IN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2

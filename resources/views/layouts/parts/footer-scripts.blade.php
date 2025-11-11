@@ -55,9 +55,23 @@
     function initializeTables() {
         // Initialize all tables with data_table_basic or datatable class
         $('.data_table_basic, .datatable').each(function() {
-            var tableId = $(this).attr('id') || 'table_' + Math.random().toString(36).substr(2, 9);
+            var $table = $(this);
+            var tableId = $table.attr('id') || 'table_' + Math.random().toString(36).substr(2, 9);
             var lastPageKey = 'lastPage_' + tableId;
             var lastPage = localStorage.getItem(lastPageKey);
+            var defaultOrder = $table.data('order');
+            var pageLength = parseInt($table.data('page-length'), 10);
+            var parsedOrder = null;
+            var effectivePageLength = !isNaN(pageLength) && pageLength > 0 ? pageLength : 25;
+            var lastPageIndex = lastPage !== null ? parseInt(lastPage, 10) : null;
+
+            if (defaultOrder) {
+                try {
+                    parsedOrder = JSON.parse(defaultOrder);
+                } catch (e) {
+                    console.warn('Invalid data-order attribute for table', tableId, defaultOrder);
+                }
+            }
             
             // Initialize the DataTable
             var table = new DataTable(this, {
@@ -67,11 +81,13 @@
                 scrollCollapse: true,
                 paging: true,
                 stateSave: true,
-                pageLength: 25,
+                stateDuration: -1,
+                pageLength: effectivePageLength,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                order: parsedOrder || [[0, 'asc']],
                 
                 // Set the initial page if there was a stored page
-                "displayStart": lastPage ? lastPage * 25 : 0,  // Multiply by page size
+                "displayStart": lastPageIndex !== null ? lastPageIndex * effectivePageLength : 0,  // Multiply by page size
                 
                 // Language configuration
                 language: {
