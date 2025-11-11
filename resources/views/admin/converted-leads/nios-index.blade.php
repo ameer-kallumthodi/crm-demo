@@ -321,6 +321,8 @@
                                     </th>
                                     @endif
                                     <th>#</th>
+                                    <th>Academic</th>
+                                    <th>Support</th>
                                     <th>Register Number</th>
                                     <th>Converted Date</th>
                                     <th>DOB</th>
@@ -342,8 +344,6 @@
                                     <th>ID CARD</th>
                                     <th>TMA</th>
                                     <th>Remarks</th>
-                                    <th>Academic</th>
-                                    <th>Support</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -356,6 +356,40 @@
                                     </td>
                                     @endif
                                     <td>{{ $index + 1 }}</td>
+                                    <td>
+                                        @php $isVerified = (bool) ($convertedLead->is_academic_verified ?? false); @endphp
+                                        <span class="badge {{ $isVerified ? 'bg-success' : 'bg-secondary' }} me-1">
+                                            {{ $isVerified ? 'Verified' : 'Not Verified' }}
+                                        </span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                        <button type="button" class="btn btn-sm {{ $isVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-academic-verify-btn"
+                                            data-use-modal="1"
+                                            data-id="{{ $convertedLead->id }}"
+                                            data-name="{{ $convertedLead->name }}"
+                                            data-verified="{{ $isVerified ? 1 : 0 }}"
+                                            data-url="{{ route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) }}"
+                                            title="{{ $isVerified ? 'Unverify' : 'Verify' }} academic">
+                                            <i class="ti {{ $isVerified ? 'ti-x' : 'ti-check' }}"></i>
+                                        </button>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php $isSupportVerified = (bool) ($convertedLead->is_support_verified ?? false); @endphp
+                                        <span class="badge {{ $isSupportVerified ? 'bg-success' : 'bg-secondary' }} me-1">
+                                            {{ $isSupportVerified ? 'Verified' : 'Not Verified' }}
+                                        </span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team())
+                                        <button type="button" class="btn btn-sm {{ $isSupportVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-support-verify-btn"
+                                            data-use-modal="1"
+                                            data-id="{{ $convertedLead->id }}"
+                                            data-name="{{ $convertedLead->name }}"
+                                            data-verified="{{ $isSupportVerified ? 1 : 0 }}"
+                                            data-url="{{ route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) }}"
+                                            title="{{ $isSupportVerified ? 'Unverify' : 'Verify' }} support">
+                                            <i class="ti {{ $isSupportVerified ? 'ti-x' : 'ti-check' }}"></i>
+                                        </button>
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="inline-edit" data-field="register_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->register_number }}">
                                             @if($convertedLead->register_number)
@@ -547,40 +581,6 @@
                                             </button>
                                             @endif
                                         </div>
-                                    </td>
-                                    <td>
-                                        @php $isVerified = (bool) ($convertedLead->is_academic_verified ?? false); @endphp
-                                        <span class="badge {{ $isVerified ? 'bg-success' : 'bg-secondary' }} me-1">
-                                            {{ $isVerified ? 'Verified' : 'Not Verified' }}
-                                        </span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                        <button type="button" class="btn btn-sm {{ $isVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-academic-verify-btn"
-                                            data-use-modal="1"
-                                            data-id="{{ $convertedLead->id }}"
-                                            data-name="{{ $convertedLead->name }}"
-                                            data-verified="{{ $isVerified ? 1 : 0 }}"
-                                            data-url="{{ route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) }}"
-                                            title="{{ $isVerified ? 'Unverify' : 'Verify' }} academic">
-                                            <i class="ti {{ $isVerified ? 'ti-x' : 'ti-check' }}"></i>
-                                        </button>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @php $isSupportVerified = (bool) ($convertedLead->is_support_verified ?? false); @endphp
-                                        <span class="badge {{ $isSupportVerified ? 'bg-success' : 'bg-secondary' }} me-1">
-                                            {{ $isSupportVerified ? 'Verified' : 'Not Verified' }}
-                                        </span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team())
-                                        <button type="button" class="btn btn-sm {{ $isSupportVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-support-verify-btn"
-                                            data-use-modal="1"
-                                            data-id="{{ $convertedLead->id }}"
-                                            data-name="{{ $convertedLead->name }}"
-                                            data-verified="{{ $isSupportVerified ? 1 : 0 }}"
-                                            data-url="{{ route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) }}"
-                                            title="{{ $isSupportVerified ? 'Unverify' : 'Verify' }} support">
-                                            <i class="ti {{ $isSupportVerified ? 'ti-x' : 'ti-check' }}"></i>
-                                        </button>
-                                        @endif
                                     </td>
                                     <td>
                                         <div class="" role="group">
