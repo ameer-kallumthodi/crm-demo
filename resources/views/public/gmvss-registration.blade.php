@@ -529,7 +529,7 @@
                                 <label class="form-label">Passed Year <span class="required">*</span></label>
                                 <select class="form-control" name="passed_year" required>
                                     <option value="">Select Year</option>
-                                    @for($year = date('Y'); $year >= (date('Y') - 10); $year--)
+                                    @for($year = date('Y'); $year >= 2018; $year--)
                                         <option value="{{ $year }}">{{ $year }}</option>
                                     @endfor
                                 </select>

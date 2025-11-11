@@ -214,11 +214,14 @@ $(document).ready(function() {
             data: formData,
             success: function(response) {
                 if (response.success) {
-                    alert_modal_success(response.message);
                     $('#ajax_modal').modal('hide');
-                    setTimeout(function() {
-                        window.location.href = response.redirect;
-                    }, 1000);
+                    // Pass success message as URL parameter
+                    var redirectUrl = response.redirect;
+                    if (response.message) {
+                        var separator = redirectUrl.includes('?') ? '&' : '?';
+                        redirectUrl += separator + 'success=' + encodeURIComponent(response.message);
+                    }
+                    window.location.href = redirectUrl;
                 } else {
                     alert_modal_error(response.error || 'Something went wrong!');
                 }

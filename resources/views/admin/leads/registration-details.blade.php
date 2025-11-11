@@ -1004,7 +1004,7 @@
                     
                     <div class="mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="need_to_change_document" name="need_to_change_document">
+                            <input class="form-check-input" type="checkbox" id="need_to_change_document">
                             <label class="form-check-label" for="need_to_change_document">
                                 Need to change document
                             </label>
@@ -1867,6 +1867,11 @@ document.getElementById('sslcVerificationForm').addEventListener('submit', funct
     }
     
     const formData = new FormData(this);
+    
+    // Ensure need_to_change_document is sent as 1 or 0
+    const needToChangeDoc = document.getElementById('sslc_need_to_change_document').checked;
+    formData.set('need_to_change_document', needToChangeDoc ? '1' : '0');
+    
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     

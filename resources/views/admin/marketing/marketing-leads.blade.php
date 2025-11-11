@@ -139,6 +139,21 @@ $columns = [
 var marketingLeadsTable = null;
 
 $(document).ready(function() {
+    // Check for success message in URL parameter
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('success')) {
+        var successMessage = decodeURIComponent(urlParams.get('success'));
+        if (typeof toast_success === 'function') {
+            toast_success(successMessage);
+        } else if (typeof alert_modal_success === 'function') {
+            alert_modal_success(successMessage);
+        }
+        // Clean up URL by removing the success parameter
+        urlParams.delete('success');
+        var newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+        window.history.replaceState({}, '', newUrl);
+    }
+    
     // Prevent global initialization for this table - remove classes that trigger auto-init
     $('#marketingLeadsTable').removeClass('data_table_basic datatable');
     

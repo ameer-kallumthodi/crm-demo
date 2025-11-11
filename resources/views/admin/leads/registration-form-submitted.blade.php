@@ -45,19 +45,22 @@
         <div class="card">
             <div class="card-body">
                 <form method="GET" action="{{ route('leads.registration-form-submitted') }}" id="dateFilterForm">
+                    @if(request('registration_status'))
+                    <input type="hidden" name="registration_status" value="{{ request('registration_status') }}">
+                    @endif
                     <div class="row g-3 align-items-end">
                         <!-- From Date -->
                         <div class="col-6 col-md-4 col-lg-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control form-control-sm" name="date_from" id="date_from"
-                                value="{{ request('date_from', \Carbon\Carbon::now()->subDays(7)->format('Y-m-d')) }}">
+                                value="{{ request('date_from', '') }}">
                         </div>
 
                         <!-- To Date -->
                         <div class="col-6 col-md-4 col-lg-2">
                             <label for="date_to" class="form-label">To Date</label>
                             <input type="date" class="form-control form-control-sm" name="date_to" id="date_to"
-                                value="{{ request('date_to', \Carbon\Carbon::now()->format('Y-m-d')) }}">
+                                value="{{ request('date_to', '') }}">
                         </div>
 
                         <!-- Status -->
@@ -153,7 +156,7 @@
                                 <button type="submit" class="btn btn-primary btn-sm">
                                     <i class="ti ti-filter"></i> Apply Filters
                                 </button>
-                                <a href="{{ route('leads.registration-form-submitted') }}" class="btn btn-outline-secondary btn-sm">
+                                <a href="{{ route('leads.registration-form-submitted', request('registration_status') ? ['registration_status' => request('registration_status')] : []) }}" class="btn btn-outline-secondary btn-sm">
                                     <i class="ti ti-refresh"></i> Reset
                                 </a>
                             </div>
@@ -180,6 +183,30 @@
                 </div>
             </div>
             <div class="card-body">
+                <!-- Tabs for Registration Status -->
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {{ (!request('registration_status') || request('registration_status') == 'pending') ? 'active' : '' }}" 
+                           href="{{ route('leads.registration-form-submitted', ['registration_status' => 'pending']) }}">
+                            Pending
+                            <span class="badge bg-warning ms-1">{{ $pendingCount }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {{ request('registration_status') == 'rejected' ? 'active' : '' }}" 
+                           href="{{ route('leads.registration-form-submitted', ['registration_status' => 'rejected']) }}">
+                            Rejected
+                            <span class="badge bg-danger ms-1">{{ $rejectedCount }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {{ request('registration_status') == 'approved' ? 'active' : '' }}" 
+                           href="{{ route('leads.registration-form-submitted', ['registration_status' => 'approved']) }}">
+                            Approved
+                            <span class="badge bg-success ms-1">{{ $approvedCount }}</span>
+                        </a>
+                    </li>
+                </ul>
                 @if($leads->count() > 0)
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
@@ -541,6 +568,18 @@
                                         title="Edit Lead">
                                         <i class="ti ti-edit f-12"></i>
                                     </a>
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-success"
+                                        onclick="show_ajax_modal('{{ route('leads.status-update', $lead->id) }}', 'Update Status')"
+                                        title="Update Status">
+                                        <i class="ti ti-arrow-up f-12"></i>
+                                    </a>
+                                    @if(!$lead->is_converted && $lead->studentDetails && (strtolower($lead->studentDetails->status ?? '') === 'approved'))
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning"
+                                        onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
+                                        title="Convert Lead">
+                                        <i class="ti ti-refresh f-12"></i>
+                                    </a>
+                                    @endif
                                     @endif
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
                                     <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"

@@ -982,16 +982,12 @@ class LeadController extends Controller
         ->notDropped();
 
         // Apply filters
-        // Only apply date filters if search_key is not provided (to allow searching across all dates)
-        $fromDate = $request->get('date_from', now()->subDays(7)->format('Y-m-d'));
-        $toDate = $request->get('date_to', now()->format('Y-m-d'));
+        // Only apply date filters if explicitly provided
+        $fromDate = $request->get('date_from', '');
+        $toDate = $request->get('date_to', '');
         
-        if (!$request->filled('search_key')) {
+        if ($request->filled('date_from') && $request->filled('date_to')) {
             $query->byDateRange($fromDate, $toDate);
-        } else {
-            // When searching, clear the date values to show search is across all dates
-            $fromDate = '';
-            $toDate = '';
         }
 
         if ($request->filled('lead_status_id')) {
@@ -1014,19 +1010,20 @@ class LeadController extends Controller
             $query->where('rating', $request->rating);
         }
 
-        // Add registration status filter
-        if ($request->filled('registration_status')) {
-            $registrationStatus = $request->registration_status;
-            if ($registrationStatus === 'approved') {
-                $query->whereHas('studentDetails', function($q) {
-                    $q->where('status', 'approved');
-                });
-            } elseif ($registrationStatus === 'rejected') {
-                $query->whereHas('studentDetails', function($q) {
-                    $q->where('status', 'rejected');
-                });
-            }
-            // If 'all' or empty, no additional filter is applied
+        // Add registration status filter - default to 'pending' if not provided
+        $registrationStatus = $request->get('registration_status', 'pending');
+        if ($registrationStatus === 'approved') {
+            $query->whereHas('studentDetails', function($q) {
+                $q->where('status', 'approved');
+            });
+        } elseif ($registrationStatus === 'rejected') {
+            $query->whereHas('studentDetails', function($q) {
+                $q->where('status', 'rejected');
+            });
+        } elseif ($registrationStatus === 'pending') {
+            $query->whereHas('studentDetails', function($q) {
+                $q->where('status', 'pending');
+            });
         }
 
         // Add search functionality
@@ -1107,10 +1104,50 @@ class LeadController extends Controller
         // Update telecallerList after filtering
         $telecallerList = $telecallers->pluck('name', 'id')->toArray();
 
+        // Get counts for tabs (using same base query without registration_status filter)
+        $baseQuery = Lead::select(['id'])
+            ->whereHas('studentDetails')
+            ->notConverted()
+            ->notDropped();
+        
+        // Apply role-based filtering
+        if ($currentUser) {
+            if (AuthHelper::isTeamLead() == 1) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                    $teamMemberIds[] = AuthHelper::getCurrentUserId();
+                    $baseQuery->whereIn('telecaller_id', $teamMemberIds);
+                } else {
+                    $baseQuery->where('telecaller_id', AuthHelper::getCurrentUserId());
+                }
+            } elseif (AuthHelper::isTelecaller()) {
+                $baseQuery->where('telecaller_id', AuthHelper::getCurrentUserId());
+            }
+        }
+        
+        // Apply date filter if explicitly provided
+        if ($request->filled('date_from') && $request->filled('date_to')) {
+            $baseQuery->byDateRange($fromDate, $toDate);
+        }
+        
+        // Get counts for each status
+        $allCount = (clone $baseQuery)->count();
+        $pendingCount = (clone $baseQuery)->whereHas('studentDetails', function($q) {
+            $q->where('status', 'pending');
+        })->count();
+        $rejectedCount = (clone $baseQuery)->whereHas('studentDetails', function($q) {
+            $q->where('status', 'rejected');
+        })->count();
+        $approvedCount = (clone $baseQuery)->whereHas('studentDetails', function($q) {
+            $q->where('status', 'approved');
+        })->count();
+
         return view('admin.leads.registration-form-submitted', compact(
             'leads', 'leadStatuses', 'leadSources', 'countries', 'courses', 'telecallers',
             'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList',
-            'fromDate', 'toDate', 'isTelecaller', 'isTeamLead'
+            'fromDate', 'toDate', 'isTelecaller', 'isTeamLead',
+            'allCount', 'pendingCount', 'rejectedCount', 'approvedCount'
         ))->with('search_key', $request->search_key);
     }
 
@@ -3126,11 +3163,20 @@ class LeadController extends Controller
             $leadDetail = LeadDetail::findOrFail($request->lead_detail_id);
             $documentType = $request->document_type;
             $verificationStatus = $request->verification_status;
-            $needToChangeDocument = $request->boolean('need_to_change_document');
+            
+            // Check need_to_change_document - handle both string and boolean values
+            $needToChangeDocument = false;
+            if ($request->has('need_to_change_document')) {
+                $value = $request->input('need_to_change_document');
+                $needToChangeDocument = ($value == '1' 
+                    || $value === 'true' 
+                    || $value === true
+                    || $value === 1
+                    || $request->boolean('need_to_change_document'));
+            }
+            
             // Use AuthHelper to get the authenticated user
             $currentUserId = AuthHelper::getCurrentUserId();
-            //Log the current user
-            Log::info('Current user: ' . $currentUserId);
             // Check if user is authenticated
             if (!$currentUserId) {
                 return response()->json([
@@ -3173,6 +3219,13 @@ class LeadController extends Controller
                 $verifiedAtField => now(),
             ];
 
+            // If "Need to change document" is checked, update registration status to pending
+            if ($needToChangeDocument) {
+                $updateData['status'] = 'pending';
+                $updateData['reviewed_by'] = null;
+                $updateData['reviewed_at'] = null;
+            }
+
             // Handle file upload if provided
             if ($request->hasFile('new_file')) {
                 $file = $request->file('new_file');
@@ -3199,7 +3252,16 @@ class LeadController extends Controller
                 $updateData[$fileField] = $filePath;
             }
 
+            // Update the lead detail
             $leadDetail->update($updateData);
+            
+            // If "Need to change document" is checked, ensure status is updated separately to guarantee it's saved
+            if ($needToChangeDocument) {
+                $leadDetail->status = 'pending';
+                $leadDetail->reviewed_by = null;
+                $leadDetail->reviewed_at = null;
+                $leadDetail->save();
+            }
 
             // Log activity
             LeadActivity::create([
@@ -3207,14 +3269,20 @@ class LeadController extends Controller
                 'activity_type' => 'document_verification',
                 'description' => ucfirst(str_replace('_', ' ', $documentType)) . ' verification updated',
                 'reason' => "Document: " . ucfirst(str_replace('_', ' ', $documentType)) . 
-                           " | Status: " . ucfirst($verificationStatus),
+                           " | Status: " . ucfirst($verificationStatus) . 
+                           ($needToChangeDocument ? " | Registration status reset to pending" : ""),
                 'created_by' => $currentUserId,
             ]);
+
+            // Refresh the model to get latest data
+            $leadDetail->refresh();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Document verification updated successfully!',
-                'data' => $leadDetail->fresh()
+                'data' => $leadDetail->fresh(),
+                'status_updated' => $needToChangeDocument,
+                'new_status' => $needToChangeDocument ? 'pending' : $leadDetail->status
             ]);
 
         } catch (\Exception $e) {
@@ -3239,7 +3307,17 @@ class LeadController extends Controller
 
             $sslcCertificate = \App\Models\SSLCertificate::findOrFail($request->sslc_certificate_id);
             $verificationStatus = $request->verification_status;
-            $needToChangeDocument = $request->boolean('need_to_change_document');
+            
+            // Check need_to_change_document - handle both string and boolean values
+            $needToChangeDocument = false;
+            if ($request->has('need_to_change_document')) {
+                $value = $request->input('need_to_change_document');
+                $needToChangeDocument = ($value == '1' 
+                    || $value === 'true' 
+                    || $value === true
+                    || $value === 1
+                    || $request->boolean('need_to_change_document'));
+            }
             
             // Use AuthHelper to get the authenticated user
             $currentUserId = AuthHelper::getCurrentUserId();
@@ -3293,10 +3371,22 @@ class LeadController extends Controller
             }
 
             $sslcCertificate->update($updateData);
+            
+            // If "Need to change document" is checked, update registration status to pending
+            if ($needToChangeDocument) {
+                $leadDetail = \App\Models\LeadDetail::findOrFail($request->lead_detail_id);
+                $leadDetail->status = 'pending';
+                $leadDetail->reviewed_by = null;
+                $leadDetail->reviewed_at = null;
+                $leadDetail->save();
+                $leadDetail->refresh();
+            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'SSLC certificate verification updated successfully.'
+                'message' => 'SSLC certificate verification updated successfully.',
+                'status_updated' => $needToChangeDocument,
+                'new_status' => $needToChangeDocument ? 'pending' : null
             ]);
 
         } catch (\Exception $e) {
