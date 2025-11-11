@@ -3483,6 +3483,13 @@ class LeadController extends Controller
                 $value = $value ? (int)$value : null;
                 
                 if ($field === 'subject_id' && $value) {
+                    if (!in_array($studentDetail->course_id, [1, 2])) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Subject selection is not applicable for this course.'
+                        ], 400);
+                    }
+
                     $subject = \App\Models\Subject::where('id', $value)
                         ->where('course_id', $studentDetail->course_id)
                         ->first();
@@ -3515,6 +3522,10 @@ class LeadController extends Controller
                 }
                 
                 $studentDetail->update([$field => $value]);
+                
+                if ($field === 'batch_id') {
+                    \App\Models\Lead::where('id', $studentDetail->lead_id)->update(['batch_id' => $value]);
+                }
                 
                 // Reload relationships to get updated values
                 $studentDetail->load('subject', 'batch', 'subCourse');

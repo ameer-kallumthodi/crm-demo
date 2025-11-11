@@ -450,6 +450,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @if(in_array($studentDetail->course_id, [1, 2]))
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -466,6 +467,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @endif
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
