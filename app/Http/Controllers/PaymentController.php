@@ -618,7 +618,8 @@ class PaymentController extends Controller
                             $leadQuery->where('title', 'like', $search)
                                 ->orWhere('phone', 'like', $search);
                         });
-                });
+                })
+                ->orWhere('transaction_id', 'like', $search);
             });
         }
 

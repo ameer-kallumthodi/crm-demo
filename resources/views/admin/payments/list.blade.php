@@ -64,7 +64,7 @@
                                 <label for="search" class="form-label text-muted small text-uppercase fw-semibold">Search</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-white"><i class="ti ti-search text-muted"></i></span>
-                                    <input type="text" class="form-control" id="search" name="search" placeholder="Name, phone, invoice #" value="{{ $filters['search'] ?? '' }}">
+                                    <input type="text" class="form-control" id="search" name="search" placeholder="Search by name, phone, invoice #, or transaction ID" value="{{ $filters['search'] ?? '' }}">
                                 </div>
                             </div>
                             <div class="col-12 d-flex flex-wrap gap-2 justify-content-end">
