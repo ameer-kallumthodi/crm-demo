@@ -185,7 +185,16 @@ class InvoiceController extends Controller
             }
             
             // Calculate total amount
-            $totalAmount = $course->amount;
+            $totalAmount = (float) ($course->amount ?? 0);
+
+            // Determine batch and add batch amount if available
+            $batchId = $student->batch_id ?? optional($student->leadDetail)->batch_id;
+            if ($batchId) {
+                $batch = Batch::find($batchId);
+                if ($batch && $batch->amount) {
+                    $totalAmount += (float) $batch->amount;
+                }
+            }
             
             // Add university amount for UG/PG course (course_id = 9)
             if ($courseId == 9 && $student->leadDetail) {
@@ -215,6 +224,7 @@ class InvoiceController extends Controller
                 'invoice_number' => $invoiceNumber,
                 'invoice_type' => 'course',
                 'course_id' => $courseId,
+                'batch_id' => $batchId,
                 'student_id' => $studentId,
                 'total_amount' => $totalAmount,
                 'invoice_date' => now()->toDateString(),

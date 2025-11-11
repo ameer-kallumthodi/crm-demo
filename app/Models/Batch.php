@@ -13,6 +13,7 @@ class Batch extends Model
     protected $fillable = [
         'title',
         'description',
+        'amount',
         'course_id',
         'is_active',
         'created_by',
@@ -22,6 +23,7 @@ class Batch extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'amount' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',

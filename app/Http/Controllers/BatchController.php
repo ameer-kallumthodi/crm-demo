@@ -25,10 +25,15 @@ class BatchController extends Controller
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
+        $request->merge([
+            'amount' => $request->filled('amount') ? $request->amount : null,
+        ]);
+
         $request->validate([
             'title' => 'required|string|max:255',
             'course_id' => 'required|exists:courses,id',
             'description' => 'nullable|string',
+            'amount' => 'nullable|numeric|min:0',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -36,6 +41,7 @@ class BatchController extends Controller
             'title' => $request->title,
             'course_id' => $request->course_id,
             'description' => $request->description,
+            'amount' => $request->input('amount'),
             'is_active' => $request->has('is_active'),
             'created_by' => AuthHelper::getCurrentUserId(),
             'updated_by' => AuthHelper::getCurrentUserId(),
@@ -125,6 +131,7 @@ class BatchController extends Controller
         try {
             // Normalize checkbox to boolean before validation
             $request->merge([
+                'amount' => $request->filled('amount') ? $request->amount : null,
                 'is_active' => $request->has('is_active') ? 1 : 0,
             ]);
 
@@ -132,6 +139,7 @@ class BatchController extends Controller
                 'title' => 'required|string|max:255',
                 'course_id' => 'required|exists:courses,id',
                 'description' => 'nullable|string',
+                'amount' => 'nullable|numeric|min:0',
                 'is_active' => 'nullable|boolean',
             ]);
 
@@ -139,6 +147,7 @@ class BatchController extends Controller
                 'title' => $request->title,
                 'course_id' => $request->course_id,
                 'description' => $request->description,
+                'amount' => $request->input('amount'),
                 'is_active' => $request->is_active,
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
@@ -170,6 +179,7 @@ class BatchController extends Controller
         try {
             // Normalize checkbox to boolean before validation
             $request->merge([
+                'amount' => $request->filled('amount') ? $request->amount : null,
                 'is_active' => $request->has('is_active') ? 1 : 0,
             ]);
 
@@ -177,6 +187,7 @@ class BatchController extends Controller
                 'title' => 'required|string|max:255',
                 'course_id' => 'required|exists:courses,id',
                 'description' => 'nullable|string',
+                'amount' => 'nullable|numeric|min:0',
                 'is_active' => 'nullable|boolean',
             ]);
 
@@ -185,6 +196,7 @@ class BatchController extends Controller
                 'title' => $request->title,
                 'course_id' => $request->course_id,
                 'description' => $request->description,
+                'amount' => $request->input('amount'),
                 'is_active' => $request->is_active,
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
@@ -256,7 +268,7 @@ class BatchController extends Controller
     {
         $batches = Batch::where('course_id', $courseId)
             ->where('is_active', true)
-            ->select('id', 'title')
+            ->select('id', 'title', 'amount')
             ->get();
 
         return response()->json([

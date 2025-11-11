@@ -16,7 +16,17 @@
         <div class="col-lg-6">
             <div class="p-1">
                 <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="title" id="title" required>
+                <input type="text" class="form-control" name="title" id="title" value="{{ old('title') }}" required>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="p-1">
+                <label for="amount" class="form-label">Amount</label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" step="0.01" min="0" class="form-control" name="amount" id="amount" value="{{ old('amount') }}" placeholder="Enter amount">
+                </div>
             </div>
         </div>
 

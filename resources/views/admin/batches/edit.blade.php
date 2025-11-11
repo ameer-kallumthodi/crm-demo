@@ -23,6 +23,16 @@
 
         <div class="col-lg-6">
             <div class="p-1">
+                <label for="amount" class="form-label">Amount</label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" step="0.01" min="0" class="form-control" name="amount" id="amount" value="{{ old('amount', $edit_data->amount) }}" placeholder="Enter amount">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="p-1">
                 <label for="is_active" class="form-label">Status</label>
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {{ $edit_data->is_active ? 'checked' : '' }}>

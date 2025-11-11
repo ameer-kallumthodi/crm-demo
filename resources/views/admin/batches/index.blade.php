@@ -45,6 +45,7 @@
                                 <th>#</th>
                                 <th>Title</th>
                                 <th>Course</th>
+                                <th>Amount</th>
                                 <th>Description</th>
                                 <th>Status</th>
                                 <th>Created At</th>
@@ -57,6 +58,13 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $batch->title }}</td>
                                 <td>{{ $batch->course->title ?? 'N/A' }}</td>
+                                <td>
+                                    @if(!is_null($batch->amount))
+                                        ₹ {{ number_format($batch->amount, 2) }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
                                 <td>{{ $batch->description ?? 'N/A' }}</td>
                                 <td>
                                     @if($batch->is_active)
