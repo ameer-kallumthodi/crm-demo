@@ -254,15 +254,15 @@
                     <div class="table-responsive">
                         <table class="table table-hover data_table_basic" id="ugpgTable">
                             <thead>
-                            <tr>
-                                <th>SL No</th>
+                                <tr>
+                                    <th>SL No</th>
                                 <th>Academic</th>
                                 <th>Support</th>
-                                <th>Converted Date</th>
-                                <th>Register Number</th>
-                                <th>Name</th>
-                                <th>DOB</th>
-                                <th>Phone</th>
+                                    <th>Converted Date</th>
+                                    <th>Register Number</th>
+                                    <th>Name</th>
+                                    <th>DOB</th>
+                                    <th>Phone</th>
                                 <th>WhatsApp Number</th>
                                 <th>Email</th>
                                     <th>Board/University</th>

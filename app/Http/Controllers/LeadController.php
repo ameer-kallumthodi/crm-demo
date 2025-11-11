@@ -2869,17 +2869,22 @@ class LeadController extends Controller
         $country_codes = get_country_code();
         
         // Load lead details to get DOB and other information
-        $lead->load('studentDetails');
+        $lead->load(['studentDetails', 'batch']);
         
         // Load the course information if the lead has a course_id
         $course = null;
+        $courseAmount = 0;
+        $batchAmount = $lead->batch ? (float) $lead->batch->amount : 0.0;
         $extraAmount = 0;
         $universityAmount = 0;
+        $additionalAmount = 0.0;
         $courseType = null;
         $university = null;
+        $totalAmount = 0.0;
         
         if ($lead->course_id) {
             $course = \App\Models\Course::find($lead->course_id);
+            $courseAmount = $course ? (float) $course->amount : 0.0;
             
             // Check if it's GMVSS (course_id = 16) and has student details with SSLC class
             if ($lead->course_id == 16 && $lead->studentDetails && $lead->studentDetails->class == 'sslc') {
@@ -2904,8 +2909,27 @@ class LeadController extends Controller
             }
         }
 
+        if ($universityAmount > 0) {
+            $additionalAmount += (float) $universityAmount;
+        } elseif ($extraAmount > 0) {
+            $additionalAmount += (float) $extraAmount;
+        }
+
+        $totalAmount = $courseAmount + $batchAmount + $additionalAmount;
+
         return view('admin.leads.convert-modal', compact(
-            'lead', 'boards', 'country_codes', 'course', 'extraAmount', 'universityAmount', 'courseType', 'university'
+            'lead',
+            'boards',
+            'country_codes',
+            'course',
+            'courseAmount',
+            'batchAmount',
+            'extraAmount',
+            'universityAmount',
+            'additionalAmount',
+            'totalAmount',
+            'courseType',
+            'university'
         ));
     }
 

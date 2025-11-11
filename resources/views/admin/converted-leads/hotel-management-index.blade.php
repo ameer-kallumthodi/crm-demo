@@ -976,7 +976,7 @@
             .always(function(){
                 $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
                 supportVerifyUrl = null;
-            });
+        });
     });
 </script>
 @endpush

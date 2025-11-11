@@ -61,7 +61,7 @@
             <div class="p-1">
                 <label class="form-label">Course Information</label>
                 <div class="form-control-plaintext bg-light p-2 rounded">
-                    <strong>{{ $course->title }}</strong> - ₹{{ number_format($course->amount, 2) }}
+                    <strong>{{ $course->title }}</strong> - ₹{{ number_format($courseAmount, 2) }}
                     
                     @if($course->id == 9 && $courseType && $university)
                     <br><small class="text-info">
@@ -74,14 +74,22 @@
                     <br><small class="text-info">
                         <i class="fas fa-rupee-sign"></i> {{ $courseType }} Course Fee: ₹{{ number_format($universityAmount, 2) }}
                     </small>
-                    <br><strong class="text-primary">Total: ₹{{ number_format($course->amount + $universityAmount, 2) }}</strong>
                     @endif
-                    @elseif($extraAmount > 0)
+                    @endif
+
+                    @if($extraAmount > 0)
                     <br><small class="text-success">
                         <i class="fas fa-plus-circle"></i> GMVSS SSLC Extra: +₹{{ number_format($extraAmount, 2) }}
                     </small>
-                    <br><strong class="text-primary">Total: ₹{{ number_format($course->amount + $extraAmount, 2) }}</strong>
                     @endif
+
+                    @if($lead->batch && $batchAmount > 0)
+                    <br><small class="text-info">
+                        <i class="fas fa-layer-group"></i> Batch: <strong>{{ $lead->batch->title }}</strong> - ₹{{ number_format($batchAmount, 2) }}
+                    </small>
+                    @endif
+
+                    <br><strong class="text-primary">Total: ₹{{ number_format($totalAmount, 2) }}</strong>
                 </div>
             </div>
         </div>
@@ -223,6 +231,8 @@ $(document).ready(function() {
         const $paymentAmountInput = $('#modal_payment_amount');
         const $convertBtn = $('#convertLeadBtn');
         
+        const totalAmountValue = {{ $totalAmount }};
+
         @if(!$course || !$course->title)
         // Hide payment section if no course is available
         $paymentCheckbox.closest('.card').hide();
@@ -267,22 +277,14 @@ $(document).ready(function() {
 
     function updateTotalAmount() {
         @if($course && $course->title)
-        // Use the course amount from the lead's course
-        let amount = {{ $course->amount }};
-        
-        // Add university amount for UG/PG course (course_id = 9)
-        @if($course->id == 9 && $universityAmount > 0)
-        amount += {{ $universityAmount }};
-        @elseif($extraAmount > 0)
-        // Add extra amount for GMVSS SSLC class
-        amount += {{ $extraAmount }};
-        @endif
-        
+        let amount = totalAmountValue;
+
         $totalAmountDisplay.val('₹' + amount.toLocaleString('en-IN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }));
         $paymentAmountInput.attr('max', amount);
+        $paymentAmountInput.data('total-amount', amount);
         @else
         // No course information available
         $totalAmountDisplay.val('');

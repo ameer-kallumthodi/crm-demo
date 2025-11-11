@@ -410,7 +410,7 @@
                                         </button>
                                         @endif
                                     </div>
-                                </td>
+                                    </td>
                                     <td>
                                         <div class="inline-edit" data-field="status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->status }}">
                                             <span class="display-value">{{ $convertedLead->status ?? 'N/A' }}</span>
