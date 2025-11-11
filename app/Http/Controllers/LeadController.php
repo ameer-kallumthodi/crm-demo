@@ -2869,12 +2869,13 @@ class LeadController extends Controller
         $country_codes = get_country_code();
         
         // Load lead details to get DOB and other information
-        $lead->load(['studentDetails', 'batch']);
+        $lead->load(['studentDetails.batch', 'batch']);
         
         // Load the course information if the lead has a course_id
         $course = null;
         $courseAmount = 0;
-        $batchAmount = $lead->batch ? (float) $lead->batch->amount : 0.0;
+        $batch = $lead->batch ?: ($lead->studentDetails?->batch);
+        $batchAmount = $batch ? (float) $batch->amount : 0.0;
         $extraAmount = 0;
         $universityAmount = 0;
         $additionalAmount = 0.0;
@@ -2909,11 +2910,8 @@ class LeadController extends Controller
             }
         }
 
-        if ($universityAmount > 0) {
-            $additionalAmount += (float) $universityAmount;
-        } elseif ($extraAmount > 0) {
-            $additionalAmount += (float) $extraAmount;
-        }
+        $additionalAmount += (float) $universityAmount;
+        $additionalAmount += (float) $extraAmount;
 
         $totalAmount = $courseAmount + $batchAmount + $additionalAmount;
 
@@ -2924,6 +2922,7 @@ class LeadController extends Controller
             'course',
             'courseAmount',
             'batchAmount',
+            'batch',
             'extraAmount',
             'universityAmount',
             'additionalAmount',

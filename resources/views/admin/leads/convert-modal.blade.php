@@ -83,9 +83,9 @@
                     </small>
                     @endif
 
-                    @if($lead->batch && $batchAmount > 0)
+                    @if($batch && $batchAmount > 0)
                     <br><small class="text-info">
-                        <i class="fas fa-layer-group"></i> Batch: <strong>{{ $lead->batch->title }}</strong> - ₹{{ number_format($batchAmount, 2) }}
+                        <i class="fas fa-layer-group"></i> Batch: <strong>{{ $batch->title }}</strong> - ₹{{ number_format($batchAmount, 2) }}
                     </small>
                     @endif
 
@@ -231,7 +231,7 @@ $(document).ready(function() {
         const $paymentAmountInput = $('#modal_payment_amount');
         const $convertBtn = $('#convertLeadBtn');
         
-        const totalAmountValue = {{ $totalAmount }};
+        const totalAmountValue = @json($totalAmount);
 
         @if(!$course || !$course->title)
         // Hide payment section if no course is available
