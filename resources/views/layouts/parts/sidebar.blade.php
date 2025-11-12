@@ -120,7 +120,7 @@
                 </li>
                 @endif
                 @if(has_permission('admin/marketing/index'))
-                <li class="pc-item {{ request()->routeIs('admin.marketing.*') && !request()->routeIs('admin.marketing.d2d-form') ? 'active' : '' }}">
+                <li class="pc-item {{ (request()->routeIs('admin.marketing.index') || request()->routeIs('admin.marketing.add') || request()->routeIs('admin.marketing.edit') || request()->routeIs('admin.marketing.submit') || request()->routeIs('admin.marketing.update') || request()->routeIs('admin.marketing.delete') || request()->routeIs('admin.marketing.change-password') || request()->routeIs('admin.marketing.update-password')) && !request()->routeIs('admin.marketing.d2d-form') && !request()->routeIs('admin.marketing.d2d-submit') && !request()->routeIs('admin.marketing.marketing-leads') && !request()->routeIs('admin.marketing.marketing-leads.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.marketing.index') }}" class="pc-link">
                         <span class="pc-micon">
                             <i class="ti ti-briefcase"></i>
