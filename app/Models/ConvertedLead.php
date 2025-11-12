@@ -159,6 +159,16 @@ class ConvertedLead extends Model
         return $this->hasMany(SupportFeedbackHistory::class, 'converted_student_id')->orderBy('created_at', 'desc');
     }
 
+    public function convertedStudentActivities()
+    {
+        return $this->hasMany(ConvertedStudentActivity::class)->orderByDesc('activity_date')->orderByDesc('activity_time');
+    }
+
+    public function latestConvertedStudentActivity()
+    {
+        return $this->hasOne(ConvertedStudentActivity::class)->latestOfMany();
+    }
+
     public function niosStudentDetails()
     {
         return $this->hasOne(ConvertedStudentDetail::class)->where('course_id', 1);

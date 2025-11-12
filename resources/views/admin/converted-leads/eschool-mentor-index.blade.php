@@ -817,8 +817,9 @@
             btn.data('busy', true);
             btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
             
-            // Use converted-leads endpoint for phone updates, mentor endpoint for other fields
-            const updateUrl = field === 'phone' 
+            // Use converted-leads endpoint for register number and phone updates, mentor endpoint for other fields
+            const isConvertedLeadField = ['phone', 'register_number'].includes(field);
+            const updateUrl = isConvertedLeadField
                 ? `/admin/converted-leads/${id}/inline-update`
                 : `/admin/mentor-eschool-converted-leads/${id}/update-mentor-details`;
             
@@ -852,12 +853,19 @@
                             // Store the raw time value (H:i format) in data-current for future edits
                             container.data('current', value);
                         } else {
-                            container.find('.display-value').text(response.value || value || '-');
-                            container.data('current', response.value || value);
+                            const displayText = response.value || value || '-';
+                            container.find('.display-value').text(displayText);
+
+                            let currentForEditing = response.value || value;
                             if (field === 'phone') {
                                 const codeVal = extra.code || '';
                                 container.find('.inline-code-value').data('current', codeVal);
+                                currentForEditing = value;
                             }
+                            if (field === 'register_number' && (!value || value === '-' || value === 'N/A')) {
+                                currentForEditing = '';
+                            }
+                            container.data('current', currentForEditing);
                         }
                         toast_success(response.message);
                     } else {

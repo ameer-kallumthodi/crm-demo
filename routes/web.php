@@ -561,6 +561,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/converted-leads/{id}/id-card-generate', [App\Http\Controllers\ConvertedLeadController::class, 'generateAndStoreIdCard'])->name('converted-leads.id-card-generate');
         Route::get('/converted-leads/{id}/id-card', [App\Http\Controllers\ConvertedLeadController::class, 'viewStoredIdCard'])->name('converted-leads.id-card-view');
         Route::post('/converted-leads/{id}/toggle-academic-verify', [App\Http\Controllers\ConvertedLeadController::class, 'toggleAcademicVerification'])->name('converted-leads.toggle-academic-verify');
+        Route::get('/converted-leads/{id}/change-course', [App\Http\Controllers\ConvertedLeadController::class, 'showChangeCourseModal'])->name('converted-leads.change-course-modal');
+        Route::post('/converted-leads/{id}/change-course', [App\Http\Controllers\ConvertedLeadController::class, 'changeCourse'])->name('converted-leads.change-course');
+        Route::get('/converted-leads/{id}/course-pricing', [App\Http\Controllers\ConvertedLeadController::class, 'coursePricing'])->name('converted-leads.course-pricing');
 
         // NIOS Converted Leads Routes
         Route::get('/nios-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'niosIndex'])->name('nios-converted-leads.index');

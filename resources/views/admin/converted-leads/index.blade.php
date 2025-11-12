@@ -426,6 +426,11 @@
                                                 data-title="Update Register Number">
                                                 <i class="ti ti-edit"></i>
                                             </button>
+                                            <button type="button" class="btn btn-sm btn-outline-warning"
+                                                title="Change Course"
+                                                onclick="show_ajax_modal('{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}', 'Change Course')">
+                                                <i class="ti ti-arrows-exchange"></i>
+                                            </button>
                                             @if($convertedLead->register_number)
                                                 @php
                                                     $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
@@ -492,6 +497,12 @@
                                                 data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
                                                 data-title="Update Register Number">
                                                 <i class="ti ti-edit me-2"></i>Update Register Number
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button type="button" class="dropdown-item"
+                                                onclick="show_ajax_modal('{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}', 'Change Course')">
+                                                <i class="ti ti-arrows-exchange me-2"></i>Change Course
                                             </button>
                                         </li>
                                         @if($convertedLead->register_number)

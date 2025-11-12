@@ -15,6 +15,13 @@ use App\Models\ConvertedLeadIdCard;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\IdCardNotification;
 use Carbon\Carbon;
+use App\Models\Course;
+use App\Models\Batch;
+use Illuminate\Support\Facades\DB;
+use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\LeadDetail;
+use App\Models\ConvertedStudentActivity;
 
 class ConvertedLeadController extends Controller
 {
@@ -1822,6 +1829,263 @@ class ConvertedLeadController extends Controller
     }
 
     /**
+     * Show modal for changing course
+     */
+    public function showChangeCourseModal($id)
+    {
+        if (!$this->canManageCourseChange()) {
+            abort(403, 'Access denied.');
+        }
+
+        $convertedLead = ConvertedLead::with(['course', 'batch', 'leadDetail', 'lead'])
+            ->findOrFail($id);
+
+        $courses = Course::where('is_active', true)
+            ->orderBy('title')
+            ->get();
+
+        $currentInvoice = Invoice::with(['payments' => function ($query) {
+                $query->orderBy('created_at');
+            }])
+            ->where('student_id', $convertedLead->id)
+            ->where('invoice_type', 'course')
+            ->where('course_id', $convertedLead->course_id)
+            ->latest('created_at')
+            ->first();
+
+        $currentPricing = null;
+        if ($convertedLead->course_id) {
+            $currentPricing = $this->calculateCoursePricing(
+                $convertedLead,
+                (int) $convertedLead->course_id,
+                $convertedLead->batch_id
+            );
+        }
+
+        return view('admin.converted-leads.change-course-modal', compact(
+            'convertedLead',
+            'courses',
+            'currentInvoice',
+            'currentPricing'
+        ));
+    }
+
+    /**
+     * Fetch pricing for selected course/batch
+     */
+    public function coursePricing(Request $request, $id)
+    {
+        if (!$this->canManageCourseChange()) {
+            return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
+        }
+
+        $validated = $request->validate([
+            'course_id' => 'required|exists:courses,id',
+            'batch_id' => 'nullable|exists:batches,id',
+        ]);
+
+        $convertedLead = ConvertedLead::with('leadDetail')->findOrFail($id);
+
+        $pricing = $this->calculateCoursePricing(
+            $convertedLead,
+            (int) $validated['course_id'],
+            isset($validated['batch_id']) ? (int) $validated['batch_id'] : null
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'course_amount' => $pricing['course_amount'],
+                'batch_amount' => $pricing['batch_amount'],
+                'extra_amount' => $pricing['extra_amount'],
+                'university_amount' => $pricing['university_amount'],
+                'total_amount' => $pricing['total_amount'],
+                'formatted_total' => $this->formatCurrency($pricing['total_amount']),
+                'course_title' => $pricing['course']?->title,
+                'batch_title' => $pricing['batch']?->title,
+            ],
+        ]);
+    }
+
+    /**
+     * Handle course change submission
+     */
+    public function changeCourse(Request $request, $id)
+    {
+        if (!$this->canManageCourseChange()) {
+            return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
+        }
+
+        $convertedLead = ConvertedLead::with(['lead', 'leadDetail', 'course', 'batch'])
+            ->findOrFail($id);
+
+        $validated = $request->validate([
+            'course_id' => 'required|exists:courses,id',
+            'batch_id' => 'required|exists:batches,id',
+            'remark' => 'nullable|string|max:1000',
+            'description' => 'nullable|string|max:2000',
+        ]);
+
+        $newCourseId = (int) $validated['course_id'];
+        $newBatchId = (int) $validated['batch_id'];
+
+        if (
+            (int) $convertedLead->course_id === $newCourseId &&
+            (int) $convertedLead->batch_id === $newBatchId
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please choose a different course or batch before submitting.',
+            ], 422);
+        }
+
+        $oldCourse = $convertedLead->course;
+        $oldBatch = $convertedLead->batch;
+
+        try {
+            DB::beginTransaction();
+
+            $oldInvoice = Invoice::with('payments')
+                ->where('student_id', $convertedLead->id)
+                ->where('invoice_type', 'course')
+                ->where('course_id', $convertedLead->course_id)
+                ->latest('created_at')
+                ->first();
+
+            // Update converted lead
+            $convertedLead->update([
+                'course_id' => $newCourseId,
+                'batch_id' => $newBatchId,
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            // Update base lead
+            if ($convertedLead->lead) {
+                $convertedLead->lead->update([
+                    'course_id' => $newCourseId,
+                    'batch_id' => $newBatchId,
+                    'updated_by' => AuthHelper::getCurrentUserId(),
+                ]);
+            }
+
+            // Update or create lead detail
+            $leadDetail = $convertedLead->leadDetail;
+            if (!$leadDetail) {
+                $leadDetail = LeadDetail::create([
+                    'lead_id' => $convertedLead->lead_id,
+                    'course_id' => $newCourseId,
+                    'batch_id' => $newBatchId,
+                ]);
+            } else {
+                $leadDetail->update([
+                    'course_id' => $newCourseId,
+                    'batch_id' => $newBatchId,
+                ]);
+            }
+
+            $convertedLead->load('leadDetail');
+            $pricing = $this->calculateCoursePricing(
+                $convertedLead,
+                $newCourseId,
+                $newBatchId
+            );
+
+            // Generate new invoice
+            $invoiceController = new InvoiceController();
+            $newInvoice = $invoiceController->autoGenerate($convertedLead->id, $newCourseId);
+
+            if (!$newInvoice) {
+                throw new \RuntimeException('Failed to create invoice for the selected course.');
+            }
+
+            $newInvoice->update([
+                'course_id' => $newCourseId,
+                'batch_id' => $newBatchId,
+                'total_amount' => $pricing['total_amount'],
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            $transferSummary = null;
+            if ($oldInvoice) {
+                $transferSummary = $this->transferInvoicePayments($oldInvoice, $newInvoice, $pricing['total_amount']);
+            }
+
+            $newInvoice->refresh();
+            $newInvoice->recalculatePaidAmount();
+            $newInvoice->updateStatus();
+
+            $convertedLead->refresh()->load(['course', 'batch', 'leadDetail']);
+
+            $descriptionParts = [];
+            $descriptionParts[] = sprintf(
+                'Course changed from %s to %s.',
+                $oldCourse?->title ?? 'N/A',
+                $convertedLead->course?->title ?? 'N/A'
+            );
+            $descriptionParts[] = sprintf(
+                'Batch changed from %s to %s.',
+                $oldBatch?->title ?? 'N/A',
+                $convertedLead->batch?->title ?? 'N/A'
+            );
+            if ($transferSummary && $transferSummary['transferred_amount'] > 0) {
+                $descriptionParts[] = sprintf(
+                    'Transferred payments: %s across %d transaction(s).',
+                    $this->formatCurrency($transferSummary['transferred_amount']),
+                    $transferSummary['transferred_count']
+                );
+            }
+            if (!empty($validated['description'])) {
+                $descriptionParts[] = $validated['description'];
+            }
+
+            ConvertedStudentActivity::create([
+                'converted_lead_id' => $convertedLead->id,
+                'activity_type' => 'course_change',
+                'description' => implode(' ', array_filter($descriptionParts)),
+                'remark' => $validated['remark'] ?? null,
+                'activity_date' => now()->toDateString(),
+                'activity_time' => now()->format('H:i:s'),
+                'created_by' => AuthHelper::getCurrentUserId(),
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Course updated successfully.',
+                'data' => [
+                    'new_invoice_id' => $newInvoice->id,
+                    'new_invoice_number' => $newInvoice->invoice_number,
+                    'pricing' => [
+                        'course_amount' => $pricing['course_amount'],
+                        'batch_amount' => $pricing['batch_amount'],
+                        'extra_amount' => $pricing['extra_amount'],
+                        'university_amount' => $pricing['university_amount'],
+                        'total_amount' => $pricing['total_amount'],
+                        'formatted_total' => $this->formatCurrency($pricing['total_amount']),
+                    ],
+                    'transferred_payments' => $transferSummary,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            Log::error('Converted lead course change failed', [
+                'converted_lead_id' => $convertedLead->id,
+                'new_course_id' => $newCourseId,
+                'new_batch_id' => $newBatchId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update course. Please try again.',
+            ], 500);
+        }
+    }
+
+    /**
      * Toggle academic verification status for a converted lead
      */
     public function toggleAcademicVerification(\Illuminate\Http\Request $request, $id)
@@ -1863,7 +2127,7 @@ class ConvertedLeadController extends Controller
         }
         
         // If mentor, restrict to allowed fields only
-        $mentorAllowedFields = ['register_number', 'enroll_no', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks'];
+        $mentorAllowedFields = ['register_number', 'phone', 'enroll_no', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks'];
 
         $convertedLead = ConvertedLead::findOrFail($id);
         
@@ -2082,9 +2346,16 @@ class ConvertedLeadController extends Controller
             // For lead detail fields, get the value from the relationship
             $convertedLead->load('leadDetail');
             if ($field === 'dob') {
-                $updatedValue = $convertedLead->leadDetail && $convertedLead->leadDetail->date_of_birth 
-                    ? $convertedLead->leadDetail->date_of_birth->format('Y-m-d') 
-                    : ($convertedLead->leadDetail ? $convertedLead->leadDetail->date_of_birth : $value);
+                if ($convertedLead->leadDetail && $convertedLead->leadDetail->date_of_birth) {
+                    $dob = $convertedLead->leadDetail->date_of_birth;
+                    if ($dob instanceof \Carbon\Carbon) {
+                        $updatedValue = $dob->format('Y-m-d');
+                    } else {
+                        $updatedValue = (string) $dob;
+                    }
+                } else {
+                    $updatedValue = $value;
+                }
             } else {
                 $updatedValue = $convertedLead->leadDetail ? $convertedLead->leadDetail->$field : $value;
             }
@@ -2339,5 +2610,119 @@ class ConvertedLeadController extends Controller
                 'error' => 'Failed to update records: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function canManageCourseChange(): bool
+    {
+        return RoleHelper::is_admin_or_super_admin()
+            || RoleHelper::is_academic_assistant()
+            || RoleHelper::is_admission_counsellor();
+    }
+
+    private function calculateCoursePricing(ConvertedLead $convertedLead, ?int $courseId, ?int $batchId = null): array
+    {
+        $course = $courseId ? Course::find($courseId) : null;
+        $batch = $batchId ? Batch::find($batchId) : null;
+
+        $courseAmount = $course ? (float) ($course->amount ?? 0) : 0.0;
+        $batchAmount = $batch ? (float) ($batch->amount ?? 0) : 0.0;
+        $extraAmount = 0.0;
+        $universityAmount = 0.0;
+        $university = null;
+
+        $leadDetail = $convertedLead->leadDetail;
+        if (!$leadDetail && $convertedLead->lead_id) {
+            $leadDetail = LeadDetail::where('lead_id', $convertedLead->lead_id)->first();
+        }
+
+        if ($course && (int) $course->id === 16 && $leadDetail && $leadDetail->class === 'sslc') {
+            $extraAmount += 10000;
+        }
+
+        if ($course && (int) $course->id === 9 && $leadDetail) {
+            $courseType = $leadDetail->course_type;
+            $universityId = $leadDetail->university_id;
+            if ($universityId) {
+                $university = \App\Models\University::find($universityId);
+                if ($university) {
+                    if ($courseType === 'UG') {
+                        $universityAmount += (float) ($university->ug_amount ?? 0);
+                    } elseif ($courseType === 'PG') {
+                        $universityAmount += (float) ($university->pg_amount ?? 0);
+                    }
+                }
+            }
+        }
+
+        $totalAmount = $courseAmount + $batchAmount + $extraAmount + $universityAmount;
+
+        return [
+            'course' => $course,
+            'batch' => $batch,
+            'course_amount' => $courseAmount,
+            'batch_amount' => $batchAmount,
+            'extra_amount' => $extraAmount,
+            'university_amount' => $universityAmount,
+            'total_amount' => $totalAmount,
+            'course_type' => $leadDetail?->course_type,
+            'university' => $university,
+        ];
+    }
+
+    private function transferInvoicePayments(Invoice $oldInvoice, Invoice $newInvoice, ?float $targetTotalAmount = null): array
+    {
+        $totalTransferred = 0.0;
+        $count = 0;
+        $currentBalance = $targetTotalAmount !== null
+            ? (float) $targetTotalAmount
+            : (float) $newInvoice->total_amount;
+
+        $oldPayments = $oldInvoice->payments()->orderBy('created_at')->get();
+
+        foreach ($oldPayments as $oldPayment) {
+            $previousBalance = $currentBalance;
+            $currentBalance = max(0, $currentBalance - (float) $oldPayment->amount_paid);
+
+            $newInvoice->payments()->create([
+                'amount_paid' => $oldPayment->amount_paid,
+                'previous_balance' => $previousBalance,
+                'payment_type' => $oldPayment->payment_type,
+                'transaction_id' => $oldPayment->transaction_id,
+                'file_upload' => $oldPayment->file_upload,
+                'status' => $oldPayment->status,
+                'approved_date' => $oldPayment->approved_date,
+                'approved_by' => $oldPayment->approved_by,
+                'rejected_date' => $oldPayment->rejected_date,
+                'rejected_by' => $oldPayment->rejected_by,
+                'created_by' => $oldPayment->created_by ?? AuthHelper::getCurrentUserId(),
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            $totalTransferred += (float) $oldPayment->amount_paid;
+            $count++;
+
+            $oldPayment->delete();
+        }
+
+        $oldInvoiceId = $oldInvoice->id;
+        $oldInvoice->delete();
+
+        Log::info('Transferred invoice payments during course change', [
+            'old_invoice_id' => $oldInvoiceId,
+            'new_invoice_id' => $newInvoice->id,
+            'transferred_amount' => $totalTransferred,
+            'transferred_count' => $count,
+        ]);
+
+        return [
+            'transferred_amount' => $totalTransferred,
+            'transferred_count' => $count,
+            'removed_invoice_id' => $oldInvoiceId,
+        ];
+    }
+
+    private function formatCurrency(float $value): string
+    {
+        return '₹' . number_format($value, 2);
     }
 }
