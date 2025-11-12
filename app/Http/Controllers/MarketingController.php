@@ -613,7 +613,11 @@ class MarketingController extends Controller
             }
 
             // Build base query
-            $query = MarketingLead::with(['marketingBde:id,name', 'createdBy:id,name']);
+            $query = MarketingLead::with([
+                'marketingBde:id,name', 
+                'createdBy:id,name',
+                'lead.leadStatus'
+            ]);
             
             // If marketing user, only show their own leads
             if ($isMarketing) {
@@ -667,15 +671,17 @@ class MarketingController extends Controller
                 9 => 'lead_type', // Lead Type
                 10 => 'id', // Interested Courses (no sorting)
                 11 => 'remarks', // Remarks
-                12 => 'is_telecaller_assigned', // Assignment Status
-                13 => 'assigned_at', // Assigned At
-                14 => 'created_at', // Created At
-                15 => 'id', // Actions (no sorting)
+                12 => 'id', // Telecaller Remarks (no sorting)
+                13 => 'id', // Lead Status (no sorting)
+                14 => 'is_telecaller_assigned', // Assignment Status
+                15 => 'assigned_at', // Assigned At
+                16 => 'created_at', // Created At
+                17 => 'id', // Actions (no sorting)
             ];
             
             // Apply ordering
             $order = $request->get('order', []);
-            $orderColumn = isset($order[0]['column']) ? (int)$order[0]['column'] : 14; // Default to created_at
+            $orderColumn = isset($order[0]['column']) ? (int)$order[0]['column'] : 16; // Default to created_at
             $orderDir = isset($order[0]['dir']) ? $order[0]['dir'] : 'desc';
             
             $orderColumnName = $columns[$orderColumn] ?? 'created_at';
@@ -708,6 +714,23 @@ class MarketingController extends Controller
                                    htmlspecialchars(Str::limit($lead->remarks, 50)) . '</span>';
                 }
                 
+                // Get telecaller remarks from leads table
+                $telecallerRemarksHtml = '-';
+                $relatedLead = $lead->lead;
+                if ($relatedLead && !empty($relatedLead->remarks)) {
+                    $telecallerRemarksHtml = '<span class="text-truncate d-inline-block" style="max-width: 200px;" title="' . htmlspecialchars($relatedLead->remarks) . '">' . 
+                                             htmlspecialchars(Str::limit($relatedLead->remarks, 50)) . '</span>';
+                }
+                
+                // Get lead status from leads table
+                $leadStatusHtml = '-';
+                if ($relatedLead && $relatedLead->leadStatus) {
+                    $leadStatusHtml = '<span class="badge bg-primary">' . htmlspecialchars($relatedLead->leadStatus->title) . '</span>';
+                } elseif ($relatedLead && $relatedLead->lead_status_id) {
+                    // If relationship didn't load, try to get status directly
+                    $leadStatusHtml = '<span class="badge bg-secondary">Status ID: ' . $relatedLead->lead_status_id . '</span>';
+                }
+                
                 $row = [
                     'index' => $start + $index + 1,
                     'date_of_visit' => $lead->date_of_visit ? $lead->date_of_visit->format('M d, Y') : '-',
@@ -721,14 +744,14 @@ class MarketingController extends Controller
                     'lead_type' => '<span class="badge bg-info">' . htmlspecialchars($lead->lead_type) . '</span>',
                     'interested_courses' => $interestedCoursesHtml,
                     'remarks' => $remarksHtml,
+                    'telecaller_remarks' => $telecallerRemarksHtml,
+                    'lead_status' => $leadStatusHtml,
                     'assignment_status' => $lead->is_telecaller_assigned 
                         ? '<span class="badge bg-success">Assigned</span>' 
                         : '<span class="badge bg-warning">Not Assigned</span>',
                     'assigned_at' => $lead->assigned_at ? $lead->assigned_at->format('M d, Y H:i') : '-',
                     'created_at' => $lead->created_at ? $lead->created_at->format('M d, Y H:i') : '-',
-                    'actions' => '<button type="button" class="btn btn-warning btn-sm" ' .
-                                'onclick="show_ajax_modal(\'' . route('admin.marketing.marketing-leads.edit', $lead->id) . '\', \'Edit Marketing Lead\')" ' .
-                                'title="Edit"><i class="ti ti-edit"></i></button>'
+                    'actions' => $this->renderMarketingLeadActions($lead, $isAdminOrManager)
                 ];
                 
                 $data[] = $row;
@@ -754,6 +777,331 @@ class MarketingController extends Controller
                 'error' => 'Error loading data. Please try again.'
             ], 500);
         }
+    }
+
+    /**
+     * Assign a single marketing lead to telecaller
+     */
+    public function assignToTelecaller(Request $request, $id)
+    {
+        $currentUser = AuthHelper::getCurrentUser();
+        
+        if (!$currentUser) {
+            return response()->json(['error' => 'Please login to access this page.'], 403);
+        }
+        
+        $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+        
+        if (!$isAdminOrManager) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'telecaller_id' => 'required|exists:users,id',
+            'marketing_remarks' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        // Verify telecaller is a telecaller (role_id = 3)
+        $telecaller = User::findOrFail($request->telecaller_id);
+        if ($telecaller->role_id != 3) {
+            return response()->json(['error' => 'Selected user must be a telecaller.'], 422);
+        }
+
+        $marketingLead = MarketingLead::findOrFail($id);
+        
+        // Check if already assigned
+        if ($marketingLead->is_telecaller_assigned) {
+            return response()->json(['error' => 'This marketing lead is already assigned to a telecaller.'], 422);
+        }
+
+        try {
+            \DB::beginTransaction();
+
+            // Create lead from marketing lead
+            $lead = Lead::create([
+                'marketing_leads_id' => $marketingLead->id,
+                'place' => $marketingLead->location,
+                'title' => $marketingLead->lead_name,
+                'code' => $marketingLead->code,
+                'phone' => $marketingLead->phone,
+                'whatsapp_code' => $marketingLead->whatsapp_code,
+                'whatsapp' => $marketingLead->whatsapp,
+                'address' => $marketingLead->address,
+                'lead_status_id' => 1,
+                'lead_source_id' => 9,
+                'marketing_remarks' => $request->marketing_remarks ?? $marketingLead->remarks,
+                'telecaller_id' => $request->telecaller_id,
+                'created_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            // Create lead activity
+            LeadActivity::create([
+                'lead_id' => $lead->id,
+                'lead_status_id' => 1,
+                'activity_type' => 'marketing_lead_assigned',
+                'description' => 'Marketing lead assigned to telecaller',
+                'remarks' => 'Marketing lead has been assigned to telecaller ' . $telecaller->name . '.',
+                'created_by' => AuthHelper::getCurrentUserId(),
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            // Update marketing lead
+            $marketingLead->update([
+                'is_telecaller_assigned' => true,
+                'assigned_at' => now(),
+                'assigned_by' => AuthHelper::getCurrentUserId(),
+                'assigned_to' => $request->telecaller_id,
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Marketing lead assigned to telecaller successfully!',
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Error assigning marketing lead to telecaller: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred while assigning the lead. Please try again.'], 500);
+        }
+    }
+
+    /**
+     * Show bulk assign form
+     */
+    public function ajaxBulkAssign()
+    {
+        $currentUser = AuthHelper::getCurrentUser();
+        
+        if (!$currentUser) {
+            return response()->json(['error' => 'Please login to access this page.'], 403);
+        }
+        
+        $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+        
+        if (!$isAdminOrManager) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        // Get all telecallers (role_id = 3)
+        $telecallers = User::where('role_id', 3)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        // Get marketing users (BDEs) for filter
+        $marketingUsers = User::where('role_id', 13)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.marketing.ajax-bulk-assign', compact('telecallers', 'marketingUsers'));
+    }
+
+    /**
+     * Process bulk assign
+     */
+    public function bulkAssign(Request $request)
+    {
+        $currentUser = AuthHelper::getCurrentUser();
+        
+        if (!$currentUser) {
+            return redirect()->back()->with('message_danger', 'Please login to access this page.');
+        }
+        
+        $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+        
+        if (!$isAdminOrManager) {
+            return redirect()->back()->with('message_danger', 'Access denied.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'telecaller_id' => 'required|exists:users,id',
+            'marketing_lead_id' => 'required|array|min:1',
+            'marketing_lead_id.*' => 'exists:marketing_leads,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        // Verify telecaller is a telecaller (role_id = 3)
+        $telecaller = User::findOrFail($request->telecaller_id);
+        if ($telecaller->role_id != 3) {
+            return redirect()->back()->with('message_danger', 'Selected user must be a telecaller.')->withInput();
+        }
+
+        // Get selected marketing leads
+        $marketingLeads = MarketingLead::whereIn('id', $request->marketing_lead_id)
+            ->where('is_telecaller_assigned', false)
+            ->get();
+
+        if ($marketingLeads->isEmpty()) {
+            return redirect()->back()->with('message_danger', 'No valid unassigned marketing leads selected.');
+        }
+
+        $successCount = 0;
+        $errors = [];
+
+        try {
+            \DB::beginTransaction();
+
+            foreach ($marketingLeads as $marketingLead) {
+                try {
+                    // Create lead from marketing lead
+                    $lead = Lead::create([
+                        'marketing_leads_id' => $marketingLead->id,
+                        'place' => $marketingLead->location,
+                        'title' => $marketingLead->lead_name,
+                        'code' => $marketingLead->code,
+                        'phone' => $marketingLead->phone,
+                        'whatsapp_code' => $marketingLead->whatsapp_code,
+                        'whatsapp' => $marketingLead->whatsapp,
+                        'address' => $marketingLead->address,
+                        'lead_status_id' => 1,
+                        'lead_source_id' => 9,
+                        'marketing_remarks' => $marketingLead->remarks,
+                        'telecaller_id' => $request->telecaller_id,
+                        'created_by' => AuthHelper::getCurrentUserId(),
+                    ]);
+
+                    // Create lead activity
+                    LeadActivity::create([
+                        'lead_id' => $lead->id,
+                        'lead_status_id' => 1,
+                        'activity_type' => 'marketing_lead_assigned',
+                        'description' => 'Marketing lead assigned to telecaller via bulk operation',
+                        'remarks' => 'Marketing lead has been assigned to telecaller ' . $telecaller->name . ' via bulk assignment.',
+                        'created_by' => AuthHelper::getCurrentUserId(),
+                        'updated_by' => AuthHelper::getCurrentUserId(),
+                    ]);
+
+                    // Update marketing lead
+                    $marketingLead->update([
+                        'is_telecaller_assigned' => true,
+                        'assigned_at' => now(),
+                        'assigned_by' => AuthHelper::getCurrentUserId(),
+                        'assigned_to' => $request->telecaller_id,
+                        'updated_by' => AuthHelper::getCurrentUserId(),
+                    ]);
+
+                    $successCount++;
+                } catch (\Exception $e) {
+                    $errors[] = 'Error assigning lead ' . $marketingLead->lead_name . ': ' . $e->getMessage();
+                    \Log::error('Error assigning marketing lead ' . $marketingLead->id . ': ' . $e->getMessage());
+                }
+            }
+
+            \DB::commit();
+
+            $message = "Successfully assigned {$successCount} marketing lead(s) to telecaller!";
+            if (!empty($errors)) {
+                $message .= ' Some errors occurred: ' . implode(', ', array_slice($errors, 0, 5));
+            }
+
+            return redirect()->back()->with('message_success', $message);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Error in bulk assign: ' . $e->getMessage());
+            return redirect()->back()->with('message_danger', 'An error occurred during bulk assignment. Please try again.');
+        }
+    }
+
+    /**
+     * Get marketing leads by filters for bulk assign
+     */
+    public function getMarketingLeadsByFiltersAssign(Request $request)
+    {
+        $currentUser = AuthHelper::getCurrentUser();
+        
+        if (!$currentUser) {
+            return response()->json(['error' => 'Please login to access this page.'], 403);
+        }
+        
+        $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+        
+        if (!$isAdminOrManager) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        // Build query for unassigned marketing leads
+        $query = MarketingLead::where('is_telecaller_assigned', false)
+            ->whereBetween('date_of_visit', [$request->date_from, $request->date_to]);
+
+        // Filter by BDE if provided
+        if ($request->filled('bde_id')) {
+            $query->where('marketing_bde_id', $request->bde_id);
+        }
+
+        $marketingLeads = $query->orderBy('date_of_visit', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.marketing.partials.marketing-leads-table-rows-assign', compact('marketingLeads'));
+    }
+
+    /**
+     * Show assign form for single marketing lead
+     */
+    public function ajaxAssign($id)
+    {
+        $currentUser = AuthHelper::getCurrentUser();
+        
+        if (!$currentUser) {
+            return response()->json(['error' => 'Please login to access this page.'], 403);
+        }
+        
+        $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+        
+        if (!$isAdminOrManager) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $marketingLead = MarketingLead::findOrFail($id);
+        
+        // Check if already assigned
+        if ($marketingLead->is_telecaller_assigned) {
+            return response()->json(['error' => 'This marketing lead is already assigned to a telecaller.'], 422);
+        }
+
+        // Get all telecallers (role_id = 3)
+        $telecallers = User::where('role_id', 3)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.marketing.ajax-assign', compact('telecallers', 'marketingLead'))->with('marketingLeadId', $id);
+    }
+
+    /**
+     * Render actions column HTML for marketing leads
+     */
+    private function renderMarketingLeadActions($lead, $isAdminOrManager)
+    {
+        $html = '<div class="btn-group" role="group">';
+        
+        // Edit button
+        $html .= '<button type="button" class="btn btn-warning btn-sm" ' .
+                'onclick="show_ajax_modal(\'' . route('admin.marketing.marketing-leads.edit', $lead->id) . '\', \'Edit Marketing Lead\')" ' .
+                'title="Edit"><i class="ti ti-edit"></i></button>';
+        
+        // Assign button (only if not assigned and user has permission)
+        if ($isAdminOrManager && !$lead->is_telecaller_assigned) {
+            $html .= '<button type="button" class="btn btn-success btn-sm" ' .
+                    'onclick="show_ajax_modal(\'' . route('admin.marketing.assign-to-telecaller.ajax', $lead->id) . '\', \'Assign to Telecaller\')" ' .
+                    'title="Assign to Telecaller"><i class="ti ti-user-plus"></i></button>';
+        }
+        
+        $html .= '</div>';
+        
+        return $html;
     }
 }
 

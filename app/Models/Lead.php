@@ -38,6 +38,8 @@ class Lead extends Model
         'university_id',
         'by_meta',
         'meta_lead_id',
+        'marketing_leads_id',
+        'marketing_remarks',
         'followup_date',
         'remarks',
         'is_converted'
@@ -91,6 +93,11 @@ class Lead extends Model
     public function team()
     {
         return $this->belongsTo(Team::class, 'team_id');
+    }
+
+    public function marketingLead()
+    {
+        return $this->belongsTo(MarketingLead::class, 'marketing_leads_id');
     }
 
     public function createdBy()

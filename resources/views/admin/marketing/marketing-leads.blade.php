@@ -30,9 +30,16 @@
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">D2D Marketing Leads</h5>
-                    <a href="{{ route('admin.marketing.d2d-form') }}" class="btn btn-primary btn-sm px-3">
-                        <i class="ti ti-plus"></i> Add New Lead
-                    </a>
+                    <div class="d-flex gap-2">
+                        @if(!$isMarketing)
+                        <button type="button" class="btn btn-success btn-sm px-3" onclick="show_large_modal('{{ route('admin.marketing.bulk-assign.ajax') }}', 'Bulk Assign to Telecaller')">
+                            <i class="ti ti-users"></i> Bulk Assign
+                        </button>
+                        @endif
+                        <a href="{{ route('admin.marketing.d2d-form') }}" class="btn btn-primary btn-sm px-3">
+                            <i class="ti ti-plus"></i> Add New Lead
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
@@ -92,6 +99,8 @@
                                 <th>Lead Type</th>
                                 <th>Interested Courses</th>
                                 <th>Remarks</th>
+                                <th>Telecaller Remarks</th>
+                                <th>Lead Status</th>
                                 <th>Assignment Status</th>
                                 <th>Assigned At</th>
                                 <th>Created At</th>
@@ -126,6 +135,8 @@ $columns = [
     ['data' => 'lead_type', 'name' => 'lead_type', 'orderable' => false, 'searchable' => false],
     ['data' => 'interested_courses', 'name' => 'interested_courses', 'orderable' => false, 'searchable' => false],
     ['data' => 'remarks', 'name' => 'remarks'],
+    ['data' => 'telecaller_remarks', 'name' => 'telecaller_remarks', 'orderable' => false, 'searchable' => false],
+    ['data' => 'lead_status', 'name' => 'lead_status', 'orderable' => false, 'searchable' => false],
     ['data' => 'assignment_status', 'name' => 'assignment_status', 'orderable' => false, 'searchable' => false],
     ['data' => 'assigned_at', 'name' => 'assigned_at'],
     ['data' => 'created_at', 'name' => 'created_at'],
@@ -191,7 +202,8 @@ $(document).ready(function() {
                 '<th>#</th><th>Date of Visit</th><th>BDE Name</th><th>Lead Name</th>' +
                 '<th>Phone</th><th>WhatsApp</th><th>Address</th><th>Location</th>' +
                 '<th>House Number</th><th>Lead Type</th><th>Interested Courses</th>' +
-                '<th>Remarks</th><th>Assignment Status</th><th>Assigned At</th>' +
+                '<th>Remarks</th><th>Telecaller Remarks</th><th>Lead Status</th>' +
+                '<th>Assignment Status</th><th>Assigned At</th>' +
                 '<th>Created At</th><th>Actions</th></tr></thead>');
         }
         
@@ -214,7 +226,7 @@ $(document).ready(function() {
         },
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-        order: [[14, 'desc']], // Sort by created_at (column 14)
+        order: [[16, 'desc']], // Sort by created_at (column 16)
         dom: "Bfrtip",
         buttons: ["csv", "excel", "print", "pdf"],
         stateSave: true,

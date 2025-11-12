@@ -29,6 +29,7 @@ class MarketingLead extends Model
         'is_telecaller_assigned',
         'assigned_at',
         'assigned_by',
+        'assigned_to',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -55,6 +56,11 @@ class MarketingLead extends Model
         return $this->belongsTo(User::class, 'assigned_by');
     }
 
+    public function assignedTo()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -68,6 +74,11 @@ class MarketingLead extends Model
     public function deletedBy()
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    public function lead()
+    {
+        return $this->hasOne(Lead::class, 'marketing_leads_id');
     }
 
     /**

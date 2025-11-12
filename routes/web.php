@@ -369,6 +369,11 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/marketing-leads/data', [MarketingController::class, 'getMarketingLeadsData'])->name('marketing.marketing-leads.data');
         Route::get('/marketing-leads/{id}/edit', [MarketingController::class, 'editMarketingLead'])->name('marketing.marketing-leads.edit');
         Route::put('/marketing-leads/{id}', [MarketingController::class, 'updateMarketingLead'])->name('marketing.marketing-leads.update');
+        Route::get('/marketing-leads/{id}/assign', [MarketingController::class, 'ajaxAssign'])->name('marketing.assign-to-telecaller.ajax');
+        Route::post('/marketing-leads/{id}/assign', [MarketingController::class, 'assignToTelecaller'])->name('marketing.assign-to-telecaller');
+        Route::get('/marketing-leads/bulk-assign', [MarketingController::class, 'ajaxBulkAssign'])->name('marketing.bulk-assign.ajax');
+        Route::post('/marketing-leads/bulk-assign', [MarketingController::class, 'bulkAssign'])->name('marketing.bulk-assign.submit');
+        Route::post('/marketing-leads/get-by-filters-assign', [MarketingController::class, 'getMarketingLeadsByFiltersAssign'])->name('marketing.get-by-filters-assign');
 
         // Teacher routes (role_id = 10)
         Route::resource('teachers', App\Http\Controllers\TeacherController::class);
