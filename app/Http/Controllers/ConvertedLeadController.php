@@ -1959,6 +1959,7 @@ class ConvertedLeadController extends Controller
                 'updated_by' => AuthHelper::getCurrentUserId(),
                 'is_course_changed' => true,
                 'course_changed_at' => now(),
+                'course_changed_by' => AuthHelper::getCurrentUserId(),
             ]);
 
             // Update base lead

@@ -43,6 +43,7 @@ class ConvertedLead extends Model
         'support_verified_at',
         'is_course_changed',
         'course_changed_at',
+        'course_changed_by',
     ];
 
     protected $casts = [
@@ -110,6 +111,11 @@ class ConvertedLead extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function courseChangedBy()
+    {
+        return $this->belongsTo(User::class, 'course_changed_by');
     }
 
     public function deletedBy()

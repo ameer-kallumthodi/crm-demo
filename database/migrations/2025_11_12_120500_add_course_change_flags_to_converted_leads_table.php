@@ -23,6 +23,12 @@ return new class extends Migration
                     ->nullable()
                     ->after('is_course_changed');
             }
+
+            if (!Schema::hasColumn('converted_leads', 'course_changed_by')) {
+                $table->unsignedBigInteger('course_changed_by')
+                    ->nullable()
+                    ->after('course_changed_at');
+            }
         });
     }
 
@@ -34,6 +40,10 @@ return new class extends Migration
         Schema::table('converted_leads', function (Blueprint $table) {
             if (Schema::hasColumn('converted_leads', 'course_changed_at')) {
                 $table->dropColumn('course_changed_at');
+            }
+
+            if (Schema::hasColumn('converted_leads', 'course_changed_by')) {
+                $table->dropColumn('course_changed_by');
             }
 
             if (Schema::hasColumn('converted_leads', 'is_course_changed')) {
