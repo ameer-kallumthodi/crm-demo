@@ -3090,6 +3090,7 @@ class LeadController extends Controller
             return response()->json(['success' => false, 'message' => 'Registration details not found.'], 404);
         }
 
+        $oldStatus = $studentDetail->status;
         $studentDetail->status = $request->status;
         if ($request->status === 'rejected') {
             $studentDetail->admin_remarks = $request->remark;
@@ -3097,6 +3098,23 @@ class LeadController extends Controller
         $studentDetail->reviewed_by = AuthHelper::getCurrentUserId();
         $studentDetail->reviewed_at = now();
         $studentDetail->save();
+
+        // Log activity for approval/rejection
+        $activityType = $request->status === 'approved' ? 'approval' : 'rejection';
+        $description = $request->status === 'approved' 
+            ? 'Registration approved' 
+            : 'Registration rejected';
+        $reason = $request->status === 'approved' 
+            ? ($request->remark ? "Approved with remark: " . $request->remark : "Registration approved")
+            : ($request->remark ? "Rejected: " . $request->remark : "Registration rejected");
+
+        LeadActivity::create([
+            'lead_id' => $lead->id,
+            'activity_type' => $activityType,
+            'description' => $description,
+            'reason' => $reason,
+            'created_by' => AuthHelper::getCurrentUserId(),
+        ]);
 
         return response()->json(['success' => true, 'message' => 'Status updated successfully.']);
     }
@@ -3189,6 +3207,8 @@ class LeadController extends Controller
             }
 
             // Handle file upload if provided
+            $isDocumentUpload = false;
+            $isDocumentChange = false;
             if ($request->hasFile('new_file')) {
                 $file = $request->file('new_file');
                 // Use UUID for file naming to avoid conflicts
@@ -3211,6 +3231,12 @@ class LeadController extends Controller
                 ];
                 
                 $fileField = $fileFieldMapping[$documentType] ?? $documentType;
+                
+                // Check if document already exists (change) or new upload
+                $oldDocumentPath = $leadDetail->$fileField;
+                $isDocumentChange = !empty($oldDocumentPath) && $needToChangeDocument;
+                $isDocumentUpload = empty($oldDocumentPath) || !$needToChangeDocument;
+                
                 $updateData[$fileField] = $filePath;
             }
 
@@ -3225,16 +3251,37 @@ class LeadController extends Controller
                 $leadDetail->save();
             }
 
-            // Log activity
-            LeadActivity::create([
-                'lead_id' => $leadDetail->lead_id,
-                'activity_type' => 'document_verification',
-                'description' => ucfirst(str_replace('_', ' ', $documentType)) . ' verification updated',
-                'reason' => "Document: " . ucfirst(str_replace('_', ' ', $documentType)) . 
-                           " | Status: " . ucfirst($verificationStatus) . 
-                           ($needToChangeDocument ? " | Registration status reset to pending" : ""),
-                'created_by' => $currentUserId,
-            ]);
+            // Log activity for document operations
+            $documentName = ucfirst(str_replace('_', ' ', $documentType));
+            
+            if ($isDocumentUpload && !$isDocumentChange) {
+                // New document upload
+                LeadActivity::create([
+                    'lead_id' => $leadDetail->lead_id,
+                    'activity_type' => 'document_upload',
+                    'description' => $documentName . ' uploaded',
+                    'reason' => "Document: " . $documentName . " | Status: " . ucfirst($verificationStatus),
+                    'created_by' => $currentUserId,
+                ]);
+            } elseif ($isDocumentChange) {
+                // Document change
+                LeadActivity::create([
+                    'lead_id' => $leadDetail->lead_id,
+                    'activity_type' => 'document_change',
+                    'description' => $documentName . ' changed',
+                    'reason' => "Document: " . $documentName . " | Old document replaced with new file | Registration status reset to pending",
+                    'created_by' => $currentUserId,
+                ]);
+            } else {
+                // Just verification status change
+                LeadActivity::create([
+                    'lead_id' => $leadDetail->lead_id,
+                    'activity_type' => 'document_verification',
+                    'description' => $documentName . ' verification updated',
+                    'reason' => "Document: " . $documentName . " | Status: " . ucfirst($verificationStatus),
+                    'created_by' => $currentUserId,
+                ]);
+            }
 
             // Refresh the model to get latest data
             $leadDetail->refresh();
@@ -3301,7 +3348,9 @@ class LeadController extends Controller
             }
 
             // Handle new file upload if needed
+            $isDocumentChange = false;
             if ($needToChangeDocument && $request->hasFile('new_file')) {
+                $isDocumentChange = true;
                 // Delete old file
                 if (Storage::disk('public')->exists($sslcCertificate->certificate_path)) {
                     Storage::disk('public')->delete($sslcCertificate->certificate_path);
@@ -3334,14 +3383,38 @@ class LeadController extends Controller
 
             $sslcCertificate->update($updateData);
             
+            // Get lead detail for activity logging
+            $leadDetail = \App\Models\LeadDetail::findOrFail($request->lead_detail_id);
+            
             // If "Need to change document" is checked, update registration status to pending
             if ($needToChangeDocument) {
-                $leadDetail = \App\Models\LeadDetail::findOrFail($request->lead_detail_id);
                 $leadDetail->status = 'pending';
                 $leadDetail->reviewed_by = null;
                 $leadDetail->reviewed_at = null;
                 $leadDetail->save();
                 $leadDetail->refresh();
+            }
+
+            // Log activity for SSLC certificate operations
+            if ($isDocumentChange) {
+                // Document change
+                LeadActivity::create([
+                    'lead_id' => $leadDetail->lead_id,
+                    'activity_type' => 'document_change',
+                    'description' => 'SSLC certificate changed',
+                    'reason' => 'SSLC certificate file replaced on: ' . now()->format('d-m-Y h:i A') . '. Registration status reset to pending',
+                    'created_by' => $currentUserId,
+                ]);
+            } else {
+                // Just verification status change
+                LeadActivity::create([
+                    'lead_id' => $leadDetail->lead_id,
+                    'activity_type' => 'document_verification',
+                    'description' => 'SSLC certificate verification updated',
+                    'reason' => 'SSLC certificate verification status: ' . ucfirst($verificationStatus) . 
+                               ($request->filled('verification_notes') ? ' | Notes: ' . $request->verification_notes : ''),
+                    'created_by' => $currentUserId,
+                ]);
             }
 
             return response()->json([
@@ -3523,11 +3596,21 @@ class LeadController extends Controller
             ]);
 
             $certificate = \App\Models\SSLCertificate::findOrFail($request->certificate_id);
+            $leadDetail = $certificate->leadDetail;
             
             // Delete the file from storage
             if (Storage::disk('public')->exists($certificate->certificate_path)) {
                 Storage::disk('public')->delete($certificate->certificate_path);
             }
+            
+            // Log activity before deletion
+            LeadActivity::create([
+                'lead_id' => $leadDetail->lead_id,
+                'activity_type' => 'document_remove',
+                'description' => 'SSLC certificate removed',
+                'reason' => 'SSLC certificate file removed on: ' . now()->format('d-m-Y h:i A'),
+                'created_by' => AuthHelper::getCurrentUserId(),
+            ]);
             
             // Delete the database record
             $certificate->delete();
@@ -3561,6 +3644,9 @@ class LeadController extends Controller
             $leadDetailId = $request->lead_detail_id;
             $certificateIds = [];
 
+            $leadDetail = \App\Models\LeadDetail::findOrFail($leadDetailId);
+            $uploadedFiles = [];
+
             foreach ($request->file('certificates') as $file) {
                 $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs('student-documents', $fileName, 'public');
@@ -3576,7 +3662,18 @@ class LeadController extends Controller
                 ]);
 
                 $certificateIds[] = $sslcCertificate->id;
+                $uploadedFiles[] = $file->getClientOriginalName();
             }
+
+            // Log activity for document upload
+            $fileCount = count($uploadedFiles);
+            LeadActivity::create([
+                'lead_id' => $leadDetail->lead_id,
+                'activity_type' => 'document_upload',
+                'description' => $fileCount . ' SSLC certificate(s) uploaded',
+                'reason' => 'SSLC certificate(s) uploaded: ' . implode(', ', $uploadedFiles),
+                'created_by' => AuthHelper::getCurrentUserId(),
+            ]);
 
             return response()->json([
                 'success' => true,
