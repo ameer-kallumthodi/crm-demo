@@ -41,6 +41,8 @@ class ConvertedLead extends Model
         'is_support_verified',
         'support_verified_by',
         'support_verified_at',
+        'is_course_changed',
+        'course_changed_at',
     ];
 
     protected $casts = [
@@ -50,6 +52,8 @@ class ConvertedLead extends Model
         'reg_updated_at' => 'datetime',
         'academic_verified_at' => 'datetime',
         'support_verified_at' => 'datetime',
+        'course_changed_at' => 'datetime',
+        'is_course_changed' => 'boolean',
     ];
 
     // Relationships

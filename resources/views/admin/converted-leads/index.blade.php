@@ -426,10 +426,11 @@
                                                 data-title="Update Register Number">
                                                 <i class="ti ti-edit"></i>
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-outline-warning"
+                                            @php $courseChanged = (bool) ($convertedLead->is_course_changed ?? false); @endphp
+                                            <button type="button" class="btn btn-sm {{ $courseChanged ? 'btn-success' : 'btn-danger' }}"
                                                 title="Change Course"
                                                 onclick="show_ajax_modal('{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}', 'Change Course')">
-                                                <i class="ti ti-arrows-exchange"></i>
+                                                <i class="ti ti-exchange"></i>
                                             </button>
                                             @if($convertedLead->register_number)
                                                 @php
@@ -499,10 +500,11 @@
                                                 <i class="ti ti-edit me-2"></i>Update Register Number
                                             </button>
                                         </li>
+                                        @php $courseChanged = (bool) ($convertedLead->is_course_changed ?? false); @endphp
                                         <li>
-                                            <button type="button" class="dropdown-item"
+                                            <button type="button" class="dropdown-item {{ $courseChanged ? 'text-success' : 'text-danger' }}"
                                                 onclick="show_ajax_modal('{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}', 'Change Course')">
-                                                <i class="ti ti-arrows-exchange me-2"></i>Change Course
+                                                <i class="ti ti-exchange me-2"></i>Change Course
                                             </button>
                                         </li>
                                         @if($convertedLead->register_number)
