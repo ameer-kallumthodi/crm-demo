@@ -155,7 +155,7 @@
                 <div class="d-none d-md-flex justify-content-between align-items-center">
                     <h5 class="mb-0">All Leads</h5>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('leads.export', request()->query()) }}" class="btn btn-outline-info btn-sm px-3"
+                        <a href="{{ route('leads.export', request()->query()) }}" class="btn btn-outline-info btn-sm px-3 js-export-excel"
                             title="Export to Excel">
                             <i class="ti ti-download"></i> Export Excel
                         </a>
@@ -200,7 +200,7 @@
 
                     <div class="row g-2 mb-2">
                         <div class="col-12">
-                            <a href="{{ route('leads.export', request()->query()) }}" class="btn btn-outline-info btn-sm w-100"
+                            <a href="{{ route('leads.export', request()->query()) }}" class="btn btn-outline-info btn-sm w-100 js-export-excel"
                                 title="Export to Excel">
                                 <i class="ti ti-download me-1"></i> Export Excel
                             </a>
@@ -506,6 +506,8 @@ $columns = array_merge($columns, [
 <script>
     // Initialize DataTables asynchronously to prevent blocking
     $(document).ready(function() {
+        const exportBaseUrl = @json(route('leads.export'));
+
         // ULTRA-OPTIMIZED DataTables for 410+ leads - Performance Critical
         // Prevent global initialization for this table
         $('#leadsTable').removeClass('data_table_basic');
@@ -531,6 +533,23 @@ $columns = array_merge($columns, [
                 };
             }
             
+            function buildQueryString(params) {
+                const searchParams = new URLSearchParams();
+                Object.keys(params).forEach(function(key) {
+                    const value = params[key];
+                    if (value !== undefined && value !== null && String(value).trim() !== '') {
+                        searchParams.append(key, value);
+                    }
+                });
+                return searchParams.toString();
+            }
+
+            function updateExportButtons(filters) {
+                const queryString = buildQueryString(filters);
+                const exportUrl = queryString ? `${exportBaseUrl}?${queryString}` : exportBaseUrl;
+                $('.js-export-excel').attr('href', exportUrl);
+            }
+            
             // Get URL parameter
             function getUrlParameter(name) {
                 name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -549,6 +568,8 @@ $columns = array_merge($columns, [
                         params.append(key, filters[key]);
                     }
                 });
+                
+                updateExportButtons(filters);
                 
                 var newUrl = window.location.pathname;
                 if (params.toString()) {
@@ -588,6 +609,7 @@ $columns = array_merge($columns, [
             
             // Load filters from URL on page load
             loadFiltersFromUrl();
+            updateExportButtons(getFilterParams());
 
             // Store last JSON response for mobile view
             var lastJsonResponse = null;
