@@ -31,7 +31,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">D2D Marketing Leads</h5>
                     <div class="d-flex gap-2">
-                        @if(!$isMarketing)
+                        @if(isset($isAdminOrManager) && $isAdminOrManager)
                         <button type="button" class="btn btn-success btn-sm px-3" onclick="show_large_modal('{{ route('admin.marketing.bulk-assign.ajax') }}', 'Bulk Assign to Telecaller')">
                             <i class="ti ti-users"></i> Bulk Assign
                         </button>
@@ -104,7 +104,9 @@
                                 <th>Assignment Status</th>
                                 <th>Assigned At</th>
                                 <th>Created At</th>
+                                @if(isset($isAdminOrManager) && $isAdminOrManager)
                                 <th>Actions</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -122,6 +124,8 @@
 
 @php
 // Build columns array for DataTables
+$isAdminOrManager = isset($isAdminOrManager) ? $isAdminOrManager : false;
+
 $columns = [
     ['data' => 'index', 'name' => 'index', 'orderable' => false, 'searchable' => false],
     ['data' => 'date_of_visit', 'name' => 'date_of_visit'],
@@ -140,8 +144,11 @@ $columns = [
     ['data' => 'assignment_status', 'name' => 'assignment_status', 'orderable' => false, 'searchable' => false],
     ['data' => 'assigned_at', 'name' => 'assigned_at'],
     ['data' => 'created_at', 'name' => 'created_at'],
-    ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
 ];
+
+if ($isAdminOrManager) {
+    $columns[] = ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false];
+}
 @endphp
 
 @push('scripts')
@@ -198,13 +205,15 @@ $(document).ready(function() {
         
         // Rebuild thead structure if it was removed
         if ($('#marketingLeadsTable thead').length === 0) {
+            var showActions = @json($isAdminOrManager ?? false);
+            var actionsHeader = showActions ? '<th>Actions</th>' : '';
             $('#marketingLeadsTable').prepend('<thead><tr>' +
                 '<th>#</th><th>Date of Visit</th><th>BDE Name</th><th>Lead Name</th>' +
                 '<th>Phone</th><th>WhatsApp</th><th>Address</th><th>Location</th>' +
                 '<th>House Number</th><th>Lead Type</th><th>Interested Courses</th>' +
                 '<th>Remarks</th><th>Telecaller Remarks</th><th>Lead Status</th>' +
                 '<th>Assignment Status</th><th>Assigned At</th>' +
-                '<th>Created At</th><th>Actions</th></tr></thead>');
+                '<th>Created At</th>' + actionsHeader + '</tr></thead>');
         }
         
         // Initialize DataTables with AJAX

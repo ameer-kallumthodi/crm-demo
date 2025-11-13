@@ -531,7 +531,9 @@ class MarketingController extends Controller
                 ->get();
         }
 
-        return view('admin.marketing.marketing-leads', compact('marketingUsers', 'isMarketing', 'currentUser'));
+        $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+        
+        return view('admin.marketing.marketing-leads', compact('marketingUsers', 'isMarketing', 'currentUser', 'isAdminOrManager'));
     }
 
     /**
@@ -1188,6 +1190,11 @@ class MarketingController extends Controller
      */
     private function renderMarketingLeadActions($lead, $isAdminOrManager)
     {
+        // Only show actions for admin or general manager
+        if (!$isAdminOrManager) {
+            return '-';
+        }
+        
         $html = '<div class="btn-group" role="group">';
         
         // Edit button
@@ -1196,7 +1203,7 @@ class MarketingController extends Controller
                 'title="Edit"><i class="ti ti-edit"></i></button>';
         
         // Assign button (only if not assigned and user has permission)
-        if ($isAdminOrManager && !$lead->is_telecaller_assigned) {
+        if (!$lead->is_telecaller_assigned) {
             $html .= '<button type="button" class="btn btn-success btn-sm" ' .
                     'onclick="show_ajax_modal(\'' . route('admin.marketing.assign-to-telecaller.ajax', $lead->id) . '\', \'Assign to Telecaller\')" ' .
                     'title="Assign to Telecaller"><i class="ti ti-user-plus"></i></button>';
