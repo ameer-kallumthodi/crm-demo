@@ -244,7 +244,7 @@
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-hover" id="leadsTable" style="min-width: 1700px;">
+<table class="table table-hover" id="leadsTable" style="min-width: 1900px;">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -267,6 +267,7 @@
                                     <th>Followup Date</th>
                                     <th>Last Reason</th>
                                     <th>Remarks</th>
+                                    <th>Marketing Remarks</th>
                                     <th>Date</th>
                                     <th>Time</th>
                                 </tr>
@@ -320,6 +321,7 @@ $columns = array_merge($columns, [
     ['data' => 'followup_date', 'name' => 'followup_date'],
     ['data' => 'last_reason', 'name' => 'last_reason', 'orderable' => false, 'searchable' => false],
     ['data' => 'remarks', 'name' => 'remarks'],
+    ['data' => 'marketing_remarks', 'name' => 'marketing_remarks'],
     ['data' => 'date', 'name' => 'date'],
     ['data' => 'time', 'name' => 'time']
 ]);

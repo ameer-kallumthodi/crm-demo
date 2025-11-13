@@ -293,6 +293,7 @@ class LeadController extends Controller
             $columns[$columnIndex++] = 'followup_date'; // Followup Date
             $columns[$columnIndex++] = 'id'; // Last Reason - no sorting
             $columns[$columnIndex++] = 'remarks'; // Remarks
+            $columns[$columnIndex++] = 'marketing_remarks'; // Marketing Remarks
             $columns[$columnIndex++] = 'created_at'; // Date
             $columns[$columnIndex++] = 'created_at'; // Time
             
@@ -354,6 +355,7 @@ class LeadController extends Controller
             $columns[$columnIndex++] = 'followup_date'; // Followup Date
             $columns[$columnIndex++] = 'id'; // Last Reason - no sorting
             $columns[$columnIndex++] = 'remarks'; // Remarks
+            $columns[$columnIndex++] = 'marketing_remarks'; // Marketing Remarks
             $columns[$columnIndex++] = 'created_at'; // Date
             $columns[$columnIndex++] = 'created_at'; // Time
 
@@ -401,6 +403,7 @@ class LeadController extends Controller
                 $leadEmail = $this->cleanUtf8($lead->email ?? '');
                 $leadPlace = $this->cleanUtf8($lead->place ?? '');
                 $leadRemarks = $this->cleanUtf8($lead->remarks ?? '');
+                $leadMarketingRemarks = $this->cleanUtf8($lead->marketing_remarks ?? '');
                 $leadSourceTitle = $this->cleanUtf8($lead->leadSource->title ?? '');
                 $leadCourseTitle = $this->cleanUtf8($lead->course->title ?? '');
                 $leadTelecallerName = $this->cleanUtf8($lead->telecaller->name ?? 'Unassigned');
@@ -429,6 +432,7 @@ class LeadController extends Controller
                     'followup_date' => $lead->followup_date ? $lead->followup_date->format('M d, Y') : '-',
                     'last_reason' => '-',
                     'remarks' => $leadRemarks ?: '-',
+                    'marketing_remarks' => $leadMarketingRemarks ?: '-',
                     'date' => $lead->created_at->format('M d, Y'),
                     'time' => $lead->created_at->format('h:i A'),
                     // Mobile view data

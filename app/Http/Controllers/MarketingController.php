@@ -884,6 +884,20 @@ class MarketingController extends Controller
         try {
             \DB::beginTransaction();
 
+            // Prepare remarks with course names
+            $remarks = $request->marketing_remarks ?? $marketingLead->remarks ?? '';
+            
+            // Get interested courses and format them
+            $interestedCourses = $marketingLead->interested_courses ?? [];
+            if (!empty($interestedCourses) && is_array($interestedCourses)) {
+                $coursesText = 'Interested Courses: ' . implode(', ', $interestedCourses);
+                if (!empty($remarks)) {
+                    $remarks = $remarks . "\n\n" . $coursesText;
+                } else {
+                    $remarks = $coursesText;
+                }
+            }
+
             // Create lead from marketing lead
             $lead = Lead::create([
                 'marketing_leads_id' => $marketingLead->id,
@@ -896,18 +910,24 @@ class MarketingController extends Controller
                 'address' => $marketingLead->address,
                 'lead_status_id' => 1,
                 'lead_source_id' => 9,
-                'marketing_remarks' => $request->marketing_remarks ?? $marketingLead->remarks,
+                'remarks' => $remarks, // Set remarks field
+                'marketing_remarks' => $remarks, // Also set marketing_remarks field
                 'telecaller_id' => $request->telecaller_id,
                 'created_by' => AuthHelper::getCurrentUserId(),
             ]);
 
-            // Create lead activity
+            // Create lead activity with marketing remarks and course information
+            $activityRemarks = 'Marketing lead has been assigned to telecaller ' . $telecaller->name . '.';
+            if (!empty($remarks)) {
+                $activityRemarks .= "\n\nMarketing Remarks:\n" . $remarks;
+            }
+            
             LeadActivity::create([
                 'lead_id' => $lead->id,
                 'lead_status_id' => 1,
                 'activity_type' => 'marketing_lead_assigned',
                 'description' => 'Marketing lead assigned to telecaller',
-                'remarks' => 'Marketing lead has been assigned to telecaller ' . $telecaller->name . '.',
+                'remarks' => $activityRemarks,
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);
@@ -1017,6 +1037,20 @@ class MarketingController extends Controller
 
             foreach ($marketingLeads as $marketingLead) {
                 try {
+                    // Prepare remarks with course names
+                    $remarks = $marketingLead->remarks ?? '';
+                    
+                    // Get interested courses and format them
+                    $interestedCourses = $marketingLead->interested_courses ?? [];
+                    if (!empty($interestedCourses) && is_array($interestedCourses)) {
+                        $coursesText = '. Interested Courses: ' . implode(', ', $interestedCourses);
+                        if (!empty($remarks)) {
+                            $remarks = $remarks . "\n\n" . $coursesText;
+                        } else {
+                            $remarks = $coursesText;
+                        }
+                    }
+                    
                     // Create lead from marketing lead
                     $lead = Lead::create([
                         'marketing_leads_id' => $marketingLead->id,
@@ -1029,18 +1063,24 @@ class MarketingController extends Controller
                         'address' => $marketingLead->address,
                         'lead_status_id' => 1,
                         'lead_source_id' => 9,
-                        'marketing_remarks' => $marketingLead->remarks,
+                        'remarks' => $remarks, // Set remarks field
+                        'marketing_remarks' => $remarks, // Also set marketing_remarks field
                         'telecaller_id' => $request->telecaller_id,
                         'created_by' => AuthHelper::getCurrentUserId(),
                     ]);
 
-                    // Create lead activity
+                    // Create lead activity with marketing remarks and course information
+                    $activityRemarks = 'Marketing lead has been assigned to telecaller ' . $telecaller->name . ' via bulk assignment.';
+                    if (!empty($remarks)) {
+                        $activityRemarks .= "\n\nMarketing Remarks:\n" . $remarks;
+                    }
+                    
                     LeadActivity::create([
                         'lead_id' => $lead->id,
                         'lead_status_id' => 1,
                         'activity_type' => 'marketing_lead_assigned',
                         'description' => 'Marketing lead assigned to telecaller via bulk operation',
-                        'remarks' => 'Marketing lead has been assigned to telecaller ' . $telecaller->name . ' via bulk assignment.',
+                        'remarks' => $activityRemarks,
                         'created_by' => AuthHelper::getCurrentUserId(),
                         'updated_by' => AuthHelper::getCurrentUserId(),
                     ]);
