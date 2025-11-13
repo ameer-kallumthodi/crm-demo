@@ -149,13 +149,13 @@
                                             </td>
                                             <td>
                                                 <div class="fw-semibold">
-                                                    {{ $payment->invoice->student->name ?? $payment->invoice->student->lead->title ?? 'N/A' }}
+                                                    {{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->name ?? $payment->invoice->student->lead->title ?? 'N/A') : 'N/A' }}
                                                 </div>
-                                                <small class="text-muted">{{ $payment->invoice->student->code ?? '' }} {{ $payment->invoice->student->phone ?? '' }}</small>
+                                                <small class="text-muted">{{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->code ?? '') : '' }} {{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->phone ?? '') : '' }}</small>
                                             </td>
                                             <td>
                                                 <div>{{ $payment->invoice->course->title ?? 'N/A' }}</div>
-                                                @if($payment->invoice->batch)
+                                                @if($payment->invoice && $payment->invoice->batch)
                                                     <small class="text-muted">{{ $payment->invoice->batch->title }}</small>
                                                 @endif
                                             </td>
@@ -239,7 +239,7 @@
                                     <tbody>
                                         @forelse($approvedPayments as $index => $payment)
                                         @php
-                                            $firstApprovedPayment = optional($payment->invoice->payments->first())->id;
+                                            $firstApprovedPayment = $payment->invoice ? optional($payment->invoice->payments->first())->id : null;
                                             $isFirstApprovedPayment = $firstApprovedPayment === $payment->id;
                                         @endphp
                                         <tr>
@@ -259,13 +259,13 @@
                                             </td>
                                             <td>
                                                 <div class="fw-semibold">
-                                                    {{ $payment->invoice->student->name ?? $payment->invoice->student->lead->title ?? 'N/A' }}
+                                                    {{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->name ?? $payment->invoice->student->lead->title ?? 'N/A') : 'N/A' }}
                                                 </div>
-                                                <small class="text-muted">{{ $payment->invoice->student->code ?? '' }} {{ $payment->invoice->student->phone ?? '' }}</small>
+                                                <small class="text-muted">{{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->code ?? '') : '' }} {{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->phone ?? '') : '' }}</small>
                                             </td>
                                             <td>
                                                 <div>{{ $payment->invoice->course->title ?? 'N/A' }}</div>
-                                                @if($payment->invoice->batch)
+                                                @if($payment->invoice && $payment->invoice->batch)
                                                     <small class="text-muted">{{ $payment->invoice->batch->title }}</small>
                                                 @endif
                                             </td>
@@ -291,7 +291,7 @@
                                                         <i class="ti ti-file-invoice"></i>
                                                     </a>
                                                     @endif
-                                                    @if($payment->invoice->invoice_type === 'course' && $isFirstApprovedPayment)
+                                                    @if($payment->invoice && $payment->invoice->invoice_type === 'course' && $isFirstApprovedPayment)
                                                     <a href="{{ route('admin.payments.tax-invoice-pdf', $payment->id) }}" class="btn btn-outline-danger" title="Tax Invoice PDF" target="_blank">
                                                         <i class="fas fa-file-pdf"></i>
                                                     </a>
@@ -351,13 +351,13 @@
                                             </td>
                                             <td>
                                                 <div class="fw-semibold">
-                                                    {{ $payment->invoice->student->name ?? $payment->invoice->student->lead->title ?? 'N/A' }}
+                                                    {{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->name ?? $payment->invoice->student->lead->title ?? 'N/A') : 'N/A' }}
                                                 </div>
-                                                <small class="text-muted">{{ $payment->invoice->student->code ?? '' }} {{ $payment->invoice->student->phone ?? '' }}</small>
+                                                <small class="text-muted">{{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->code ?? '') : '' }} {{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->phone ?? '') : '' }}</small>
                                             </td>
                                             <td>
                                                 <div>{{ $payment->invoice->course->title ?? 'N/A' }}</div>
-                                                @if($payment->invoice->batch)
+                                                @if($payment->invoice && $payment->invoice->batch)
                                                     <small class="text-muted">{{ $payment->invoice->batch->title }}</small>
                                                 @endif
                                             </td>

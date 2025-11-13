@@ -64,7 +64,9 @@ class PaymentController extends Controller
             'createdBy',
         ];
 
-        $pendingQuery = Payment::with($withRelations)->pending();
+        $pendingQuery = Payment::with($withRelations)
+            ->whereHas('invoice')
+            ->pending();
         $pendingPayments = $this->applyFilters($pendingQuery, $filters, 'pending')
             ->orderByDesc('created_at')
             ->get();
@@ -74,7 +76,9 @@ class PaymentController extends Controller
             'invoice.payments' => function ($query) {
                 $query->approved()->orderBy('created_at', 'asc');
             },
-        ]))->approved();
+        ]))
+            ->whereHas('invoice')
+            ->approved();
 
         $approvedPayments = $this->applyFilters($approvedQuery, $filters, 'approved')
             ->orderByDesc('approved_date')
@@ -83,7 +87,9 @@ class PaymentController extends Controller
 
         $rejectedQuery = Payment::with(array_merge($withRelations, [
             'rejectedBy',
-        ]))->where('status', 'Rejected');
+        ]))
+            ->whereHas('invoice')
+            ->where('status', 'Rejected');
 
         $rejectedPayments = $this->applyFilters($rejectedQuery, $filters, 'rejected')
             ->orderByDesc('rejected_date')

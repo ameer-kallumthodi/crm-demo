@@ -3074,7 +3074,7 @@ class LeadController extends Controller
         if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant()) {
             return response()->json(['success' => false, 'message' => 'Access denied'], 403);
         }
-
+        
         $request->validate([
             'status' => 'required|in:approved,rejected',
             'remark' => 'nullable|string|max:1000'
