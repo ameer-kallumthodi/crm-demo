@@ -427,11 +427,13 @@
                                                 <i class="ti ti-edit"></i>
                                             </button>
                                             @php $courseChanged = (bool) ($convertedLead->is_course_changed ?? false); @endphp
-                                            <button type="button" class="btn btn-sm {{ $courseChanged ? 'btn-success' : 'btn-danger' }}"
-                                                title="Change Course"
-                                                onclick="show_ajax_modal('{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}', 'Change Course')">
-                                                <i class="ti ti-exchange"></i>
-                                            </button>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                                <button type="button" class="btn btn-sm {{ $courseChanged ? 'btn-success' : 'btn-danger' }}"
+                                                    title="Change Course"
+                                                    onclick="show_ajax_modal('{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}', 'Change Course')">
+                                                    <i class="ti ti-exchange"></i>
+                                                </button>
+                                            @endif
                                             @if($convertedLead->register_number)
                                                 @php
                                                     $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
@@ -501,12 +503,14 @@
                                             </button>
                                         </li>
                                         @php $courseChanged = (bool) ($convertedLead->is_course_changed ?? false); @endphp
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                         <li>
                                             <button type="button" class="dropdown-item {{ $courseChanged ? 'text-success' : 'text-danger' }}"
                                                 onclick="show_ajax_modal('{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}', 'Change Course')">
                                                 <i class="ti ti-exchange me-2"></i>Change Course
                                             </button>
                                         </li>
+                                        @endif
                                         @if($convertedLead->register_number)
                                             @php
                                                 $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
