@@ -368,6 +368,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/marketing-check-duplicate-phone', [MarketingController::class, 'checkDuplicatePhone'])->name('marketing.check-duplicate-phone');
         Route::get('/marketing-leads', [MarketingController::class, 'marketingLeads'])->name('marketing.marketing-leads');
         Route::get('/marketing-leads/data', [MarketingController::class, 'getMarketingLeadsData'])->name('marketing.marketing-leads.data');
+        Route::get('/marketing-leads/{id}/view', [MarketingController::class, 'viewMarketingLead'])->name('marketing.marketing-leads.view');
         Route::get('/marketing-leads/{id}/edit', [MarketingController::class, 'editMarketingLead'])->name('marketing.marketing-leads.edit');
         Route::put('/marketing-leads/{id}', [MarketingController::class, 'updateMarketingLead'])->name('marketing.marketing-leads.update');
         Route::get('/marketing-leads/{id}/assign', [MarketingController::class, 'ajaxAssign'])->name('marketing.assign-to-telecaller.ajax');

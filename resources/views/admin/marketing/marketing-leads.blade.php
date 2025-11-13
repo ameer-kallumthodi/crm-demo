@@ -101,12 +101,11 @@
                                 <th>Remarks</th>
                                 <th>Telecaller Remarks</th>
                                 <th>Lead Status</th>
+                                <th>Telecaller Name</th>
                                 <th>Assignment Status</th>
                                 <th>Assigned At</th>
                                 <th>Created At</th>
-                                @if(isset($isAdminOrManager) && $isAdminOrManager)
                                 <th>Actions</th>
-                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -141,14 +140,12 @@ $columns = [
     ['data' => 'remarks', 'name' => 'remarks'],
     ['data' => 'telecaller_remarks', 'name' => 'telecaller_remarks', 'orderable' => false, 'searchable' => false],
     ['data' => 'lead_status', 'name' => 'lead_status', 'orderable' => false, 'searchable' => false],
+    ['data' => 'telecaller_name', 'name' => 'telecaller_name', 'orderable' => false, 'searchable' => false],
     ['data' => 'assignment_status', 'name' => 'assignment_status', 'orderable' => false, 'searchable' => false],
     ['data' => 'assigned_at', 'name' => 'assigned_at'],
     ['data' => 'created_at', 'name' => 'created_at'],
+    ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
 ];
-
-if ($isAdminOrManager) {
-    $columns[] = ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false];
-}
 @endphp
 
 @push('scripts')
@@ -205,15 +202,13 @@ $(document).ready(function() {
         
         // Rebuild thead structure if it was removed
         if ($('#marketingLeadsTable thead').length === 0) {
-            var showActions = @json($isAdminOrManager ?? false);
-            var actionsHeader = showActions ? '<th>Actions</th>' : '';
             $('#marketingLeadsTable').prepend('<thead><tr>' +
                 '<th>#</th><th>Date of Visit</th><th>BDE Name</th><th>Lead Name</th>' +
                 '<th>Phone</th><th>WhatsApp</th><th>Address</th><th>Location</th>' +
                 '<th>House Number</th><th>Lead Type</th><th>Interested Courses</th>' +
                 '<th>Remarks</th><th>Telecaller Remarks</th><th>Lead Status</th>' +
-                '<th>Assignment Status</th><th>Assigned At</th>' +
-                '<th>Created At</th>' + actionsHeader + '</tr></thead>');
+                '<th>Telecaller Name</th><th>Assignment Status</th><th>Assigned At</th>' +
+                '<th>Created At</th><th>Actions</th></tr></thead>');
         }
         
         // Initialize DataTables with AJAX
@@ -235,7 +230,7 @@ $(document).ready(function() {
         },
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-        order: [[16, 'desc']], // Sort by created_at (column 16)
+        order: [[17, 'desc']], // Sort by created_at (column 17)
         dom: "Bfrtip",
         buttons: ["csv", "excel", "print", "pdf"],
         stateSave: true,

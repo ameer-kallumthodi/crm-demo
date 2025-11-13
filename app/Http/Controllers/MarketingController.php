@@ -681,7 +681,8 @@ class MarketingController extends Controller
             $query = MarketingLead::with([
                 'marketingBde:id,name', 
                 'createdBy:id,name',
-                'lead.leadStatus'
+                'lead.leadStatus',
+                'lead.telecaller:id,name'
             ]);
             
             // If marketing user, only show their own leads
@@ -738,15 +739,16 @@ class MarketingController extends Controller
                 11 => 'remarks', // Remarks
                 12 => 'id', // Telecaller Remarks (no sorting)
                 13 => 'id', // Lead Status (no sorting)
-                14 => 'is_telecaller_assigned', // Assignment Status
-                15 => 'assigned_at', // Assigned At
-                16 => 'created_at', // Created At
-                17 => 'id', // Actions (no sorting)
+                14 => 'id', // Telecaller Name (no sorting)
+                15 => 'is_telecaller_assigned', // Assignment Status
+                16 => 'assigned_at', // Assigned At
+                17 => 'created_at', // Created At
+                18 => 'id', // Actions (no sorting)
             ];
             
             // Apply ordering
             $order = $request->get('order', []);
-            $orderColumn = isset($order[0]['column']) ? (int)$order[0]['column'] : 16; // Default to created_at
+            $orderColumn = isset($order[0]['column']) ? (int)$order[0]['column'] : 17; // Default to created_at
             $orderDir = isset($order[0]['dir']) ? $order[0]['dir'] : 'desc';
             
             $orderColumnName = $columns[$orderColumn] ?? 'created_at';
@@ -796,6 +798,18 @@ class MarketingController extends Controller
                     $leadStatusHtml = '<span class="badge bg-secondary">Status ID: ' . $relatedLead->lead_status_id . '</span>';
                 }
                 
+                // Get telecaller name from leads table
+                $telecallerName = '-';
+                if ($relatedLead && $relatedLead->telecaller) {
+                    $telecallerName = htmlspecialchars($relatedLead->telecaller->name);
+                } elseif ($relatedLead && $relatedLead->telecaller_id) {
+                    // If relationship didn't load, try to get telecaller directly
+                    $telecaller = \App\Models\User::find($relatedLead->telecaller_id);
+                    if ($telecaller) {
+                        $telecallerName = htmlspecialchars($telecaller->name);
+                    }
+                }
+                
                 $row = [
                     'index' => $start + $index + 1,
                     'date_of_visit' => $lead->date_of_visit ? $lead->date_of_visit->format('M d, Y') : '-',
@@ -811,6 +825,7 @@ class MarketingController extends Controller
                     'remarks' => $remarksHtml,
                     'telecaller_remarks' => $telecallerRemarksHtml,
                     'lead_status' => $leadStatusHtml,
+                    'telecaller_name' => $telecallerName,
                     'assignment_status' => $lead->is_telecaller_assigned 
                         ? '<span class="badge bg-success">Assigned</span>' 
                         : '<span class="badge bg-warning">Not Assigned</span>',
@@ -900,6 +915,9 @@ class MarketingController extends Controller
                 }
             }
 
+            // Prepare marketing remarks - use the original marketing lead remarks or request remarks
+            $marketingRemarks = $request->marketing_remarks ?? $marketingLead->remarks ?? '';
+
             // Create lead from marketing lead
             $lead = Lead::create([
                 'marketing_leads_id' => $marketingLead->id,
@@ -912,8 +930,8 @@ class MarketingController extends Controller
                 'address' => $marketingLead->address,
                 'lead_status_id' => 1,
                 'lead_source_id' => 9,
-                'remarks' => $remarks, // Set remarks field
-                'marketing_remarks' => $remarks, // Also set marketing_remarks field
+                'remarks' => $remarks, // Set remarks field (includes courses)
+                'marketing_remarks' => $marketingRemarks, // Set marketing_remarks field (original marketing remarks only)
                 'telecaller_id' => $request->telecaller_id,
                 'created_by' => AuthHelper::getCurrentUserId(),
             ]);
@@ -1053,6 +1071,9 @@ class MarketingController extends Controller
                         }
                     }
                     
+                    // Prepare marketing remarks - use the original marketing lead remarks
+                    $marketingRemarks = $marketingLead->remarks ?? '';
+                    
                     // Create lead from marketing lead
                     $lead = Lead::create([
                         'marketing_leads_id' => $marketingLead->id,
@@ -1065,8 +1086,8 @@ class MarketingController extends Controller
                         'address' => $marketingLead->address,
                         'lead_status_id' => 1,
                         'lead_source_id' => 9,
-                        'remarks' => $remarks, // Set remarks field
-                        'marketing_remarks' => $remarks, // Also set marketing_remarks field
+                        'remarks' => $remarks, // Set remarks field (includes courses)
+                        'marketing_remarks' => $marketingRemarks, // Set marketing_remarks field (original marketing remarks only)
                         'telecaller_id' => $request->telecaller_id,
                         'created_by' => AuthHelper::getCurrentUserId(),
                     ]);
@@ -1190,28 +1211,76 @@ class MarketingController extends Controller
      */
     private function renderMarketingLeadActions($lead, $isAdminOrManager)
     {
-        // Only show actions for admin or general manager
-        if (!$isAdminOrManager) {
-            return '-';
-        }
-        
         $html = '<div class="btn-group" role="group">';
         
-        // Edit button
-        $html .= '<button type="button" class="btn btn-warning btn-sm" ' .
-                'onclick="show_ajax_modal(\'' . route('admin.marketing.marketing-leads.edit', $lead->id) . '\', \'Edit Marketing Lead\')" ' .
-                'title="Edit"><i class="ti ti-edit"></i></button>';
+        // View button (available to all users)
+        $html .= '<button type="button" class="btn btn-info btn-sm" ' .
+                'onclick="show_large_modal(\'' . route('admin.marketing.marketing-leads.view', $lead->id) . '\', \'Marketing Lead Details\')" ' .
+                'title="View Details"><i class="ti ti-eye"></i></button>';
         
-        // Assign button (only if not assigned and user has permission)
-        if (!$lead->is_telecaller_assigned) {
-            $html .= '<button type="button" class="btn btn-success btn-sm" ' .
-                    'onclick="show_ajax_modal(\'' . route('admin.marketing.assign-to-telecaller.ajax', $lead->id) . '\', \'Assign to Telecaller\')" ' .
-                    'title="Assign to Telecaller"><i class="ti ti-user-plus"></i></button>';
+        // Only show edit/assign actions for admin or general manager
+        if ($isAdminOrManager) {
+            // Edit button
+            $html .= '<button type="button" class="btn btn-warning btn-sm" ' .
+                    'onclick="show_ajax_modal(\'' . route('admin.marketing.marketing-leads.edit', $lead->id) . '\', \'Edit Marketing Lead\')" ' .
+                    'title="Edit"><i class="ti ti-edit"></i></button>';
+            
+            // Assign button (only if not assigned and user has permission)
+            if (!$lead->is_telecaller_assigned) {
+                $html .= '<button type="button" class="btn btn-success btn-sm" ' .
+                        'onclick="show_ajax_modal(\'' . route('admin.marketing.assign-to-telecaller.ajax', $lead->id) . '\', \'Assign to Telecaller\')" ' .
+                        'title="Assign to Telecaller"><i class="ti ti-user-plus"></i></button>';
+            }
         }
         
         $html .= '</div>';
         
         return $html;
+    }
+
+    /**
+     * Show marketing lead details with history
+     */
+    public function viewMarketingLead($id)
+    {
+        $currentUser = AuthHelper::getCurrentUser();
+        
+        if (!$currentUser) {
+            return response()->json(['error' => 'Please login to access this page.'], 403);
+        }
+        
+        $isMarketing = $currentUser->role_id == 13;
+        $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+        
+        if (!$isMarketing && !$isAdminOrManager) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $marketingLead = MarketingLead::with([
+            'marketingBde:id,name',
+            'createdBy:id,name',
+            'lead.leadStatus',
+            'lead.telecaller:id,name',
+            'lead.leadActivities' => function($query) {
+                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id')
+                      ->with('createdBy:id,name')
+                      ->orderBy('created_at', 'desc');
+            }
+        ])->findOrFail($id);
+        
+        // If marketing user, only allow viewing their own leads
+        if ($isMarketing && $marketingLead->marketing_bde_id != $currentUser->id) {
+            return response()->json(['error' => 'Access denied. You can only view your own leads.'], 403);
+        }
+
+        $relatedLead = $marketingLead->lead;
+        $activities = collect();
+        
+        if ($relatedLead) {
+            $activities = $relatedLead->leadActivities ?? collect();
+        }
+
+        return view('admin.marketing.view-marketing-lead', compact('marketingLead', 'relatedLead', 'activities'));
     }
 }
 
