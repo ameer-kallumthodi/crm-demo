@@ -385,6 +385,34 @@ class MarketingController extends Controller
                 ->withInput();
         }
 
+        // Check for duplicate phone number (code + phone combination)
+        // Exclude soft-deleted records to allow re-adding deleted leads
+        $duplicatePhone = MarketingLead::where('code', $request->code)
+            ->where('phone', $request->phone)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if ($duplicatePhone) {
+            return redirect()->back()
+                ->with('message_danger', 'A lead with this phone number ('.$request->code.' '.$request->phone.') already exists in the system. Please check the existing lead or use a different phone number.')
+                ->withInput();
+        }
+
+        // Check for duplicate submission within last 10 seconds (same data)
+        $recentDuplicate = MarketingLead::where('marketing_bde_id', $marketingBdeId)
+            ->where('lead_name', $request->lead_name)
+            ->where('phone', $request->phone)
+            ->where('code', $request->code)
+            ->where('date_of_visit', $request->date_of_visit)
+            ->where('created_at', '>=', now()->subSeconds(10))
+            ->first();
+
+        if ($recentDuplicate) {
+            return redirect()->back()
+                ->with('message_danger', 'This form was already submitted recently. Please wait a moment before submitting again.')
+                ->withInput();
+        }
+
         // Prepare marketing lead data
         $marketingLeadData = [
             'marketing_bde_id' => $marketingBdeId,
@@ -416,6 +444,41 @@ class MarketingController extends Controller
         return redirect()->back()
             ->with('message_danger', 'Something went wrong! Please try again.')
             ->withInput();
+    }
+
+    /**
+     * Check for duplicate phone number (AJAX)
+     */
+    public function checkDuplicatePhone(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|max:10',
+            'phone' => 'required|string|max:20',
+        ]);
+
+        // Exclude soft-deleted records to allow re-adding deleted leads
+        $duplicate = MarketingLead::where('code', $request->code)
+            ->where('phone', $request->phone)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if ($duplicate) {
+            return response()->json([
+                'exists' => true,
+                'message' => 'A lead with this phone number ('.$request->code.' '.$request->phone.') already exists.',
+                'lead' => [
+                    'id' => $duplicate->id,
+                    'name' => $duplicate->lead_name,
+                    'date_of_visit' => $duplicate->date_of_visit->format('Y-m-d'),
+                    'location' => $duplicate->location,
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'exists' => false,
+            'message' => 'Phone number is available.'
+        ]);
     }
 
     /**

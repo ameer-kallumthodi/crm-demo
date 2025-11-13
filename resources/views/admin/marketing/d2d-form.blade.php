@@ -43,7 +43,7 @@
                     </p>
                 </div>
 
-                <form action="{{ route('admin.marketing.d2d-submit') }}" method="post">
+                <form action="{{ route('admin.marketing.d2d-submit') }}" method="post" data-form-action="{{ route('admin.marketing.d2d-submit') }}" data-redirect-url="{{ route('admin.marketing.d2d-form') }}">
                     @csrf
                     <div class="row">
                         <!-- BDE Name - Only show if user is not marketing -->
@@ -144,6 +144,7 @@
                                 @error('phone')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div id="phone-duplicate-warning" class="invalid-feedback d-none"></div>
                             </div>
                         </div>
 
@@ -289,8 +290,8 @@
                         <!-- Submit Button -->
                         <div class="col-12">
                             <div class="form-group text-end">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="ti ti-device-floppy"></i> Submit
+                                <button class="btn btn-primary" type="submit" id="submitBtn">
+                                    <i class="ti ti-device-floppy"></i> <span id="submitBtnText">Submit</span>
                                 </button>
                                 <a href="{{ route('admin.marketing.index') }}" class="btn btn-secondary ms-2">
                                     <i class="ti ti-x"></i> Cancel
@@ -305,4 +306,304 @@
 </div>
 <!-- [ Main Content ] end -->
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form[method="post"]');
+        if (!form) {
+            console.error('Form not found');
+            return;
+        }
+        
+        const formAction = form.getAttribute('data-form-action') || form.action;
+        const formRedirectUrl = form.getAttribute('data-redirect-url') || window.location.href;
+        const submitBtn = document.getElementById('submitBtn');
+        const submitBtnText = document.getElementById('submitBtnText');
+        let isSubmitting = false;
+
+        if (!submitBtn) {
+            console.error('Submit button not found');
+            return;
+        }
+
+        // Get CSRF token from meta tag or form
+        function getCsrfToken() {
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            if (metaToken) {
+                return metaToken.getAttribute('content');
+            }
+            const formToken = form.querySelector('input[name="_token"]');
+            return formToken ? formToken.value : '';
+        }
+
+        // Duplicate phone check
+        const codeSelect = document.getElementById('code');
+        const phoneInput = document.getElementById('phone');
+        const phoneWarning = document.getElementById('phone-duplicate-warning');
+        let duplicateCheckTimeout = null;
+        let isDuplicate = false;
+
+        function checkDuplicatePhone() {
+            const code = codeSelect ? codeSelect.value : '';
+            const phone = phoneInput ? phoneInput.value : '';
+
+            // Clear previous timeout
+            if (duplicateCheckTimeout) {
+                clearTimeout(duplicateCheckTimeout);
+            }
+
+            // Hide warning initially
+            if (phoneWarning) {
+                phoneWarning.classList.add('d-none');
+                phoneWarning.textContent = '';
+            }
+
+            // Only check if both code and phone are filled
+            if (!code || !phone || phone.length < 5) {
+                isDuplicate = false;
+                return;
+            }
+
+            // Debounce the check (wait 500ms after user stops typing)
+            duplicateCheckTimeout = setTimeout(function() {
+                const csrfToken = getCsrfToken();
+                
+                fetch('{{ route("admin.marketing.check-duplicate-phone") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        code: code,
+                        phone: phone
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        isDuplicate = true;
+                        if (phoneWarning && phoneInput) {
+                            phoneWarning.textContent = data.message + ' (Lead: ' + (data.lead ? data.lead.name + ' - ' + data.lead.date_of_visit : 'N/A') + ')';
+                            phoneWarning.classList.remove('d-none');
+                            phoneInput.classList.add('is-invalid');
+                        }
+                    } else {
+                        isDuplicate = false;
+                        if (phoneWarning && phoneInput) {
+                            phoneWarning.classList.add('d-none');
+                            phoneInput.classList.remove('is-invalid');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking duplicate:', error);
+                    isDuplicate = false;
+                });
+            }, 500);
+        }
+
+        // Add event listeners for duplicate checking
+        if (codeSelect) {
+            codeSelect.addEventListener('change', checkDuplicatePhone);
+        }
+        if (phoneInput) {
+            phoneInput.addEventListener('input', checkDuplicatePhone);
+            phoneInput.addEventListener('blur', checkDuplicatePhone);
+        }
+
+        if (form && submitBtn && formAction) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Validate phone and code are filled
+                const code = codeSelect ? codeSelect.value : '';
+                const phone = phoneInput ? phoneInput.value.trim() : '';
+                
+                if (!code || !phone) {
+                    alert('Please fill in both Country Code and Phone number.');
+                    if (!code && codeSelect) {
+                        codeSelect.focus();
+                    } else if (!phone && phoneInput) {
+                        phoneInput.focus();
+                    }
+                    return false;
+                }
+
+                // Check for duplicate before submitting - prevent submission if duplicate exists
+                if (isDuplicate) {
+                    alert('This phone number (' + code + ' ' + phone + ') already exists in the system. Please use a different phone number or check the existing lead.');
+                    if (phoneInput) {
+                        phoneInput.focus();
+                        phoneInput.select();
+                    }
+                    return false;
+                }
+
+                // Perform a final duplicate check before submission
+                const csrfToken = getCsrfToken();
+                
+                // First check for duplicate, then proceed with submission
+                fetch('{{ route("admin.marketing.check-duplicate-phone") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        code: code,
+                        phone: phone
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        isDuplicate = true;
+                        if (phoneWarning && phoneInput) {
+                            phoneWarning.textContent = data.message + (data.lead ? ' (Lead: ' + data.lead.name + ' - ' + data.lead.date_of_visit + ')' : '');
+                            phoneWarning.classList.remove('d-none');
+                            phoneInput.classList.add('is-invalid');
+                        }
+                        alert('This phone number (' + code + ' ' + phone + ') already exists in the system. Please use a different phone number.');
+                        if (phoneInput) {
+                            phoneInput.focus();
+                            phoneInput.select();
+                        }
+                        throw new Error('Duplicate phone number');
+                    }
+                    
+                    // If no duplicate, proceed with form submission
+                    isDuplicate = false;
+                    
+                    // Prevent multiple submissions
+                    if (isSubmitting) {
+                        return false;
+                    }
+
+                    // Mark as submitting
+                    isSubmitting = true;
+                    
+                    // Disable submit button
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('disabled');
+                    submitBtnText.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Submitting...';
+                    
+                    // Disable all form inputs to prevent changes
+                    const formInputs = form.querySelectorAll('input, select, textarea, button');
+                    formInputs.forEach(input => {
+                        if (input !== submitBtn && input.type !== 'hidden') {
+                            input.disabled = true;
+                        }
+                    });
+
+                    // Prepare form data
+                    const formData = new FormData(form);
+                    
+                    // Add CSRF token to form data if not already present
+                    if (!formData.has('_token')) {
+                        formData.append('_token', csrfToken);
+                    }
+
+                    // Submit via AJAX
+                    return fetch(formAction, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json, text/html, */*'
+                        },
+                        credentials: 'same-origin',
+                        redirect: 'follow'
+                    });
+                })
+                .then(response => {
+                    // Check if response is a redirect (302, 301, etc.)
+                    if (response.redirected || response.status === 302 || response.status === 301) {
+                        // Follow the redirect
+                        window.location.href = response.url || formRedirectUrl;
+                        return;
+                    }
+                    
+                    // Check for 419 CSRF token mismatch
+                    if (response.status === 419) {
+                        // Reload page to get fresh CSRF token
+                        alert('Session expired. Please try again.');
+                        window.location.reload();
+                        return;
+                    }
+                    
+                    // Check for other errors
+                    if (!response.ok) {
+                        throw new Error('Server error: ' + response.status);
+                    }
+                    
+                    return response.text();
+                })
+                .then(data => {
+                    if (!data) {
+                        // If no data, redirect to form page
+                        window.location.href = formRedirectUrl;
+                        return;
+                    }
+                    
+                    // Check if response contains error indicators
+                    if (data.includes('419') || data.includes('Page Expired') || data.includes('CSRF token mismatch')) {
+                        alert('Session expired. Please refresh the page and try again.');
+                        window.location.reload();
+                        return;
+                    }
+                    
+                    // If we get here, redirect to form page (success)
+                    window.location.href = formRedirectUrl;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    // Don't show generic error for duplicate phone (already handled)
+                    if (error.message === 'Duplicate phone number') {
+                        return; // Error already shown to user
+                    }
+                    
+                    isSubmitting = false;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('disabled');
+                    submitBtnText.innerHTML = 'Submit';
+                    
+                    // Re-enable form inputs
+                    const formInputs = form.querySelectorAll('input, select, textarea, button');
+                    formInputs.forEach(input => {
+                        input.disabled = false;
+                    });
+
+                    // Show error message
+                    alert('An error occurred while submitting the form. Please try again.\n\nIf this problem persists, please refresh the page and try again.');
+                });
+            });
+
+            // Re-enable form if user navigates back (using browser back button)
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    isSubmitting = false;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('disabled');
+                    submitBtnText.innerHTML = 'Submit';
+                    
+                    const formInputs = form.querySelectorAll('input, select, textarea, button');
+                    formInputs.forEach(input => {
+                        input.disabled = false;
+                    });
+                }
+            });
+        }
+    });
+</script>
+@endpush
 

@@ -365,6 +365,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/marketing-update-password/{id}', [MarketingController::class, 'updatePassword'])->name('marketing.update-password');
         Route::get('/marketing-d2d-form', [MarketingController::class, 'd2dForm'])->name('marketing.d2d-form');
         Route::post('/marketing-d2d-submit', [MarketingController::class, 'd2dSubmit'])->name('marketing.d2d-submit');
+        Route::post('/marketing-check-duplicate-phone', [MarketingController::class, 'checkDuplicatePhone'])->name('marketing.check-duplicate-phone');
         Route::get('/marketing-leads', [MarketingController::class, 'marketingLeads'])->name('marketing.marketing-leads');
         Route::get('/marketing-leads/data', [MarketingController::class, 'getMarketingLeadsData'])->name('marketing.marketing-leads.data');
         Route::get('/marketing-leads/{id}/edit', [MarketingController::class, 'editMarketingLead'])->name('marketing.marketing-leads.edit');
