@@ -192,10 +192,10 @@ function showAlert(type, message) {
     // Add new alert
     $('.card-body').prepend(alertHtml);
     
-    // Auto-hide after 5 seconds
+    // Auto-hide after 10 seconds
     setTimeout(() => {
         $('.alert').fadeOut();
-    }, 5000);
+    }, 10000);
 }
 </script>
 @endpush

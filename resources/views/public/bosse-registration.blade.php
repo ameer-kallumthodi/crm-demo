@@ -977,13 +977,13 @@
             `;
             alertContainer.innerHTML = alertHtml;
 
-            // Auto dismiss after 5 seconds
+            // Auto dismiss after 10 seconds
             setTimeout(() => {
                 const alert = alertContainer.querySelector('.alert');
                 if (alert) {
                     alert.remove();
                 }
-            }, 5000);
+            }, 10000);
         }
 
         // File upload handling

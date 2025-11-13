@@ -668,7 +668,6 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/support-e-school-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'eSchoolIndex'])->name('support-e-school-converted-leads.index');
         Route::post('/support-e-school-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-e-school-converted-leads.update-support-details');
 
-
         // Invoice Routes
         Route::get('/invoices/student/{studentId}', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
         Route::get('/invoices/{id}', [App\Http\Controllers\InvoiceController::class, 'show'])->name('invoices.show');

@@ -926,12 +926,12 @@
             const form = document.getElementById('registrationForm');
             form.insertBefore(alertDiv, form.firstChild);
             
-            // Auto dismiss after 5 seconds
+            // Auto dismiss after 10 seconds
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
                 }
-            }, 5000);
+            }, 10000);
         }
     </script>
 </body>

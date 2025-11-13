@@ -988,7 +988,7 @@
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
                 }
-            }, 5000);
+            }, 10000);
         }
     </script>
 </body>
