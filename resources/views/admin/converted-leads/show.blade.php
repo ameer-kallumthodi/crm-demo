@@ -311,28 +311,72 @@
                             @php
                                 $doc = $convertedLead->leadDetail;
                                 $files = [
-                                    'passport_photo' => 'Passport Photo',
-                                    'adhar_front' => 'Aadhar Front',
-                                    'adhar_back' => 'Aadhar Back',
-                                    'signature' => 'Signature',
-                                    'birth_certificate' => 'Birth Certificate',
-                                    'plustwo_certificate' => 'Plus Two Certificate',
+                                    'passport_photo' => [
+                                        'label' => 'Passport Photo',
+                                        'status_field' => 'passport_photo_verification_status',
+                                        'verified_by_field' => 'passportPhotoVerifiedBy',
+                                        'verified_at_field' => 'passport_photo_verified_at'
+                                    ],
+                                    'adhar_front' => [
+                                        'label' => 'Aadhar Front',
+                                        'status_field' => 'adhar_front_verification_status',
+                                        'verified_by_field' => 'adharFrontVerifiedBy',
+                                        'verified_at_field' => 'adhar_front_verified_at'
+                                    ],
+                                    'adhar_back' => [
+                                        'label' => 'Aadhar Back',
+                                        'status_field' => 'adhar_back_verification_status',
+                                        'verified_by_field' => 'adharBackVerifiedBy',
+                                        'verified_at_field' => 'adhar_back_verified_at'
+                                    ],
+                                    'signature' => [
+                                        'label' => 'Signature',
+                                        'status_field' => 'signature_verification_status',
+                                        'verified_by_field' => 'signatureVerifiedBy',
+                                        'verified_at_field' => 'signature_verified_at'
+                                    ],
+                                    'birth_certificate' => [
+                                        'label' => 'Birth Certificate',
+                                        'status_field' => 'birth_certificate_verification_status',
+                                        'verified_by_field' => 'birthCertificateVerifiedBy',
+                                        'verified_at_field' => 'birth_certificate_verified_at'
+                                    ],
+                                    'plustwo_certificate' => [
+                                        'label' => 'Plus Two Certificate',
+                                        'status_field' => 'plustwo_verification_status',
+                                        'verified_by_field' => 'plustwoVerifiedBy',
+                                        'verified_at_field' => 'plustwo_verified_at'
+                                    ],
                                 ];
                             @endphp
-                            @foreach($files as $field => $label)
+                            @foreach($files as $field => $config)
                                 <div class="col-md-3">
-                                    <label class="form-label text-muted">{{ $label }}</label>
+                                    <label class="form-label text-muted">{{ $config['label'] }}</label>
                                     @php
                                         $path = $doc->$field ?? null;
                                         $exists = $path ? \Illuminate\Support\Facades\Storage::disk('public')->exists($path) : false;
                                         $fileUrl = $exists ? asset('storage/' . $path) : null;
                                         $isPdf = $exists ? \Illuminate\Support\Str::endsWith(strtolower($path), '.pdf') : false;
+                                        $verificationStatus = $doc->{$config['status_field']} ?? 'pending';
+                                        $verifiedBy = $doc->{$config['verified_by_field']} ?? null;
+                                        $verifiedAt = $doc->{$config['verified_at_field']} ?? null;
                                     @endphp
                                     <div class="card p-2">
                                         @if($exists)
                                             @if($isPdf)
                                                 <div class="text-center mb-2">
                                                     <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <span class="badge bg-{{ $verificationStatus === 'verified' ? 'success' : 'warning' }}">
+                                                        {{ ucfirst($verificationStatus) }}
+                                                    </span>
+                                                    @if($verifiedAt)
+                                                        <small class="text-muted d-block mt-1">
+                                                            Verified by: {{ optional($verifiedBy)->name ?? 'Unknown' }}<br>
+                                                            Date: {{ $verifiedAt->format('M d, Y') }}
+                                                        </small>
+                                                    @endif
                                                 </div>
                                                 <div class="d-grid gap-1">
                                                     <a href="{{ $fileUrl }}" target="_blank" class="btn btn-sm btn-outline-danger">
@@ -344,8 +388,19 @@
                                                 </div>
                                             @else
                                                 <a href="{{ $fileUrl }}" target="_blank" class="d-block text-center mb-2">
-                                                    <img src="{{ $fileUrl }}" alt="{{ $label }}" style="max-width: 100%; max-height: 140px; object-fit: contain;" onerror="this.onerror=null;this.src='{{ asset('assets/img/file.png') }}';">
+                                                    <img src="{{ $fileUrl }}" alt="{{ $config['label'] }}" style="max-width: 100%; max-height: 140px; object-fit: contain;" onerror="this.onerror=null;this.src='{{ asset('assets/img/file.png') }}';">
                                                 </a>
+                                                <div class="mb-2">
+                                                    <span class="badge bg-{{ $verificationStatus === 'verified' ? 'success' : 'warning' }}">
+                                                        {{ ucfirst($verificationStatus) }}
+                                                    </span>
+                                                    @if($verifiedAt)
+                                                        <small class="text-muted d-block mt-1">
+                                                            Verified by: {{ optional($verifiedBy)->name ?? 'Unknown' }}<br>
+                                                            Date: {{ $verifiedAt->format('M d, Y') }}
+                                                        </small>
+                                                    @endif
+                                                </div>
                                                 <div class="d-grid">
                                                     <a href="{{ $fileUrl }}" download class="btn btn-sm btn-outline-secondary">
                                                         <i class="ti ti-download me-1"></i> Download

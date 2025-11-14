@@ -126,6 +126,15 @@ class SupportConvertedLeadController extends Controller
     {
         $convertedLead = ConvertedLead::with([
             'lead',
+            'leadDetail.sslcCertificates.verifiedBy',
+            'leadDetail.sslcVerifiedBy',
+            'leadDetail.plustwoVerifiedBy',
+            'leadDetail.ugVerifiedBy',
+            'leadDetail.passportPhotoVerifiedBy',
+            'leadDetail.adharFrontVerifiedBy',
+            'leadDetail.adharBackVerifiedBy',
+            'leadDetail.signatureVerifiedBy',
+            'leadDetail.birthCertificateVerifiedBy',
             'course',
             'academicAssistant',
             'createdBy',
@@ -150,6 +159,15 @@ class SupportConvertedLeadController extends Controller
     {
         $convertedLead = ConvertedLead::with([
             'lead',
+            'leadDetail.sslcCertificates.verifiedBy',
+            'leadDetail.sslcVerifiedBy',
+            'leadDetail.plustwoVerifiedBy',
+            'leadDetail.ugVerifiedBy',
+            'leadDetail.passportPhotoVerifiedBy',
+            'leadDetail.adharFrontVerifiedBy',
+            'leadDetail.adharBackVerifiedBy',
+            'leadDetail.signatureVerifiedBy',
+            'leadDetail.birthCertificateVerifiedBy',
             'course',
             'academicAssistant',
             'createdBy',
@@ -174,6 +192,15 @@ class SupportConvertedLeadController extends Controller
     {
         $convertedLead = ConvertedLead::with([
             'lead',
+            'leadDetail.sslcCertificates.verifiedBy',
+            'leadDetail.sslcVerifiedBy',
+            'leadDetail.plustwoVerifiedBy',
+            'leadDetail.ugVerifiedBy',
+            'leadDetail.passportPhotoVerifiedBy',
+            'leadDetail.adharFrontVerifiedBy',
+            'leadDetail.adharBackVerifiedBy',
+            'leadDetail.signatureVerifiedBy',
+            'leadDetail.birthCertificateVerifiedBy',
             'course',
             'academicAssistant',
             'createdBy',
