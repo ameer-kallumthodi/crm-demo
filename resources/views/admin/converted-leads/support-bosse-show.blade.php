@@ -155,6 +155,12 @@
                                 'verified_by_field' => 'plustwoVerifiedBy',
                                 'verified_at_field' => 'plustwo_verified_at'
                             ],
+                            'other_document' => [
+                                'label' => 'Other Document',
+                                'status_field' => 'other_document_verification_status',
+                                'verified_by_field' => 'otherDocumentVerifiedBy',
+                                'verified_at_field' => 'other_document_verified_at'
+                            ],
                         ];
                     @endphp
                     @foreach($files as $field => $config)

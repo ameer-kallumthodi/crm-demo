@@ -1521,6 +1521,7 @@ class ConvertedLeadController extends Controller
             'leadDetail.adharBackVerifiedBy',
             'leadDetail.signatureVerifiedBy',
             'leadDetail.birthCertificateVerifiedBy',
+            'leadDetail.otherDocumentVerifiedBy',
             'course',
             'batch',
             'admissionBatch',
