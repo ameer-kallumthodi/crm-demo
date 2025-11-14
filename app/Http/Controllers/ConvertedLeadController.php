@@ -135,12 +135,14 @@ class ConvertedLeadController extends Controller
             });
         }
 
-        // Apply default 7-day date filtering if no dates are provided
-        $fromDate = $request->get('date_from', now()->subDays(7)->format('Y-m-d'));
-        $toDate = $request->get('date_to', now()->format('Y-m-d'));
-        
-        $query->whereDate('created_at', '>=', $fromDate);
-        $query->whereDate('created_at', '<=', $toDate);
+        // Apply date filtering only if dates are explicitly provided
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
 
         $convertedLeads = $query->orderBy('created_at', 'desc')->get();
 
@@ -152,7 +154,7 @@ class ConvertedLeadController extends Controller
         // Country codes for inline phone editor
         $country_codes = get_country_code();
 
-        return view('admin.converted-leads.index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'fromDate', 'toDate'));
+        return view('admin.converted-leads.index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
     }
 
     /**
