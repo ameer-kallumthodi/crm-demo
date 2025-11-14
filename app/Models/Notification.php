@@ -82,6 +82,7 @@ class Notification extends Model
         return $query->where('is_active', true)
             ->where(function ($q) use ($userId, $roleId) {
                 $q->where('target_type', 'all')
+                  ->orWhere('target_type', 'all_role')
                   ->orWhere(function ($subQ) use ($roleId) {
                       $subQ->where('target_type', 'role')
                            ->where('role_id', $roleId);

@@ -67,7 +67,11 @@
                                                     @if($notification->target_type !== 'all')
                                                         <small class="text-muted">
                                                             <i class="ti ti-target me-1"></i>
-                                                            {{ ucfirst($notification->target_type) }}
+                                                            @if($notification->target_type === 'all_role')
+                                                                All Role
+                                                            @else
+                                                                {{ ucfirst(str_replace('_', ' ', $notification->target_type)) }}
+                                                            @endif
                                                         </small>
                                                     @endif
                                                 </div>

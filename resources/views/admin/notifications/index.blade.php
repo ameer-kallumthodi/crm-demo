@@ -86,7 +86,11 @@
                                         </td>
                                         <td>
                                             <span class="badge bg-secondary">
-                                                {{ ucfirst($notification->target_type) }}
+                                                @if($notification->target_type === 'all_role')
+                                                    All Role
+                                                @else
+                                                    {{ ucfirst(str_replace('_', ' ', $notification->target_type)) }}
+                                                @endif
                                             </span>
                                         </td>
                                         <td>{{ $notification->role->title ?? 'N/A' }}</td>

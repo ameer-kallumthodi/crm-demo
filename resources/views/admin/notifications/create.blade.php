@@ -37,6 +37,7 @@
                 <select class="form-control" id="target_type" name="target_type" required onchange="toggleUserSelection()">
                     <option value="">Select Target</option>
                     <option value="all">All Users</option>
+                    <option value="all_role">All Role</option>
                     <option value="role">Specific Role</option>
                     <option value="user">Specific User</option>
                 </select>

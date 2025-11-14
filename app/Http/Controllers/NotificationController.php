@@ -56,7 +56,7 @@ class NotificationController extends Controller
             'title' => 'required|string|max:255',
             'message' => 'required|string',
             'type' => 'required|in:info,success,warning,error',
-            'target_type' => 'required|in:all,role,user',
+            'target_type' => 'required|in:all,all_role,role,user',
             'role_id' => 'required|exists:user_roles,id',
             'user_id' => 'nullable|exists:users,id'
         ]);
@@ -124,7 +124,7 @@ class NotificationController extends Controller
             'title' => 'required|string|max:255',
             'message' => 'required|string',
             'type' => 'required|in:info,success,warning,error',
-            'target_type' => 'required|in:all,role,user',
+            'target_type' => 'required|in:all,all_role,role,user',
             'role_id' => 'required|exists:user_roles,id',
             'user_id' => 'nullable|exists:users,id',
             'is_active' => 'boolean'

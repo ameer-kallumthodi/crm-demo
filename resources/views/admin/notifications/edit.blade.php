@@ -38,6 +38,7 @@
                 <select class="form-control" id="target_type" name="target_type" required onchange="toggleUserSelection()">
                     <option value="">Select Target</option>
                     <option value="all" {{ $notification->target_type === 'all' ? 'selected' : '' }}>All Users</option>
+                    <option value="all_role" {{ $notification->target_type === 'all_role' ? 'selected' : '' }}>All Role</option>
                     <option value="role" {{ $notification->target_type === 'role' ? 'selected' : '' }}>Specific Role</option>
                     <option value="user" {{ $notification->target_type === 'user' ? 'selected' : '' }}>Specific User</option>
                 </select>

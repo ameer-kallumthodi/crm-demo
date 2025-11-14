@@ -36,7 +36,13 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Target Type:</label>
                                     <p class="mb-0">
-                                        <span class="badge bg-secondary">{{ ucfirst($notification->target_type) }}</span>
+                                        <span class="badge bg-secondary">
+                                            @if($notification->target_type === 'all_role')
+                                                All Role
+                                            @else
+                                                {{ ucfirst(str_replace('_', ' ', $notification->target_type)) }}
+                                            @endif
+                                        </span>
                                     </p>
                                 </div>
                             </div>
