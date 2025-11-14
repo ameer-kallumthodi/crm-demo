@@ -316,7 +316,6 @@
                                     'adhar_back' => 'Aadhar Back',
                                     'signature' => 'Signature',
                                     'birth_certificate' => 'Birth Certificate',
-                                    'sslc_certificate' => 'SSLC Certificate',
                                     'plustwo_certificate' => 'Plus Two Certificate',
                                 ];
                             @endphp
@@ -362,6 +361,140 @@
                                     </div>
                                 </div>
                             @endforeach
+                            
+                            <!-- SSLC Certificates Section - Display all certificates from sslc_certificates table -->
+                            @if($doc && ($doc->sslcCertificates && $doc->sslcCertificates->count() > 0))
+                                @foreach($doc->sslcCertificates as $index => $certificate)
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted">SSLC Certificate {{ $index + 1 }}</label>
+                                    @php
+                                        $certPath = $certificate->certificate_path ?? null;
+                                        $certExists = $certPath ? \Illuminate\Support\Facades\Storage::disk('public')->exists($certPath) : false;
+                                        $certUrl = $certExists ? asset('storage/' . $certPath) : null;
+                                        $certIsPdf = $certExists ? \Illuminate\Support\Str::endsWith(strtolower($certPath), '.pdf') : false;
+                                    @endphp
+                                    <div class="card p-2">
+                                        @if($certExists)
+                                            @if($certIsPdf)
+                                                <div class="text-center mb-2">
+                                                    <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <span class="badge bg-{{ $certificate->verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                        {{ ucfirst($certificate->verification_status) }}
+                                                    </span>
+                                                    @if($certificate->verified_at)
+                                                        <small class="text-muted d-block mt-1">
+                                                            Verified by: {{ $certificate->verifiedBy->name ?? 'Unknown' }}<br>
+                                                            Date: {{ $certificate->verified_at->format('M d, Y') }}
+                                                        </small>
+                                                    @endif
+                                                </div>
+                                                <div class="d-grid gap-1">
+                                                    <a href="{{ $certUrl }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-eye me-1"></i> View PDF
+                                                    </a>
+                                                    <a href="{{ $certUrl }}" download class="btn btn-sm btn-outline-secondary">
+                                                        <i class="ti ti-download me-1"></i> Download
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <a href="{{ $certUrl }}" target="_blank" class="d-block text-center mb-2">
+                                                    <img src="{{ $certUrl }}" alt="SSLC Certificate {{ $index + 1 }}" style="max-width: 100%; max-height: 140px; object-fit: contain;" onerror="this.onerror=null;this.src='{{ asset('assets/img/file.png') }}';">
+                                                </a>
+                                                <div class="mb-2">
+                                                    <span class="badge bg-{{ $certificate->verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                        {{ ucfirst($certificate->verification_status) }}
+                                                    </span>
+                                                    @if($certificate->verified_at)
+                                                        <small class="text-muted d-block mt-1">
+                                                            Verified by: {{ $certificate->verifiedBy->name ?? 'Unknown' }}<br>
+                                                            Date: {{ $certificate->verified_at->format('M d, Y') }}
+                                                        </small>
+                                                    @endif
+                                                </div>
+                                                <div class="d-grid">
+                                                    <a href="{{ $certUrl }}" download class="btn btn-sm btn-outline-secondary">
+                                                        <i class="ti ti-download me-1"></i> Download
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        @else
+                                            <div class="text-center text-muted py-4">
+                                                <i class="ti ti-file-alert f-24 d-block mb-1"></i>
+                                                <small>File not found</small>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                @endforeach
+                            @endif
+                            
+                            <!-- Legacy SSLC Certificate from leads_details table (if exists) -->
+                            @if($doc && $doc->sslc_certificate)
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted">SSLC Certificate (Legacy)</label>
+                                    @php
+                                        $legacyPath = $doc->sslc_certificate ?? null;
+                                        $legacyExists = $legacyPath ? \Illuminate\Support\Facades\Storage::disk('public')->exists($legacyPath) : false;
+                                        $legacyUrl = $legacyExists ? asset('storage/' . $legacyPath) : null;
+                                        $legacyIsPdf = $legacyExists ? \Illuminate\Support\Str::endsWith(strtolower($legacyPath), '.pdf') : false;
+                                    @endphp
+                                    <div class="card p-2">
+                                        @if($legacyExists)
+                                            @if($legacyIsPdf)
+                                                <div class="text-center mb-2">
+                                                    <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <span class="badge bg-{{ $doc->sslc_verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                        {{ ucfirst($doc->sslc_verification_status ?? 'pending') }}
+                                                    </span>
+                                                    @if($doc->sslc_verified_at)
+                                                        <small class="text-muted d-block mt-1">
+                                                            Verified by: {{ optional($doc->sslcVerifiedBy)->name ?? 'Unknown' }}<br>
+                                                            Date: {{ $doc->sslc_verified_at->format('M d, Y') }}
+                                                        </small>
+                                                    @endif
+                                                </div>
+                                                <div class="d-grid gap-1">
+                                                    <a href="{{ $legacyUrl }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-eye me-1"></i> View PDF
+                                                    </a>
+                                                    <a href="{{ $legacyUrl }}" download class="btn btn-sm btn-outline-secondary">
+                                                        <i class="ti ti-download me-1"></i> Download
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <a href="{{ $legacyUrl }}" target="_blank" class="d-block text-center mb-2">
+                                                    <img src="{{ $legacyUrl }}" alt="SSLC Certificate" style="max-width: 100%; max-height: 140px; object-fit: contain;" onerror="this.onerror=null;this.src='{{ asset('assets/img/file.png') }}';">
+                                                </a>
+                                                <div class="mb-2">
+                                                    <span class="badge bg-{{ $doc->sslc_verification_status === 'verified' ? 'success' : 'warning' }}">
+                                                        {{ ucfirst($doc->sslc_verification_status ?? 'pending') }}
+                                                    </span>
+                                                    @if($doc->sslc_verified_at)
+                                                        <small class="text-muted d-block mt-1">
+                                                            Verified by: {{ optional($doc->sslcVerifiedBy)->name ?? 'Unknown' }}<br>
+                                                            Date: {{ $doc->sslc_verified_at->format('M d, Y') }}
+                                                        </small>
+                                                    @endif
+                                                </div>
+                                                <div class="d-grid">
+                                                    <a href="{{ $legacyUrl }}" download class="btn btn-sm btn-outline-secondary">
+                                                        <i class="ti ti-download me-1"></i> Download
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        @else
+                                            <div class="text-center text-muted py-4">
+                                                <i class="ti ti-file-alert f-24 d-block mb-1"></i>
+                                                <small>File not found</small>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                     @endif

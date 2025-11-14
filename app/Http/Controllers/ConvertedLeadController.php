@@ -1512,7 +1512,8 @@ class ConvertedLeadController extends Controller
     {
         $convertedLead = ConvertedLead::with([
             'lead',
-            'leadDetail',
+            'leadDetail.sslcCertificates.verifiedBy',
+            'leadDetail.sslcVerifiedBy',
             'course',
             'batch',
             'admissionBatch',
