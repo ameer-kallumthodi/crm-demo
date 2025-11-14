@@ -46,9 +46,9 @@
     </div>
     
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6" id="role_selection">
             <div class="mb-3">
-                <label for="role_id" class="form-label">Role <span class="text-danger">*</span></label>
+                <label for="role_id" class="form-label">Role <span class="text-danger" id="role_required">*</span></label>
                 <select class="form-control" id="role_id" name="role_id" required>
                     <option value="">Select Role</option>
                     @foreach($roles as $role)
@@ -89,7 +89,24 @@ function toggleUserSelection() {
     const userSelection = document.getElementById('user_selection');
     const userIdSelect = document.getElementById('user_id');
     const roleIdSelect = document.getElementById('role_id');
+    const roleRequired = document.getElementById('role_required');
+    const roleSelection = document.getElementById('role_selection');
     
+    // Handle role selection requirement
+    if (targetType === 'all' || targetType === 'all_role') {
+        roleIdSelect.required = false;
+        roleIdSelect.value = '';
+        if (roleRequired) {
+            roleRequired.style.display = 'none';
+        }
+    } else {
+        roleIdSelect.required = true;
+        if (roleRequired) {
+            roleRequired.style.display = 'inline';
+        }
+    }
+    
+    // Handle user selection
     if (targetType === 'user') {
         userSelection.style.display = 'block';
         userIdSelect.required = true;

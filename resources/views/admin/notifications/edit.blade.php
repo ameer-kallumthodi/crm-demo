@@ -47,10 +47,10 @@
     </div>
     
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6" id="role_selection">
             <div class="mb-3">
-                <label for="role_id" class="form-label">Role <span class="text-danger">*</span></label>
-                <select class="form-control" id="role_id" name="role_id" required>
+                <label for="role_id" class="form-label">Role <span class="text-danger" id="role_required" style="display: {{ in_array($notification->target_type, ['all', 'all_role']) ? 'none' : 'inline' }};">*</span></label>
+                <select class="form-control" id="role_id" name="role_id" {{ in_array($notification->target_type, ['all', 'all_role']) ? '' : 'required' }}>
                     <option value="">Select Role</option>
                     @foreach($roles as $role)
                         <option value="{{ $role->id }}" {{ $notification->role_id == $role->id ? 'selected' : '' }}>{{ $role->title }}</option>
@@ -101,7 +101,24 @@ function toggleUserSelection() {
     const targetType = document.getElementById('target_type').value;
     const userSelection = document.getElementById('user_selection');
     const userIdSelect = document.getElementById('user_id');
+    const roleIdSelect = document.getElementById('role_id');
+    const roleRequired = document.getElementById('role_required');
+    const roleSelection = document.getElementById('role_selection');
     
+    // Handle role selection requirement
+    if (targetType === 'all' || targetType === 'all_role') {
+        roleIdSelect.required = false;
+        if (roleRequired) {
+            roleRequired.style.display = 'none';
+        }
+    } else {
+        roleIdSelect.required = true;
+        if (roleRequired) {
+            roleRequired.style.display = 'inline';
+        }
+    }
+    
+    // Handle user selection
     if (targetType === 'user') {
         userSelection.style.display = 'block';
         userIdSelect.required = true;

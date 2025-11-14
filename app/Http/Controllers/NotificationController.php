@@ -52,21 +52,29 @@ class NotificationController extends Controller
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
-        $request->validate([
+        $rules = [
             'title' => 'required|string|max:255',
             'message' => 'required|string',
             'type' => 'required|in:info,success,warning,error',
             'target_type' => 'required|in:all,all_role,role,user',
-            'role_id' => 'required|exists:user_roles,id',
             'user_id' => 'nullable|exists:users,id'
-        ]);
+        ];
+
+        // Role is only required when target_type is 'role' or 'user'
+        if (in_array($request->target_type, ['role', 'user'])) {
+            $rules['role_id'] = 'required|exists:user_roles,id';
+        } else {
+            $rules['role_id'] = 'nullable|exists:user_roles,id';
+        }
+
+        $request->validate($rules);
 
         $notification = Notification::create([
             'title' => $request->title,
             'message' => $request->message,
             'type' => $request->type,
             'target_type' => $request->target_type,
-            'role_id' => $request->role_id,
+            'role_id' => in_array($request->target_type, ['all', 'all_role']) ? null : $request->role_id,
             'user_id' => $request->target_type === 'user' ? $request->user_id : null,
             'created_by' => AuthHelper::getCurrentUserId()
         ]);
@@ -120,22 +128,30 @@ class NotificationController extends Controller
 
         $notification = Notification::findOrFail($id);
 
-        $request->validate([
+        $rules = [
             'title' => 'required|string|max:255',
             'message' => 'required|string',
             'type' => 'required|in:info,success,warning,error',
             'target_type' => 'required|in:all,all_role,role,user',
-            'role_id' => 'required|exists:user_roles,id',
             'user_id' => 'nullable|exists:users,id',
             'is_active' => 'boolean'
-        ]);
+        ];
+
+        // Role is only required when target_type is 'role' or 'user'
+        if (in_array($request->target_type, ['role', 'user'])) {
+            $rules['role_id'] = 'required|exists:user_roles,id';
+        } else {
+            $rules['role_id'] = 'nullable|exists:user_roles,id';
+        }
+
+        $request->validate($rules);
 
         $notification->update([
             'title' => $request->title,
             'message' => $request->message,
             'type' => $request->type,
             'target_type' => $request->target_type,
-            'role_id' => $request->role_id,
+            'role_id' => in_array($request->target_type, ['all', 'all_role']) ? null : $request->role_id,
             'user_id' => $request->target_type === 'user' ? $request->user_id : null,
             'is_active' => $request->has('is_active') ? true : false
         ]);
