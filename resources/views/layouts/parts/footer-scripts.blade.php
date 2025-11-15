@@ -391,7 +391,8 @@
     // Function to check and update unread notification count (without marking as read)
     function updateUnreadCount() {
         const notificationBadge = document.getElementById('notificationBadge');
-        if (!notificationBadge) {
+        const notificationBellIcon = document.getElementById('notificationBellIcon');
+        if (!notificationBadge || !notificationBellIcon) {
             return;
         }
 
@@ -407,14 +408,18 @@
                 return response.json();
             })
             .then(data => {
-                if (notificationBadge) {
-                    const unreadCount = data.unread_count || 0;
-                    if (unreadCount > 0) {
-                        notificationBadge.textContent = unreadCount;
-                        notificationBadge.style.display = 'inline-block';
-                    } else {
-                        notificationBadge.style.display = 'none';
-                    }
+                const unreadCount = data.unread_count || 0;
+                if (unreadCount > 0) {
+                    // Show badge with count
+                    notificationBadge.textContent = unreadCount;
+                    notificationBadge.style.display = 'inline-block';
+                    // Make bell icon red
+                    notificationBellIcon.style.color = '#dc3545';
+                } else {
+                    // Hide badge
+                    notificationBadge.style.display = 'none';
+                    // Reset bell icon color to default
+                    notificationBellIcon.style.color = '';
                 }
             })
             .catch(error => {
