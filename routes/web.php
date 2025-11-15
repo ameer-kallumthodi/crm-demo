@@ -738,6 +738,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     // Notification routes for all users
     Route::get('/notifications', [NotificationController::class, 'viewAll'])->name('notifications.view-all');
     Route::get('/api/notifications', [NotificationController::class, 'getUserNotifications'])->name('notifications.api');
+    Route::get('/api/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
     Route::post('/notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
 });
 

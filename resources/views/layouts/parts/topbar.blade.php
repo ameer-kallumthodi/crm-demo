@@ -43,7 +43,7 @@
                 <li class="dropdown pc-h-item">
                     <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false" id="notificationDropdown">
                         <i class="ti ti-bell"></i>
-                        <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                        <span class="notification-badge" id="notificationBadge" style="display: none; background-color: #dc3545; color: white;">0</span>
                     </a>
                     <div class="dropdown-menu dropdown-notification dropdown-menu-end pc-h-dropdown">
                         <div class="dropdown-header d-flex align-items-center justify-content-between">

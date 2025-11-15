@@ -333,7 +333,6 @@
                 const notificationList = document.getElementById('notificationList');
                 const notificationLoading = document.getElementById('notificationLoading');
                 const notificationEmpty = document.getElementById('notificationEmpty');
-                const notificationBadge = document.getElementById('notificationBadge');
                 
                 // Check if elements exist before accessing their properties
                 if (notificationLoading) {
@@ -343,17 +342,6 @@
                 if (data.notifications && data.notifications.length > 0) {
                     if (notificationEmpty) {
                         notificationEmpty.style.display = 'none';
-                    }
-                    
-                    // Count unread notifications
-                    const unreadCount = data.notifications.filter(n => !n.is_read).length;
-                    if (notificationBadge) {
-                        if (unreadCount > 0) {
-                            notificationBadge.textContent = unreadCount;
-                            notificationBadge.style.display = 'inline-block';
-                        } else {
-                            notificationBadge.style.display = 'none';
-                        }
                     }
                     
                     // Render notifications
@@ -384,9 +372,6 @@
                     if (notificationEmpty) {
                         notificationEmpty.style.display = 'block';
                     }
-                    if (notificationBadge) {
-                        notificationBadge.style.display = 'none';
-                    }
                 }
             })
             .catch(error => {
@@ -400,6 +385,40 @@
                 if (notificationEmpty) {
                     notificationEmpty.style.display = 'block';
                 }
+            });
+    }
+
+    // Function to check and update unread notification count (without marking as read)
+    function updateUnreadCount() {
+        const notificationBadge = document.getElementById('notificationBadge');
+        if (!notificationBadge) {
+            return;
+        }
+
+        fetch('{{ route("notifications.unread-count") }}')
+            .then(async response => {
+                const contentType = response.headers.get('content-type') || '';
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                if (!contentType.includes('application/json')) {
+                    throw new Error('Non-JSON response');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (notificationBadge) {
+                    const unreadCount = data.unread_count || 0;
+                    if (unreadCount > 0) {
+                        notificationBadge.textContent = unreadCount;
+                        notificationBadge.style.display = 'inline-block';
+                    } else {
+                        notificationBadge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading unread count:', error);
             });
     }
 
@@ -436,6 +455,8 @@
         .then(() => {
             // Reload notifications to update read status
             loadNotifications();
+            // Update badge count after marking as read
+            updateUnreadCount();
         })
         .catch(error => {
             console.error('Error marking notifications as read:', error);
@@ -490,20 +511,25 @@
         // Only load notifications for non-admin users
         const notificationDropdown = document.getElementById('notificationDropdown');
         if (notificationDropdown) {
-            loadNotifications();
+            // Load unread count on page load
+            updateUnreadCount();
             
-            // Mark all notifications as read when page loads
-            setTimeout(() => {
-                markAllAsRead();
-            }, 1000); // Small delay to ensure notifications are loaded
+            // Check unread count periodically (every 30 seconds) without marking as read
+            setInterval(updateUnreadCount, 30000);
             
-            // Refresh notifications every 30 seconds
-            setInterval(loadNotifications, 30000);
+            // Load notifications and mark as read only when dropdown is opened
+            notificationDropdown.addEventListener('show.bs.dropdown', function() {
+                // Load notifications when dropdown is about to open
+                loadNotifications();
+            });
             
-            // Mark all notifications as read when dropdown is opened
             notificationDropdown.addEventListener('shown.bs.dropdown', function() {
                 // Mark all notifications as read when dropdown is fully shown
                 markAllAsRead();
+                // Update badge count after marking as read
+                setTimeout(() => {
+                    updateUnreadCount();
+                }, 500);
             });
         }
     });

@@ -254,4 +254,22 @@ class NotificationController extends Controller
 
         return view('notifications.view-all', compact('notifications'));
     }
+
+    /**
+     * Get unread notification count for the current user.
+     */
+    public function getUnreadCount()
+    {
+        $currentUser = AuthHelper::getCurrentUser();
+        if (!$currentUser) {
+            return response()->json(['unread_count' => 0]);
+        }
+
+        $notifications = Notification::forUser($currentUser->id, $currentUser->role_id)->get();
+        $unreadCount = $notifications->filter(function ($notification) use ($currentUser) {
+            return !$notification->isReadBy($currentUser->id);
+        })->count();
+
+        return response()->json(['unread_count' => $unreadCount]);
+    }
 }
