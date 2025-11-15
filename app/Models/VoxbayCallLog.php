@@ -133,19 +133,38 @@ class VoxbayCallLog extends Model
 
     public function getTelecallerName()
     {
-        if (!$this->AgentNumber) return 'Unknown';
+        // Try to match by ext_no with AgentNumber or extensionNumber
+        $extensionNumber = $this->AgentNumber ?? $this->extensionNumber;
+        
+        if (!$extensionNumber) {
+            return 'Unknown';
+        }
 
-        $countryCode = substr($this->AgentNumber, 0, 2);
-        $mobileNumber = substr($this->AgentNumber, 2);
-
-        $user = User::where('code', $countryCode)
-            ->where('phone', $mobileNumber)
-            ->whereHas('role', function ($q) {
-                $q->where('title', 'Telecaller');
-            })
+        // Match ext_no with AgentNumber or extensionNumber where role_id = 3 (telecaller)
+        $user = User::where('ext_no', $extensionNumber)
+            ->where('role_id', 3)
             ->first();
 
-        return $user ? $user->name : 'Unknown';
+        if ($user) {
+            return $user->name;
+        }
+
+        // Fallback: Try matching by phone number (original logic) if ext_no doesn't match
+        if ($this->AgentNumber && strlen($this->AgentNumber) >= 2) {
+            $countryCode = substr($this->AgentNumber, 0, 2);
+            $mobileNumber = substr($this->AgentNumber, 2);
+
+            $user = User::where('code', $countryCode)
+                ->where('phone', $mobileNumber)
+                ->where('role_id', 3)
+                ->first();
+
+            if ($user) {
+                return $user->name;
+            }
+        }
+
+        return 'Unknown';
     }
 
     public function getLeadByPhone()

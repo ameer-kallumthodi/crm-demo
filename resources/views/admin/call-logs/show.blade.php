@@ -33,21 +33,26 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-shrink-0">
-                        <div class="avtar avtar-s bg-light-{{ $callLog->call_status == 'ANSWER' ? 'success' : ($callLog->call_status == 'BUSY' ? 'warning' : 'danger') }}">
-                            <i class="ti ti-phone-{{ $callLog->call_status == 'ANSWER' ? 'check' : ($callLog->call_status == 'BUSY' ? 'busy' : 'off') }} text-{{ $callLog->call_status == 'ANSWER' ? 'success' : ($callLog->call_status == 'BUSY' ? 'warning' : 'danger') }}"></i>
+                        @php
+                            $status = $callLog->status ?? 'Unknown';
+                            $statusUpper = strtoupper($status);
+                            $statusFormatted = ucfirst(strtolower($status));
+                        @endphp
+                        <div class="avtar avtar-s bg-light-{{ $statusUpper == 'ANSWER' ? 'success' : ($statusUpper == 'BUSY' ? 'warning' : ($statusUpper == 'CANCEL' || $statusUpper == 'CANCELLED' ? 'danger' : 'secondary')) }}">
+                            <i class="ti ti-phone-{{ $statusUpper == 'ANSWER' ? 'check' : ($statusUpper == 'BUSY' ? 'busy' : 'off') }} text-{{ $statusUpper == 'ANSWER' ? 'success' : ($statusUpper == 'BUSY' ? 'warning' : ($statusUpper == 'CANCEL' || $statusUpper == 'CANCELLED' ? 'danger' : 'secondary')) }}"></i>
                         </div>
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <h6 class="mb-1">Call Status</h6>
                         <h4 class="mb-0">
-                            @if($callLog->call_status == 'ANSWER')
-                                <span class="text-success">Answered</span>
-                            @elseif($callLog->call_status == 'BUSY')
-                                <span class="text-warning">Busy</span>
-                            @elseif($callLog->call_status == 'CANCEL')
-                                <span class="text-danger">Cancelled</span>
+                            @if($statusUpper == 'ANSWER')
+                                <span class="text-success">{{ $statusFormatted }}</span>
+                            @elseif($statusUpper == 'BUSY')
+                                <span class="text-warning">{{ $statusFormatted }}</span>
+                            @elseif($statusUpper == 'CANCEL' || $statusUpper == 'CANCELLED')
+                                <span class="text-danger">{{ $statusFormatted }}</span>
                             @else
-                                <span class="text-secondary">No Answer</span>
+                                <span class="text-secondary">{{ $statusFormatted }}</span>
                             @endif
                         </h4>
                     </div>
@@ -129,21 +134,30 @@
                     <div class="col-6">
                         <label class="form-label text-muted">Status</label>
                         <div class="mb-0">
-                            @if($callLog->call_status == 'ANSWER')
+                            @php
+                                $status = $callLog->status ?? 'Unknown';
+                                $statusUpper = strtoupper($status);
+                                $statusFormatted = ucfirst(strtolower($status));
+                            @endphp
+                            @if($statusUpper == 'ANSWER')
                                 <span class="badge bg-light-success text-success">
-                                    <i class="ti ti-check"></i> Answered
+                                    <i class="ti ti-check"></i> {{ $statusFormatted }}
                                 </span>
-                            @elseif($callLog->call_status == 'BUSY')
+                            @elseif($statusUpper == 'BUSY')
                                 <span class="badge bg-light-warning text-warning">
-                                    <i class="ti ti-phone-busy"></i> Busy
+                                    <i class="ti ti-phone-busy"></i> {{ $statusFormatted }}
                                 </span>
-                            @elseif($callLog->call_status == 'CANCEL')
+                            @elseif($statusUpper == 'CANCEL' || $statusUpper == 'CANCELLED')
                                 <span class="badge bg-light-danger text-danger">
-                                    <i class="ti ti-x"></i> Cancelled
+                                    <i class="ti ti-x"></i> {{ $statusFormatted }}
+                                </span>
+                            @elseif($statusUpper == 'NO ANSWER')
+                                <span class="badge bg-light-secondary text-secondary">
+                                    <i class="ti ti-phone-off"></i> {{ $statusFormatted }}
                                 </span>
                             @else
                                 <span class="badge bg-light-secondary text-secondary">
-                                    <i class="ti ti-phone-off"></i> No Answer
+                                    {{ $statusFormatted }}
                                 </span>
                             @endif
                         </div>
@@ -208,19 +222,22 @@
                 </h5>
             </div>
             <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
-                    <div class="d-flex align-items-center">
-                        <div class="avtar avtar-s bg-light-primary me-3">
-                            <i class="ti ti-volume text-primary"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1">Call Recording Available</h6>
-                            <p class="text-muted mb-0">Click the button to play the recorded call</p>
-                        </div>
+                <div class="d-flex align-items-center p-3 bg-light rounded mb-3">
+                    <div class="avtar avtar-s bg-light-primary me-3">
+                        <i class="ti ti-volume text-primary"></i>
                     </div>
-                    <a href="{{ $callLog->recording_URL }}" target="_blank" class="btn btn-primary">
-                        <i class="ti ti-play"></i> Play Recording
-                    </a>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">Call Recording Available</h6>
+                        <p class="text-muted mb-0">Listen to the recorded call below</p>
+                    </div>
+                </div>
+                <div class="audio-player-container">
+                    <audio controls class="w-100" style="max-width: 100%;">
+                        <source src="{{ $callLog->recording_URL }}" type="audio/mpeg">
+                        <source src="{{ $callLog->recording_URL }}" type="audio/wav">
+                        <source src="{{ $callLog->recording_URL }}" type="audio/ogg">
+                        Your browser does not support the audio element.
+                    </audio>
                 </div>
             </div>
         </div>

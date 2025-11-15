@@ -191,15 +191,21 @@ class VoxbayCallLogController extends Controller
             ->limit(10)
             ->get()
             ->map(function ($item) {
-                $countryCode = substr($item->AgentNumber, 0, 2);
-                $mobileNumber = substr($item->AgentNumber, 2);
-                
-                $user = User::where('code', $countryCode)
-                           ->where('phone', $mobileNumber)
-                           ->whereHas('role', function($query) {
-                               $query->where('title', 'Telecaller');
-                           })
+                // Match by ext_no first
+                $user = User::where('ext_no', $item->AgentNumber)
+                           ->where('role_id', 3)
                            ->first();
+                
+                // Fallback to phone number matching if ext_no doesn't match
+                if (!$user && $item->AgentNumber && strlen($item->AgentNumber) >= 2) {
+                    $countryCode = substr($item->AgentNumber, 0, 2);
+                    $mobileNumber = substr($item->AgentNumber, 2);
+                    
+                    $user = User::where('code', $countryCode)
+                               ->where('phone', $mobileNumber)
+                               ->where('role_id', 3)
+                               ->first();
+                }
                 
                 return [
                     'agent_number' => $item->AgentNumber,
