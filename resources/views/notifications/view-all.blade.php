@@ -34,53 +34,54 @@
             </div>
             <div class="card-body">
                 @if($notifications->count() > 0)
-                    <div class="list-group list-group-flush">
+                    <div class="list-group list-group-flush" id="notificationListPage">
                         @foreach($notifications as $notification)
                             <div class="list-group-item notification-item {{ !$notification->isReadBy(auth()->id()) ? 'unread' : '' }}" 
-                                 data-notification-id="{{ $notification->id }}">
+                                 data-notification-id="{{ $notification->id }}"
+                                 style="padding: 12px 16px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #e9ecef;">
                                 <div class="d-flex align-items-start">
-                                    <div class="me-3">
-                                        @if($notification->type === 'success')
-                                            <i class="ti ti-check-circle text-success f-20"></i>
-                                        @elseif($notification->type === 'error')
-                                            <i class="ti ti-x-circle text-danger f-20"></i>
-                                        @elseif($notification->type === 'warning')
-                                            <i class="ti ti-alert-triangle text-warning f-20"></i>
-                                        @else
-                                            <i class="ti ti-info-circle text-info f-20"></i>
-                                        @endif
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="notification-icon bg-{{ $notification->type === 'success' ? 'success' : ($notification->type === 'error' ? 'danger' : ($notification->type === 'warning' ? 'warning' : 'primary')) }} text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                             style="width: 40px; height: 40px; min-width: 40px;">
+                                            @if($notification->type === 'success')
+                                                <i class="ti ti-circle-check" style="font-size: 18px;"></i>
+                                            @elseif($notification->type === 'error')
+                                                <i class="ti ti-alert-circle" style="font-size: 18px;"></i>
+                                            @elseif($notification->type === 'warning')
+                                                <i class="ti ti-alert-triangle" style="font-size: 18px;"></i>
+                                            @else
+                                                <i class="ti ti-info-circle" style="font-size: 18px;"></i>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <h6 class="mb-1 fw-bold">{{ $notification->title }}</h6>
-                                                <p class="mb-2 text-muted">{{ $notification->message }}</p>
-                                                <div class="d-flex align-items-center gap-3">
-                                                    <small class="text-muted">
-                                                        <i class="ti ti-clock me-1"></i>
-                                                        {{ $notification->created_at->diffForHumans() }}
-                                                    </small>
-                                                    <small class="text-muted">
-                                                        <i class="ti ti-user me-1"></i>
-                                                        {{ $notification->creator->name ?? 'System' }}
-                                                    </small>
-                                                    @if($notification->target_type !== 'all')
-                                                        <small class="text-muted">
-                                                            <i class="ti ti-target me-1"></i>
-                                                            @if($notification->target_type === 'all_role')
-                                                                All Role
-                                                            @else
-                                                                {{ ucfirst(str_replace('_', ' ', $notification->target_type)) }}
-                                                            @endif
-                                                        </small>
-                                                    @endif
-                                                </div>
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0 {{ !$notification->isReadBy(auth()->id()) ? 'fw-semibold' : 'text-muted' }}" style="font-size: 14px;">{{ $notification->title }}</h6>
                                             </div>
-                                            <div class="d-flex align-items-center gap-2">
+                                            <div class="d-flex align-items-center gap-2 ms-2">
                                                 @if(!$notification->isReadBy(auth()->id()))
-                                                    <span class="badge bg-primary">New</span>
+                                                    <span class="badge bg-primary" style="font-size: 10px;">New</span>
                                                 @endif
+                                                <small class="text-muted" style="white-space: nowrap; font-size: 11px;">{{ $notification->created_at->diffForHumans() }}</small>
                                             </div>
+                                        </div>
+                                        <p class="text-body mb-2 {{ $notification->isReadBy(auth()->id()) ? 'text-muted' : '' }}" style="font-size: 13px; line-height: 1.4;">{{ $notification->message }}</p>
+                                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                                            <small class="text-muted" style="font-size: 11px;">
+                                                <i class="ti ti-user me-1"></i>
+                                                by {{ $notification->creator->name ?? 'System' }}
+                                            </small>
+                                            @if($notification->target_type !== 'all')
+                                                <small class="text-muted" style="font-size: 11px;">
+                                                    <i class="ti ti-target me-1"></i>
+                                                    @if($notification->target_type === 'all_role')
+                                                        All Role
+                                                    @else
+                                                        {{ ucfirst(str_replace('_', ' ', $notification->target_type)) }}
+                                                    @endif
+                                                </small>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -110,12 +111,34 @@
 @section('page-scripts')
 <style>
 .notification-item.unread {
-    background-color: #f8f9fa;
-    border-left: 4px solid #007bff;
+    background-color: #f8f9fa !important;
+    border-left: 3px solid #007bff !important;
 }
 
-.notification-item.unread .fw-bold {
+.notification-item.unread .fw-semibold {
     color: #007bff;
+}
+
+#notificationListPage .list-group-item {
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    padding: 12px 16px;
+    transition: all 0.2s ease;
+}
+
+#notificationListPage .list-group-item:hover {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.notification-icon {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 </style>
 @endsection

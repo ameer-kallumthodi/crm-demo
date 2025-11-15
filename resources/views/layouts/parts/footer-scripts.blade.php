@@ -520,8 +520,9 @@
             // Load unread count on page load
             updateUnreadCount();
             
-            // Check unread count periodically (every 30 seconds) without marking as read
-            setInterval(updateUnreadCount, 30000);
+            // Check unread count periodically (every 10 seconds) without marking as read
+            // This will update the count in real-time when new notifications arrive
+            setInterval(updateUnreadCount, 10000);
             
             // Load notifications and mark as read only when dropdown is opened
             notificationDropdown.addEventListener('show.bs.dropdown', function() {
