@@ -11,6 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: [
+            'voxbay-call/*',
+        ]);
+        
         $middleware->alias([
             'custom.auth' => \App\Http\Middleware\AuthMiddleware::class,
             'telecaller.tracking' => \App\Http\Middleware\TelecallerTrackingMiddleware::class,
