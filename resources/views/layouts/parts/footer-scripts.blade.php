@@ -348,21 +348,22 @@
                     if (notificationList) {
                         notificationList.innerHTML = data.notifications.map(notification => `
                             <div class="list-group-item list-group-item-action ${notification.is_read ? '' : 'bg-light'}" 
-                                 data-notification-id="${notification.id}">
+                                 data-notification-id="${notification.id}"
+                                 style="padding: 12px 16px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #e9ecef;">
                                 <div class="d-flex">
-                                    <div class="flex-shrink-0">
+                                    <div class="flex-shrink-0 me-3">
                                         <div class="notification-icon bg-${getNotificationColor(notification.type)} text-white rounded-circle d-flex align-items-center justify-content-center" 
-                                             style="width: 40px; height: 40px;">
-                                            <i class="ti ti-${getNotificationIcon(notification.type)}"></i>
+                                             style="width: 40px; height: 40px; min-width: 40px;">
+                                            <i class="ti ti-${getNotificationIcon(notification.type)}" style="font-size: 18px;"></i>
                                         </div>
                                     </div>
-                                    <div class="flex-grow-1 ms-2">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <h6 class="mb-1 ${notification.is_read ? 'text-muted' : ''}">${notification.title}</h6>
-                                            <small class="text-muted">${notification.created_at}</small>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <h6 class="mb-0 ${notification.is_read ? 'text-muted' : 'fw-semibold'}" style="font-size: 14px;">${notification.title}</h6>
+                                            <small class="text-muted ms-2" style="white-space: nowrap;">${notification.created_at}</small>
                                         </div>
-                                        <p class="text-body mb-1 ${notification.is_read ? 'text-muted' : ''}">${notification.message}</p>
-                                        <small class="text-muted">by ${notification.created_by}</small>
+                                        <p class="text-body mb-1 ${notification.is_read ? 'text-muted' : ''}" style="font-size: 13px; line-height: 1.4;">${notification.message}</p>
+                                        <small class="text-muted" style="font-size: 11px;">by ${notification.created_by}</small>
                                     </div>
                                 </div>
                             </div>
@@ -482,9 +483,9 @@
     function getNotificationIcon(type) {
         const icons = {
             'info': 'info-circle',
-            'success': 'check-circle',
+            'success': 'circle-check',
             'warning': 'alert-triangle',
-            'error': 'x-circle'
+            'error': 'alert-circle'
         };
         return icons[type] || 'bell';
     }
