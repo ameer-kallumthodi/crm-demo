@@ -30,7 +30,7 @@ class BoardSeeder extends Seeder
                 'code' => 'ICSE',
                 'description' => 'Indian Certificate of Secondary Education - Private board',
                 'is_active' => true,
-`                'created_by' => $userId,
+                'created_by' => $userId,
                 'updated_by' => $userId,
             ],
             [
