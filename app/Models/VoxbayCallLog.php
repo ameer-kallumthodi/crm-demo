@@ -30,6 +30,15 @@ class VoxbayCallLog extends Model
         'created_by',
         'updated_by',
         'deleted_by',
+
+        // IMPORTANT: these additional fields are in your controller operations
+        'destination',      // outgoing call event
+        'extension',        // outgoing call event (used as fallback)
+        'callUUlD',         // typo alias from API
+        'call_UUID',        // some events use this format
+        'callUUID',         // incoming/outgoing connect/disconnect
+        'caller_number',    // fallback input from API
+        'called_number',    // fallback input from API
     ];
 
     protected $casts = [
@@ -91,73 +100,64 @@ class VoxbayCallLog extends Model
     // Accessors
     public function getFormattedDurationAttribute()
     {
-        if (!$this->duration) {
-            return 'N/A';
-        }
-        
+        if (!$this->duration) return 'N/A';
+
         $seconds = (int) $this->duration;
         $hours = floor($seconds / 3600);
         $minutes = floor(($seconds % 3600) / 60);
         $seconds = $seconds % 60;
-        
+
         if ($hours > 0) {
             return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-        } else {
-            return sprintf('%02d:%02d', $minutes, $seconds);
         }
+
+        return sprintf('%02d:%02d', $minutes, $seconds);
     }
 
     public function getCallStatusBadgeAttribute()
     {
         $status = strtoupper($this->status ?? 'UNKNOWN');
-        
+
         $badgeClasses = [
             'ANSWER' => 'badge-success',
             'CANCEL' => 'badge-warning',
             'BUSY' => 'badge-danger',
-            'cancelled' => 'badge-warning',
+            'CANCELLED' => 'badge-warning',
             'NO ANSWER' => 'badge-secondary',
         ];
 
         $class = $badgeClasses[$status] ?? 'badge-secondary';
-        
+
         return "<span class='badge {$class}'>{$status}</span>";
     }
 
-    // Methods
     public function getTelecallerName()
     {
-        if (!$this->AgentNumber) {
-            return 'Unknown';
-        }
+        if (!$this->AgentNumber) return 'Unknown';
 
         $countryCode = substr($this->AgentNumber, 0, 2);
         $mobileNumber = substr($this->AgentNumber, 2);
-        
+
         $user = User::where('code', $countryCode)
-                   ->where('phone', $mobileNumber)
-                   ->whereHas('role', function($query) {
-                       $query->where('title', 'Telecaller');
-                   })
-                   ->first();
-        
+            ->where('phone', $mobileNumber)
+            ->whereHas('role', function ($q) {
+                $q->where('title', 'Telecaller');
+            })
+            ->first();
+
         return $user ? $user->name : 'Unknown';
     }
 
     public function getLeadByPhone()
     {
-        if (!$this->destinationNumber) {
-            return null;
-        }
+        if (!$this->destinationNumber) return null;
 
-        // Try to find lead by full phone number
         $lead = Lead::whereRaw("CONCAT(code, phone) = ?", [$this->destinationNumber])->first();
-        
+
         if (!$lead) {
-            // Try to find by called number
             $lead = Lead::whereRaw("CONCAT(code, phone) = ?", [$this->calledNumber])->first();
         }
-        
+
         return $lead;
     }
 }

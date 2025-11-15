@@ -22,6 +22,7 @@ use App\Http\Controllers\VoxbayController;
 use App\Http\Controllers\VoxbayCallLogController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MetaLeadController;
+use App\Http\Controllers\VoxbayCallController;
 
 // Public routes
 Route::get('/', [AuthController::class, 'index'])->name('login');
@@ -34,6 +35,39 @@ Route::prefix('api/voxbay')->group(function () {
     Route::get('/telecaller/{id}/extension', [VoxbayController::class, 'getTelecallerExtension'])->name('voxbay.telecaller.extension');
     Route::get('/test-connection', [VoxbayController::class, 'testConnection'])->name('voxbay.test-connection');
     Route::post('/webhook', [VoxbayController::class, 'webhook'])->name('voxbay.webhook');
+});
+
+Route::prefix('voxbay-call')->group(function () {
+
+    // Incoming call landed
+    Route::post('/incoming-call', [VoxbayCallController::class, 'callcenterbridging']);
+
+    // Outgoing call landed
+    Route::post('/outgoing-call', [VoxbayCallController::class, 'outgoingCall']);
+
+    // Click to call
+    Route::get('/click-to-call', [VoxbayCallController::class, 'clickToCall']);
+
+    // Incoming Call CDR push
+    Route::post('/incoming-cdr-push', [VoxbayCallController::class, 'incomingcdrpush']);
+
+    // Outgoing Call CDR push
+    Route::post('/outgoing-cdr-push', [VoxbayCallController::class, 'outgoingcdrpush']);
+
+    // Incoming connect event
+    Route::post('/connect-incoming', [VoxbayCallController::class, 'connectincoming']);
+
+    // Outgoing connect event
+    Route::post('/connect-outgoing', [VoxbayCallController::class, 'connectoutgoing']);
+
+    // Incoming disconnect event
+    Route::post('/disconnect-incoming', [VoxbayCallController::class, 'disconnectincoming']);
+
+    // Outgoing disconnect event
+    Route::post('/disconnect-outgoing', [VoxbayCallController::class, 'disconnectoutgoing']);
+
+    // Debug request endpoint
+    Route::post('/debug', [VoxbayCallController::class, 'debugRequest']);
 });
 
 // Public Meta Leads API routes (no authentication required)
