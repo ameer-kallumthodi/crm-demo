@@ -135,11 +135,11 @@ class VoxbayCallLog extends Model
     {
         // Try to match by ext_no with AgentNumber or extensionNumber
         $extensionNumber = $this->AgentNumber ?? $this->extensionNumber;
-        
         if (!$extensionNumber) {
             return 'Unknown';
         }
-
+        print_r($extensionNumber);
+        die();
         // Match ext_no with AgentNumber or extensionNumber where role_id = 3 (telecaller)
         $user = User::where('ext_no', $extensionNumber)
             ->where('role_id', 3)
