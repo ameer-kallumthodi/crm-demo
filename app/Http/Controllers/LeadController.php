@@ -261,6 +261,7 @@ class LeadController extends Controller
             $isTelecallerRole = RoleHelper::is_telecaller();
             $isAcademicAssistant = RoleHelper::is_academic_assistant();
             $isAdmissionCounsellor = RoleHelper::is_admission_counsellor();
+            $isPostSales = RoleHelper::is_post_sales();
             $hasLeadActionPermission = \App\Helpers\PermissionHelper::has_lead_action_permission();
             
             // Check if registration_details column is included
@@ -814,6 +815,7 @@ class LeadController extends Controller
                 'can_update_status' => $hasLeadActionPermission,
                 'can_convert' => !$lead->is_converted && $lead->studentDetails && (strtolower($lead->studentDetails->status ?? '') === 'approved'),
                 'can_view_registration' => $isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor,
+                'can_view_call_logs' => true, // Show to everyone, including admission counsellor and post sales
                 'can_call' => $lead->phone && is_telecaller(),
                 'telecaller_id' => $lead->phone && is_telecaller() ? (session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0)) : 0
             ]

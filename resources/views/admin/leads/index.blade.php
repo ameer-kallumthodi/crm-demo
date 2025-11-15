@@ -1148,7 +1148,10 @@ $columns = array_merge($columns, [
                     const whatsappUrl = 'https://wa.me/' + phoneNumber + '?text=' + message;
                     cardHtml += '<a href="' + whatsappUrl + '" target="_blank" class="btn btn-sm btn-success" title="WhatsApp"><i class="ti ti-brand-whatsapp f-12"></i></a>';
                 }
-                cardHtml += '<a href="' + callLogsRoute + '" class="btn btn-sm btn-info" title="View Call Logs"><i class="ti ti-phone-call f-12"></i></a>';
+                // Call Logs button - show to everyone, including admission counsellor and post sales
+                if (data.permissions && data.permissions.can_view_call_logs) {
+                    cardHtml += '<a href="' + callLogsRoute + '" class="btn btn-sm btn-info" title="View Call Logs"><i class="ti ti-phone-call f-12"></i></a>';
+                }
                 cardHtml += '</div></div>';
                 
                 cardHtml += '</div></div>';
