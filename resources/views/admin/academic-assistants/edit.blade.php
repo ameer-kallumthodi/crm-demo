@@ -17,6 +17,13 @@
                 </div>
             </div>
 
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <label class="form-label" for="designation">Designation <span class="text-danger">*</span></label>
+                    <input type="text" name="designation" class="form-control" id="designation" placeholder="Enter Designation" value="{{ old('designation', $academicAssistant->designation) }}" required>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">

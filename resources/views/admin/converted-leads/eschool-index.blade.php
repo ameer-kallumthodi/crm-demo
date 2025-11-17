@@ -296,7 +296,6 @@
                                 <th>Tutor</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
-                                <th>Internship ID</th>
                                 <th>Subject</th>
                                 <th>Screening Date</th>
                                 <th>Class Time</th>
@@ -388,16 +387,6 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="inline-edit" data-field="internship_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->internship_id }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->internship_id ?? 'N/A' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
                                     <div class="inline-edit" data-field="subject_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->subject_id }}">
                                         <span class="display-value">{{ $convertedLead->subject?->title ?: '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
@@ -478,7 +467,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="19" class="text-center">No E-School converted leads found.</td>
+                                <td colspan="18" class="text-center">No E-School converted leads found.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -540,10 +529,6 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Registration Number</small>
                                     <span class="fw-medium">{{ $convertedLead->register_number ?? 'N/A' }}</span>
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Internship ID</small>
-                                    <span class="fw-medium">{{ $convertedLead->studentDetails?->internship_id ?? 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Academic</small>

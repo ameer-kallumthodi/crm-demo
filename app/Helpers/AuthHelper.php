@@ -56,6 +56,14 @@ class AuthHelper
     }
 
     /**
+     * Get user designation from session
+     */
+    public static function getUserDesignation()
+    {
+        return self::getSessionValue('user_designation');
+    }
+
+    /**
      * Get user name from session
      */
     public static function getUserName()

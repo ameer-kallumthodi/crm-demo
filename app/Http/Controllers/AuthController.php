@@ -61,6 +61,7 @@ class AuthController extends Controller
                 'is_team_manager' => $user->is_team_manager,
                 'role_id' => $user->role_id,
                 'role_title' => $userRole ? $userRole->title : '',
+                'user_designation' => $user->designation,
                 'user_name' => $user->name,
                 'user_email' => $user->email,
                 'is_logged_in' => true,

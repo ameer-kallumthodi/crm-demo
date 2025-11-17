@@ -36,11 +36,12 @@ class AcademicAssistantController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:10',
+            'designation' => 'required|string|max:255',
             'password' => 'required|string|min:8',
         ]);
 
         // Filter only the fields we need
-        $data = $request->only(['name', 'email', 'phone', 'code', 'password']);
+        $data = $request->only(['name', 'email', 'phone', 'code', 'designation', 'password']);
         $data['password'] = Hash::make($data['password']);
         $data['role_id'] = 5; // Static role for Academic Assistant
         $data['is_active'] = 1; // Default to active
@@ -106,6 +107,7 @@ class AcademicAssistantController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:10',
+            'designation' => 'required|string|max:255',
             'password' => 'required|string|min:6',
             'is_active' => 'nullable|boolean',
         ]);
@@ -120,6 +122,7 @@ class AcademicAssistantController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'code' => $request->code,
+            'designation' => $request->designation,
             'password' => Hash::make($request->password),
             'role_id' => 5, // Static role for Academic Assistant
             'is_active' => $request->has('is_active') ? 1 : 0,
@@ -153,6 +156,7 @@ class AcademicAssistantController extends Controller
             'email' => 'required|email|unique:users,email,' . $id,
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:10',
+            'designation' => 'required|string|max:255',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -166,6 +170,7 @@ class AcademicAssistantController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'code' => $request->code,
+            'designation' => $request->designation,
             'is_active' => $request->has('is_active') ? 1 : 0,
         ]);
 

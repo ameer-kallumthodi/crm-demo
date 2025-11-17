@@ -45,6 +45,7 @@
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Email</th>
+                                <th>Designation</th>
                                 <th>Phone</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -56,6 +57,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $academicAssistant->name }}</td>
                                 <td>{{ $academicAssistant->email }}</td>
+                                <td>{{ $academicAssistant->designation ?? '-' }}</td>
                                 <td>{{ $academicAssistant->phone ?? '-' }}</td>
                                 <td>
                                     @if($academicAssistant->is_active)

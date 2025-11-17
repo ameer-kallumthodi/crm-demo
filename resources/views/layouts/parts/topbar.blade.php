@@ -87,7 +87,7 @@
                                     <h6 class="mb-1 text-truncate user-name-display" title="{{ \App\Helpers\AuthHelper::getUserName() ?? 'User' }}">{{ \App\Helpers\AuthHelper::getUserName() ?? 'User' }}</h6>
                                     <div class="user-role-info">
                                         <span class="d-inline-block text-truncate" style="max-width: 100%;">
-                                            {{ \App\Helpers\AuthHelper::getRoleTitle() ?? 'User' }}
+                                            {{ \App\Helpers\AuthHelper::getUserDesignation() ?: (\App\Helpers\AuthHelper::getRoleTitle() ?? 'User') }}
                                             @if(\App\Helpers\AuthHelper::isTeamLead())
                                                 <span class="badge bg-info">Team Lead</span>
                                             @endif

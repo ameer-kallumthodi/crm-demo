@@ -28,6 +28,7 @@ class AuthMiddleware
             'user_name' => AuthHelper::getUserName(),
             'role_id' => AuthHelper::getRoleId(),
             'role_title' => AuthHelper::getRoleTitle(),
+            'user_designation' => AuthHelper::getUserDesignation(),
         ]);
 
         return $next($request);
