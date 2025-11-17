@@ -617,6 +617,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/gmvss-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'gmvssIndex'])->name('gmvss-converted-leads.index');
         Route::get('/gmvss-mentor-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'gmvssMentorIndex'])->name('gmvss-mentor-converted-leads.index');
         Route::get('/ai-python-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'aiPythonIndex'])->name('ai-python-converted-leads.index');
+
+        // Post-Sales Converted Students
+        Route::get('/post-sales-converted-students', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'index'])->name('post-sales.converted-leads.index');
+        Route::get('/post-sales-converted-students/{id}', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'show'])->name('post-sales.converted-leads.show');
         Route::get('/digital-marketing-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'digitalMarketingIndex'])->name('digital-marketing-converted-leads.index');
         Route::get('/ai-automation-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'aiAutomationIndex'])->name('ai-automation-converted-leads.index');
         Route::get('/web-development-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'webDevIndex'])->name('web-development-converted-leads.index');

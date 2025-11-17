@@ -189,6 +189,7 @@ class PermissionHelper
             'leads/index',
             'profile/index',
             'admin/converted-leads/index',
+            'admin/post-sales-converted-leads/index',
         ];
         return in_array($permission, $permissions);
     }
@@ -236,6 +237,7 @@ class PermissionHelper
             // User Management (index pages; actions are guarded in controllers)
             'admin/telecallers/index',
             'admin/post-sales/index',
+            'admin/post-sales-converted-leads/index',
             'admin/marketing/d2d-form', // D2D Form access
             'admin/marketing/marketing-leads', // Marketing Leads listing
             'profile/index',

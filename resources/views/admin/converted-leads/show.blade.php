@@ -3,6 +3,10 @@
 @section('title', 'View Converted Lead')
 
 @section('content')
+@php
+    $listRoute = $listRoute ?? route('admin.converted-leads.index');
+    $pdfRoute = $pdfRoute ?? route('admin.converted-leads.details-pdf', $convertedLead->id);
+@endphp
 <!-- [ breadcrumb ] start -->
 <div class="page-header">
     <div class="page-block">
@@ -16,13 +20,13 @@
                 <div class="d-flex justify-content-end align-items-center gap-3">
                     <ul class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
+                        <li class="breadcrumb-item"><a href="{{ $listRoute }}">Converted Leads</a></li>
                         <li class="breadcrumb-item">View</li>
                     </ul>
-                    <a href="{{ route('admin.converted-leads.details-pdf', $convertedLead->id) }}" target="_blank" class="btn btn-outline-primary">
+                    <a href="{{ $pdfRoute }}" target="_blank" class="btn btn-outline-primary">
                         <i class="ti ti-file-type-pdf"></i> Download PDF
                     </a>
-                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-secondary">
+                    <a href="{{ $listRoute }}" class="btn btn-secondary">
                         <i class="ti ti-arrow-left"></i> Back to List
                     </a>
                 </div>
@@ -627,6 +631,83 @@
     </div>
 </div>
 <!-- [ Main Content ] end -->
+
+@if(isset($callLogs))
+<div class="row">
+    <div class="col-12 mt-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Call History</h5>
+                <span class="badge bg-light-primary text-primary">{{ $callLogs->count() }} record(s)</span>
+            </div>
+            <div class="card-body">
+                @if($callLogs->isNotEmpty())
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Agent</th>
+                                <th>Number</th>
+                                <th>Date &amp; Time</th>
+                                <th>Duration</th>
+                                <th>Recording</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($callLogs as $callLog)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td><span class="badge bg-light-{{ $callLog->type === 'incoming' ? 'info' : ($callLog->type === 'outgoing' ? 'success' : 'warning') }} text-capitalize">{{ $callLog->type ?? 'N/A' }}</span></td>
+                                <td>{!! $callLog->call_status_badge ?? '<span class="badge bg-light-secondary text-secondary">N/A</span>' !!}</td>
+                                <td>
+                                    <div class="fw-semibold">{{ $callLog->telecaller_name ?? 'Unknown' }}</div>
+                                    <small class="text-muted">{{ $callLog->AgentNumber ?? $callLog->extensionNumber ?? 'N/A' }}</small>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ $callLog->destinationNumber ?? $callLog->calledNumber ?? 'N/A' }}</div>
+                                    <small class="text-muted">Caller: {{ $callLog->callerNumber ?? 'N/A' }}</small>
+                                </td>
+                                <td>
+                                    <div>{{ $callLog->date ? $callLog->date->format('d M Y') : 'N/A' }}</div>
+                                    <small class="text-muted">{{ $callLog->start_time ?? 'N/A' }}</small>
+                                </td>
+                                <td>{{ $callLog->formatted_duration ?? 'N/A' }}</td>
+                                <td>
+                                    @if($callLog->recording_URL)
+                                        <audio controls preload="none" style="width: 180px;">
+                                            <source src="{{ $callLog->recording_URL }}" type="audio/mpeg">
+                                            <source src="{{ $callLog->recording_URL }}" type="audio/wav">
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                    @else
+                                        <span class="text-muted">Not available</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ route('admin.call-logs.show', $callLog->id) }}" class="btn btn-sm btn-outline-primary" title="View Call">
+                                        <i class="ti ti-external-link"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                <div class="text-center text-muted py-4">
+                    <i class="ti ti-phone-off f-36 d-block mb-2"></i>
+                    <p class="mb-0">No call logs found for this student yet.</p>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
 @push('styles')

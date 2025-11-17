@@ -22,6 +22,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\LeadDetail;
 use App\Models\ConvertedStudentActivity;
+use App\Services\LeadCallLogService;
 
 class ConvertedLeadController extends Controller
 {
@@ -1574,8 +1575,10 @@ class ConvertedLeadController extends Controller
             ->with(['leadStatus:id,title', 'createdBy:id,name'])
             ->orderBy('created_at', 'desc')
             ->get();
+        $callLogs = LeadCallLogService::forConvertedLead($convertedLead);
+        $listRoute = route('admin.converted-leads.index');
 
-        return view('admin.converted-leads.show', compact('convertedLead', 'leadActivities'));
+        return view('admin.converted-leads.show', compact('convertedLead', 'leadActivities', 'callLogs', 'listRoute'));
     }
 
 

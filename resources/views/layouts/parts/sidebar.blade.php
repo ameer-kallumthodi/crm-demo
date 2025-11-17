@@ -69,6 +69,17 @@
                 </li>
                 @endif
 
+                @if(has_permission('admin/post-sales-converted-leads/index'))
+                <li class="pc-item {{ request()->routeIs('admin.post-sales.converted-leads.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.post-sales.converted-leads.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-headset"></i>
+                        </span>
+                        <span class="pc-mtext">Post-sales Converted Students</span>
+                    </a>
+                </li>
+                @endif
+
                 {{-- Payments Overview --}}
                 @if(has_permission('admin/payments/list'))
                 <li class="pc-item {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
