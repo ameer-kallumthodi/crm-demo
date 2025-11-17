@@ -325,6 +325,7 @@
                                 <th>Phone</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
+                                <th>Internship ID</th>
                                 <th>App</th>
                                 <th>Group</th>
                                 <th>Interview</th>
@@ -420,6 +421,16 @@
                                     </div>
                                 </td>
                                 <td>
+                                    <div class="inline-edit" data-field="internship_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->internship_id }}">
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->internship_id ?? 'N/A' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
                                     <div class="inline-edit" data-field="app" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->app }}">
                                         <span class="display-value">{{ $convertedLead->studentDetails?->app ?? '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
@@ -500,7 +511,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="16" class="text-center">No Hotel Management converted leads found</td>
+                                <td colspan="17" class="text-center">No Hotel Management converted leads found</td>
                             </tr>
                             @endforelse
                         </tbody>

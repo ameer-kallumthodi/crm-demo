@@ -14,6 +14,7 @@ class ConvertedStudentDetail extends Model
         'reg_fee',
         'exam_fee',
         'enroll_no',
+        'internship_id',
         'id_card',
         'tma',
         'deleted_by',

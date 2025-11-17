@@ -315,6 +315,7 @@
                                 <th>Phone</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
+                                <th>Internship ID</th>
                                 <th>Email</th>
                                 <th>Call Status</th>
                                 <th>Class Information</th>
@@ -393,6 +394,16 @@
                                 <td>
                                     <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
                                         <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="inline-edit" data-field="internship_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->internship_id }}">
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->internship_id ?? 'N/A' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
@@ -538,7 +549,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="21" class="text-center">No Web Development & Designing converted leads found</td>
+                                <td colspan="22" class="text-center">No Web Development & Designing converted leads found</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -577,6 +588,10 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Admission Batch</small>
                                     <span class="fw-medium">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Internship ID</small>
+                                    <span class="fw-medium">{{ $convertedLead->studentDetails?->internship_id ?? 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Call Status</small>

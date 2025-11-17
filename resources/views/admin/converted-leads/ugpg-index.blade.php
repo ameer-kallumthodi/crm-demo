@@ -262,6 +262,7 @@
                                 <th>Support</th>
                                     <th>Converted Date</th>
                                     <th>Register Number</th>
+                                    <th>Internship ID</th>
                                     <th>Name</th>
                                     <th>DOB</th>
                                     <th>Phone</th>
@@ -310,6 +311,16 @@
                                             @else
                                             <span class="display-value text-muted">Not Set</span>
                                             @endif
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="internship_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->internship_id }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->internship_id ?? 'N/A' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -419,7 +430,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="15" class="text-center">No UG/PG converted leads found</td>
+                                <td colspan="16" class="text-center">No UG/PG converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
