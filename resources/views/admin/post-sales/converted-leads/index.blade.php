@@ -75,13 +75,14 @@
                 <span class="badge bg-light-primary text-primary">{{ $convertedLeads->count() }} records</span>
             </div>
             <div class="table-responsive p-3">
-                <table id="postSalesConvertedTable" class="table table-striped table-hover mb-0 align-middle datatable" data-order='[[4,"desc"]]' data-page-length="25">
+                <table id="postSalesConvertedTable" class="table table-striped table-hover mb-0 align-middle datatable" data-order='[[5,"desc"]]' data-page-length="25">
                     <thead>
                         <tr>
                             <th>#</th>
                             <th>Name</th>
                             <th>Phone</th>
                             <th>Email</th>
+                            <th>BDE Name</th>
                             <th>Converted Date</th>
                             <th>Course</th>
                             <th>Batch</th>
@@ -100,6 +101,7 @@
                                 </td>
                                 <td>{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</td>
                                 <td>{{ $convertedLead->email ?? 'N/A' }}</td>
+                                <td>{{ $convertedLead->lead?->telecaller?->name ?? 'Unassigned' }}</td>
                                 <td>{{ $convertedLead->created_at ? $convertedLead->created_at->format('d M Y h:i A') : 'N/A' }}</td>
                                 <td>{{ $convertedLead->course?->title ?? 'N/A' }}</td>
                                 <td>{{ $convertedLead->batch?->title ?? 'N/A' }}</td>
@@ -113,7 +115,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4">
+                                <td colspan="11" class="text-center py-4">
                                     <i class="ti ti-database-off f-24 d-block mb-2"></i>
                                     <span class="text-muted">No converted students found for the applied filters.</span>
                                 </td>

@@ -15,7 +15,13 @@ class PostSalesConvertedLeadController extends Controller
     {
         $this->ensureAccess();
 
-        $query = ConvertedLead::with(['course', 'batch', 'admissionBatch', 'subject']);
+        $query = ConvertedLead::with([
+            'course',
+            'batch',
+            'admissionBatch',
+            'subject',
+            'lead.telecaller:id,name'
+        ]);
 
         if ($request->filled('search')) {
             $search = $request->search;

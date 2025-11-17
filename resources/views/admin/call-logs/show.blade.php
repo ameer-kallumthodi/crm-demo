@@ -346,9 +346,6 @@
                     <a href="{{ route('admin.call-logs.index') }}" class="btn btn-outline-secondary">
                         <i class="ti ti-arrow-left"></i> Back to Call Logs
                     </a>
-                    <button type="button" class="btn btn-outline-danger" onclick="deleteCallLog({{ $callLog->id }})">
-                        <i class="ti ti-trash"></i> Delete Call Log
-                    </button>
                 </div>
             </div>
         </div>
@@ -356,59 +353,4 @@
 </div>
 <!-- [ Main Content ] end -->
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="d-flex align-items-center">
-                    <div class="avtar avtar-s bg-light-danger me-3">
-                        <i class="ti ti-alert-triangle text-danger"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-1">Are you sure?</h6>
-                        <p class="mb-0 text-muted">This action cannot be undone. The call log will be permanently deleted.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDelete">Delete Call Log</button>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
-
-@push('scripts')
-<script>
-function deleteCallLog(callLogId) {
-    $('#deleteModal').modal('show');
-    
-    $('#confirmDelete').off('click').on('click', function() {
-        $.ajax({
-            url: `{{ url('admin/call-logs') }}/${callLogId}`,
-            type: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.status === 'success') {
-                    toast_success('Call log deleted successfully');
-                    window.location.href = '{{ route("admin.call-logs.index") }}';
-                } else {
-                    toast_error('Error: ' + response.message);
-                }
-            },
-            error: function(xhr) {
-                toast_error('Error: ' + (xhr.responseJSON?.message || 'Something went wrong'));
-            }
-        });
-    });
-}
-</script>
-@endpush
