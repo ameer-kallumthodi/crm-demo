@@ -362,7 +362,7 @@
                                             <h6 class="mb-0 ${notification.is_read ? 'text-muted' : 'fw-semibold'}" style="font-size: 14px;">${notification.title}</h6>
                                             <small class="text-muted ms-2" style="white-space: nowrap;">${notification.created_at}</small>
                                         </div>
-                                        <p class="text-body mb-1 ${notification.is_read ? 'text-muted' : ''}" style="font-size: 13px; line-height: 1.4;">${notification.message}</p>
+                                        <div class="text-body mb-1 ${notification.is_read ? 'text-muted' : ''}" style="font-size: 13px; line-height: 1.4;">${notification.message}</div>
                                         <small class="text-muted" style="font-size: 11px;">by ${notification.created_by}</small>
                                     </div>
                                 </div>

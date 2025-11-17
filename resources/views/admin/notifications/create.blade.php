@@ -13,7 +13,7 @@
         <div class="col-md-12">
             <div class="mb-3">
                 <label for="message" class="form-label">Message <span class="text-danger">*</span></label>
-                <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+                <textarea class="form-control" id="message" name="message" rows="10" required></textarea>
             </div>
         </div>
     </div>
@@ -139,8 +139,15 @@ function filterUsersByRole() {
 document.getElementById('role_id').addEventListener('change', filterUsersByRole);
 
 $(document).ready(function() {
+    // TinyMCE will be initialized by the onload event of the script tag
+    
     $('#createNotificationForm').on('submit', function(e) {
         e.preventDefault();
+        
+        // Update TinyMCE content before form submission
+        if (typeof tinymce !== 'undefined') {
+            tinymce.triggerSave();
+        }
         
         const formData = new FormData(this);
         
@@ -154,6 +161,10 @@ $(document).ready(function() {
                 if (response.success) {
                     toast_success(response.message);
                     $('#modal-common').modal('hide');
+                    // Destroy TinyMCE instance before reload
+                    if (typeof tinymce !== 'undefined') {
+                        tinymce.remove('#message');
+                    }
                     location.reload();
                 } else {
                     toast_danger(response.message || 'An error occurred');
@@ -174,4 +185,70 @@ $(document).ready(function() {
         });
     });
 });
+</script>
+
+<!-- TinyMCE Script -->
+<script>
+(function() {
+    function initNotificationTinyMCE() {
+        if (typeof tinymce === 'undefined') {
+            // Load TinyMCE script if not already loaded
+            var script = document.createElement('script');
+            script.src = '{{ asset("assets/mantis/js/plugins/tinymce/tinymce.min.js") }}';
+            script.onload = function() {
+                initializeNotificationEditor();
+            };
+            document.head.appendChild(script);
+        } else {
+            initializeNotificationEditor();
+        }
+    }
+    
+    function initializeNotificationEditor() {
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setupTinyMCE();
+            });
+        } else {
+            // Use setTimeout to ensure the textarea is in the DOM (especially for modals)
+            setTimeout(setupTinyMCE, 100);
+        }
+    }
+    
+    function setupTinyMCE() {
+        var messageField = document.getElementById('message');
+        if (!messageField) return;
+        
+        // Check if editor already exists
+        if (tinymce.get('message')) {
+            tinymce.remove('#message');
+        }
+        
+        tinymce.init({
+            selector: '#message',
+            apiKey: 'n0hngmr9gekztcyuy5ie1b47d580eanh8x0zb6lmup11b66a',
+            height: 300,
+            menubar: false,
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | ' +
+                'bold italic backcolor | alignleft aligncenter ' +
+                'alignright alignjustify | bullist numlist outdent indent | ' +
+                'removeformat | help',
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+            setup: function(editor) {
+                editor.on('change', function() {
+                    editor.save();
+                });
+            }
+        });
+    }
+    
+    // Initialize when script loads
+    initNotificationTinyMCE();
+})();
 </script>

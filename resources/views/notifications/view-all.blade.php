@@ -66,7 +66,7 @@
                                                 <small class="text-muted" style="white-space: nowrap; font-size: 11px;">{{ $notification->created_at->diffForHumans() }}</small>
                                             </div>
                                         </div>
-                                        <p class="text-body mb-2 {{ $notification->isReadBy(auth()->id()) ? 'text-muted' : '' }}" style="font-size: 13px; line-height: 1.4;">{{ $notification->message }}</p>
+                                        <div class="text-body mb-2 {{ $notification->isReadBy(auth()->id()) ? 'text-muted' : '' }}" style="font-size: 13px; line-height: 1.4;">{!! $notification->message !!}</div>
                                         <div class="d-flex align-items-center gap-3 flex-wrap">
                                             <small class="text-muted" style="font-size: 11px;">
                                                 <i class="ti ti-user me-1"></i>
