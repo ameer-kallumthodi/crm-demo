@@ -1384,6 +1384,8 @@ class LeadController extends Controller
                 LeadActivity::create([
                     'lead_id' => $lead->id,
                     'lead_status_id' => $leadData['lead_status_id'],
+                    'activity_type' => 'lead_created',
+                    'description' => 'Lead created via add form',
                     'followup_date' => $request->followup_date,
                     'remarks' => $request->remarks,
                     'created_by' => $currentUserId,
@@ -1465,6 +1467,8 @@ class LeadController extends Controller
             LeadActivity::create([
                 'lead_id' => $lead->id,
                 'lead_status_id' => $request->lead_status_id,
+                'activity_type' => 'lead_created',
+                'description' => 'Lead created via store form',
                 'followup_date' => $request->followup_date,
                 'remarks' => $request->remarks,
                 'created_by' => AuthHelper::getCurrentUserId(),
@@ -3460,7 +3464,7 @@ class LeadController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('SSLC certificate verification error: ' . $e->getMessage());
+            Log::error('SSLC certificate verification error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error updating SSLC certificate verification: ' . $e->getMessage()
@@ -3612,7 +3616,7 @@ class LeadController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error('Registration details update error: ' . $e->getMessage());
+            Log::error('Registration details update error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error updating registration details: ' . $e->getMessage()
@@ -3656,7 +3660,7 @@ class LeadController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('SSLC certificate removal error: ' . $e->getMessage());
+            Log::error('SSLC certificate removal error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error removing SSLC certificate: ' . $e->getMessage()
@@ -3717,7 +3721,7 @@ class LeadController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('SSLC certificate addition error: ' . $e->getMessage());
+            Log::error('SSLC certificate addition error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error adding SSLC certificate: ' . $e->getMessage()
