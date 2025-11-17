@@ -285,14 +285,6 @@
                         <label class="form-label text-muted">Source</label>
                         <p class="fw-bold mb-0">{{ $lead->leadSource->title ?? 'N/A' }}</p>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted">Actions</label>
-                        <div class="mb-0">
-                            <a href="{{ route('leads.show', $lead) }}" class="btn btn-success btn-sm">
-                                <i class="ti ti-eye"></i> View Lead Details
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
