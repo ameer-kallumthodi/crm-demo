@@ -134,7 +134,7 @@ class NotificationController extends Controller
             'type' => 'required|in:info,success,warning,error',
             'target_type' => 'required|in:all,all_role,role,user',
             'user_id' => 'nullable|exists:users,id',
-            'is_active' => 'boolean'
+            'is_active' => 'nullable|in:0,1'
         ];
 
         // Role is only required when target_type is 'role' or 'user'
@@ -153,7 +153,7 @@ class NotificationController extends Controller
             'target_type' => $request->target_type,
             'role_id' => in_array($request->target_type, ['all', 'all_role']) ? null : $request->role_id,
             'user_id' => $request->target_type === 'user' ? $request->user_id : null,
-            'is_active' => $request->has('is_active') ? true : false
+            'is_active' => $request->input('is_active', '0') === '1'
         ]);
 
         return response()->json([
