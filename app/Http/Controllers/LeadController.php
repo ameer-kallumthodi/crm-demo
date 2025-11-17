@@ -1372,7 +1372,36 @@ class LeadController extends Controller
         $leadStatus = LeadStatus::find($leadData['lead_status_id']);
         $leadData['interest_status'] = $leadStatus ? $leadStatus->interest_status : null;
         
-        $lead = Lead::create($leadData);
+        $currentUserId = AuthHelper::getCurrentUserId();
+
+        try {
+            $lead = DB::transaction(function () use ($leadData, $request, $currentUserId) {
+                $leadData['created_by'] = $currentUserId;
+                $leadData['updated_by'] = $currentUserId;
+
+                $lead = Lead::create($leadData);
+
+                LeadActivity::create([
+                    'lead_id' => $lead->id,
+                    'lead_status_id' => $leadData['lead_status_id'],
+                    'followup_date' => $request->followup_date,
+                    'remarks' => $request->remarks,
+                    'created_by' => $currentUserId,
+                    'updated_by' => $currentUserId,
+                ]);
+
+                return $lead;
+            });
+        } catch (\Throwable $exception) {
+            Log::error('Failed to create lead via submit form', [
+                'error' => $exception->getMessage(),
+                'trace' => $exception->getTraceAsString(),
+            ]);
+
+            return redirect()->back()
+                ->with('message_danger', 'Failed to create lead. Please try again.')
+                ->withInput();
+        }
 
         return redirect()->route('leads.index')->with('message_success', 'Lead created successfully!');
     }

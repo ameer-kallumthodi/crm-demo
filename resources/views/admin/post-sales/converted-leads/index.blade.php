@@ -74,7 +74,7 @@
                 <h5 class="mb-0">Converted Students</h5>
                 <span class="badge bg-light-primary text-primary">{{ $convertedLeads->count() }} records</span>
             </div>
-            <div class="table-responsive">
+            <div class="table-responsive p-3">
                 <table id="postSalesConvertedTable" class="table table-striped table-hover mb-0 align-middle datatable" data-order='[[4,"desc"]]' data-page-length="25">
                     <thead>
                         <tr>
