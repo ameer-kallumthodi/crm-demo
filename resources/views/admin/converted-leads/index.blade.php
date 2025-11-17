@@ -43,7 +43,7 @@
 <!-- [ breadcrumb ] end -->
 
 <!-- [ Course Filter Buttons ] start -->
-@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance())
 <div class="row mb-3">
     <div class="col-12">
         <div class="card">
@@ -205,7 +205,7 @@
                             <input type="text" class="form-control" id="search" name="search"
                                 value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
                         </div>
-                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance())
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="course_id" class="form-label">Course</label>
                             <select class="form-select" id="course_id" name="course_id">
@@ -332,6 +332,8 @@
                                     <th>Course</th>
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
+                                    <th>Status</th>
+                                    <th>REG. FEE</th>
                                     <th>Mail</th>
                                     <th>Actions</th>
                                 </tr>
@@ -411,6 +413,27 @@
                                             @endif
                                         </div>
                                     </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->status }}">
+                                            <span class="display-value">{{ $convertedLead->status ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @php $regFeeValue = $convertedLead->studentDetails?->reg_fee; @endphp
+                                        <div class="inline-edit" data-field="reg_fee" data-id="{{ $convertedLead->id }}" data-current="{{ $regFeeValue }}">
+                                            <span class="display-value">{{ $regFeeValue ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>
                                         <div class="" role="group">
@@ -457,7 +480,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="13" class="text-center">No converted leads found</td>
+                                    <td colspan="15" class="text-center">No converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -566,6 +589,14 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
                                     <span class="fw-medium">{{ $convertedLead->created_at->format('d-m-Y') }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Status</small>
+                                    <span class="fw-medium">{{ $convertedLead->status ?? 'N/A' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Reg. Fee</small>
+                                    <span class="fw-medium">{{ $convertedLead->studentDetails?->reg_fee ?? 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Academic</small>
@@ -1084,6 +1115,10 @@
             } else if (field === 'admission_batch_id') {
                 const batchId = container.data('batch-id');
                 editForm = createAdmissionBatchSelect(batchId, currentId);
+            } else if (field === 'status') {
+                editForm = createStatusSelect(currentValue);
+            } else if (field === 'reg_fee') {
+                editForm = createRegFeeSelect(currentValue);
             } else {
                 editForm = createInputField(field, currentValue);
             }
@@ -1224,6 +1259,60 @@
                 <div class="edit-form">
                     <select class="form-select form-select-sm">
                         <option value="">Loading...</option>
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createRegFeeSelect(currentValue) {
+            const options = [
+                { value: 'Received', label: 'Received' },
+                { value: 'Not Received', label: 'Not Received' }
+            ];
+            const selected = currentValue === 'N/A' ? '' : currentValue;
+            const optionTags = ['<option value="">Select Reg. Fee</option>']
+                .concat(options.map(opt => {
+                    const isSel = selected === opt.value ? 'selected' : '';
+                    return `<option value="${opt.value}" ${isSel}>${opt.label}</option>`;
+                }))
+                .join('');
+
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm">
+                        ${optionTags}
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createStatusSelect(currentValue) {
+            const options = [
+                { value: 'Paid', label: 'Paid' },
+                { value: 'Admission cancel', label: 'Admission cancel' },
+                { value: 'Active', label: 'Active' },
+                { value: 'Inactive', label: 'Inactive' },
+            ];
+            const selected = currentValue === 'N/A' ? '' : currentValue;
+            const optionTags = ['<option value="">Select Status</option>']
+                .concat(options.map(opt => {
+                    const isSel = selected === opt.value ? 'selected' : '';
+                    return `<option value="${opt.value}" ${isSel}>${opt.label}</option>`;
+                }))
+                .join('');
+
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm">
+                        ${optionTags}
                     </select>
                     <div class="btn-group mt-1">
                         <button type="button" class="btn btn-success btn-sm save-edit">Save</button>

@@ -2139,12 +2139,14 @@ class ConvertedLeadController extends Controller
     {
         // Check if user has permission to update
         $isMentor = RoleHelper::is_mentor();
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_admission_counsellor() && !$isMentor) {
+        $isFinance = RoleHelper::is_finance();
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_admission_counsellor() && !$isMentor && !$isFinance) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
         
         // If mentor, restrict to allowed fields only
         $mentorAllowedFields = ['register_number', 'phone', 'enroll_no', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks'];
+        $financeAllowedFields = ['status'];
 
         $convertedLead = ConvertedLead::findOrFail($id);
         
@@ -2162,6 +2164,9 @@ class ConvertedLeadController extends Controller
 
         // If mentor, check if field is allowed
         if ($isMentor && !in_array($field, $mentorAllowedFields)) {
+            return response()->json(['error' => 'You do not have permission to edit this field.'], 403);
+        }
+        if ($isFinance && !in_array($field, $financeAllowedFields)) {
             return response()->json(['error' => 'You do not have permission to edit this field.'], 403);
         }
 
