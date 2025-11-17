@@ -285,6 +285,11 @@
         }).showToast();
     }
 
+    // Toast Danger (alias for toast_error)
+    function toast_danger(message, duration = 3000) {
+        toast_error(message, duration);
+    }
+
     // Toast Primary
     function toast_primary(message, duration = 3000) {
         var myToastContent = document.createElement('div');
@@ -346,10 +351,15 @@
                     
                     // Render notifications
                     if (notificationList) {
-                        notificationList.innerHTML = data.notifications.map(notification => `
-                            <div class="list-group-item list-group-item-action ${notification.is_read ? '' : 'bg-light'}" 
-                                 data-notification-id="${notification.id}"
-                                 style="padding: 12px 16px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #e9ecef;">
+                        notificationList.innerHTML = '';
+                        
+                        data.notifications.forEach(notification => {
+                            const notificationItem = document.createElement('div');
+                            notificationItem.className = `list-group-item list-group-item-action ${notification.is_read ? '' : 'bg-light'}`;
+                            notificationItem.setAttribute('data-notification-id', notification.id);
+                            notificationItem.style.cssText = 'padding: 12px 16px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #e9ecef;';
+                            
+                            notificationItem.innerHTML = `
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="notification-icon bg-${getNotificationColor(notification.type)} text-white rounded-circle d-flex align-items-center justify-content-center" 
@@ -362,12 +372,20 @@
                                             <h6 class="mb-0 ${notification.is_read ? 'text-muted' : 'fw-semibold'}" style="font-size: 14px;">${notification.title}</h6>
                                             <small class="text-muted ms-2" style="white-space: nowrap;">${notification.created_at}</small>
                                         </div>
-                                        <div class="text-body mb-1 ${notification.is_read ? 'text-muted' : ''}" style="font-size: 13px; line-height: 1.4;">${notification.message}</div>
+                                        <div class="text-body mb-1 ${notification.is_read ? 'text-muted' : ''}" style="font-size: 13px; line-height: 1.4;"></div>
                                         <small class="text-muted" style="font-size: 11px;">by ${notification.created_by}</small>
                                     </div>
                                 </div>
-                            </div>
-                        `).join('');
+                            `;
+                            
+                            // Set the message HTML content properly
+                            const messageDiv = notificationItem.querySelector('.text-body');
+                            if (messageDiv) {
+                                messageDiv.innerHTML = notification.message;
+                            }
+                            
+                            notificationList.appendChild(notificationItem);
+                        });
                     }
                 } else {
                     if (notificationEmpty) {

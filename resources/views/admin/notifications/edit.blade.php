@@ -160,44 +160,55 @@ $(document).ready(function() {
         e.preventDefault();
         
         // Update TinyMCE content before form submission
-        if (typeof tinymce !== 'undefined') {
-            tinymce.triggerSave();
+        if (typeof tinymce !== 'undefined' && tinymce.get('message')) {
+            tinymce.get('message').save();
         }
         
-        const formData = new FormData(this);
-        
-        $.ajax({
-            url: '{{ route("admin.notifications.update", $notification->id) }}',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.success) {
-                    toast_success(response.message);
-                    $('#modal-common').modal('hide');
-                    // Destroy TinyMCE instance before reload
-                    if (typeof tinymce !== 'undefined') {
-                        tinymce.remove('#message');
-                    }
-                    location.reload();
-                } else {
-                    toast_danger(response.message || 'An error occurred');
-                }
-            },
-            error: function(xhr) {
-                const errors = xhr.responseJSON?.errors;
-                if (errors) {
-                    let errorMessage = '';
-                    Object.values(errors).forEach(error => {
-                        errorMessage += error[0] + '<br>';
-                    });
-                    toast_danger(errorMessage);
-                } else {
-                    toast_danger('An error occurred while updating the notification');
-                }
+        // Wait a moment for TinyMCE to save
+        setTimeout(function() {
+            const formData = new FormData($('#editNotificationForm')[0]);
+            
+            // Ensure message field has content
+            const messageValue = formData.get('message') || $('#message').val();
+            if (!messageValue || messageValue.trim() === '') {
+                toast_danger('Message field is required');
+                return;
             }
-        });
+            
+            $.ajax({
+                url: '{{ route("admin.notifications.update", $notification->id) }}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        toast_success(response.message);
+                        $('#modal-common').modal('hide');
+                        // Destroy TinyMCE instance before reload
+                        if (typeof tinymce !== 'undefined') {
+                            tinymce.remove('#message');
+                        }
+                        location.reload();
+                    } else {
+                        toast_danger(response.message || 'An error occurred');
+                    }
+                },
+                error: function(xhr) {
+                    const errors = xhr.responseJSON?.errors;
+                    if (errors) {
+                        let errorMessage = '';
+                        Object.values(errors).forEach(error => {
+                            errorMessage += error[0] + '<br>';
+                        });
+                        toast_danger(errorMessage);
+                    } else {
+                        const errorMsg = xhr.responseJSON?.message || 'An error occurred while updating the notification';
+                        toast_danger(errorMsg);
+                    }
+                }
+            });
+        }, 100);
     });
 });
 </script>
