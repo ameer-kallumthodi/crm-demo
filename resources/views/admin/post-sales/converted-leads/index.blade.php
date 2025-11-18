@@ -613,7 +613,11 @@ $columns = [
                 cardHtml += '<div class="d-flex gap-1">';
                 const viewRoute = (data.routes && data.routes.view) ? data.routes.view : '#';
                 const statusUpdateRoute = (data.routes && data.routes.status_update) ? data.routes.status_update : '#';
+                const invoiceRoute = (data.routes && data.routes.invoice) ? data.routes.invoice : null;
                 cardHtml += '<a href="' + viewRoute + '" class="btn btn-sm btn-outline-primary" title="View Details"><i class="ti ti-eye f-12"></i></a>';
+                if (invoiceRoute) {
+                    cardHtml += '<a href="' + invoiceRoute + '" class="btn btn-sm btn-success" title="View Invoice"><i class="ti ti-receipt f-12"></i></a>';
+                }
                 cardHtml += '<button type="button" class="btn btn-sm btn-outline-success" title="Status Update" onclick="show_ajax_modal(\'' + statusUpdateRoute + '\', \'Status Update\')"><i class="ti ti-edit f-12"></i></button>';
                 cardHtml += '</div></div>';
                 

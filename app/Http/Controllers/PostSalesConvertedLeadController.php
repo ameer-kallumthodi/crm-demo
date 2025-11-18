@@ -316,6 +316,9 @@ class PostSalesConvertedLeadController extends Controller
         $html .= '<a href="' . route('admin.post-sales.converted-leads.show', $convertedLead->id) . '" class="btn btn-sm btn-outline-primary" title="View Details">';
         $html .= '<i class="ti ti-eye"></i>';
         $html .= '</a>';
+        $html .= '<a href="' . route('admin.invoices.index', $convertedLead->id) . '" class="btn btn-sm btn-success" title="View Invoice">';
+        $html .= '<i class="ti ti-receipt"></i>';
+        $html .= '</a>';
         $html .= '<button type="button" class="btn btn-sm btn-outline-success" title="Status Update" onclick="show_ajax_modal(\'' . route('admin.post-sales.converted-leads.status-update', $convertedLead->id) . '\', \'Status Update\')">';
         $html .= '<i class="ti ti-edit"></i>';
         $html .= '</button>';
@@ -344,7 +347,8 @@ class PostSalesConvertedLeadController extends Controller
             'called_time' => $convertedLead->called_time ? $convertedLead->called_time->format('h:i A') : null,
             'routes' => [
                 'view' => route('admin.post-sales.converted-leads.show', $convertedLead->id),
-                'status_update' => route('admin.post-sales.converted-leads.status-update', $convertedLead->id)
+                'status_update' => route('admin.post-sales.converted-leads.status-update', $convertedLead->id),
+                'invoice' => route('admin.invoices.index', $convertedLead->id),
             ]
         ];
         
