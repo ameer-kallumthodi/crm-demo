@@ -4,12 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\Invoice;
+use App\Models\PaymentLink;
 use App\Models\ConvertedLead;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
+use App\Services\RazorpayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class PaymentController extends Controller
 {
@@ -18,7 +24,14 @@ class PaymentController extends Controller
      */
     public function index(Request $request, $invoiceId)
     {
-        $invoice = Invoice::with(['course', 'batch', 'student.lead'])->findOrFail($invoiceId);
+        $invoice = Invoice::with([
+            'course',
+            'batch',
+            'student.lead',
+            'paymentLinks' => function ($query) {
+                $query->latest();
+            },
+        ])->findOrFail($invoiceId);
         
         // Check permissions
         $this->checkInvoiceAccess($invoice);
@@ -34,7 +47,9 @@ class PaymentController extends Controller
             ->orderBy('created_at', 'asc')
             ->first();
 
-        return view('admin.payments.index', compact('invoice', 'payments', 'firstPayment'));
+        $paymentLinks = $invoice->paymentLinks;
+
+        return view('admin.payments.index', compact('invoice', 'payments', 'firstPayment', 'paymentLinks'));
     }
 
     /**
@@ -529,6 +544,195 @@ class PaymentController extends Controller
     }
 
     /**
+     * Generate a Razorpay payment link for an invoice.
+     */
+    public function storePaymentLink(Request $request, Invoice $invoice, RazorpayService $razorpayService)
+    {
+        $this->checkInvoiceAccess($invoice);
+
+        if (!$razorpayService->isConfigured()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Razorpay credentials are not configured. Please update the environment variables.',
+            ], 422);
+        }
+
+        $pendingAmount = max((float) $invoice->pending_amount, 0);
+
+        if ($pendingAmount <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This invoice is already fully paid.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:1'],
+            'description' => ['nullable', 'string', 'max:190'],
+            'send_notification' => ['nullable', 'boolean'],
+        ]);
+
+        if ($validated['amount'] > $pendingAmount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Amount cannot exceed the pending balance of ₹' . number_format($pendingAmount, 2),
+            ], 422);
+        }
+
+        $amount = round($validated['amount'], 2);
+        $referenceId = 'INV-' . $invoice->id . '-' . strtoupper(Str::random(6));
+        $description = $validated['description'] ?? 'Payment for invoice ' . $invoice->invoice_number;
+        $notifyCustomer = $request->boolean('send_notification', config('razorpay.payment_link.notify_customer', true));
+        $currency = config('razorpay.default_currency', 'INR');
+        $customerContact = $this->formatCustomerContact($invoice->student->code ?? null, $invoice->student->phone ?? null);
+
+        $payload = [
+            'amount' => (int) round($amount * 100),
+            'currency' => $currency,
+            'reference_id' => $referenceId,
+            'description' => $description,
+            'customer' => array_filter([
+                'name' => $invoice->student->name,
+                'email' => $invoice->student->email,
+                'contact' => $customerContact,
+            ]),
+            'notify' => [
+                'sms' => $notifyCustomer,
+                'email' => $notifyCustomer,
+            ],
+            'notes' => [
+                'invoice_id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
+                'student_id' => $invoice->student_id,
+            ],
+        ];
+
+        if (config('razorpay.payment_link.reminder_enable')) {
+            $payload['reminder_enable'] = true;
+        }
+
+        $expireMinutes = (int) config('razorpay.payment_link.expire_minutes', 0);
+        $expireTimestamp = null;
+        if ($expireMinutes > 0) {
+            $expireTimestamp = now()->addMinutes($expireMinutes)->timestamp;
+            $payload['expire_by'] = $expireTimestamp;
+        }
+
+        try {
+            $response = $razorpayService->createPaymentLink($payload);
+
+            $paymentLink = $invoice->paymentLinks()->create([
+                'amount' => $amount,
+                'currency' => $currency,
+                'status' => $response['status'] ?? 'created',
+                'reference_id' => $response['reference_id'] ?? $referenceId,
+                'razorpay_id' => $response['id'] ?? null,
+                'short_url' => $response['short_url'] ?? null,
+                'description' => $description,
+                'token' => Str::uuid(),
+                'customer_name' => $invoice->student->name,
+                'customer_email' => $invoice->student->email,
+                'customer_phone' => trim(($invoice->student->code ?? '') . ' ' . ($invoice->student->phone ?? '')),
+                'expires_at' => isset($response['expire_by']) && $response['expire_by'] ? Carbon::createFromTimestamp($response['expire_by']) : ($expireTimestamp ? Carbon::createFromTimestamp($expireTimestamp) : null),
+                'meta' => $response,
+                'created_by' => AuthHelper::getCurrentUserId(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment link generated successfully.',
+                'data' => [
+                    'id' => $paymentLink->id,
+                    'status' => $paymentLink->status,
+                    'short_url' => $paymentLink->short_url,
+                    'amount' => $paymentLink->amount,
+                ],
+            ]);
+        } catch (\Throwable $exception) {
+            Log::error('Failed to generate payment link', [
+                'invoice_id' => $invoice->id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to create payment link. Please try again later.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Refresh payment link status from Razorpay.
+     */
+    public function refreshPaymentLink(Invoice $invoice, PaymentLink $paymentLink, RazorpayService $razorpayService)
+    {
+        $this->checkInvoiceAccess($invoice);
+
+        if ($paymentLink->invoice_id !== $invoice->id) {
+            abort(404);
+        }
+
+        if (!$razorpayService->isConfigured()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Razorpay credentials are not configured.',
+            ], 422);
+        }
+
+        if (!$paymentLink->razorpay_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment link reference is missing.',
+            ], 400);
+        }
+
+        $response = $razorpayService->safeFetchPaymentLink($paymentLink->razorpay_id);
+
+        if (!$response) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to refresh the payment link at the moment.',
+            ], 500);
+        }
+
+        $paymentLink->status = $response['status'] ?? $paymentLink->status;
+        $paymentLink->short_url = $response['short_url'] ?? $paymentLink->short_url;
+        $paymentLink->reference_id = $response['reference_id'] ?? $paymentLink->reference_id;
+
+        if (!empty($response['expire_by'])) {
+            $paymentLink->expires_at = Carbon::createFromTimestamp($response['expire_by']);
+        } elseif ($paymentLink->expires_at && $paymentLink->expires_at->equalTo(Carbon::createFromTimestamp(0))) {
+            $paymentLink->expires_at = null;
+        }
+
+        $paymentLink->meta = $response;
+
+        if (!empty($response['payments']) && is_array($response['payments'])) {
+            $latestPayment = collect($response['payments'])->sortByDesc('created_at')->first();
+            if ($latestPayment) {
+                $paymentLink->razorpay_payment_id = $latestPayment['id'] ?? $paymentLink->razorpay_payment_id;
+                if (!empty($latestPayment['created_at'])) {
+                    $paymentLink->paid_at = Carbon::createFromTimestamp($latestPayment['created_at']);
+                }
+
+                $this->syncPaymentLinkToInvoice($invoice, $paymentLink, $latestPayment);
+            }
+        }
+
+        $paymentLink->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment link status refreshed.',
+            'data' => [
+                'status' => $paymentLink->status,
+                'paid_at' => optional($paymentLink->paid_at)->format('d M Y h:i A'),
+                'short_url' => $paymentLink->short_url,
+            ],
+        ]);
+    }
+
+    /**
      * Auto-create payment during lead conversion
      */
     public function autoCreate($invoiceId, $amount, $paymentType, $transactionId = null, $fileUpload = null)
@@ -649,5 +853,65 @@ class PaymentController extends Controller
         }
 
         return $query;
+    }
+
+    private function formatCustomerContact(?string $code, ?string $phone): ?string
+    {
+        if (!$phone) {
+            return null;
+        }
+
+        $numericPhone = preg_replace('/\D+/', '', $phone);
+        if (!$numericPhone) {
+            return null;
+        }
+
+        $numericCode = $code ? preg_replace('/\D+/', '', $code) : '91';
+        if (!$numericCode) {
+            $numericCode = '91';
+        }
+
+        if (str_starts_with($numericPhone, $numericCode)) {
+            return '+' . $numericPhone;
+        }
+
+        return '+' . ltrim($numericCode, '+') . $numericPhone;
+    }
+
+    private function syncPaymentLinkToInvoice(Invoice $invoice, PaymentLink $paymentLink, array $latestPayment): void
+    {
+        $transactionId = $latestPayment['id'] ?? null;
+        if (!$transactionId) {
+            return;
+        }
+
+        $existingPayment = Payment::where('transaction_id', $transactionId)->first();
+        if ($existingPayment) {
+            if ($existingPayment->status !== 'Approved') {
+                $existingPayment->approve();
+            }
+            return;
+        }
+
+        $amount = isset($latestPayment['amount']) ? round(((float) $latestPayment['amount']) / 100, 2) : $paymentLink->amount;
+        if ($amount <= 0) {
+            return;
+        }
+
+        $previousBalance = Payment::where('invoice_id', $invoice->id)
+            ->where('status', 'Approved')
+            ->sum('amount_paid');
+
+        $payment = Payment::create([
+            'invoice_id' => $invoice->id,
+            'amount_paid' => $amount,
+            'previous_balance' => $previousBalance,
+            'payment_type' => 'Online',
+            'transaction_id' => $transactionId,
+            'status' => 'Pending Approval',
+            'created_by' => AuthHelper::getCurrentUserId(),
+        ]);
+
+        $payment->approve();
     }
 }

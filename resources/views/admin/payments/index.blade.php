@@ -3,6 +3,9 @@
 @section('title', 'Payments - ' . $invoice->invoice_number)
 
 @section('content')
+@php
+    $razorpayConfigured = config('razorpay.key_id') && config('razorpay.key_secret');
+@endphp
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -20,6 +23,130 @@
                         </div>
                     </div>
                 </div>
+
+            <!-- Payment Links -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-gradient-info d-flex flex-wrap justify-content-between align-items-center">
+                    <h6 class="mb-0 text-white d-flex align-items-center">
+                        <i class="fas fa-link me-2"></i>Online Payment Links
+                    </h6>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light text-dark">
+                            Pending: ₹{{ number_format($invoice->pending_amount, 2) }}
+                        </span>
+                        <button class="btn btn-light btn-sm {{ ($invoice->pending_amount <= 0 || !$razorpayConfigured) ? 'disabled' : '' }}"
+                            data-bs-toggle="modal" data-bs-target="#paymentLinkModal"
+                            {{ $invoice->pending_amount <= 0 || !$razorpayConfigured ? 'disabled' : '' }}>
+                            <i class="fas fa-plus me-1"></i>Generate Link
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @unless($razorpayConfigured)
+                        <div class="alert alert-warning mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Configure <code>RAZORPAY_KEY_ID</code> and <code>RAZORPAY_KEY_SECRET</code> to enable payment links.
+                        </div>
+                    @else
+                        @if($paymentLinks->isEmpty())
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-link-slash fa-2x mb-2 d-block"></i>
+                                No payment links generated for this invoice yet.
+                            </div>
+                        @else
+                            <div class="table-responsive">
+                                <table class="table table-striped align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Expires</th>
+                                            <th>Payment Date</th>
+                                            <th>Link</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($paymentLinks as $index => $link)
+                                            @php
+                                                $statusMap = [
+                                                    'created' => 'bg-secondary',
+                                                    'issued' => 'bg-primary',
+                                                    'paid' => 'bg-success',
+                                                    'cancelled' => 'bg-danger',
+                                                    'expired' => 'bg-warning text-dark',
+                                                ];
+                                                $statusClass = $statusMap[$link->status] ?? 'bg-secondary';
+                                            @endphp
+                                            <tr id="payment-link-row-{{ $link->id }}">
+                                                <td>{{ $index + 1 }}</td>
+                                                <td class="fw-semibold text-success">₹{{ number_format($link->amount, 2) }}</td>
+                                                <td>
+                                                    <span class="badge {{ $statusClass }}">
+                                                        {{ ucfirst(str_replace('_', ' ', $link->status ?? 'created')) }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted d-block">{{ $link->created_at->format('d M Y') }}</small>
+                                                    <small>{{ $link->created_at->format('h:i A') }}</small>
+                                                </td>
+                                                <td>
+                                                    @if($link->expires_at)
+                                                        <small class="text-muted d-block">{{ $link->expires_at->format('d M Y') }}</small>
+                                                        <small>{{ $link->expires_at->format('h:i A') }}</small>
+                                                    @else
+                                                        <span class="text-muted">No expiry</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($link->paid_at)
+                                                        <small class="text-success d-block">{{ $link->paid_at->format('d M Y') }}</small>
+                                                        <small>{{ $link->paid_at->format('h:i A') }}</small>
+                                                    @else
+                                                        <span class="text-muted">Pending</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($link->short_url)
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <a href="{{ $link->short_url }}" target="_blank" class="text-decoration-none text-primary text-truncate" style="max-width: 180px;">
+                                                                {{ $link->short_url }}
+                                                            </a>
+                                                            <button class="btn btn-sm btn-outline-secondary copy-link-btn" type="button"
+                                                                data-link="{{ $link->short_url }}" title="Copy link">
+                                                                <i class="fas fa-copy"></i>
+                                                            </button>
+                                                        </div>
+                                                    @else
+                                                        <span class="text-muted">Not available</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-end">
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        @if($link->short_url)
+                                                            <a href="{{ $link->short_url }}" target="_blank" class="btn btn-outline-primary" title="Open Link">
+                                                                <i class="fas fa-external-link-alt"></i>
+                                                            </a>
+                                                        @endif
+                                                        <button type="button"
+                                                            class="btn btn-outline-secondary refresh-link-btn"
+                                                            data-refresh-url="{{ route('admin.payments.links.refresh', [$invoice->id, $link->id]) }}"
+                                                            data-row="#payment-link-row-{{ $link->id }}">
+                                                            <i class="fas fa-sync-alt"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                    @endunless
+                </div>
+            </div>
                 <div class="card-body">
                     <!-- Invoice Details -->
                     <div class="row mb-4">
@@ -354,6 +481,177 @@
         alert('Print functionality will be implemented in the future.');
     }
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentLinkForm = document.getElementById('paymentLinkForm');
+    const paymentLinkError = document.getElementById('paymentLinkError');
+
+    if (paymentLinkForm) {
+        paymentLinkForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            paymentLinkError?.classList.add('d-none');
+            const submitBtn = paymentLinkForm.querySelector('button[type="submit"]');
+            const spinner = submitBtn?.querySelector('.spinner-border');
+            const label = submitBtn?.querySelector('.default-label');
+
+            submitBtn.disabled = true;
+            spinner?.classList.remove('d-none');
+            label?.classList.add('d-none');
+
+            fetch('{{ route('admin.payments.links.store', $invoice->id) }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: new FormData(paymentLinkForm),
+            })
+            .then(async (response) => {
+                const data = await response.json().catch(() => ({}));
+                return { ok: response.ok, data };
+            })
+            .then(({ ok, data }) => {
+                if (ok && data.success) {
+                    showLinkToast(data.message || 'Payment link generated.', 'success');
+                    const modalInstance = bootstrap.Modal.getInstance(document.getElementById('paymentLinkModal'));
+                    modalInstance?.hide();
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    const message = data?.message || 'Unable to create payment link.';
+                    if (paymentLinkError) {
+                        paymentLinkError.textContent = message;
+                        paymentLinkError.classList.remove('d-none');
+                    }
+                    showLinkToast(message, 'error');
+                }
+            })
+            .catch(() => {
+                const message = 'Unable to create payment link. Please try again.';
+                if (paymentLinkError) {
+                    paymentLinkError.textContent = message;
+                    paymentLinkError.classList.remove('d-none');
+                }
+                showLinkToast(message, 'error');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                spinner?.classList.add('d-none');
+                label?.classList.remove('d-none');
+            });
+        });
+    }
+
+    document.querySelectorAll('.copy-link-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const link = button.dataset.link;
+            if (!link) {
+                return;
+            }
+            navigator.clipboard.writeText(link)
+                .then(() => showLinkToast('Link copied to clipboard.', 'success'))
+                .catch(() => showLinkToast('Unable to copy link.', 'error'));
+        });
+    });
+
+    document.querySelectorAll('.refresh-link-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const url = button.dataset.refreshUrl;
+            if (!url) {
+                return;
+            }
+
+            const icon = button.querySelector('i');
+            icon?.classList.add('fa-spin');
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+            })
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                return { ok: response.ok, data };
+            })
+            .then(({ ok, data }) => {
+                if (ok && data.success) {
+                    showLinkToast(data.message || 'Payment link updated.', 'success');
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    showLinkToast(data?.message || 'Unable to refresh payment link.', 'error');
+                }
+            })
+            .catch(() => showLinkToast('Unable to refresh payment link.', 'error'))
+            .finally(() => icon?.classList.remove('fa-spin'));
+        });
+    });
+
+    function showLinkToast(message, type = 'info') {
+        if (typeof showToast === 'function') {
+            showToast(message, type);
+        } else if (type === 'success' && typeof toast_success === 'function') {
+            toast_success(message);
+        } else if (type === 'error' && typeof toast_error === 'function') {
+            toast_error(message);
+        } else {
+            alert(message);
+        }
+    }
+});
+</script>
+
+<!-- Payment Link Modal -->
+<div class="modal fade" id="paymentLinkModal" tabindex="-1" aria-labelledby="paymentLinkModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentLinkModalLabel">
+                    <i class="fas fa-link me-2"></i>Generate Payment Link
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="paymentLinkForm">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Share the generated link with the student to collect the selected amount via Razorpay.
+                    </div>
+                    <div class="mb-3">
+                        <label for="payment-link-amount" class="form-label">Amount <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" min="1"
+                            max="{{ max($invoice->pending_amount, 0) }}"
+                            class="form-control" id="payment-link-amount" name="amount"
+                            value="{{ number_format(max($invoice->pending_amount, 0), 2, '.', '') }}" required>
+                        <small class="text-muted">Pending balance: ₹{{ number_format($invoice->pending_amount, 2) }}</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="payment-link-description" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="payment-link-description" name="description"
+                            value="Payment for invoice {{ $invoice->invoice_number }}" maxlength="190">
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" role="switch" id="payment-link-send-notification" name="send_notification" checked>
+                        <label class="form-check-label" for="payment-link-send-notification">
+                            Send Razorpay email/SMS notification (uses student contact details)
+                        </label>
+                    </div>
+                    <div class="alert alert-warning mb-0 d-none" id="paymentLinkError"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="default-label"><i class="fas fa-link me-1"></i>Generate Link</span>
+                        <span class="spinner-border spinner-border-sm me-2 d-none" role="status"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Payment Approval Modal -->
 <div class="modal fade" id="approvePaymentModal" tabindex="-1" aria-labelledby="approvePaymentModalLabel" aria-hidden="true">

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\PaymentLink;
 
 class Invoice extends Model
 {
@@ -58,6 +59,11 @@ class Invoice extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function paymentLinks()
+    {
+        return $this->hasMany(PaymentLink::class);
     }
 
     public function createdBy()
