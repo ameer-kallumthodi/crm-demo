@@ -421,7 +421,7 @@ class PostSalesConvertedLeadController extends Controller
             // Validate request
             $validated = $request->validate([
                 'status' => 'required|in:paid,unpaid,cancel,pending,followup',
-                'paid_status' => 'nullable|in:Fully paid,Registration Paid,Registration Partially paid,Certificate Paid,Certificate Partially paid,Exam Paid,Exam Partially paid,Halticket Paid,Halticket Partially paid',
+                'paid_status' => 'nullable|in:Fully paid,Registration Paid,Registration Partially paid,Certificate Paid,Certificate Partially paid,Exam Paid,Exam Fees Partially paid,Halticket Paid,Halticket Partially paid',
                 'call_status' => ['required', Rule::in(['RNR', 'Switch off', 'Attended', 'Whatsapp connected'])],
                 'called_date' => 'nullable|date',
                 'called_time' => 'required|date_format:H:i',

@@ -58,8 +58,8 @@
                 <option value="Registration Partially paid" {{ old('paid_status', $convertedLead->paid_status) == 'Registration Partially paid' ? 'selected' : '' }}>Registration Partially paid</option>
                 <option value="Certificate Paid" {{ old('paid_status', $convertedLead->paid_status) == 'Certificate Paid' ? 'selected' : '' }}>Certificate Paid</option>
                 <option value="Certificate Partially paid" {{ old('paid_status', $convertedLead->paid_status) == 'Certificate Partially paid' ? 'selected' : '' }}>Certificate Partially paid</option>
-                <option value="Exam Paid" {{ old('paid_status', $convertedLead->paid_status) == 'Exam Paid' ? 'selected' : '' }}>Exam Paid</option>
-                <option value="Exam Partially paid" {{ old('paid_status', $convertedLead->paid_status) == 'Exam Partially paid' ? 'selected' : '' }}>Exam Partially paid</option>
+                <option value="Exam Fees Paid" {{ old('paid_status', $convertedLead->paid_status) == 'Exam Fees Paid' ? 'selected' : '' }}>Exam Fees Paid</option>
+                <option value="Exam Fees Partially paid" {{ old('paid_status', $convertedLead->paid_status) == 'Exam Fees Partially paid' ? 'selected' : '' }}>Exam Fees Partially paid</option>
                 <option value="Halticket Paid" {{ old('paid_status', $convertedLead->paid_status) == 'Halticket Paid' ? 'selected' : '' }}>Halticket Paid</option>
                 <option value="Halticket Partially paid" {{ old('paid_status', $convertedLead->paid_status) == 'Halticket Partially paid' ? 'selected' : '' }}>Halticket Partially paid</option>
             </select>
