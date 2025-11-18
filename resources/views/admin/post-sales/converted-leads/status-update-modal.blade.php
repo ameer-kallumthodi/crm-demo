@@ -68,7 +68,7 @@
                 <option value="">Select Call Status</option>
                 <option value="RNR" {{ old('call_status', $convertedLead->call_status) == 'RNR' ? 'selected' : '' }}>RNR</option>
                 <option value="Switch off" {{ old('call_status', $convertedLead->call_status) == 'Switch off' ? 'selected' : '' }}>Switch off</option>
-                <option value="Completed" {{ old('call_status', $convertedLead->call_status) == 'Completed' ? 'selected' : '' }}>Completed</option>
+                <option value="Attended, Whatsapp connected" {{ old('call_status', $convertedLead->call_status) == 'Attended, Whatsapp connected' ? 'selected' : '' }}>Attended, Whatsapp connected</option>
             </select>
         </div>
 

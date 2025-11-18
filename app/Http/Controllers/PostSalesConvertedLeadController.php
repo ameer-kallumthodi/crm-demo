@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Mpdf\Mpdf;
 
 class PostSalesConvertedLeadController extends Controller
@@ -236,7 +237,7 @@ class PostSalesConvertedLeadController extends Controller
             return '<span class="text-muted">N/A</span>';
         }
         $badgeClass = match($callStatus) {
-            'Completed' => 'bg-success',
+            'Attended, Whatsapp connected' => 'bg-success',
             'RNR' => 'bg-warning',
             'Switch off' => 'bg-danger',
             default => 'bg-secondary'
@@ -404,7 +405,7 @@ class PostSalesConvertedLeadController extends Controller
             $validated = $request->validate([
                 'status' => 'required|in:paid,unpaid,cancel,pending,followup',
                 'paid_status' => 'nullable|in:Fully paid,Registration Paid,Certificate Paid,Halticket Paid,Exam fee Paid',
-                'call_status' => 'required|in:RNR,Switch off,Completed',
+                'call_status' => ['required', Rule::in(['RNR', 'Switch off', 'Attended, Whatsapp connected'])],
                 'called_date' => 'nullable|date',
                 'followup_date' => 'nullable|date',
                 'followup_time' => 'nullable',

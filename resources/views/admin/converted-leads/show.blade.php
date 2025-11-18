@@ -691,7 +691,7 @@
                                                         <span class="badge bg-info">Paid: {{ $activity->paid_status }}</span>
                                                     @endif
                                                     @if($activity->call_status)
-                                                        <span class="badge bg-{{ $activity->call_status === 'Completed' ? 'success' : ($activity->call_status === 'RNR' ? 'warning' : 'danger') }}">
+                                                        <span class="badge bg-{{ $activity->call_status === 'Attended, Whatsapp connected' ? 'success' : ($activity->call_status === 'RNR' ? 'warning' : 'danger') }}">
                                                             Call: {{ $activity->call_status }}
                                                         </span>
                                                     @endif
