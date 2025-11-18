@@ -201,6 +201,14 @@
                                 <p class="fw-bold"><span class="badge bg-{{ $idCardBadge }} text-uppercase">{{ $convertedLead->studentDetails?->id_card ?? 'N/A' }}</span></p>
                             </div>
                             <div class="col-md-3">
+                                <label class="form-label text-muted">Called Date</label>
+                                <p class="fw-bold">{{ $convertedLead->called_date ? $convertedLead->called_date->format('d-m-Y') : 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Call Time</label>
+                                <p class="fw-bold">{{ $convertedLead->called_time ? $convertedLead->called_time->format('h:i A') : 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-3">
                                 <label class="form-label text-muted">REG. FEE</label>
                                 <p class="fw-bold"><span class="badge bg-{{ $regFeeBadge }}">{{ $convertedLead->studentDetails?->reg_fee ?? 'N/A' }}</span></p>
                             </div>
@@ -691,7 +699,7 @@
                                                         <span class="badge bg-info">Paid: {{ $activity->paid_status }}</span>
                                                     @endif
                                                     @if($activity->call_status)
-                                                        <span class="badge bg-{{ $activity->call_status === 'Attended, Whatsapp connected' ? 'success' : ($activity->call_status === 'RNR' ? 'warning' : 'danger') }}">
+                                                        <span class="badge bg-{{ in_array($activity->call_status, ['Attended', 'Whatsapp connected']) ? 'success' : ($activity->call_status === 'RNR' ? 'warning' : 'danger') }}">
                                                             Call: {{ $activity->call_status }}
                                                         </span>
                                                     @endif
@@ -700,12 +708,14 @@
                                                             Called: {{ $activity->called_date->format('d M Y') }}
                                                         </span>
                                                     @endif
+                                                    @if($activity->called_time)
+                                                        <span class="badge bg-secondary">
+                                                            Call Time: {{ $activity->called_time->format('h:i A') }}
+                                                        </span>
+                                                    @endif
                                                     @if($activity->followup_date)
                                                         <span class="badge bg-warning">
                                                             Followup: {{ $activity->followup_date->format('d M Y') }}
-                                                            @if($activity->followup_time)
-                                                                {{ date('h:i A', strtotime($activity->followup_time)) }}
-                                                            @endif
                                                         </span>
                                                     @endif
                                                 </div>
@@ -726,6 +736,9 @@
                                             @endif
                                             @if($activity->activity_time)
                                                 <div class="text-muted small">{{ date('h:i A', strtotime($activity->activity_time)) }}</div>
+                                            @endif
+                                            @if($activity->called_time)
+                                                <div class="text-muted small">Call Time: {{ $activity->called_time->format('h:i A') }}</div>
                                             @endif
                                         </div>
                                         @if($activity->createdBy)

@@ -55,32 +55,53 @@
                 <option value="">Select Paid Status</option>
                 <option value="Fully paid" {{ old('paid_status', $convertedLead->paid_status) == 'Fully paid' ? 'selected' : '' }}>Fully paid</option>
                 <option value="Registration Paid" {{ old('paid_status', $convertedLead->paid_status) == 'Registration Paid' ? 'selected' : '' }}>Registration Paid</option>
+                <option value="Registration Partially paid" {{ old('paid_status', $convertedLead->paid_status) == 'Registration Partially paid' ? 'selected' : '' }}>Registration Partially paid</option>
                 <option value="Certificate Paid" {{ old('paid_status', $convertedLead->paid_status) == 'Certificate Paid' ? 'selected' : '' }}>Certificate Paid</option>
-                <option value="Halticket Paid" {{ old('paid_status', $convertedLead->paid_status) == 'Halticket Paid' ? 'selected' : '' }}>Halticket Paid</option>
+                <option value="Certificate Partially paid" {{ old('paid_status', $convertedLead->paid_status) == 'Certificate Partially paid' ? 'selected' : '' }}>Certificate Partially paid</option>
                 <option value="Exam fee Paid" {{ old('paid_status', $convertedLead->paid_status) == 'Exam fee Paid' ? 'selected' : '' }}>Exam fee Paid</option>
+                <option value="Exam Partially paid" {{ old('paid_status', $convertedLead->paid_status) == 'Exam Partially paid' ? 'selected' : '' }}>Exam Partially paid</option>
+                <option value="Halticket Paid" {{ old('paid_status', $convertedLead->paid_status) == 'Halticket Paid' ? 'selected' : '' }}>Halticket Paid</option>
+                <option value="Halticket Partially paid" {{ old('paid_status', $convertedLead->paid_status) == 'Halticket Partially paid' ? 'selected' : '' }}>Halticket Partially paid</option>
             </select>
         </div>
 
-        <!-- Call Status Field -->
-        <div class="mb-3">
-            <label class="form-label" for="call_status">Call Status <span class="text-danger">*</span></label>
-            <select class="form-select" name="call_status" id="call_status" required>
-                <option value="">Select Call Status</option>
-                <option value="RNR" {{ old('call_status', $convertedLead->call_status) == 'RNR' ? 'selected' : '' }}>RNR</option>
-                <option value="Switch off" {{ old('call_status', $convertedLead->call_status) == 'Switch off' ? 'selected' : '' }}>Switch off</option>
-                <option value="Attended, Whatsapp connected" {{ old('call_status', $convertedLead->call_status) == 'Attended, Whatsapp connected' ? 'selected' : '' }}>Attended, Whatsapp connected</option>
-            </select>
+        <div class="row">
+            <!-- Call Status Field -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label" for="call_status">Call Status <span class="text-danger">*</span></label>
+                    <select class="form-select" name="call_status" id="call_status" required>
+                        <option value="">Select Call Status</option>
+                        <option value="RNR" {{ old('call_status', $convertedLead->call_status) == 'RNR' ? 'selected' : '' }}>RNR</option>
+                        <option value="Switch off" {{ old('call_status', $convertedLead->call_status) == 'Switch off' ? 'selected' : '' }}>Switch off</option>
+                        <option value="Attended" {{ old('call_status', $convertedLead->call_status) == 'Attended' ? 'selected' : '' }}>Attended</option>
+                        <option value="Whatsapp connected" {{ old('call_status', $convertedLead->call_status) == 'Whatsapp connected' ? 'selected' : '' }}>Whatsapp connected</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Called Date Field -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label" for="called_date">Called Date</label>
+                    <input type="date" class="form-control" name="called_date" id="called_date"
+                        value="{{ old('called_date', $convertedLead->called_date ? $convertedLead->called_date->format('Y-m-d') : '') }}"
+                        max="{{ date('Y-m-d') }}">
+                </div>
+            </div>
+
+            <!-- Call Time Field -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label" for="called_time">Call Time <span class="text-danger">*</span></label>
+                    <input type="time" class="form-control" name="called_time" id="called_time"
+                        value="{{ old('called_time', $convertedLead->called_time ? $convertedLead->called_time->format('H:i') : '') }}"
+                        required>
+                </div>
+            </div>
         </div>
 
-        <!-- Called Date Field -->
-        <div class="mb-3">
-            <label class="form-label" for="called_date">Called Date</label>
-            <input type="date" class="form-control" name="called_date" id="called_date"
-                value="{{ old('called_date', $convertedLead->called_date ? $convertedLead->called_date->format('Y-m-d') : '') }}"
-                max="{{ date('Y-m-d') }}">
-        </div>
-
-        <!-- Followup Date and Time - Hidden when paid_status is 'Fully paid' -->
+        <!-- Followup Date - Hidden when paid_status is 'Fully paid' -->
         <div id="followupSection">
             <div class="row">
                 <div class="col-md-6">
@@ -89,13 +110,6 @@
                         <input type="date" class="form-control" name="followup_date" id="followup_date"
                             value="{{ old('followup_date', $convertedLead->postsale_followupdate ? $convertedLead->postsale_followupdate->format('Y-m-d') : '') }}"
                             min="{{ date('Y-m-d') }}">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label" for="followup_time">Followup Time</label>
-                        <input type="time" class="form-control" name="followup_time" id="followup_time"
-                            value="{{ old('followup_time', $convertedLead->postsale_followuptime ? $convertedLead->postsale_followuptime : '') }}">
                     </div>
                 </div>
             </div>
@@ -137,17 +151,14 @@ $(document).ready(function() {
         if (paidStatus === 'Fully paid') {
             $('#followupSection').hide();
             $('#followup_date').prop('required', false);
-            $('#followup_time').prop('required', false);
         } else {
             $('#followupSection').show();
             // Only require if status is not 'paid' or if paid_status is set but not 'Fully paid'
             const status = $('#status').val();
             if (status === 'paid' && paidStatus && paidStatus !== 'Fully paid') {
                 $('#followup_date').prop('required', true);
-                $('#followup_time').prop('required', true);
             } else if (status !== 'paid') {
                 $('#followup_date').prop('required', true);
-                $('#followup_time').prop('required', true);
             }
         }
     });
@@ -164,14 +175,12 @@ $(document).ready(function() {
             $('#followupSection').show();
             if (paidStatus) {
                 $('#followup_date').prop('required', true);
-                $('#followup_time').prop('required', true);
             }
         }
     } else {
         $('#paidStatusSection').hide();
         $('#followupSection').show();
         $('#followup_date').prop('required', true);
-        $('#followup_time').prop('required', true);
     }
 
     // Handle form submission

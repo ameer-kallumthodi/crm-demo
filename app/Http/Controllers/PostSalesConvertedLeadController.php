@@ -99,9 +99,10 @@ class PostSalesConvertedLeadController extends Controller
                 11 => 'id', // Paid Status - no sorting
                 12 => 'id', // Call Status - no sorting
                 13 => 'id', // Called Date - no sorting
-                14 => 'id', // Post Sale Followup - no sorting
-                15 => 'id', // Remark - no sorting
-                16 => 'id', // Actions - no sorting
+                14 => 'id', // Call Time - no sorting
+                15 => 'id', // Post Sale Followup - no sorting
+                16 => 'id', // Remark - no sorting
+                17 => 'id', // Actions - no sorting
             ];
 
             // Apply ordering
@@ -141,6 +142,7 @@ class PostSalesConvertedLeadController extends Controller
                     'paid_status' => $this->renderPaidStatus($convertedLead),
                     'call_status' => $this->renderCallStatus($convertedLead),
                     'called_date' => $this->renderCalledDate($convertedLead),
+                    'called_time' => $this->renderCalledTime($convertedLead),
                     'postsale_followup' => $this->renderPostsaleFollowup($convertedLead),
                     'post_sales_remarks' => $this->renderPostSalesRemarks($convertedLead),
                     'actions' => $this->renderActions($convertedLead),
@@ -237,7 +239,8 @@ class PostSalesConvertedLeadController extends Controller
             return '<span class="text-muted">N/A</span>';
         }
         $badgeClass = match($callStatus) {
-            'Attended, Whatsapp connected' => 'bg-success',
+            'Attended' => 'bg-success',
+            'Whatsapp connected' => 'bg-success',
             'RNR' => 'bg-warning',
             'Switch off' => 'bg-danger',
             default => 'bg-secondary'
@@ -255,6 +258,18 @@ class PostSalesConvertedLeadController extends Controller
         }
         
         return '<span class="fw-semibold">' . htmlspecialchars($convertedLead->called_date->format('d M Y'), ENT_QUOTES, 'UTF-8') . '</span>';
+    }
+
+    /**
+     * Render called time column HTML
+     */
+    private function renderCalledTime($convertedLead)
+    {
+        if (!$convertedLead->called_time) {
+            return '<span class="text-muted">N/A</span>';
+        }
+
+        return '<span class="fw-semibold">' . htmlspecialchars($convertedLead->called_time->format('h:i A'), ENT_QUOTES, 'UTF-8') . '</span>';
     }
 
     /**
@@ -325,6 +340,8 @@ class PostSalesConvertedLeadController extends Controller
             'batch' => $convertedLead->batch?->title ?? 'N/A',
             'admission_batch' => $convertedLead->admissionBatch?->title ?? 'N/A',
             'subject' => $convertedLead->subject?->title ?? 'N/A',
+            'called_date' => $convertedLead->called_date ? $convertedLead->called_date->format('d M Y') : null,
+            'called_time' => $convertedLead->called_time ? $convertedLead->called_time->format('h:i A') : null,
             'routes' => [
                 'view' => route('admin.post-sales.converted-leads.show', $convertedLead->id),
                 'status_update' => route('admin.post-sales.converted-leads.status-update', $convertedLead->id)
@@ -404,11 +421,11 @@ class PostSalesConvertedLeadController extends Controller
             // Validate request
             $validated = $request->validate([
                 'status' => 'required|in:paid,unpaid,cancel,pending,followup',
-                'paid_status' => 'nullable|in:Fully paid,Registration Paid,Certificate Paid,Halticket Paid,Exam fee Paid',
-                'call_status' => ['required', Rule::in(['RNR', 'Switch off', 'Attended, Whatsapp connected'])],
+                'paid_status' => 'nullable|in:Fully paid,Registration Paid,Registration Partially paid,Certificate Paid,Certificate Partially paid,Exam fee Paid,Exam Partially paid,Halticket Paid,Halticket Partially paid',
+                'call_status' => ['required', Rule::in(['RNR', 'Switch off', 'Attended', 'Whatsapp connected'])],
                 'called_date' => 'nullable|date',
+                'called_time' => 'required|date_format:H:i',
                 'followup_date' => 'nullable|date',
-                'followup_time' => 'nullable',
                 'post_sales_remarks' => 'nullable|string|max:2000',
             ]);
 
@@ -420,21 +437,13 @@ class PostSalesConvertedLeadController extends Controller
                 ], 422);
             }
 
-            // Additional validation: followup_date and followup_time not required when paid_status is 'Fully paid'
+            // Additional validation: followup_date not required when paid_status is 'Fully paid'
             $isFullyPaid = $request->paid_status === 'Fully paid';
-            if (!$isFullyPaid) {
-                if (!$request->followup_date) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Followup date is required.'
-                    ], 422);
-                }
-                if (!$request->followup_time) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Followup time is required.'
-                    ], 422);
-                }
+            if (!$isFullyPaid && !$request->followup_date) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Followup date is required.'
+                ], 422);
             }
 
             DB::beginTransaction();
@@ -444,16 +453,16 @@ class PostSalesConvertedLeadController extends Controller
             $convertedLead->paid_status = $request->paid_status;
             $convertedLead->call_status = $request->call_status;
             $convertedLead->called_date = $request->called_date;
+            $convertedLead->called_time = $request->called_time;
             $convertedLead->post_sales_remarks = $request->post_sales_remarks;
             
             // Only set followup date/time if not fully paid
             if (!$isFullyPaid) {
                 $convertedLead->postsale_followupdate = $request->followup_date;
-                $convertedLead->postsale_followuptime = $request->followup_time;
             } else {
                 $convertedLead->postsale_followupdate = null;
-                $convertedLead->postsale_followuptime = null;
             }
+            $convertedLead->postsale_followuptime = null;
             
             $convertedLead->updated_by = AuthHelper::getCurrentUserId();
             $convertedLead->save();
@@ -465,6 +474,7 @@ class PostSalesConvertedLeadController extends Controller
             $activity->paid_status = $request->paid_status;
             $activity->call_status = $request->call_status;
             $activity->called_date = $request->called_date;
+            $activity->called_time = $request->called_time;
             $activity->activity_type = 'status_update';
             $activity->description = 'Post Sales Status updated to: ' . $request->status;
             $activity->remark = $request->post_sales_remarks;
@@ -474,7 +484,10 @@ class PostSalesConvertedLeadController extends Controller
             // Only set followup date/time if not fully paid
             if (!$isFullyPaid) {
                 $activity->followup_date = $request->followup_date;
-                $activity->followup_time = $request->followup_time;
+                $activity->followup_time = null;
+            } else {
+                $activity->followup_date = null;
+                $activity->followup_time = null;
             }
             
             $activity->created_by = AuthHelper::getCurrentUserId();

@@ -25,6 +25,7 @@ class ConvertedLead extends Model
         'paid_status',
         'call_status',
         'called_date',
+        'called_time',
         'post_sales_remarks',
         'ref_no',
         'register_number',
@@ -62,6 +63,7 @@ class ConvertedLead extends Model
         'course_changed_at' => 'datetime',
         'postsale_followupdate' => 'date',
         'called_date' => 'date',
+        'called_time' => 'datetime:H:i:s',
         'is_course_changed' => 'boolean',
     ];
 

@@ -113,6 +113,12 @@
                     <td class="value">{{ $convertedLead->id_card ?? 'N/A' }}</td>
                 </tr>
                 <tr>
+                    <td class="label">Called Date</td>
+                    <td class="value">{{ $convertedLead->called_date ? $convertedLead->called_date->format('d-m-Y') : 'N/A' }}</td>
+                    <td class="label">Call Time</td>
+                    <td class="value">{{ $convertedLead->called_time ? $convertedLead->called_time->format('h:i A') : 'N/A' }}</td>
+                </tr>
+                <tr>
                     <td class="label">REG. FEE</td>
                     <td class="value">{{ $convertedLead->reg_fee ?? 'N/A' }}</td>
                     <td class="label">EXAM FEE</td>
@@ -178,6 +184,7 @@
                         <th style="width: 12%">Paid Status</th>
                         <th style="width: 12%">Call Status</th>
                         <th style="width: 12%">Called Date</th>
+                        <th style="width: 12%">Call Time</th>
                         <th>Details</th>
                         <th style="width: 15%">By</th>
                     </tr>
@@ -195,16 +202,13 @@
                         <td>{{ $activity->paid_status ?? 'N/A' }}</td>
                         <td>{{ $activity->call_status ?? 'N/A' }}</td>
                         <td>{{ $activity->called_date ? $activity->called_date->format('d-m-Y') : 'N/A' }}</td>
+                        <td>{{ $activity->called_time ? $activity->called_time->format('h:i A') : 'N/A' }}</td>
                         <td>
                             @if($activity->description)
                                 <div><strong>Desc:</strong> {{ $activity->description }}</div>
                             @endif
                             @if($activity->followup_date)
-                                <div class="small muted"><strong>Followup:</strong> {{ $activity->followup_date->format('d-m-Y') }}
-                                    @if($activity->followup_time)
-                                        {{ date('h:i A', strtotime($activity->followup_time)) }}
-                                    @endif
-                                </div>
+                                <div class="small muted"><strong>Followup:</strong> {{ $activity->followup_date->format('d-m-Y') }}</div>
                             @endif
                             @if($activity->remark)
                                 <div class="small muted"><strong>Remarks:</strong> {{ $activity->remark }}</div>

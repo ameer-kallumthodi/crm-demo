@@ -123,7 +123,8 @@
                                     <th>Paid Status</th>
                                     <th>Call Status</th>
                                     <th>Called Date</th>
-                                    <th>Followup Date & Time</th>
+                                    <th>Call Time</th>
+                                    <th>Followup Date</th>
                                     <th>Remark</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
@@ -167,6 +168,7 @@ $columns = [
     ['data' => 'paid_status', 'name' => 'paid_status', 'orderable' => false, 'searchable' => false],
     ['data' => 'call_status', 'name' => 'call_status', 'orderable' => false, 'searchable' => false],
     ['data' => 'called_date', 'name' => 'called_date', 'orderable' => false, 'searchable' => false],
+    ['data' => 'called_time', 'name' => 'called_time', 'orderable' => false, 'searchable' => false],
     ['data' => 'postsale_followup', 'name' => 'postsale_followup', 'orderable' => false, 'searchable' => false],
     ['data' => 'post_sales_remarks', 'name' => 'post_sales_remarks', 'orderable' => false, 'searchable' => false],
     ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
@@ -629,6 +631,12 @@ $columns = [
                 }
                 if (data.subject && data.subject !== 'N/A') {
                     cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-bookmark f-12 text-muted me-1"></i><small class="text-muted f-11">Subject: ' + escapeHtml(data.subject) + '</small></div></div>';
+                }
+                if (data.called_date) {
+                    cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-calendar-time f-12 text-muted me-1"></i><small class="text-muted f-11">Called: ' + escapeHtml(data.called_date) + '</small></div></div>';
+                }
+                if (data.called_time) {
+                    cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-clock f-12 text-muted me-1"></i><small class="text-muted f-11">Call Time: ' + escapeHtml(data.called_time) + '</small></div></div>';
                 }
                 cardHtml += '</div>';
                 
