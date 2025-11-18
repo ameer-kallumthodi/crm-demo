@@ -620,7 +620,11 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
 
         // Post-Sales Converted Students
         Route::get('/post-sales-converted-students', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'index'])->name('post-sales.converted-leads.index');
+        Route::get('/post-sales-converted-students/data', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'getPostSalesConvertedStudentsData'])->name('post-sales.converted-leads.data');
         Route::get('/post-sales-converted-students/{id}', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'show'])->name('post-sales.converted-leads.show');
+        Route::get('/post-sales-converted-students/{id}/status-update', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'statusUpdate'])->name('post-sales.converted-leads.status-update');
+        Route::post('/post-sales-converted-students/{id}/status-update', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'statusUpdateSubmit'])->name('post-sales.converted-leads.status-update-submit');
+        Route::get('/post-sales-converted-students/{id}/details-pdf', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'generateDetailsPdf'])->name('post-sales.converted-leads.details-pdf');
         Route::get('/digital-marketing-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'digitalMarketingIndex'])->name('digital-marketing-converted-leads.index');
         Route::get('/ai-automation-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'aiAutomationIndex'])->name('ai-automation-converted-leads.index');
         Route::get('/web-development-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'webDevIndex'])->name('web-development-converted-leads.index');

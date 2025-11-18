@@ -13,11 +13,17 @@ class ConvertedStudentActivity extends Model
 
     protected $fillable = [
         'converted_lead_id',
+        'status',
+        'paid_status',
+        'call_status',
+        'called_date',
         'activity_type',
         'description',
         'remark',
         'activity_date',
         'activity_time',
+        'followup_date',
+        'followup_time',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -25,6 +31,8 @@ class ConvertedStudentActivity extends Model
 
     protected $casts = [
         'activity_date' => 'date',
+        'followup_date' => 'date',
+        'called_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',

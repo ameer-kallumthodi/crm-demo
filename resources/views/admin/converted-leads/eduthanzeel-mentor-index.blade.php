@@ -275,6 +275,9 @@
                         <thead>
                             <tr>
                                 <th>SL No</th>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                <th>Support Verified</th>
+                                @endif
                                 <th>Converted Date</th>
                                 <th>Registration No</th>
                                 <th>Name</th>
@@ -282,9 +285,6 @@
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
                                 <th>Subcourse</th>
-                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                <th>Support Verified</th>
-                                @endif
                                 <th>Call 1</th>
                                 <th>WhatsApp Group</th>
                                 <th>Screening Date</th>
@@ -317,6 +317,17 @@
                             @forelse($convertedLeads as $index => $convertedLead)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                <td>
+                                    @php $isSupportVerified = (bool) ($convertedLead->is_support_verified ?? false); @endphp
+                                    <span class="badge {{ $isSupportVerified ? 'bg-success' : 'bg-secondary' }}">
+                                        {{ $isSupportVerified ? 'Verified' : 'Not Verified' }}
+                                    </span>
+                                    @if($isSupportVerified && $convertedLead->support_verified_at)
+                                    <br><small class="text-muted">{{ \Carbon\Carbon::parse($convertedLead->support_verified_at)->format('d-m-Y') }}</small>
+                                    @endif
+                                </td>
+                                @endif
                                 <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                 <td>
                                     <div class="inline-edit" data-field="register_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->register_number }}">
@@ -343,17 +354,6 @@
                                 <td>{{ $convertedLead->batch?->title ?: '-' }}</td>
                                 <td>{{ $convertedLead->admissionBatch?->title ?: '-' }}</td>
                                 <td>{{ $convertedLead->subCourse?->title ?: '-' }}</td>
-                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                <td>
-                                    @php $isSupportVerified = (bool) ($convertedLead->is_support_verified ?? false); @endphp
-                                    <span class="badge {{ $isSupportVerified ? 'bg-success' : 'bg-secondary' }}">
-                                        {{ $isSupportVerified ? 'Verified' : 'Not Verified' }}
-                                    </span>
-                                    @if($isSupportVerified && $convertedLead->support_verified_at)
-                                    <br><small class="text-muted">{{ \Carbon\Carbon::parse($convertedLead->support_verified_at)->format('d-m-Y') }}</small>
-                                    @endif
-                                </td>
-                                @endif
                                 <td>
                                     <div class="inline-edit" data-field="call_1" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->call_1 }}">
                                         <span class="display-value">{{ $convertedLead->mentorDetails?->call_1 ?: '-' }}</span>

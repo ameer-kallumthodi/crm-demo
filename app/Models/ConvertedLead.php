@@ -20,6 +20,12 @@ class ConvertedLead extends Model
         'username',
         'password',
         'status',
+        'postsale_followupdate',
+        'postsale_followuptime',
+        'paid_status',
+        'call_status',
+        'called_date',
+        'post_sales_remarks',
         'ref_no',
         'register_number',
         'course_id',
@@ -54,6 +60,8 @@ class ConvertedLead extends Model
         'academic_verified_at' => 'datetime',
         'support_verified_at' => 'datetime',
         'course_changed_at' => 'datetime',
+        'postsale_followupdate' => 'date',
+        'called_date' => 'date',
         'is_course_changed' => 'boolean',
     ];
 

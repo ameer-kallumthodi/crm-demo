@@ -1575,10 +1575,18 @@ class ConvertedLeadController extends Controller
             ->with(['leadStatus:id,title', 'createdBy:id,name'])
             ->orderBy('created_at', 'desc')
             ->get();
+        
+        $convertedStudentActivities = \App\Models\ConvertedStudentActivity::where('converted_lead_id', $convertedLead->id)
+            ->with(['createdBy:id,name'])
+            ->orderBy('activity_date', 'desc')
+            ->orderBy('activity_time', 'desc')
+            ->get();
+        
         $callLogs = LeadCallLogService::forConvertedLead($convertedLead);
         $listRoute = route('admin.converted-leads.index');
+        $pdfRoute = route('admin.converted-leads.details-pdf', $convertedLead->id);
 
-        return view('admin.converted-leads.show', compact('convertedLead', 'leadActivities', 'callLogs', 'listRoute'));
+        return view('admin.converted-leads.show', compact('convertedLead', 'leadActivities', 'convertedStudentActivities', 'callLogs', 'listRoute', 'pdfRoute'));
     }
 
 
@@ -1758,7 +1766,13 @@ class ConvertedLeadController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $html = view('admin.converted-leads.pdf', compact('convertedLead', 'leadActivities'))->render();
+        $convertedStudentActivities = \App\Models\ConvertedStudentActivity::where('converted_lead_id', $convertedLead->id)
+            ->with(['createdBy:id,name'])
+            ->orderBy('activity_date', 'desc')
+            ->orderBy('activity_time', 'desc')
+            ->get();
+
+        $html = view('admin.converted-leads.pdf', compact('convertedLead', 'leadActivities', 'convertedStudentActivities'))->render();
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',

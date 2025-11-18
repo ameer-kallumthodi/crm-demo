@@ -166,6 +166,58 @@
         </div>
         @endif
 
+        <!-- Student Activities Report -->
+        @if(isset($convertedStudentActivities) && $convertedStudentActivities->count() > 0)
+        <div class="section">
+            <h3 class="section-title">Student Activities</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%">Date & Time</th>
+                        <th style="width: 10%">Status</th>
+                        <th style="width: 12%">Paid Status</th>
+                        <th style="width: 12%">Call Status</th>
+                        <th style="width: 12%">Called Date</th>
+                        <th>Details</th>
+                        <th style="width: 15%">By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($convertedStudentActivities as $activity)
+                    <tr>
+                        <td>
+                            {{ $activity->activity_date ? $activity->activity_date->format('d-m-Y') : 'N/A' }}
+                            @if($activity->activity_time)
+                                <div class="small muted">{{ date('h:i A', strtotime($activity->activity_time)) }}</div>
+                            @endif
+                        </td>
+                        <td>{{ ucfirst($activity->status ?? 'N/A') }}</td>
+                        <td>{{ $activity->paid_status ?? 'N/A' }}</td>
+                        <td>{{ $activity->call_status ?? 'N/A' }}</td>
+                        <td>{{ $activity->called_date ? $activity->called_date->format('d-m-Y') : 'N/A' }}</td>
+                        <td>
+                            @if($activity->description)
+                                <div><strong>Desc:</strong> {{ $activity->description }}</div>
+                            @endif
+                            @if($activity->followup_date)
+                                <div class="small muted"><strong>Followup:</strong> {{ $activity->followup_date->format('d-m-Y') }}
+                                    @if($activity->followup_time)
+                                        {{ date('h:i A', strtotime($activity->followup_time)) }}
+                                    @endif
+                                </div>
+                            @endif
+                            @if($activity->remark)
+                                <div class="small muted"><strong>Remarks:</strong> {{ $activity->remark }}</div>
+                            @endif
+                        </td>
+                        <td>{{ $activity->createdBy->name ?? 'System' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
+
         <!-- Detailed Lead Activities Report -->
         @if(isset($leadActivities) && $leadActivities->count() > 0)
         <div class="section">

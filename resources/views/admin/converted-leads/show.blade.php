@@ -84,6 +84,12 @@
                                 <label class="form-label text-muted">Remarks</label>
                                 <p class="fw-bold">{{ $convertedLead->remarks ?? 'N/A' }}</p>
                             </div>
+                            @if($convertedLead->post_sales_remarks)
+                            <div class="col-12">
+                                <label class="form-label text-muted">Post Sales Remarks</label>
+                                <p class="fw-bold">{{ $convertedLead->post_sales_remarks }}</p>
+                            </div>
+                            @endif
                         </div>
                     </div>
 
@@ -145,6 +151,10 @@
                                         N/A
                                     @endif
                                 </p>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">BDE Name</label>
+                                <p class="fw-bold">{{ $convertedLead->lead->telecaller ? $convertedLead->lead->telecaller->name : 'N/A' }}</p>
                             </div>
                         </div>
                     </div>
@@ -569,75 +579,12 @@
         </div>
     </div>
 
-    <!-- Lead Activities History -->
-    <div class="col-12 mt-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Lead Activities History</h5>
-            </div>
-            <div class="card-body">
-                @if($leadActivities->count() > 0)
-                    <div class="timeline">
-                        @foreach($leadActivities as $activity)
-                        <div class="timeline-item">
-                            <div class="timeline-marker">
-                                <div class="avtar avtar-s rounded-circle bg-light-{{ $activity->activity_type === 'converted' ? 'success' : 'primary' }}">
-                                    <i class="ti ti-{{ $activity->activity_type === 'converted' ? 'check' : 'activity' }} f-16"></i>
-                                </div>
-                            </div>
-                            <div class="timeline-content">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="mb-1">{{ ucfirst(str_replace('_', ' ', $activity->activity_type)) }}</h6>
-                                        <p class="mb-1 text-muted">{{ $activity->description }}</p>
-                                        @if($activity->reason)
-                                            <p class="mb-1"><strong>Reason:</strong> <span class="badge bg-info">{{ $activity->formatted_reason }}</span></p>
-                                        @endif
-                                        @if($activity->rating)
-                                            <p class="mb-1"><strong>Rating:</strong> <span class="badge bg-success">{{ $activity->rating }}/10</span></p>
-                                        @endif
-                                        @if($activity->lead_status_id == 2 && $activity->followup_date)
-                                            <p class="mb-1"><strong>Followup Date:</strong> <span class="badge bg-warning">{{ $activity->followup_date->format('d M Y') }}</span></p>
-                                        @endif
-                                        @if($activity->remarks)
-                                            <p class="mb-1"><small class="text-info">{{ $activity->remarks }}</small></p>
-                                        @endif
-                                        @if($activity->leadStatus)
-                                            <span class="badge bg-light-{{ \App\Helpers\StatusHelper::getLeadStatusColor($activity->leadStatus->id) }}">
-                                                {{ $activity->leadStatus->title }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                    <div class="text-end">
-                                        <small class="text-muted">{{ $activity->created_at->format('M d, Y h:i A') }}</small>
-                                        @if($activity->createdBy)
-                                            <p class="mb-0"><small class="text-muted">by {{ $activity->createdBy->name }}</small></p>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center text-muted py-4">
-                        <i class="ti ti-activity f-48 mb-3"></i>
-                        <h6>No Activities Found</h6>
-                        <p class="mb-0">No activities have been recorded for this lead.</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-<!-- [ Main Content ] end -->
-
-@if(isset($callLogs))
-<div class="row">
+    <!-- Call History -->
+    @if(isset($callLogs))
     <div class="col-12 mt-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Recent Call History</h5>
+                <h5 class="mb-0">Call History</h5>
                 <span class="badge bg-light-primary text-primary">{{ $callLogs->count() }} record(s)</span>
             </div>
             <div class="card-body">
@@ -706,8 +653,160 @@
             </div>
         </div>
     </div>
+    @endif
+
+    <!-- Converted Student Activities History -->
+    @if(isset($convertedStudentActivities) && $convertedStudentActivities->count() > 0)
+    <div class="col-12 mt-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Student Activities History</h5>
+                <span class="badge bg-light-primary text-primary">{{ $convertedStudentActivities->count() }} record(s)</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    @foreach($convertedStudentActivities as $activity)
+                    <div class="col-12">
+                        <div class="card border shadow-sm">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-start mb-3">
+                                            <div class="avtar avtar-s rounded-circle bg-light-success me-3 d-flex align-items-center justify-content-center" style="min-width: 40px; height: 40px;">
+                                                <i class="ti ti-activity f-18 text-success"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-2 fw-bold">{{ ucfirst(str_replace('_', ' ', $activity->activity_type ?? 'Status Update')) }}</h6>
+                                                @if($activity->description)
+                                                    <p class="mb-2 text-muted">{{ $activity->description }}</p>
+                                                @endif
+                                                
+                                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                                    @if($activity->status)
+                                                        <span class="badge bg-{{ $activity->status === 'paid' ? 'success' : ($activity->status === 'unpaid' ? 'warning' : ($activity->status === 'cancel' ? 'danger' : 'info')) }}">
+                                                            Status: {{ ucfirst($activity->status) }}
+                                                        </span>
+                                                    @endif
+                                                    @if($activity->paid_status)
+                                                        <span class="badge bg-info">Paid: {{ $activity->paid_status }}</span>
+                                                    @endif
+                                                    @if($activity->call_status)
+                                                        <span class="badge bg-{{ $activity->call_status === 'Completed' ? 'success' : ($activity->call_status === 'RNR' ? 'warning' : 'danger') }}">
+                                                            Call: {{ $activity->call_status }}
+                                                        </span>
+                                                    @endif
+                                                    @if($activity->called_date)
+                                                        <span class="badge bg-primary">
+                                                            Called: {{ $activity->called_date->format('d M Y') }}
+                                                        </span>
+                                                    @endif
+                                                    @if($activity->followup_date)
+                                                        <span class="badge bg-warning">
+                                                            Followup: {{ $activity->followup_date->format('d M Y') }}
+                                                            @if($activity->followup_time)
+                                                                {{ date('h:i A', strtotime($activity->followup_time)) }}
+                                                            @endif
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                
+                                                @if($activity->remark)
+                                                    <div class="mt-2 p-2 bg-light rounded" style="font-size: 14px; line-height: 1.6;">
+                                                        <strong class="text-muted d-block mb-1">Remarks:</strong>
+                                                        {{ $activity->remark }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        <div class="mb-2">
+                                            @if($activity->activity_date)
+                                                <div class="fw-semibold">{{ $activity->activity_date->format('d M Y') }}</div>
+                                            @endif
+                                            @if($activity->activity_time)
+                                                <div class="text-muted small">{{ date('h:i A', strtotime($activity->activity_time)) }}</div>
+                                            @endif
+                                        </div>
+                                        @if($activity->createdBy)
+                                            <div class="text-muted small">
+                                                <i class="ti ti-user me-1"></i>by {{ $activity->createdBy->name }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Lead Activities History -->
+    <div class="col-12 mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Lead Activities History</h5>
+            </div>
+            <div class="card-body">
+                @if($leadActivities->count() > 0)
+                    <div class="timeline">
+                        @foreach($leadActivities as $activity)
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <div class="avtar avtar-s rounded-circle bg-light-{{ $activity->activity_type === 'converted' ? 'success' : 'primary' }}">
+                                    <i class="ti ti-{{ $activity->activity_type === 'converted' ? 'check' : 'activity' }} f-16"></i>
+                                </div>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ ucfirst(str_replace('_', ' ', $activity->activity_type)) }}</h6>
+                                        <p class="mb-1 text-muted">{{ $activity->description }}</p>
+                                        @if($activity->reason)
+                                            <p class="mb-1"><strong>Reason:</strong> <span class="badge bg-info">{{ $activity->formatted_reason }}</span></p>
+                                        @endif
+                                        @if($activity->rating)
+                                            <p class="mb-1"><strong>Rating:</strong> <span class="badge bg-success">{{ $activity->rating }}/10</span></p>
+                                        @endif
+                                        @if($activity->lead_status_id == 2 && $activity->followup_date)
+                                            <p class="mb-1"><strong>Followup Date:</strong> <span class="badge bg-warning">{{ $activity->followup_date->format('d M Y') }}</span></p>
+                                        @endif
+                                        @if($activity->remarks)
+                                            <p class="mb-1"><small class="text-info">{{ $activity->remarks }}</small></p>
+                                        @endif
+                                        @if($activity->leadStatus)
+                                            <span class="badge bg-light-{{ \App\Helpers\StatusHelper::getLeadStatusColor($activity->leadStatus->id) }}">
+                                                {{ $activity->leadStatus->title }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted">{{ $activity->created_at->format('M d, Y h:i A') }}</small>
+                                        @if($activity->createdBy)
+                                            <p class="mb-0"><small class="text-muted">by {{ $activity->createdBy->name }}</small></p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-center text-muted py-4">
+                        <i class="ti ti-activity f-48 mb-3"></i>
+                        <h6>No Activities Found</h6>
+                        <p class="mb-0">No activities have been recorded for this lead.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
 </div>
-@endif
+<!-- [ Main Content ] end -->
 @endsection
 
 @push('styles')
