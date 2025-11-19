@@ -12,9 +12,9 @@ use App\Services\RazorpayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class PaymentController extends Controller
@@ -147,7 +147,7 @@ class PaymentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'amount_paid' => 'required|numeric|min:0.01',
-            'payment_type' => 'required|in:Cash,Online,Bank,Cheque,Card,Other',
+            'payment_type' => 'required|in:Cash,Online,Bank,Cheque,Card,Other,Razorpay',
             'transaction_id' => 'nullable|string|max:255',
             'file_upload' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
@@ -569,7 +569,6 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'amount' => ['required', 'numeric', 'min:1'],
             'description' => ['nullable', 'string', 'max:190'],
-            'send_notification' => ['nullable', 'boolean'],
         ]);
 
         if ($validated['amount'] > $pendingAmount) {
@@ -582,7 +581,6 @@ class PaymentController extends Controller
         $amount = round($validated['amount'], 2);
         $referenceId = 'INV-' . $invoice->id . '-' . strtoupper(Str::random(6));
         $description = $validated['description'] ?? 'Payment for invoice ' . $invoice->invoice_number;
-        $notifyCustomer = $request->boolean('send_notification', config('razorpay.payment_link.notify_customer', true));
         $currency = config('razorpay.default_currency', 'INR');
         $customerContact = $this->formatCustomerContact($invoice->student->code ?? null, $invoice->student->phone ?? null);
 
@@ -597,8 +595,8 @@ class PaymentController extends Controller
                 'contact' => $customerContact,
             ]),
             'notify' => [
-                'sms' => $notifyCustomer,
-                'email' => $notifyCustomer,
+                'sms' => false,
+                'email' => false,
             ],
             'notes' => [
                 'invoice_id' => $invoice->id,
@@ -710,12 +708,79 @@ class PaymentController extends Controller
         if (!empty($response['payments']) && is_array($response['payments'])) {
             $latestPayment = collect($response['payments'])->sortByDesc('created_at')->first();
             if ($latestPayment) {
-                $paymentLink->razorpay_payment_id = $latestPayment['id'] ?? $paymentLink->razorpay_payment_id;
+                // Extract payment ID - could be 'id', 'payment_id', or nested
+                $paymentId = $latestPayment['id'] ?? $latestPayment['payment_id'] ?? $latestPayment['payment']['id'] ?? null;
+                
+                if ($paymentId) {
+                    $paymentLink->razorpay_payment_id = $paymentId;
+                }
+                
                 if (!empty($latestPayment['created_at'])) {
                     $paymentLink->paid_at = Carbon::createFromTimestamp($latestPayment['created_at']);
                 }
 
-                $this->syncPaymentLinkToInvoice($invoice, $paymentLink, $latestPayment);
+                // Fetch full payment details from Razorpay to get all payment method information
+                if ($paymentId) {
+                    $razorpayService = app(RazorpayService::class);
+                    try {
+                        $fullPaymentDetails = $razorpayService->fetchPayment($paymentId);
+                        $this->syncPaymentLinkToInvoice($invoice, $paymentLink, $fullPaymentDetails);
+                    } catch (\Exception $e) {
+                        // If fetching full details fails, try to use payment data from payment link
+                        Log::warning('Failed to fetch full payment details from Razorpay', [
+                            'payment_id' => $paymentId,
+                            'error' => $e->getMessage(),
+                        ]);
+                        
+                        // Ensure the payment data has an 'id' field for syncing
+                        if (!isset($latestPayment['id']) && $paymentId) {
+                            $latestPayment['id'] = $paymentId;
+                        }
+                        
+                        $this->syncPaymentLinkToInvoice($invoice, $paymentLink, $latestPayment);
+                    }
+                } else {
+                    // If no payment ID found, log and try to use payment link's stored payment ID
+                    Log::warning('Payment ID not found in payment link response', [
+                        'invoice_id' => $invoice->id,
+                        'payment_link_id' => $paymentLink->id,
+                        'payment_data' => $latestPayment,
+                    ]);
+                    
+                    // Try using the stored razorpay_payment_id if available
+                    if ($paymentLink->razorpay_payment_id) {
+                        try {
+                            $razorpayService = app(RazorpayService::class);
+                            $fullPaymentDetails = $razorpayService->fetchPayment($paymentLink->razorpay_payment_id);
+                            $this->syncPaymentLinkToInvoice($invoice, $paymentLink, $fullPaymentDetails);
+                        } catch (\Exception $e) {
+                            Log::error('Failed to fetch payment using stored payment ID', [
+                                'payment_id' => $paymentLink->razorpay_payment_id,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    } else {
+                        // Last resort: try to sync with available data if it has an id field
+                        if (isset($latestPayment['id'])) {
+                            $this->syncPaymentLinkToInvoice($invoice, $paymentLink, $latestPayment);
+                        }
+                    }
+                }
+            }
+        } else {
+            // Check if payment link has a stored payment ID but no payments array
+            // This might happen if payment was made but response structure is different
+            if ($paymentLink->razorpay_payment_id && empty($response['payments'])) {
+                try {
+                    $razorpayService = app(RazorpayService::class);
+                    $fullPaymentDetails = $razorpayService->fetchPayment($paymentLink->razorpay_payment_id);
+                    $this->syncPaymentLinkToInvoice($invoice, $paymentLink, $fullPaymentDetails);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch payment using stored payment ID', [
+                        'payment_id' => $paymentLink->razorpay_payment_id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
         }
 
@@ -730,6 +795,56 @@ class PaymentController extends Controller
                 'short_url' => $paymentLink->short_url,
             ],
         ]);
+    }
+
+    /**
+     * Delete a payment link (only if status is 'created')
+     */
+    public function deletePaymentLink(Invoice $invoice, PaymentLink $paymentLink)
+    {
+        $this->checkInvoiceAccess($invoice);
+
+        if ($paymentLink->invoice_id !== $invoice->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment link does not belong to this invoice.',
+            ], 400);
+        }
+
+        if ($paymentLink->status !== 'created') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only payment links with status "created" can be deleted.',
+            ], 400);
+        }
+
+        try {
+            // Optionally cancel the link in Razorpay before deleting
+            $razorpayService = app(RazorpayService::class);
+            try {
+                $razorpayService->cancelPaymentLink($paymentLink->razorpay_id);
+            } catch (\Exception $e) {
+                // Log but don't fail if Razorpay cancellation fails
+                Log::warning('Failed to cancel payment link in Razorpay: ' . $e->getMessage());
+            }
+
+            $paymentLink->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment link deleted successfully.',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to delete payment link', [
+                'payment_link_id' => $paymentLink->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete payment link. Please try again.',
+            ], 500);
+        }
     }
 
     /**
@@ -882,36 +997,171 @@ class PaymentController extends Controller
     {
         $transactionId = $latestPayment['id'] ?? null;
         if (!$transactionId) {
-            return;
-        }
-
-        $existingPayment = Payment::where('transaction_id', $transactionId)->first();
-        if ($existingPayment) {
-            if ($existingPayment->status !== 'Approved') {
-                $existingPayment->approve();
-            }
+            Log::warning('Cannot sync payment: missing transaction ID', [
+                'invoice_id' => $invoice->id,
+                'payment_link_id' => $paymentLink->id,
+            ]);
             return;
         }
 
         $amount = isset($latestPayment['amount']) ? round(((float) $latestPayment['amount']) / 100, 2) : $paymentLink->amount;
         if ($amount <= 0) {
+            Log::warning('Cannot sync payment: invalid amount', [
+                'invoice_id' => $invoice->id,
+                'transaction_id' => $transactionId,
+                'amount' => $amount,
+            ]);
             return;
         }
 
+        // Check for existing payment by base transaction_id (before details are appended)
+        // Check both exact match and match with appended details
+        $existingPayment = Payment::where('invoice_id', $invoice->id)
+            ->where(function($query) use ($transactionId) {
+                $query->where('transaction_id', $transactionId)
+                      ->orWhere('transaction_id', 'like', $transactionId . ' (%');
+            })
+            ->first();
+
+        if ($existingPayment) {
+            // Payment exists - update and approve if needed
+            Log::info('Updating existing payment from Razorpay', [
+                'payment_id' => $existingPayment->id,
+                'invoice_id' => $invoice->id,
+                'transaction_id' => $transactionId,
+                'current_status' => $existingPayment->status,
+            ]);
+
+            // Set collected_by to payment link creator if not already set
+            if (!$existingPayment->collected_by && $paymentLink->created_by) {
+                $existingPayment->collected_by = $paymentLink->created_by;
+            }
+
+            // Update with full payment details
+            $this->updatePaymentWithFullDetails($existingPayment, $latestPayment);
+            
+            // Approve if not already approved
+            if ($existingPayment->status !== 'Approved') {
+                $existingPayment->approve();
+                Log::info('Existing payment auto-approved', [
+                    'payment_id' => $existingPayment->id,
+                ]);
+            } else {
+                // Save updates even if already approved
+                $existingPayment->save();
+            }
+            return;
+        }
+
+        // Payment doesn't exist - create new one
         $previousBalance = Payment::where('invoice_id', $invoice->id)
             ->where('status', 'Approved')
             ->sum('amount_paid');
 
-        $payment = Payment::create([
-            'invoice_id' => $invoice->id,
-            'amount_paid' => $amount,
-            'previous_balance' => $previousBalance,
-            'payment_type' => 'Online',
-            'transaction_id' => $transactionId,
-            'status' => 'Pending Approval',
-            'created_by' => AuthHelper::getCurrentUserId(),
-        ]);
+        try {
+            // Create payment with base transaction_id first
+            $payment = Payment::create([
+                'invoice_id' => $invoice->id,
+                'amount_paid' => $amount,
+                'previous_balance' => $previousBalance,
+                'payment_type' => 'Razorpay',
+                'transaction_id' => $transactionId, // Base ID, will be updated with details
+                'status' => 'Pending Approval',
+                'created_by' => AuthHelper::getCurrentUserId(),
+                'collected_by' => $paymentLink->created_by, // Set to payment link creator
+            ]);
 
-        $payment->approve();
+            Log::info('Payment created from Razorpay payment link', [
+                'payment_id' => $payment->id,
+                'invoice_id' => $invoice->id,
+                'transaction_id' => $transactionId,
+                'amount' => $amount,
+            ]);
+
+            // Update with full payment details (this may modify transaction_id)
+            $this->updatePaymentWithFullDetails($payment, $latestPayment);
+            
+            // Refresh payment to ensure we have latest data
+            $payment->refresh();
+            
+            // Automatically approve the payment
+            $payment->approve();
+            
+            Log::info('Payment automatically approved from Razorpay payment link', [
+                'payment_id' => $payment->id,
+                'invoice_id' => $invoice->id,
+                'transaction_id' => $payment->transaction_id,
+                'status' => $payment->status,
+                'amount' => $payment->amount_paid,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to create payment from Razorpay payment link', [
+                'invoice_id' => $invoice->id,
+                'transaction_id' => $transactionId,
+                'amount' => $amount,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Update payment with full details from Razorpay payment response
+     */
+    private function updatePaymentWithFullDetails(Payment $payment, array $razorpayPayment): void
+    {
+        // Extract payment method details
+        $method = $razorpayPayment['method'] ?? null;
+        $bank = $razorpayPayment['bank'] ?? null;
+        $wallet = $razorpayPayment['wallet'] ?? null;
+        $vpa = $razorpayPayment['vpa'] ?? null;
+        $card = $razorpayPayment['card'] ?? null;
+
+        // Build description with payment details
+        $details = [];
+        if ($method) {
+            $details[] = 'Method: ' . ucfirst($method);
+        }
+        if ($bank) {
+            $details[] = 'Bank: ' . $bank;
+        }
+        if ($wallet) {
+            $details[] = 'Wallet: ' . $wallet;
+        }
+        if ($vpa) {
+            $details[] = 'UPI: ' . $vpa;
+        }
+        if ($card) {
+            $cardDetails = [];
+            if (isset($card['network'])) {
+                $cardDetails[] = $card['network'];
+            }
+            if (isset($card['type'])) {
+                $cardDetails[] = $card['type'];
+            }
+            if (isset($card['last4'])) {
+                $cardDetails[] = '****' . $card['last4'];
+            }
+            if (!empty($cardDetails)) {
+                $details[] = 'Card: ' . implode(' ', $cardDetails);
+            }
+        }
+
+        // Store additional details in transaction_id or create a notes field
+        // For now, we'll append to transaction_id if there are additional details
+        if (!empty($details)) {
+            $payment->transaction_id = $razorpayPayment['id'] . ' (' . implode(', ', $details) . ')';
+        }
+
+        // Update amount if different
+        if (isset($razorpayPayment['amount'])) {
+            $razorpayAmount = round(((float) $razorpayPayment['amount']) / 100, 2);
+            if ($razorpayAmount > 0 && abs($razorpayAmount - (float) $payment->amount_paid) > 0.01) {
+                $payment->amount_paid = $razorpayAmount;
+            }
+        }
+
+        $payment->save();
     }
 }

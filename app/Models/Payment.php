@@ -25,6 +25,7 @@ class Payment extends Model
         'created_by',
         'updated_by',
         'deleted_by',
+        'collected_by',
     ];
 
     protected $casts = [
@@ -66,6 +67,11 @@ class Payment extends Model
     public function rejectedBy()
     {
         return $this->belongsTo(User::class, 'rejected_by');
+    }
+
+    public function collectedBy()
+    {
+        return $this->belongsTo(User::class, 'collected_by');
     }
 
     // Scopes

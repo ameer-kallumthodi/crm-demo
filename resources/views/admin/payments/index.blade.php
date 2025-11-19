@@ -133,9 +133,19 @@
                                                         <button type="button"
                                                             class="btn btn-outline-secondary refresh-link-btn"
                                                             data-refresh-url="{{ route('admin.payments.links.refresh', [$invoice->id, $link->id]) }}"
-                                                            data-row="#payment-link-row-{{ $link->id }}">
+                                                            data-row="#payment-link-row-{{ $link->id }}"
+                                                            title="Refresh Status">
                                                             <i class="fas fa-sync-alt"></i>
                                                         </button>
+                                                        @if($link->status === 'created')
+                                                            <button type="button"
+                                                                class="btn btn-outline-danger delete-link-btn"
+                                                                data-delete-url="{{ route('admin.payments.links.delete', [$invoice->id, $link->id]) }}"
+                                                                data-link-id="{{ $link->id }}"
+                                                                title="Delete Link">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        @endif
                                                     </div>
                                                 </td>
                                             </tr>
@@ -589,6 +599,101 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Delete payment link functionality
+    let deletePaymentLinkUrl = null;
+    let deletePaymentLinkId = null;
+    let deletePaymentLinkButton = null;
+
+    document.querySelectorAll('.delete-link-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const url = button.dataset.deleteUrl;
+            const linkId = button.dataset.linkId;
+            if (!url) {
+                return;
+            }
+
+            deletePaymentLinkUrl = url;
+            deletePaymentLinkId = linkId;
+            deletePaymentLinkButton = button;
+
+            const modal = new bootstrap.Modal(document.getElementById('deletePaymentLinkModal'));
+            modal.show();
+        });
+    });
+
+    document.getElementById('confirmDeletePaymentLinkBtn')?.addEventListener('click', () => {
+        if (!deletePaymentLinkUrl || !deletePaymentLinkId) {
+            return;
+        }
+
+        const confirmBtn = document.getElementById('confirmDeletePaymentLinkBtn');
+        const icon = confirmBtn?.querySelector('i');
+        const originalHtml = confirmBtn?.innerHTML;
+        
+        confirmBtn.disabled = true;
+        if (icon) {
+            icon.className = 'fas fa-spinner fa-spin me-1';
+        }
+
+        fetch(deletePaymentLinkUrl, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+            },
+        })
+        .then(async response => {
+            const data = await response.json().catch(() => ({}));
+            return { ok: response.ok, data };
+        })
+        .then(({ ok, data }) => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deletePaymentLinkModal'));
+            modal?.hide();
+
+            if (ok && data.success) {
+                showLinkToast(data.message || 'Payment link deleted successfully.', 'success');
+                // Remove the row from the table
+                const row = document.querySelector(`#payment-link-row-${deletePaymentLinkId}`);
+                if (row) {
+                    row.style.transition = 'opacity 0.3s';
+                    row.style.opacity = '0';
+                    setTimeout(() => {
+                        row.remove();
+                        // Reload if no links remain
+                        const remainingLinks = document.querySelectorAll('[id^="payment-link-row-"]');
+                        if (remainingLinks.length === 0) {
+                            setTimeout(() => window.location.reload(), 500);
+                        }
+                    }, 300);
+                } else {
+                    setTimeout(() => window.location.reload(), 800);
+                }
+            } else {
+                showLinkToast(data?.message || 'Unable to delete payment link.', 'error');
+                if (deletePaymentLinkButton) {
+                    deletePaymentLinkButton.disabled = false;
+                }
+            }
+        })
+        .catch(() => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deletePaymentLinkModal'));
+            modal?.hide();
+            showLinkToast('Unable to delete payment link.', 'error');
+            if (deletePaymentLinkButton) {
+                deletePaymentLinkButton.disabled = false;
+            }
+        })
+        .finally(() => {
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = originalHtml || '<i class="fas fa-trash me-1"></i>Delete Link';
+            }
+            deletePaymentLinkUrl = null;
+            deletePaymentLinkId = null;
+            deletePaymentLinkButton = null;
+        });
+    });
+
     function showLinkToast(message, type = 'info') {
         if (typeof showToast === 'function') {
             showToast(message, type);
@@ -632,12 +737,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <label for="payment-link-description" class="form-label">Description</label>
                         <input type="text" class="form-control" id="payment-link-description" name="description"
                             value="Payment for invoice {{ $invoice->invoice_number }}" maxlength="190">
-                    </div>
-                    <div class="form-check form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" role="switch" id="payment-link-send-notification" name="send_notification" checked>
-                        <label class="form-check-label" for="payment-link-send-notification">
-                            Send Razorpay email/SMS notification (uses student contact details)
-                        </label>
                     </div>
                     <div class="alert alert-warning mb-0 d-none" id="paymentLinkError"></div>
                 </div>
@@ -720,6 +819,37 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="fas fa-check me-2"></i>Approve Payment
                     </button>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Payment Link Modal -->
+<div class="modal fade" id="deletePaymentLinkModal" tabindex="-1" aria-labelledby="deletePaymentLinkModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deletePaymentLinkModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Payment Link
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning mb-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Are you sure you want to delete this payment link?</strong>
+                </div>
+                <p class="mb-0">
+                    This action cannot be undone. The payment link will be cancelled in Razorpay and removed from the system.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeletePaymentLinkBtn">
+                    <i class="fas fa-trash me-1"></i>Delete Link
+                </button>
             </div>
         </div>
     </div>

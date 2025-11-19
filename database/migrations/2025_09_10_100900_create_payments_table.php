@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');
             $table->decimal('amount_paid', 10, 2);
             $table->decimal('previous_balance', 10, 2)->default(0);
-            $table->enum('payment_type', ['Cash', 'Online', 'Bank', 'Cheque', 'Card', 'Other'])->default('Cash');
+            $table->enum('payment_type', ['Cash', 'Online', 'Bank', 'Cheque', 'Card', 'Other', 'Razorpay'])->default('Cash');
             $table->string('transaction_id')->nullable();
             $table->string('file_upload')->nullable();
             $table->enum('status', ['Pending Approval', 'Approved', 'Rejected'])->default('Pending Approval');

@@ -59,5 +59,27 @@ class RazorpayService
 
         return null;
     }
+
+    public function cancelPaymentLink(string $paymentLinkId): array
+    {
+        if (!$this->client) {
+            throw new \RuntimeException('Razorpay credentials are not configured.');
+        }
+
+        $response = $this->client->paymentLink->cancel($paymentLinkId);
+
+        return $response->toArray();
+    }
+
+    public function fetchPayment(string $paymentId): array
+    {
+        if (!$this->client) {
+            throw new \RuntimeException('Razorpay credentials are not configured.');
+        }
+
+        $response = $this->client->payment->fetch($paymentId);
+
+        return $response->toArray();
+    }
 }
 

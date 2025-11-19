@@ -721,6 +721,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/payments/invoice/{invoiceId}', [App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
         Route::post('/payments/invoice/{invoice}/payment-links', [App\Http\Controllers\PaymentController::class, 'storePaymentLink'])->name('payments.links.store');
         Route::post('/payments/invoice/{invoice}/payment-links/{paymentLink}/refresh', [App\Http\Controllers\PaymentController::class, 'refreshPaymentLink'])->name('payments.links.refresh');
+        Route::delete('/payments/invoice/{invoice}/payment-links/{paymentLink}', [App\Http\Controllers\PaymentController::class, 'deletePaymentLink'])->name('payments.links.delete');
         Route::get('/payments/create/{invoiceId}', [App\Http\Controllers\PaymentController::class, 'create'])->name('payments.create');
         Route::post('/payments/store/{invoiceId}', [App\Http\Controllers\PaymentController::class, 'store'])->name('payments.store');
         Route::get('/payments/{id}', [App\Http\Controllers\PaymentController::class, 'show'])->name('payments.show');
