@@ -111,9 +111,9 @@
                                                 <td>
                                                     @if($link->short_url)
                                                         <div class="d-flex align-items-center gap-2">
-                                                            <a href="{{ $link->short_url }}" target="_blank" class="text-decoration-none text-primary text-truncate" style="max-width: 180px;">
+                                                            <span class="text-muted text-truncate" style="max-width: 180px;">
                                                                 {{ $link->short_url }}
-                                                            </a>
+                                                            </span>
                                                             <button class="btn btn-sm btn-outline-secondary copy-link-btn" type="button"
                                                                 data-link="{{ $link->short_url }}" title="Copy link">
                                                                 <i class="fas fa-copy"></i>
@@ -125,11 +125,6 @@
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="btn-group btn-group-sm" role="group">
-                                                        @if($link->short_url)
-                                                            <a href="{{ $link->short_url }}" target="_blank" class="btn btn-outline-primary" title="Open Link">
-                                                                <i class="fas fa-external-link-alt"></i>
-                                                            </a>
-                                                        @endif
                                                         <button type="button"
                                                             class="btn btn-outline-secondary refresh-link-btn"
                                                             data-refresh-url="{{ route('admin.payments.links.refresh', [$invoice->id, $link->id]) }}"
