@@ -8,6 +8,7 @@ use App\Models\ConvertedLead;
 use App\Models\ConvertedStudentActivity;
 use App\Models\Course;
 use App\Models\LeadActivity;
+use App\Models\User;
 use App\Services\LeadCallLogService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -23,8 +24,9 @@ class PostSalesConvertedLeadController extends Controller
         $this->ensureAccess();
 
         $courses = Course::where('is_active', 1)->orderBy('title')->get(['id', 'title']);
+        $telecallers = User::select('id', 'name')->nonMarketingTelecallers()->where('is_active', true)->orderBy('name')->get();
 
-        return view('admin.post-sales.converted-leads.index', compact('courses'));
+        return view('admin.post-sales.converted-leads.index', compact('courses', 'telecallers'));
     }
 
     /**
@@ -75,6 +77,12 @@ class PostSalesConvertedLeadController extends Controller
 
             if ($request->filled('date_to')) {
                 $query->whereDate('created_at', '<=', $request->date_to);
+            }
+
+            if ($request->filled('telecaller_id')) {
+                $query->whereHas('lead', function($q) use ($request) {
+                    $q->where('telecaller_id', $request->telecaller_id);
+                });
             }
 
             // Get total count before filtering

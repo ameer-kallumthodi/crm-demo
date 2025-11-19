@@ -51,6 +51,19 @@
                             </select>
                         </div>
 
+                        <!-- BDE -->
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <label for="telecaller_id" class="form-label">BDE</label>
+                            <select class="form-select form-select-sm" name="telecaller_id" id="telecaller_id">
+                                <option value="">All BDEs</option>
+                                @foreach($telecallers as $telecaller)
+                                <option value="{{ $telecaller->id }}" {{ request('telecaller_id') == $telecaller->id ? 'selected' : '' }}>
+                                    {{ $telecaller->name }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <!-- From Date -->
                         <div class="col-6 col-md-4 col-lg-2">
                             <label for="date_from" class="form-label">From Date</label>
@@ -258,6 +271,7 @@ $columns = [
                 return {
                     search: $('#search').val() || '',
                     course_id: $('#course_id').val() || '',
+                    telecaller_id: $('#telecaller_id').val() || '',
                     date_from: $('#date_from').val() || '',
                     date_to: $('#date_to').val() || ''
                 };
@@ -340,7 +354,7 @@ $columns = [
             });
             
             // Reload on filter change
-            $('#search, #course_id, #date_from, #date_to').on('change', function() {
+            $('#search, #course_id, #telecaller_id, #date_from, #date_to').on('change', function() {
                 // Reset mobile view state
                 mobileViewState.allData = [];
                 mobileViewState.currentPage = 1;
