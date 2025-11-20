@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -200,5 +201,47 @@ class User extends Authenticatable
     public function isSuperAdmin()
     {
         return $this->role_id == 1; // Adjust role ID based on your system
+    }
+
+    /**
+     * Get user data formatted for API response
+     * 
+     * @param string|null $token The authentication token (optional)
+     * @return array
+     */
+    public function getApiUserData($token = null)
+    {
+        // Format phone number with code
+        $phone = '';
+        if ($this->code && $this->phone) {
+            $phone = '+' . $this->code . ' ' . $this->phone;
+        } elseif ($this->phone) {
+            $phone = $this->phone;
+        }
+
+        // Determine user role based on flags
+        if ($this->is_senior_manager) {
+            $userRole = 'Senior Manager';
+        } elseif ($this->is_team_lead) {
+            $userRole = 'Team Lead';
+        } else {
+            $userRole = 'Telecaller';
+        }
+
+        // Determine if user is marketing (role_id == 13)
+        $isMarketing = $this->role_id == 13 ? 1 : 0;
+
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'phone' => $phone,
+            'email' => $this->email,
+            'role_id' => $this->role_id,
+            'user_role' => $userRole,
+            'is_team_lead' => $this->is_team_lead ? 1 : 0,
+            'is_senior_manager' => $this->is_senior_manager ? 1 : 0,
+            'is_marketing' => $isMarketing,
+            'auth_token' => $token,
+        ];
     }
 }

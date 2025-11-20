@@ -12,6 +12,7 @@
         "brick/phonenumber": "^0.8.0",
         "firebase/php-jwt": "^6.11",
         "laravel/framework": "^12.0",
+        "laravel/sanctum": "^4.2",
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "*",
         "mpdf/mpdf": "^8.2",
