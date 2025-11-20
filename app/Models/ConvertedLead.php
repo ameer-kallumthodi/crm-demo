@@ -20,6 +20,7 @@ class ConvertedLead extends Model
         'username',
         'password',
         'status',
+        'is_cancelled',
         'postsale_followupdate',
         'postsale_followuptime',
         'paid_status',
@@ -65,6 +66,7 @@ class ConvertedLead extends Model
         'called_date' => 'date',
         'called_time' => 'datetime:H:i:s',
         'is_course_changed' => 'boolean',
+        'is_cancelled' => 'boolean',
     ];
 
     // Relationships

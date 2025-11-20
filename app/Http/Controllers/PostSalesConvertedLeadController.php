@@ -146,14 +146,15 @@ class PostSalesConvertedLeadController extends Controller
                     'batch' => $convertedLead->batch?->title ?? 'N/A',
                     'admission_batch' => $convertedLead->admissionBatch?->title ?? 'N/A',
                     'subject' => $convertedLead->subject?->title ?? 'N/A',
-                    'status' => $this->renderStatus($convertedLead),
+            'status' => $this->renderStatus($convertedLead),
                     'paid_status' => $this->renderPaidStatus($convertedLead),
                     'call_status' => $this->renderCallStatus($convertedLead),
                     'called_date' => $this->renderCalledDate($convertedLead),
                     'called_time' => $this->renderCalledTime($convertedLead),
                     'postsale_followup' => $this->renderPostsaleFollowup($convertedLead),
                     'post_sales_remarks' => $this->renderPostSalesRemarks($convertedLead),
-                    'actions' => $this->renderActions($convertedLead),
+            'actions' => $this->renderActions($convertedLead),
+            'DT_RowClass' => $this->getRowClass($convertedLead),
                     // Mobile view data
                     'mobile_view' => $this->renderMobileView($convertedLead)
                 ];
@@ -331,8 +332,20 @@ class PostSalesConvertedLeadController extends Controller
         $html .= '<button type="button" class="btn btn-sm btn-outline-success" title="Status Update" onclick="show_ajax_modal(\'' . route('admin.post-sales.converted-leads.status-update', $convertedLead->id) . '\', \'Status Update\')">';
         $html .= '<i class="ti ti-edit"></i>';
         $html .= '</button>';
+        if (strcasecmp($convertedLead->status ?? '', 'cancel') === 0) {
+            $cancelBtnClass = $convertedLead->is_cancelled ? 'btn-danger' : 'btn-outline-danger';
+            $cancelBtnTitle = $convertedLead->is_cancelled ? 'Update cancellation confirmation' : 'Confirm cancellation';
+            $html .= '<button type="button" class="btn btn-sm ' . $cancelBtnClass . '" title="' . $cancelBtnTitle . '" onclick="show_ajax_modal(\'' . route('admin.post-sales.converted-leads.cancel-flag', $convertedLead->id) . '\', \'Cancellation Confirmation\')">';
+            $html .= '<i class="ti ti-ban"></i>';
+            $html .= '</button>';
+        }
         $html .= '</div>';
         return $html;
+    }
+
+    private function getRowClass($convertedLead): string
+    {
+        return strcasecmp($convertedLead->status ?? '', 'cancel') === 0 ? 'table-danger cancelled-row' : '';
     }
 
     /**
@@ -344,6 +357,8 @@ class PostSalesConvertedLeadController extends Controller
             'id' => $convertedLead->id,
             'name' => $convertedLead->name ?? '',
             'register_number' => $convertedLead->register_number ?? 'No register #',
+            'status' => $convertedLead->status ?? null,
+            'is_cancelled' => (bool) $convertedLead->is_cancelled,
             'phone' => \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone),
             'email' => $convertedLead->email ?? 'N/A',
             'bde_name' => $convertedLead->lead?->telecaller?->name ?? 'Unassigned',
@@ -358,6 +373,7 @@ class PostSalesConvertedLeadController extends Controller
                 'view' => route('admin.post-sales.converted-leads.show', $convertedLead->id),
                 'status_update' => route('admin.post-sales.converted-leads.status-update', $convertedLead->id),
                 'invoice' => route('admin.invoices.index', $convertedLead->id),
+                'cancel_flag' => route('admin.post-sales.converted-leads.cancel-flag', $convertedLead->id),
             ]
         ];
         
@@ -436,7 +452,7 @@ class PostSalesConvertedLeadController extends Controller
                 'status' => 'required|in:paid,unpaid,cancel,postpond,followup',
                 'paid_status' => 'nullable|in:Fully paid,Registration Paid,Registration Partially paid,Certificate Paid,Certificate Partially paid,Exam Paid,Exam Fees Partially paid,Halticket Paid,Halticket Partially paid',
                 'call_status' => ['required', Rule::in(['RNR', 'Switch off', 'Attended', 'Whatsapp connected'])],
-                'called_date' => 'nullable|date',
+                'called_date' => 'required|date',
                 'called_time' => 'required|date_format:H:i',
                 'followup_date' => 'nullable|date',
                 'post_sales_remarks' => 'nullable|string|max:2000',
@@ -452,7 +468,11 @@ class PostSalesConvertedLeadController extends Controller
 
             // Additional validation: followup_date not required when paid_status is 'Fully paid'
             $isFullyPaid = $request->paid_status === 'Fully paid';
-            if (!$isFullyPaid && $request->status !== 'postpond' && !$request->followup_date) {
+            if (
+                !$isFullyPaid &&
+                !in_array($request->status, ['postpond', 'cancel'], true) &&
+                !$request->followup_date
+            ) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Followup date is required.'
@@ -470,7 +490,7 @@ class PostSalesConvertedLeadController extends Controller
             $convertedLead->post_sales_remarks = $request->post_sales_remarks;
             
             // Only set followup date/time if not fully paid
-            if (!$isFullyPaid && $request->status !== 'postpond') {
+            if (!$isFullyPaid && !in_array($request->status, ['postpond', 'cancel'], true)) {
                 $convertedLead->postsale_followupdate = $request->followup_date;
             } else {
                 $convertedLead->postsale_followupdate = null;
@@ -495,7 +515,7 @@ class PostSalesConvertedLeadController extends Controller
             $activity->activity_time = now()->toTimeString();
             
             // Only set followup date/time if not fully paid
-            if (!$isFullyPaid && $request->status !== 'postpond') {
+            if (!$isFullyPaid && !in_array($request->status, ['postpond', 'cancel'], true)) {
                 $activity->followup_date = $request->followup_date;
                 $activity->followup_time = null;
             } else {
@@ -532,6 +552,56 @@ class PostSalesConvertedLeadController extends Controller
                 'message' => 'An error occurred while updating status: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Show cancellation confirmation modal.
+     */
+    public function cancelFlag($id)
+    {
+        $this->ensureAccess();
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+
+        if (strcasecmp($convertedLead->status ?? '', 'cancel') !== 0) {
+            abort(404, 'Cancellation confirmation is only available for cancelled leads.');
+        }
+
+        return view('admin.post-sales.converted-leads.cancel-flag-modal', compact('convertedLead'));
+    }
+
+    /**
+     * Update is_cancelled flag for a converted lead.
+     */
+    public function cancelFlagSubmit(Request $request, $id)
+    {
+        $this->ensureAccess();
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+
+        if (strcasecmp($convertedLead->status ?? '', 'cancel') !== 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only leads with status cancel can update this flag.'
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'is_cancelled' => 'required|boolean',
+        ]);
+
+        $convertedLead->is_cancelled = (bool) $validated['is_cancelled'];
+        $convertedLead->updated_by = AuthHelper::getCurrentUserId();
+        $convertedLead->save();
+
+        $message = $convertedLead->is_cancelled
+            ? 'Cancellation flagged successfully.'
+            : 'Cancellation flag removed.';
+
+        return response()->json([
+            'success' => true,
+            'message' => $message
+        ]);
     }
 
     /**

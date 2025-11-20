@@ -9,6 +9,7 @@ use App\Models\LeadSource;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 
 class LeadsController extends Controller
@@ -171,6 +172,113 @@ class LeadsController extends Controller
                 'courses' => $courses,
                 'ratings' => $ratings,
                 'telecallers' => $telecallers,
+            ]
+        ], 200);
+    }
+
+    /**
+     * Trigger Voxbay click-to-call for a lead (mobile API parity with CI4)
+     */
+    public function callLead(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        $validated = $request->validate([
+            'lead_id' => 'required|integer|exists:leads,id'
+        ]);
+
+        $leadQuery = Lead::query()
+            ->select('id', 'phone', 'code', 'telecaller_id')
+            ->where('id', $validated['lead_id']);
+
+        $this->applyRoleBasedFilter($leadQuery, $user);
+
+        $lead = $leadQuery->first();
+
+        if (!$lead) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lead not found or access denied'
+            ], 404);
+        }
+
+        $extension = $user->ext_no;
+        $userPhone = trim(($user->code ?? '') . ($user->phone ?? ''));
+        $leadPhone = trim($lead->phone ?? '');
+        $leadCode = trim($lead->code ?? '');
+        $uidNumber = env('UID_NUMBER');
+        $upin = env('UPIN');
+
+        if (empty($extension)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Your extension is not configured. Please contact admin.'
+            ], 422);
+        }
+
+        if (empty($userPhone)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Your phone/code is not configured. Please contact admin.'
+            ], 422);
+        }
+
+        if (empty($leadPhone) || empty($leadCode)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lead phone/code not available.'
+            ], 422);
+        }
+
+        if (empty($uidNumber) || empty($upin)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Voxbay credentials are not configured. Please set UID_NUMBER and UPIN.'
+            ], 500);
+        }
+
+        $destination = $leadCode . $leadPhone;
+
+        try {
+            $response = Http::timeout(30)->get('https://x.voxbay.com/api/click_to_call', [
+                'id_dept' => 0,
+                'uid' => $uidNumber,
+                'upin' => $upin,
+                'user_no' => $extension,
+                'destination' => $destination,
+                'source' => $userPhone,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to reach Voxbay service.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+        if ($response->failed()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Voxbay call request failed.',
+                'response' => $response->body()
+            ], $response->status() ?: 500);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Call initiated successfully.',
+            'data' => [
+                'destination' => $destination,
+                'extension' => $extension,
+                'source' => $userPhone,
+                'vox_response' => $response->json() ?? $response->body()
             ]
         ], 200);
     }

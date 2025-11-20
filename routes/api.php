@@ -15,6 +15,7 @@ Route::prefix('v1')->group(function() {
         Route::get('home', [HomeController::class, 'index']);
         Route::get('leads', [LeadsController::class, 'index']);
         Route::get('leads/filters', [LeadsController::class, 'filters']);
+        Route::get('leads/call', [LeadsController::class, 'callLead']);
         Route::get('notifications', [NotificationController::class, 'index']);
     });
 });

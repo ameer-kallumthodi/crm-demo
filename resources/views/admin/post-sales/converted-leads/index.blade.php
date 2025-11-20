@@ -241,6 +241,15 @@ $columns = [
         white-space: nowrap;
     }
 
+    .cancelled-row > td {
+        background-color: #f8d7da !important;
+    }
+
+    .cancelled-card {
+        border: 1px solid #f5c2c7;
+        background-color: #fff5f5;
+    }
+
     /* Improve mobile card layout */
     @media (max-width: 991.98px) {
         .card-body {
@@ -252,7 +261,14 @@ $columns = [
         }
     }
 </style>
+<div id="postSalesConfig" data-data-url="{{ route('admin.post-sales.converted-leads.data') }}" style="display: none;"></div>
+<script type="application/json" id="postSalesConvertedColumnsData">
+{!! json_encode($columns) !!}
+</script>
 <script>
+    const postSalesConfigEl = document.getElementById('postSalesConfig');
+    const convertedLeadsDataUrl = postSalesConfigEl ? postSalesConfigEl.dataset.dataUrl : '';
+    const postSalesConvertedColumns = JSON.parse(document.getElementById('postSalesConvertedColumnsData').textContent || '[]');
     // Initialize DataTables asynchronously to prevent blocking
     $(document).ready(function() {
         // ULTRA-OPTIMIZED DataTables - Performance Critical
@@ -285,7 +301,7 @@ $columns = [
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: '{{ route('admin.post-sales.converted-leads.data') }}',
+                    url: convertedLeadsDataUrl,
                     type: 'GET',
                     data: function(d) {
                         // Merge DataTables parameters with filter parameters
@@ -313,7 +329,7 @@ $columns = [
                 autoWidth: false,
                 scrollX: true,
                 searchHighlight: false,
-                columns: @json($columns),
+                columns: postSalesConvertedColumns,
                 // Optimize rendering
                 drawCallback: function(settings) {
                     // Initialize tooltips for visible rows
@@ -412,7 +428,7 @@ $columns = [
                 
                 // Make AJAX request to load all data
                 $.ajax({
-                    url: '{{ route('admin.post-sales.converted-leads.data') }}',
+                    url: convertedLeadsDataUrl,
                     type: 'GET',
                     data: requestData,
                     success: function(response) {
@@ -603,9 +619,16 @@ $columns = [
                     console.error('Invalid data in renderMobileCard:', data);
                     return '';
                 }
+
+                const statusValue = (data.status || '').toString().toLowerCase();
+                const isCancelledFlag = Boolean(data.is_cancelled);
                 
                 // Add data attribute to track student ID and avoid duplicates
-                let cardHtml = '<div class="card mb-2" data-student-id="' + (data.id || '') + '">';
+                const cardClasses = ['card', 'mb-2'];
+                if (statusValue === 'cancel') {
+                    cardClasses.push('cancelled-card');
+                }
+                let cardHtml = '<div class="' + cardClasses.join(' ') + '" data-student-id="' + (data.id || '') + '">';
                 
                 cardHtml += '<div class="card-body p-3">';
                 
@@ -628,11 +651,17 @@ $columns = [
                 const viewRoute = (data.routes && data.routes.view) ? data.routes.view : '#';
                 const statusUpdateRoute = (data.routes && data.routes.status_update) ? data.routes.status_update : '#';
                 const invoiceRoute = (data.routes && data.routes.invoice) ? data.routes.invoice : null;
+                const cancelFlagRoute = (data.routes && data.routes.cancel_flag) ? data.routes.cancel_flag : null;
                 cardHtml += '<a href="' + viewRoute + '" class="btn btn-sm btn-outline-primary" title="View Details"><i class="ti ti-eye f-12"></i></a>';
                 if (invoiceRoute) {
                     cardHtml += '<a href="' + invoiceRoute + '" class="btn btn-sm btn-success" title="View Invoice"><i class="ti ti-receipt f-12"></i></a>';
                 }
                 cardHtml += '<button type="button" class="btn btn-sm btn-outline-success" title="Status Update" onclick="show_ajax_modal(\'' + statusUpdateRoute + '\', \'Status Update\')"><i class="ti ti-edit f-12"></i></button>';
+                if (cancelFlagRoute && statusValue === 'cancel') {
+                    const cancelBtnClass = isCancelledFlag ? 'btn-danger' : 'btn-outline-danger';
+                    const cancelBtnTitle = isCancelledFlag ? 'Update cancellation confirmation' : 'Confirm cancellation';
+                    cardHtml += '<button type="button" class="btn btn-sm ' + cancelBtnClass + '" title="' + cancelBtnTitle + '" onclick="show_ajax_modal(\'' + cancelFlagRoute + '\', \'Cancellation Confirmation\')"><i class="ti ti-ban f-12"></i></button>';
+                }
                 cardHtml += '</div></div>';
                 
                 // Student details
@@ -649,6 +678,11 @@ $columns = [
                 }
                 if (data.subject && data.subject !== 'N/A') {
                     cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-bookmark f-12 text-muted me-1"></i><small class="text-muted f-11">Subject: ' + escapeHtml(data.subject) + '</small></div></div>';
+                }
+                if (statusValue === 'cancel') {
+                    const cancelStateLabel = isCancelledFlag ? 'Confirmed' : 'Cancelled';
+                    const cancelStateClass = isCancelledFlag ? 'bg-danger' : 'bg-secondary';
+                    cardHtml += '<div class="col-12"><span class="badge bg-danger me-1">Cancel</span><span class="badge ' + cancelStateClass + '">Flag: ' + cancelStateLabel + '</span></div>';
                 }
                 if (data.called_date) {
                     cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-calendar-time f-12 text-muted me-1"></i><small class="text-muted f-11">Called: ' + escapeHtml(data.called_date) + '</small></div></div>';

@@ -83,10 +83,10 @@
             <!-- Called Date Field -->
             <div class="col-md-4">
                 <div class="mb-3">
-                    <label class="form-label" for="called_date">Called Date</label>
+                    <label class="form-label" for="called_date">Called Date <span class="text-danger">*</span></label>
                     <input type="date" class="form-control" name="called_date" id="called_date"
                         value="{{ old('called_date', $convertedLead->called_date ? $convertedLead->called_date->format('Y-m-d') : '') }}"
-                        max="{{ date('Y-m-d') }}">
+                        max="{{ date('Y-m-d') }}" required>
                 </div>
             </div>
 
@@ -131,23 +131,27 @@
 <script>
 $(document).ready(function() {
     // Handle status change to show/hide paid_status field
+    const followupSection = $('#followupSection');
+    const followupDateInput = $('#followup_date');
+    const statusUpdateSubmitUrl = "{{ route('admin.post-sales.converted-leads.status-update-submit', $convertedLead->id) }}";
+
     $('#status').on('change', function() {
         const status = $(this).val();
         if (status === 'paid') {
             $('#paidStatusSection').show();
             $('#paid_status').prop('required', true);
-            $('#followupSection').show();
+            followupSection.show();
         } else {
             $('#paidStatusSection').hide();
             $('#paid_status').prop('required', false);
             $('#paid_status').val('');
         }
-        if (status === 'postpond') {
-            $('#followupSection').hide();
-            $('#followup_date').prop('required', false).val('');
+        if (status === 'postpond' || status === 'cancel') {
+            followupSection.hide();
+            followupDateInput.prop('required', false).val('');
         } else if (status !== 'paid') {
-            $('#followupSection').show();
-            $('#followup_date').prop('required', true);
+            followupSection.show();
+            followupDateInput.prop('required', true);
         }
         // Trigger paid_status change to update followup section
         $('#paid_status').trigger('change');
@@ -157,21 +161,21 @@ $(document).ready(function() {
     $('#paid_status').on('change', function() {
         const paidStatus = $(this).val();
         const status = $('#status').val();
-        if (status === 'postpond') {
-            $('#followupSection').hide();
-            $('#followup_date').prop('required', false).val('');
+        if (status === 'postpond' || status === 'cancel') {
+            followupSection.hide();
+            followupDateInput.prop('required', false).val('');
             return;
         }
         if (paidStatus === 'Fully paid') {
-            $('#followupSection').hide();
-            $('#followup_date').prop('required', false).val('');
+            followupSection.hide();
+            followupDateInput.prop('required', false).val('');
         } else {
-            $('#followupSection').show();
+            followupSection.show();
             // Only require if status is not 'paid' or if paid_status is set but not 'Fully paid'
             if (status === 'paid' && paidStatus && paidStatus !== 'Fully paid') {
-                $('#followup_date').prop('required', true);
+                followupDateInput.prop('required', true);
             } else if (status !== 'paid') {
-                $('#followup_date').prop('required', true);
+                followupDateInput.prop('required', true);
             }
         }
     });
@@ -183,21 +187,21 @@ $(document).ready(function() {
         $('#paid_status').prop('required', true);
         const paidStatus = $('#paid_status').val();
         if (paidStatus === 'Fully paid') {
-            $('#followupSection').hide();
+            followupSection.hide();
         } else {
-            $('#followupSection').show();
+            followupSection.show();
             if (paidStatus) {
-                $('#followup_date').prop('required', true);
+                followupDateInput.prop('required', true);
             }
         }
-    } else if (initialStatus === 'postpond') {
+    } else if (initialStatus === 'postpond' || initialStatus === 'cancel') {
         $('#paidStatusSection').hide();
-        $('#followupSection').hide();
-        $('#followup_date').prop('required', false).val('');
+        followupSection.hide();
+        followupDateInput.prop('required', false).val('');
     } else {
         $('#paidStatusSection').hide();
-        $('#followupSection').show();
-        $('#followup_date').prop('required', true);
+        followupSection.show();
+        followupDateInput.prop('required', true);
     }
 
     // Handle form submission
@@ -205,7 +209,7 @@ $(document).ready(function() {
         e.preventDefault();
 
         const formData = $(this).serialize();
-        const url = '{{ route('admin.post-sales.converted-leads.status-update-submit', $convertedLead->id) }}';
+        const url = statusUpdateSubmitUrl;
 
         // Show loading state
         const submitBtn = $(this).find('button[type="submit"]');
