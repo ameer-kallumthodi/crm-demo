@@ -452,7 +452,7 @@ class PostSalesConvertedLeadController extends Controller
 
             // Additional validation: followup_date not required when paid_status is 'Fully paid'
             $isFullyPaid = $request->paid_status === 'Fully paid';
-            if (!$isFullyPaid && !$request->followup_date) {
+            if (!$isFullyPaid && $request->status !== 'postpond' && !$request->followup_date) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Followup date is required.'
@@ -470,7 +470,7 @@ class PostSalesConvertedLeadController extends Controller
             $convertedLead->post_sales_remarks = $request->post_sales_remarks;
             
             // Only set followup date/time if not fully paid
-            if (!$isFullyPaid) {
+            if (!$isFullyPaid && $request->status !== 'postpond') {
                 $convertedLead->postsale_followupdate = $request->followup_date;
             } else {
                 $convertedLead->postsale_followupdate = null;
@@ -495,7 +495,7 @@ class PostSalesConvertedLeadController extends Controller
             $activity->activity_time = now()->toTimeString();
             
             // Only set followup date/time if not fully paid
-            if (!$isFullyPaid) {
+            if (!$isFullyPaid && $request->status !== 'postpond') {
                 $activity->followup_date = $request->followup_date;
                 $activity->followup_time = null;
             } else {

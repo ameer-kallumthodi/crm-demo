@@ -136,10 +136,18 @@ $(document).ready(function() {
         if (status === 'paid') {
             $('#paidStatusSection').show();
             $('#paid_status').prop('required', true);
+            $('#followupSection').show();
         } else {
             $('#paidStatusSection').hide();
             $('#paid_status').prop('required', false);
             $('#paid_status').val('');
+        }
+        if (status === 'postpond') {
+            $('#followupSection').hide();
+            $('#followup_date').prop('required', false).val('');
+        } else if (status !== 'paid') {
+            $('#followupSection').show();
+            $('#followup_date').prop('required', true);
         }
         // Trigger paid_status change to update followup section
         $('#paid_status').trigger('change');
@@ -148,13 +156,18 @@ $(document).ready(function() {
     // Handle paid_status change to show/hide followup fields
     $('#paid_status').on('change', function() {
         const paidStatus = $(this).val();
+        const status = $('#status').val();
+        if (status === 'postpond') {
+            $('#followupSection').hide();
+            $('#followup_date').prop('required', false).val('');
+            return;
+        }
         if (paidStatus === 'Fully paid') {
             $('#followupSection').hide();
-            $('#followup_date').prop('required', false);
+            $('#followup_date').prop('required', false).val('');
         } else {
             $('#followupSection').show();
             // Only require if status is not 'paid' or if paid_status is set but not 'Fully paid'
-            const status = $('#status').val();
             if (status === 'paid' && paidStatus && paidStatus !== 'Fully paid') {
                 $('#followup_date').prop('required', true);
             } else if (status !== 'paid') {
@@ -177,6 +190,10 @@ $(document).ready(function() {
                 $('#followup_date').prop('required', true);
             }
         }
+    } else if (initialStatus === 'postpond') {
+        $('#paidStatusSection').hide();
+        $('#followupSection').hide();
+        $('#followup_date').prop('required', false).val('');
     } else {
         $('#paidStatusSection').hide();
         $('#followupSection').show();
