@@ -219,6 +219,7 @@ class PostSalesConvertedLeadController extends Controller
             'unpaid' => 'bg-warning',
             'cancel' => 'bg-danger',
             'pending' => 'bg-info',
+            'postpond' => 'bg-dark',
             'followup' => 'bg-primary',
             default => 'bg-secondary'
         };
@@ -432,7 +433,7 @@ class PostSalesConvertedLeadController extends Controller
 
             // Validate request
             $validated = $request->validate([
-                'status' => 'required|in:paid,unpaid,cancel,pending,followup',
+                'status' => 'required|in:paid,unpaid,cancel,pending,postpond,followup',
                 'paid_status' => 'nullable|in:Fully paid,Registration Paid,Registration Partially paid,Certificate Paid,Certificate Partially paid,Exam Paid,Exam Fees Partially paid,Halticket Paid,Halticket Partially paid',
                 'call_status' => ['required', Rule::in(['RNR', 'Switch off', 'Attended', 'Whatsapp connected'])],
                 'called_date' => 'nullable|date',
