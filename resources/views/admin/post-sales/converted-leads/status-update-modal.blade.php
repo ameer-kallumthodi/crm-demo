@@ -43,7 +43,6 @@
                 <option value="paid" {{ old('status', $convertedLead->status) == 'paid' ? 'selected' : '' }}>Paid</option>
                 <option value="unpaid" {{ old('status', $convertedLead->status) == 'unpaid' ? 'selected' : '' }}>Unpaid</option>
                 <option value="cancel" {{ old('status', $convertedLead->status) == 'cancel' ? 'selected' : '' }}>Cancel</option>
-                <option value="pending" {{ old('status', $convertedLead->status) == 'pending' ? 'selected' : '' }}>Pending</option>
                 <option value="postpond" {{ old('status', $convertedLead->status) == 'postpond' ? 'selected' : '' }}>Postpond</option>
                 <option value="followup" {{ old('status', $convertedLead->status) == 'followup' ? 'selected' : '' }}>Followup</option>
             </select>
