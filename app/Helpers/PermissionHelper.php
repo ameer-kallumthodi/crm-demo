@@ -244,6 +244,7 @@ class PermissionHelper
             'leads/index',
             'leads/followup',
             'leads/registration-form-submitted',
+            'leads/pullbacked',
             'admin/converted-leads/index',
             'admin/reports/leads',
             'admin/marketing/index',
