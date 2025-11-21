@@ -18,6 +18,7 @@
         </span>
     </td>
     <td>{{ $lead->course ? $lead->course->title : 'N/A' }}</td>
+    <td>{{ $lead->telecaller ? $lead->telecaller->name : 'N/A' }}</td>
     <td>{{ $lead->remarks ?: 'N/A' }}</td>
     <td>{{ $lead->created_at->format('M d, Y') }}</td>
     <td>

@@ -100,7 +100,7 @@
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-3">
-                    <h5 class="mb-0">Pullbacked Leads List</h5>
+                <h5 class="mb-0">Pullbacked Leads List</h5>
                     <span class="badge bg-danger" id="pullbackedTotal">Total: 0</span>
                 </div>
                 @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_general_manager())
@@ -115,6 +115,7 @@
                     <table class="table table-striped" id="pullbackedLeadsTable" style="width:100%;">
                         <thead>
                             <tr>
+                                <th>Actions</th>
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Contact</th>
@@ -178,7 +179,7 @@
         const pullbackedTable = $(tableSelector).DataTable({
             processing: true,
             serverSide: true,
-            order: [[7, 'desc']],
+            order: [[8, 'desc']],
             pageLength: 25,
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             dom: "Bfrtip",
@@ -195,6 +196,7 @@
                 }
             },
             columns: [
+                { data: 'actions', name: 'actions', orderable: false, searchable: false },
                 { data: 'index', name: 'index', orderable: false, searchable: false },
                 { data: 'name', name: 'title' },
                 { data: 'contact', name: 'phone', orderable: false, searchable: false },
@@ -206,7 +208,7 @@
                 { data: 'remarks', name: 'remarks', orderable: false },
             ],
             columnDefs: [
-                { targets: [1, 2, 3, 4, 5, 6, 7, 8], render: function (data) { return data; } }
+                { targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], render: function (data) { return data; } }
             ],
             drawCallback: function (settings) {
                 if (settings.json && typeof settings.json.recordsFiltered !== 'undefined') {

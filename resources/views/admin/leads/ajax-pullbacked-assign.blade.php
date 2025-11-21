@@ -50,6 +50,7 @@
                                 <th style="width: 60%;">Lead</th>
                                 <th style="width: 60%;">Lead Status</th>
                                 <th style="width: 60%;">Course Interested</th>
+                                <th style="width: 30%;">Telecaller</th>
                                 <th style="width: 60%;">Remarks</th>
                                 <th style="width: 60%; white-space: nowrap;">Pullbacked On</th>
                                 <th style="width: 30%;">Action <input type="checkbox" id="check_all" class="bulk-checkbox ms-2"></th>

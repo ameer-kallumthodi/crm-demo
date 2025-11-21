@@ -1484,8 +1484,9 @@ class LeadController extends Controller
             ->withInput();
     }
 
-    public function show(Lead $lead)
+    public function show($leadId)
     {
+        $lead = Lead::withoutGlobalScope('exclude_pullbacked')->findOrFail($leadId);
         $canViewPullbackHistory = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
 
         $lead->load([
@@ -1495,8 +1496,7 @@ class LeadController extends Controller
             'telecaller', 
             'leadActivities' => function($query) use ($canViewPullbackHistory) {
                 $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id', 'is_pullbacked')
-                      ->with(['createdBy:id,name', 'leadStatus:id,title'])
-                      ->orderBy('created_at', 'desc');
+                      ->with(['createdBy:id,name', 'leadStatus:id,title']);
 
                 if (!$canViewPullbackHistory) {
                     $query->where(function ($subQuery) {
@@ -1504,6 +1504,8 @@ class LeadController extends Controller
                                  ->orWhere('is_pullbacked', 0);
                     });
                 }
+
+                $query->orderBy('created_at', 'desc');
             }
         ]);
         
@@ -1517,8 +1519,9 @@ class LeadController extends Controller
         ));
     }
 
-    public function ajax_show(Lead $lead)
+    public function ajax_show($leadId)
     {
+        $lead = Lead::withoutGlobalScope('exclude_pullbacked')->findOrFail($leadId);
         $canViewPullbackHistory = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
 
         $lead->load([
@@ -1528,8 +1531,7 @@ class LeadController extends Controller
             'telecaller', 
             'leadActivities' => function($query) use ($canViewPullbackHistory) {
                 $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id', 'is_pullbacked')
-                      ->with(['createdBy:id,name', 'leadStatus:id,title'])
-                      ->orderBy('created_at', 'desc');
+                      ->with(['createdBy:id,name', 'leadStatus:id,title']);
 
                 if (!$canViewPullbackHistory) {
                     $query->where(function ($subQuery) {
@@ -1537,6 +1539,8 @@ class LeadController extends Controller
                                  ->orWhere('is_pullbacked', 0);
                     });
                 }
+
+                $query->orderBy('created_at', 'desc');
             }
         ]);
         
@@ -1545,12 +1549,22 @@ class LeadController extends Controller
 
     public function status_update(Lead $lead)
     {
+        $canViewPullbackHistory = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+
         $leadStatuses = LeadStatus::all();
         $courses = Course::active()->orderBy('title')->get(['id', 'title']);
-        $lead->load(['leadActivities' => function($query) {
+        $lead->load(['leadActivities' => function($query) use ($canViewPullbackHistory) {
             $query->with(['leadStatus', 'createdBy'])->orderBy('created_at', 'desc');
+
+            if (!$canViewPullbackHistory) {
+                $query->where(function ($subQuery) {
+                    $subQuery->whereNull('is_pullbacked')
+                             ->orWhere('is_pullbacked', 0);
+                });
+            }
         }]);
-        return view('admin.leads.status-update-modal', compact('lead', 'leadStatuses', 'courses'));
+
+        return view('admin.leads.status-update-modal', compact('lead', 'leadStatuses', 'courses', 'canViewPullbackHistory'));
     }
 
     public function status_update_submit(Request $request, Lead $lead)
@@ -2635,6 +2649,7 @@ class LeadController extends Controller
                     ->update([
                         'is_pullbacked' => 1,
                         'updated_by' => AuthHelper::getCurrentUserId(),
+                        'updated_at' => now(),
                     ]);
 
                 if ($updated) {
@@ -2807,7 +2822,7 @@ class LeadController extends Controller
         return view('admin.leads.pullbacked', [
             'telecallers' => User::where('role_id', 3)->orderBy('name')->get(),
             'leadStatuses' => LeadStatus::where('is_active', 1)->orderBy('title')->get(),
-            'leadSources' => LeadSource::where('is_active', 1)->orderBy('title')->get(),
+            'leadSources' => LeadSource::where('is_active', 1)->orderBy('title')->get()->unique('title')->values(),
             'filters' => $filters,
         ]);
     }
@@ -2874,7 +2889,7 @@ class LeadController extends Controller
                     ]);
 
                 if ($updated) {
-                    LeadActivity::where('lead_id', $leadId)->update(['is_pullbacked' => 0]);
+                    LeadActivity::where('lead_id', $leadId)->update(['is_pullbacked' => 1]);
 
                     LeadActivity::create([
                         'lead_id' => $leadId,
@@ -2991,15 +3006,16 @@ class LeadController extends Controller
         $recordsFiltered = $query->count();
 
         $columns = [
-            0 => 'id',
-            1 => 'title',
-            2 => 'phone',
-            3 => 'lead_status_id',
-            4 => 'lead_source_id',
-            5 => 'telecaller_id',
-            6 => 'course_id',
-            7 => 'updated_at',
-            8 => 'remarks',
+            0 => 'id', // actions column (non-sortable)
+            1 => 'id',
+            2 => 'title',
+            3 => 'phone',
+            4 => 'lead_status_id',
+            5 => 'lead_source_id',
+            6 => 'telecaller_id',
+            7 => 'course_id',
+            8 => 'updated_at',
+            9 => 'remarks',
         ];
 
         $orderColumnIndex = (int) $request->input('order.0.column', 7);
@@ -3022,6 +3038,13 @@ class LeadController extends Controller
 
         $data = [];
         foreach ($leads as $index => $lead) {
+            $viewUrl = route('leads.ajax-show', $lead->id);
+            $actionsHtml = '<div class="btn-group" role="group">'
+                . '<a href="javascript:void(0);" class="btn btn-sm btn-outline-primary" '
+                . 'onclick="show_large_modal(\'' . $viewUrl . '\', \'View Lead\')" '
+                . 'title="View Lead"><i class="ti ti-eye"></i></a>'
+                . '</div>';
+
             $nameHtml = '<strong>' . e($lead->title ?? 'N/A') . '</strong><br>'
                 . '<small class="text-muted">' . trim(($lead->code ?? '') . ' ' . ($lead->phone ?? '')) . '</small>';
 
@@ -3036,6 +3059,7 @@ class LeadController extends Controller
             $remarksText = e($lead->remarks ?? 'N/A');
 
             $data[] = [
+                'actions' => $actionsHtml,
                 'index' => $start + $index + 1,
                 'name' => $nameHtml,
                 'contact' => $contactHtml,
