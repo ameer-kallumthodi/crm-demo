@@ -103,6 +103,8 @@
                                             <span class="badge bg-info">E-Service</span>
                                         @elseif($payment->invoice->invoice_type === 'batch_change')
                                             <span class="badge bg-warning">Batch Change</span>
+                                        @elseif($payment->invoice->invoice_type === 'batch_postpond')
+                                            <span class="badge bg-warning text-dark">Batch Postponed</span>
                                         @else
                                             N/A
                                         @endif
@@ -128,7 +130,7 @@
                                             @endif
                                         @elseif($payment->invoice->invoice_type === 'e-service')
                                             {{ $payment->invoice->service_name ?? 'N/A' }}
-                                        @elseif($payment->invoice->invoice_type === 'batch_change')
+                                        @elseif($payment->invoice->invoice_type === 'batch_change' || $payment->invoice->invoice_type === 'batch_postpond')
                                             {{ $payment->invoice->batch->title ?? 'N/A' }} ({{ $payment->invoice->batch->course->title ?? 'N/A' }})
                                         @else
                                             N/A

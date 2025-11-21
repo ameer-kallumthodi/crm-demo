@@ -117,6 +117,8 @@
                                             <span class="badge bg-info">E-Service</span>
                                         @elseif($invoice->invoice_type == 'batch_change')
                                             <span class="badge bg-warning">Batch Change</span>
+                                        @elseif($invoice->invoice_type == 'batch_postpond')
+                                            <span class="badge bg-warning text-dark">Batch Postponed</span>
                                         @endif
                                     </td>
                                     <td>
@@ -137,7 +139,7 @@
                                             @endif
                                         @elseif($invoice->invoice_type == 'e-service')
                                             {{ $invoice->service_name }}
-                                        @elseif($invoice->invoice_type == 'batch_change')
+                                        @elseif($invoice->invoice_type == 'batch_change' || $invoice->invoice_type == 'batch_postpond')
                                             {{ $invoice->batch->title ?? 'N/A' }} ({{ $invoice->batch->course->title ?? 'N/A' }})
                                         @endif
                                     </td>
@@ -158,6 +160,16 @@
                                         <a href="{{ route('admin.invoices.show', $invoice->id) }}" class="btn btn-sm btn-info" title="View Invoice">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @php
+                                            $canEditInvoice = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_finance();
+                                            $hasApprovedPayments = $invoice->payments->where('status', 'Approved')->count() > 0;
+                                        @endphp
+                                        @if($canEditInvoice && !$hasApprovedPayments)
+                                        <button type="button" class="btn btn-sm btn-outline-warning" title="Edit Amount"
+                                            onclick="show_small_modal('{{ route('admin.invoices.edit-amount', $invoice->id) }}', 'Edit Invoice Amount')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        @endif
                                         <a href="{{ route('admin.payments.index', $invoice->id) }}" class="btn btn-sm btn-primary" title="Manage Payments">
                                             <i class="fas fa-credit-card"></i>
                                         </a>

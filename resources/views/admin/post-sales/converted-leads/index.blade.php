@@ -105,12 +105,18 @@
                 <!-- Desktop Header -->
                 <div class="d-none d-md-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Converted Students</h5>
+                    <button type="button" class="btn btn-warning btn-sm" onclick="show_large_modal('{{ route('admin.post-sales.postponed-batches') }}', 'Postponed Batches')">
+                        <i class="ti ti-calendar-time me-1"></i> Postponed Batches
+                    </button>
                 </div>
 
                 <!-- Mobile Header -->
                 <div class="d-md-none">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Converted Students</h5>
+                        <button type="button" class="btn btn-warning btn-sm" onclick="show_large_modal('{{ route('admin.post-sales.postponed-batches') }}', 'Postponed Batches')">
+                            <i class="ti ti-calendar-time me-1"></i> Postponed
+                        </button>
                     </div>
                 </div>
             </div>
@@ -625,7 +631,7 @@ $columns = [
                 
                 // Add data attribute to track student ID and avoid duplicates
                 const cardClasses = ['card', 'mb-2'];
-                if (statusValue === 'cancel') {
+                if (isCancelledFlag) {
                     cardClasses.push('cancelled-card');
                 }
                 let cardHtml = '<div class="' + cardClasses.join(' ') + '" data-student-id="' + (data.id || '') + '">';

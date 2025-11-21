@@ -48,6 +48,11 @@
                                 <th>Amount</th>
                                 <th>Description</th>
                                 <th>Status</th>
+                                <th>Postponed To Batch</th>
+                                <th>Postponed Start Date</th>
+                                <th>Postponed End Date</th>
+                                <th>Postponed Amount</th>
+                                <th>Postponed Status</th>
                                 <th>Created At</th>
                                 <th>Actions</th>
                             </tr>
@@ -73,12 +78,51 @@
                                         <span class="badge bg-danger">Inactive</span>
                                     @endif
                                 </td>
+                                <td>
+                                    @if($batch->postponeBatch)
+                                        <span class="badge bg-info">{{ $batch->postponeBatch->title }}</span>
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($batch->postpone_start_date)
+                                        {{ \Carbon\Carbon::parse($batch->postpone_start_date)->format('M d, Y') }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($batch->postpone_end_date)
+                                        {{ \Carbon\Carbon::parse($batch->postpone_end_date)->format('M d, Y') }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if(!is_null($batch->batch_postpone_amount))
+                                        ₹ {{ number_format($batch->batch_postpone_amount, 2) }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($batch->is_postpone_active)
+                                        <span class="badge bg-success">Active</span>
+                                    @else
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    @endif
+                                </td>
                                 <td>{{ $batch->created_at->format('M d, Y') }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a href="javascript:void(0);" class="btn btn-sm btn-info"
                                             onclick="show_small_modal('{{ route('admin.batches.edit', $batch->id) }}', 'Edit Batch')">
                                             <i class="ti ti-edit"></i>
+                                        </a>
+                                        <a href="javascript:void(0);" class="btn btn-sm btn-warning"
+                                            onclick="show_ajax_modal('{{ route('admin.batches.postpone', $batch->id) }}', 'Postponed Batch')" title="Postponed">
+                                            <i class="ti ti-calendar-time"></i>
                                         </a>
                                         <a href="javascript:void(0);" class="btn btn-sm btn-danger"
                                             onclick="delete_modal('{{ route('admin.batches.destroy', $batch->id) }}')" title="Delete">

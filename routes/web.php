@@ -339,6 +339,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::resource('batches', App\Http\Controllers\BatchController::class);
         Route::get('/batches-add', [App\Http\Controllers\BatchController::class, 'ajax_add'])->name('batches.add');
         Route::get('/batches-edit/{id}', [App\Http\Controllers\BatchController::class, 'ajax_edit'])->name('batches.edit');
+        Route::get('/batches-postpone/{id}', [App\Http\Controllers\BatchController::class, 'ajax_postpone'])->name('batches.postpone');
+        Route::post('/batches-postpone/{id}', [App\Http\Controllers\BatchController::class, 'postpone_submit'])->name('batches.postpone.submit');
         Route::post('/batches-submit', [App\Http\Controllers\BatchController::class, 'submit'])->name('batches.submit');
         Route::put('/batches-update/{id}', [App\Http\Controllers\BatchController::class, 'update'])->name('batches.update');
 
@@ -621,7 +623,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // Post-Sales Converted Students
         Route::get('/post-sales-converted-students', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'index'])->name('post-sales.converted-leads.index');
         Route::get('/post-sales-converted-students/data', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'getPostSalesConvertedStudentsData'])->name('post-sales.converted-leads.data');
+        Route::get('/post-sales-postponed-batches', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'postponedBatches'])->name('post-sales.postponed-batches');
         Route::get('/post-sales-converted-students/{id}', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'show'])->name('post-sales.converted-leads.show');
+        Route::get('/post-sales-converted-students/{id}/postponed-batch', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'postponedBatch'])->name('post-sales.converted-leads.postponed-batch');
+        Route::post('/post-sales-converted-students/{id}/postponed-batch', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'postponedBatchSubmit'])->name('post-sales.converted-leads.postponed-batch.submit');
         Route::get('/post-sales-converted-students/{id}/status-update', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'statusUpdate'])->name('post-sales.converted-leads.status-update');
         Route::post('/post-sales-converted-students/{id}/status-update', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'statusUpdateSubmit'])->name('post-sales.converted-leads.status-update-submit');
         Route::get('/post-sales-converted-students/{id}/cancel-flag', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'cancelFlag'])->name('post-sales.converted-leads.cancel-flag');
@@ -717,6 +722,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/invoices/{id}', [App\Http\Controllers\InvoiceController::class, 'show'])->name('invoices.show');
         Route::get('/invoices/create/{studentId}', [App\Http\Controllers\InvoiceController::class, 'create'])->name('invoices.create');
         Route::post('/invoices/store/{studentId}', [App\Http\Controllers\InvoiceController::class, 'store'])->name('invoices.store');
+        Route::get('/invoices/{id}/edit-amount', [App\Http\Controllers\InvoiceController::class, 'editAmount'])->name('invoices.edit-amount');
+        Route::post('/invoices/{id}/update-amount', [App\Http\Controllers\InvoiceController::class, 'updateAmount'])->name('invoices.update-amount');
 
         // Payment Routes
         Route::get('/payments', [App\Http\Controllers\PaymentController::class, 'listAll'])->name('payments.list');

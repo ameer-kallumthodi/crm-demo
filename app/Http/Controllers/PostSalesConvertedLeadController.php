@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Helpers\RoleHelper;
 use App\Helpers\AuthHelper;
+use App\Models\Batch;
 use App\Models\ConvertedLead;
 use App\Models\ConvertedStudentActivity;
 use App\Models\Course;
+use App\Models\Invoice;
 use App\Models\LeadActivity;
 use App\Models\User;
 use App\Services\LeadCallLogService;
@@ -42,7 +44,7 @@ class PostSalesConvertedLeadController extends Controller
             // Build the query
             $query = ConvertedLead::with([
                 'course',
-                'batch',
+                'batch.postponeBatch',
                 'admissionBatch',
                 'subject',
                 'lead.telecaller:id,name'
@@ -214,7 +216,7 @@ class PostSalesConvertedLeadController extends Controller
      */
     private function renderStatus($convertedLead)
     {
-        $status = $convertedLead->status ?? 'N/A';
+        $status = $convertedLead->postsale_status ?? 'N/A';
         $badgeClass = match($status) {
             'paid' => 'bg-success',
             'unpaid' => 'bg-warning',
@@ -332,7 +334,28 @@ class PostSalesConvertedLeadController extends Controller
         $html .= '<button type="button" class="btn btn-sm btn-outline-success" title="Status Update" onclick="show_ajax_modal(\'' . route('admin.post-sales.converted-leads.status-update', $convertedLead->id) . '\', \'Status Update\')">';
         $html .= '<i class="ti ti-edit"></i>';
         $html .= '</button>';
-        if (strcasecmp($convertedLead->status ?? '', 'cancel') === 0) {
+        
+        // Check if postponed batch button should be shown
+        $batch = $convertedLead->batch;
+        $shouldShowPostponedButton = false;
+        if ($batch && $batch->is_postpone_active == 1 && strcasecmp($convertedLead->postsale_status ?? '', 'postpond') === 0) {
+            $today = now()->toDateString();
+            if ($batch->postpone_start_date && $batch->postpone_end_date) {
+                $startDate = $batch->postpone_start_date->toDateString();
+                $endDate = $batch->postpone_end_date->toDateString();
+                if ($today >= $startDate && $today <= $endDate) {
+                    $shouldShowPostponedButton = true;
+                }
+            }
+        }
+        
+        if ($shouldShowPostponedButton) {
+            $html .= '<button type="button" class="btn btn-sm btn-warning" title="Postponed Batch" onclick="show_ajax_modal(\'' . route('admin.post-sales.converted-leads.postponed-batch', $convertedLead->id) . '\', \'Postponed Batch\')">';
+            $html .= '<i class="ti ti-calendar-time"></i>';
+            $html .= '</button>';
+        }
+        
+        if (strcasecmp($convertedLead->postsale_status ?? '', 'cancel') === 0) {
             $cancelBtnClass = $convertedLead->is_cancelled ? 'btn-danger' : 'btn-outline-danger';
             $cancelBtnTitle = $convertedLead->is_cancelled ? 'Update cancellation confirmation' : 'Confirm cancellation';
             $html .= '<button type="button" class="btn btn-sm ' . $cancelBtnClass . '" title="' . $cancelBtnTitle . '" onclick="show_ajax_modal(\'' . route('admin.post-sales.converted-leads.cancel-flag', $convertedLead->id) . '\', \'Cancellation Confirmation\')">';
@@ -345,7 +368,7 @@ class PostSalesConvertedLeadController extends Controller
 
     private function getRowClass($convertedLead): string
     {
-        return strcasecmp($convertedLead->status ?? '', 'cancel') === 0 ? 'table-danger cancelled-row' : '';
+        return $convertedLead->is_cancelled == 1 ? 'table-danger cancelled-row' : '';
     }
 
     /**
@@ -357,7 +380,7 @@ class PostSalesConvertedLeadController extends Controller
             'id' => $convertedLead->id,
             'name' => $convertedLead->name ?? '',
             'register_number' => $convertedLead->register_number ?? 'No register #',
-            'status' => $convertedLead->status ?? null,
+            'status' => $convertedLead->postsale_status ?? null,
             'is_cancelled' => (bool) $convertedLead->is_cancelled,
             'phone' => \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone),
             'email' => $convertedLead->email ?? 'N/A',
@@ -426,6 +449,141 @@ class PostSalesConvertedLeadController extends Controller
     }
 
     /**
+     * Show all postponed batches
+     */
+    public function postponedBatches()
+    {
+        $this->ensureAccess();
+
+        $postponedBatches = Batch::with(['course', 'postponeBatch'])
+            ->where('is_postpone_active', 1)
+            ->whereNotNull('postpone_start_date')
+            ->whereNotNull('postpone_end_date')
+            ->orderBy('postpone_start_date', 'asc')
+            ->get();
+
+        return view('admin.post-sales.converted-leads.postponed-batches-list', compact('postponedBatches'));
+    }
+
+    /**
+     * Show postponed batch modal
+     */
+    public function postponedBatch($id)
+    {
+        $this->ensureAccess();
+
+        $convertedLead = ConvertedLead::with([
+            'batch.postponeBatch',
+            'course',
+            'lead.telecaller:id,name'
+        ])->findOrFail($id);
+
+        return view('admin.post-sales.converted-leads.postponed-batch-modal', compact('convertedLead'));
+    }
+
+    /**
+     * Handle postponed batch form submission
+     */
+    public function postponedBatchSubmit(Request $request, $id)
+    {
+        $this->ensureAccess();
+
+        try {
+            DB::beginTransaction();
+
+            $convertedLead = ConvertedLead::with('batch.postponeBatch')->findOrFail($id);
+            
+            // Validate that batch has postpone information
+            if (!$convertedLead->batch || !$convertedLead->batch->is_postpone_active || !$convertedLead->batch->postponeBatch) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Batch does not have valid postpone information.'
+                ], 422);
+            }
+
+            $oldBatch = $convertedLead->batch;
+            $newBatch = $oldBatch->postponeBatch;
+            $postponeAmount = $oldBatch->batch_postpone_amount ?? 0;
+
+            // Update converted lead
+            $convertedLead->batch_id = $newBatch->id;
+            $convertedLead->admission_batch_id = null;
+            $convertedLead->is_postpond_batch = 1;
+            $convertedLead->updated_by = AuthHelper::getCurrentUserId();
+            $convertedLead->save();
+
+            // Create invoice if postpone amount exists
+            if ($postponeAmount > 0) {
+                $invoiceNumber = $this->generateInvoiceNumber();
+                Invoice::create([
+                    'invoice_number' => $invoiceNumber,
+                    'invoice_type' => 'batch_postpond',
+                    'batch_id' => $newBatch->id,
+                    'student_id' => $convertedLead->id,
+                    'total_amount' => $postponeAmount,
+                    'invoice_date' => now()->toDateString(),
+                    'created_by' => AuthHelper::getCurrentUserId(),
+                    'updated_by' => AuthHelper::getCurrentUserId(),
+                ]);
+            }
+
+            // Create activity record
+            $activity = new ConvertedStudentActivity();
+            $activity->converted_lead_id = $convertedLead->id;
+            $activity->activity_type = 'batch_postponed';
+            $activity->description = "Batch postponed from '{$oldBatch->title}' to '{$newBatch->title}'";
+            $activity->remark = "Postponed batch transfer. Postponed amount: ₹" . number_format($postponeAmount, 2);
+            $activity->activity_date = now()->toDateString();
+            $activity->activity_time = now()->toTimeString();
+            $activity->created_by = AuthHelper::getCurrentUserId();
+            $activity->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Student moved to postponed batch successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('[PostSalesConvertedLeadController@postponedBatchSubmit] Error: ' . $e->getMessage(), [
+                'converted_lead_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while processing the postponed batch. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate unique invoice number
+     */
+    private function generateInvoiceNumber()
+    {
+        $prefix = 'INV';
+        $year = now()->year;
+        $month = now()->format('m');
+        
+        // Get the last invoice number for this month
+        $lastInvoice = Invoice::where('invoice_number', 'like', $prefix . $year . $month . '%')
+            ->orderBy('invoice_number', 'desc')
+            ->first();
+        
+        if ($lastInvoice) {
+            $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1;
+        }
+        
+        return $prefix . $year . $month . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Show status update modal
      */
     public function statusUpdate($id)
@@ -481,8 +639,8 @@ class PostSalesConvertedLeadController extends Controller
 
             DB::beginTransaction();
 
-            // Update converted lead
-            $convertedLead->status = $request->status;
+            // Update converted lead - only update postsale_status, not status
+            $convertedLead->postsale_status = $request->status;
             $convertedLead->paid_status = $request->paid_status;
             $convertedLead->call_status = $request->call_status;
             $convertedLead->called_date = $request->called_date;
@@ -563,7 +721,7 @@ class PostSalesConvertedLeadController extends Controller
 
         $convertedLead = ConvertedLead::findOrFail($id);
 
-        if (strcasecmp($convertedLead->status ?? '', 'cancel') !== 0) {
+        if (strcasecmp($convertedLead->postsale_status ?? '', 'cancel') !== 0) {
             abort(404, 'Cancellation confirmation is only available for cancelled leads.');
         }
 
@@ -579,7 +737,7 @@ class PostSalesConvertedLeadController extends Controller
 
         $convertedLead = ConvertedLead::findOrFail($id);
 
-        if (strcasecmp($convertedLead->status ?? '', 'cancel') !== 0) {
+        if (strcasecmp($convertedLead->postsale_status ?? '', 'cancel') !== 0) {
             return response()->json([
                 'success' => false,
                 'message' => 'Only leads with status cancel can update this flag.'

@@ -16,6 +16,11 @@ class Batch extends Model
         'amount',
         'course_id',
         'is_active',
+        'postpone_batch_id',
+        'postpone_start_date',
+        'postpone_end_date',
+        'batch_postpone_amount',
+        'is_postpone_active',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -23,7 +28,11 @@ class Batch extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_postpone_active' => 'boolean',
         'amount' => 'decimal:2',
+        'batch_postpone_amount' => 'decimal:2',
+        'postpone_start_date' => 'date',
+        'postpone_end_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -57,6 +66,16 @@ class Batch extends Model
     public function admissionBatches()
     {
         return $this->hasMany(AdmissionBatch::class);
+    }
+
+    public function postponeBatch()
+    {
+        return $this->belongsTo(Batch::class, 'postpone_batch_id');
+    }
+
+    public function postponedBatches()
+    {
+        return $this->hasMany(Batch::class, 'postpone_batch_id');
     }
 
     /**

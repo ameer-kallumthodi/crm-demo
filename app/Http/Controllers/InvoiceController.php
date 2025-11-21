@@ -167,6 +167,49 @@ class InvoiceController extends Controller
     }
 
     /**
+     * Show modal to edit invoice amount
+     */
+    public function editAmount($invoiceId)
+    {
+        $invoice = Invoice::with(['student', 'batch', 'course'])->findOrFail($invoiceId);
+        $this->checkStudentAccess($invoice->student);
+
+        return view('admin.invoices.edit-amount-modal', compact('invoice'));
+    }
+
+    /**
+     * Update invoice amount
+     */
+    public function updateAmount(Request $request, $invoiceId)
+    {
+        $invoice = Invoice::with('student')->findOrFail($invoiceId);
+        $this->checkStudentAccess($invoice->student);
+
+        $request->validate([
+            'total_amount' => 'required|numeric|min:' . $invoice->pending_amount,
+        ], [
+            'total_amount.min' => 'New amount cannot be less than the pending amount (₹' . number_format($invoice->pending_amount, 2) . ').',
+        ]);
+
+        $invoice->total_amount = $request->total_amount;
+
+        if ($invoice->paid_amount >= $invoice->total_amount) {
+            $invoice->status = 'Fully Paid';
+        } elseif ($invoice->paid_amount > 0) {
+            $invoice->status = 'Partially Paid';
+        } else {
+            $invoice->status = 'Not Paid';
+        }
+
+        $invoice->updated_by = AuthHelper::getCurrentUserId();
+        $invoice->save();
+
+        return redirect()
+            ->route('admin.invoices.index', $invoice->student_id)
+            ->with('message_success', 'Invoice amount updated successfully.');
+    }
+
+    /**
      * Auto-generate invoice when converting a lead
      */
     public function autoGenerate($studentId, $courseId)

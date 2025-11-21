@@ -184,6 +184,10 @@
                                                             <span class="badge bg-warning fs-6 px-3 py-2">
                                                                 <i class="fas fa-exchange-alt me-1"></i>Batch Change
                                                             </span>
+                                                        @elseif($invoice->invoice_type == 'batch_postpond')
+                                                            <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                                                                <i class="fas fa-calendar-alt me-1"></i>Batch Postponed
+                                                            </span>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -218,6 +222,8 @@
                                                             <i class="fas fa-laptop text-info me-1"></i>{{ $invoice->service_name ?? 'N/A' }}
                                                         @elseif($invoice->invoice_type == 'batch_change')
                                                             <i class="fas fa-exchange-alt text-warning me-1"></i>{{ $invoice->batch->title ?? 'N/A' }} ({{ $invoice->batch->course->title ?? 'N/A' }})
+                                                        @elseif($invoice->invoice_type == 'batch_postpond')
+                                                            <i class="fas fa-calendar-alt text-warning me-1"></i>{{ $invoice->batch->title ?? 'N/A' }} ({{ $invoice->batch->course->title ?? 'N/A' }})
                                                         @endif
                                                     </div>
                                                 </div>
@@ -287,6 +293,7 @@
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive" style="overflow-x: auto;">
+                                @if($payments->count())
                                 <table class="table table-hover mb-0 datatable" id="paymentsTable" style="min-width: 1200px;">
                                     <thead class="table-light">
                                         <tr>
@@ -305,7 +312,7 @@
                                         </tr>
                                     </thead>
                             <tbody>
-                                @forelse($payments as $index => $payment)
+                                @foreach($payments as $index => $payment)
                                 <tr class="align-middle">
                                     <td class="fw-semibold">{{ $index + 1 }}</td>
                                     <td>
@@ -457,13 +464,14 @@
                                         </div>
                                     </td>
                                 </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="14" class="text-center">No payments found for this invoice.</td>
-                                </tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
                         </table>
+                                @else
+                                <div class="py-4 text-center text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>No payments found for this invoice.
+                                </div>
+                                @endif
                     </div>
 
                     <!-- Print Invoice Button -->

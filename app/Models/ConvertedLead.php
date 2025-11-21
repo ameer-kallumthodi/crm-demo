@@ -20,6 +20,7 @@ class ConvertedLead extends Model
         'username',
         'password',
         'status',
+        'postsale_status',
         'is_cancelled',
         'postsale_followupdate',
         'postsale_followuptime',
@@ -38,6 +39,7 @@ class ConvertedLead extends Model
         'board_id',
         'subject_id',
         'admission_batch_id',
+        'is_postpond_batch',
         'remarks',
         'created_by',
         'updated_by',
@@ -67,6 +69,7 @@ class ConvertedLead extends Model
         'called_time' => 'datetime:H:i:s',
         'is_course_changed' => 'boolean',
         'is_cancelled' => 'boolean',
+        'is_postpond_batch' => 'boolean',
     ];
 
     // Relationships

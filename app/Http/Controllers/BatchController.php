@@ -15,7 +15,7 @@ class BatchController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $batches = Batch::with(['course', 'createdBy', 'updatedBy'])->orderBy('created_at', 'desc')->get();
+        $batches = Batch::with(['course', 'createdBy', 'updatedBy', 'postponeBatch'])->orderBy('created_at', 'desc')->get();
         return view('admin.batches.index', compact('batches'));
     }
 
@@ -192,14 +192,27 @@ class BatchController extends Controller
             ]);
 
             $batch = Batch::findOrFail($id);
-            $batch->update([
+            
+            // Prepare update data
+            $updateData = [
                 'title' => $request->title,
                 'course_id' => $request->course_id,
                 'description' => $request->description,
                 'amount' => $request->input('amount'),
                 'is_active' => $request->is_active,
                 'updated_by' => AuthHelper::getCurrentUserId(),
-            ]);
+            ];
+            
+            // If status is being changed to Inactive (0), clear all postpone fields
+            if ($request->is_active == 0) {
+                $updateData['postpone_batch_id'] = null;
+                $updateData['postpone_start_date'] = null;
+                $updateData['postpone_end_date'] = null;
+                $updateData['batch_postpone_amount'] = null;
+                $updateData['is_postpone_active'] = 0;
+            }
+            
+            $batch->update($updateData);
 
             return redirect()->route('admin.batches.index')->with('message_success', 'Batch updated successfully!');
         } catch (\Throwable $e) {
@@ -275,5 +288,125 @@ class BatchController extends Controller
             'success' => true,
             'batches' => $batches
         ]);
+    }
+
+    /**
+     * Show postpone modal for a batch
+     */
+    public function ajax_postpone($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
+        }
+
+        $batch = Batch::with(['course', 'postponeBatch'])->findOrFail($id);
+        
+        // Get batches under the same course (excluding the current batch)
+        $postponeBatches = Batch::where('course_id', $batch->course_id)
+            ->where('id', '!=', $batch->id)
+            ->where('is_active', true)
+            ->orderBy('title')
+            ->get();
+
+        return view('admin.batches.postpone', compact('batch', 'postponeBatches'));
+    }
+
+    /**
+     * Store postpone information for a batch
+     */
+    public function postpone_submit(Request $request, $id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
+        }
+
+        try {
+            $request->merge([
+                'batch_postpone_amount' => $request->filled('batch_postpone_amount') ? $request->batch_postpone_amount : null,
+                'set_inactive' => $request->has('set_inactive') && $request->set_inactive == 1 ? 1 : 0,
+            ]);
+
+            // If setting to inactive, clear all postpone fields
+            if ($request->set_inactive == 1) {
+                $request->merge([
+                    'postpone_batch_id' => null,
+                    'postpone_start_date' => null,
+                    'postpone_end_date' => null,
+                    'batch_postpone_amount' => null,
+                ]);
+            }
+
+            // Validate based on whether inactive is being set
+            if ($request->set_inactive == 1) {
+                // If inactive, postpone fields are not required
+                $request->validate([
+                    'set_inactive' => 'nullable|boolean',
+                    'postpone_batch_id' => 'nullable|exists:batches,id',
+                    'postpone_start_date' => 'nullable|date',
+                    'postpone_end_date' => 'nullable|date',
+                    'batch_postpone_amount' => 'nullable|numeric|min:0',
+                ]);
+            } else {
+                // If active, postpone fields are required
+                $request->validate([
+                    'set_inactive' => 'nullable|boolean',
+                    'postpone_batch_id' => 'required|exists:batches,id',
+                    'postpone_start_date' => 'required|date',
+                    'postpone_end_date' => 'required|date|after_or_equal:postpone_start_date',
+                    'batch_postpone_amount' => 'nullable|numeric|min:0',
+                ]);
+            }
+
+            $batch = Batch::findOrFail($id);
+            
+            // Prepare update data
+            $updateData = [
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ];
+            
+            if ($request->set_inactive == 1) {
+                // Clear all postpone fields when postponed status is inactive
+                $updateData['postpone_batch_id'] = null;
+                $updateData['postpone_start_date'] = null;
+                $updateData['postpone_end_date'] = null;
+                $updateData['batch_postpone_amount'] = null;
+                $updateData['is_postpone_active'] = 0;
+            } else {
+                // Set postpone fields when postponed status is active
+                $updateData['postpone_batch_id'] = $request->postpone_batch_id;
+                $updateData['postpone_start_date'] = $request->postpone_start_date;
+                $updateData['postpone_end_date'] = $request->postpone_end_date;
+                $updateData['batch_postpone_amount'] = $request->input('batch_postpone_amount');
+                $updateData['is_postpone_active'] = 1;
+            }
+            
+            $batch->update($updateData);
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Batch postponed successfully!'
+                ]);
+            }
+            return redirect()->route('admin.batches.index')->with('message_success', 'Batch postponed successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed.',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            return back()->withInput()->withErrors($e->errors());
+        } catch (\Throwable $e) {
+            \Log::error('[BatchController@postpone_submit] Error postponing batch: ' . $e->getMessage(), ['batch_id' => $id]);
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while postponing the batch. Please try again.'
+                ], 500);
+            }
+            return back()->withInput()->with('message_danger', 'An error occurred while postponing the batch. Please try again.');
+        }
     }
 }
