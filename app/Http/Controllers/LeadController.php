@@ -1486,15 +1486,24 @@ class LeadController extends Controller
 
     public function show(Lead $lead)
     {
+        $canViewPullbackHistory = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+
         $lead->load([
             'leadStatus', 
             'leadSource', 
             'course', 
             'telecaller', 
-            'leadActivities' => function($query) {
-                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id')
-                      ->with('createdBy:id,name')
+            'leadActivities' => function($query) use ($canViewPullbackHistory) {
+                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id', 'is_pullbacked')
+                      ->with(['createdBy:id,name', 'leadStatus:id,title'])
                       ->orderBy('created_at', 'desc');
+
+                if (!$canViewPullbackHistory) {
+                    $query->where(function ($subQuery) {
+                        $subQuery->whereNull('is_pullbacked')
+                                 ->orWhere('is_pullbacked', 0);
+                    });
+                }
             }
         ]);
         
@@ -1504,25 +1513,34 @@ class LeadController extends Controller
         $telecallerList = User::where('role_id', 3)->pluck('name', 'id')->toArray();
 
         return view('admin.leads.show', compact(
-            'lead', 'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList'
+            'lead', 'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList', 'canViewPullbackHistory'
         ));
     }
 
     public function ajax_show(Lead $lead)
     {
+        $canViewPullbackHistory = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+
         $lead->load([
             'leadStatus', 
             'leadSource', 
             'course', 
             'telecaller', 
-            'leadActivities' => function($query) {
-                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by')
-                      ->with('createdBy:id,name')
+            'leadActivities' => function($query) use ($canViewPullbackHistory) {
+                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id', 'is_pullbacked')
+                      ->with(['createdBy:id,name', 'leadStatus:id,title'])
                       ->orderBy('created_at', 'desc');
+
+                if (!$canViewPullbackHistory) {
+                    $query->where(function ($subQuery) {
+                        $subQuery->whereNull('is_pullbacked')
+                                 ->orWhere('is_pullbacked', 0);
+                    });
+                }
             }
         ]);
         
-        return view('admin.leads.show-modal', compact('lead'));
+        return view('admin.leads.show-modal', compact('lead', 'canViewPullbackHistory'));
     }
 
     public function status_update(Lead $lead)
@@ -2537,6 +2555,505 @@ class LeadController extends Controller
         }
 
         return redirect()->back()->with('message_success', "Successfully reassigned {$successCount} leads!");
+    }
+
+    /**
+     * Show pullback leads form
+     */
+    public function ajaxPullbackLeads()
+    {
+        $canAccessPullback = RoleHelper::is_admin_or_super_admin() ||
+                             RoleHelper::is_general_manager();
+
+        if (!$canAccessPullback) {
+            abort(403, 'You do not have permission to pullback leads.');
+        }
+
+        $currentUser = AuthHelper::getCurrentUser();
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+        
+        if ($isTeamLead && !$isSeniorManager) {
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds[] = AuthHelper::getCurrentUserId();
+                $telecallers = User::whereIn('id', $teamMemberIds)->get();
+            } else {
+                $telecallers = collect([$currentUser]);
+            }
+        } elseif ($isTelecaller && !$isSeniorManager && !$isTeamLead) {
+            $telecallers = collect([$currentUser]);
+        } else {
+            $telecallers = User::where('role_id', 3)->get();
+        }
+
+        $data = [
+            'telecallers' => $telecallers,
+            'leadStatuses' => LeadStatus::where('is_active', 1)->get(),
+            'leadSources' => LeadSource::where('is_active', 1)->get(),
+        ];
+
+        return view('admin.leads.ajax-pullback', $data);
+    }
+
+    /**
+     * Process pullback operation
+     */
+    public function pullbackLeads(Request $request)
+    {
+        $canPullback = RoleHelper::is_admin_or_super_admin() || 
+                       RoleHelper::is_general_manager();
+
+        if (!$canPullback) {
+            return redirect()->back()
+                ->with('error', 'You do not have permission to pullback leads.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'telecaller_id' => 'required|exists:users,id',
+            'lead_source_id' => 'required|exists:lead_sources,id',
+            'lead_status_id' => 'required|exists:lead_statuses,id',
+            'lead_from_date' => 'required|date',
+            'lead_to_date' => 'required|date',
+            'lead_id' => 'required|array|min:1',
+            'lead_id.*' => 'exists:leads,id'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $successCount = 0;
+
+        DB::beginTransaction();
+        try {
+            foreach ($request->lead_id as $leadId) {
+                $updated = Lead::where('id', $leadId)
+                    ->where('is_pullbacked', 0)
+                    ->update([
+                        'is_pullbacked' => 1,
+                        'updated_by' => AuthHelper::getCurrentUserId(),
+                    ]);
+
+                if ($updated) {
+                    LeadActivity::where('lead_id', $leadId)->update(['is_pullbacked' => 1]);
+
+                    LeadActivity::create([
+                        'lead_id' => $leadId,
+                        'lead_status_id' => $request->lead_status_id,
+                        'activity_type' => 'pullback',
+                        'description' => 'Lead pullbacked via bulk operation',
+                        'remarks' => $request->remarks ?? null,
+                        'is_pullbacked' => 1,
+                        'created_by' => AuthHelper::getCurrentUserId(),
+                        'updated_by' => AuthHelper::getCurrentUserId(),
+                    ]);
+
+                    $successCount++;
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Pullback leads failed', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('message_danger', 'Failed to pullback leads. Please try again.');
+        }
+
+        return redirect()->back()->with('message_success', "Successfully pullbacked {$successCount} leads!");
+    }
+
+    /**
+     * Get leads for pullback operation
+     */
+    public function getPullbackLeads(Request $request)
+    {
+        $canAccessPullback = RoleHelper::is_admin_or_super_admin() ||
+                             RoleHelper::is_general_manager();
+
+        if (!$canAccessPullback) {
+            abort(403, 'You do not have permission to pullback leads.');
+        }
+
+        $fromDate = date('Y-m-d H:i:s', strtotime($request->from_date . ' 00:00:00'));
+        $toDate = date('Y-m-d H:i:s', strtotime($request->to_date . ' 23:59:59'));
+
+        $leads = Lead::select([
+            'id', 'title', 'code', 'phone', 'email', 'lead_status_id', 'lead_source_id', 
+            'course_id', 'telecaller_id', 'place', 'rating', 'interest_status', 
+            'followup_date', 'remarks', 'is_converted', 'created_at'
+        ])
+        ->where('lead_source_id', $request->lead_source_id)
+        ->where('telecaller_id', $request->tele_caller_id)
+        ->where('lead_status_id', $request->lead_status_id)
+        ->where('is_pullbacked', 0)
+        ->where('created_at', '>=', $fromDate)
+        ->where('created_at', '<=', $toDate)
+        ->with([
+            'leadStatus:id,title', 
+            'leadSource:id,title', 
+            'telecaller:id,name', 
+            'course:id,title'
+        ])
+        ->get();
+
+        return view('admin.leads.partials.leads-table-rows-pullback', compact('leads'));
+    }
+
+    /**
+     * Get pullbacked leads eligible for assignment
+     */
+    public function getAssignablePullbackedLeads(Request $request)
+    {
+        $canAccess = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+
+        if (!$canAccess) {
+            abort(403, 'You do not have permission to view pullbacked leads.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'tele_caller_id' => 'required|exists:users,id',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid filters provided.',
+            ], 422);
+        }
+
+        $fromDate = date('Y-m-d H:i:s', strtotime($request->from_date . ' 00:00:00'));
+        $toDate = date('Y-m-d H:i:s', strtotime($request->to_date . ' 23:59:59'));
+
+        $leads = Lead::withoutGlobalScope('exclude_pullbacked')
+            ->select([
+                'id', 'title', 'code', 'phone', 'email', 'lead_status_id',
+                'lead_source_id', 'course_id', 'telecaller_id', 'remarks', 'created_at'
+            ])
+            ->where('telecaller_id', $request->tele_caller_id)
+            ->where('is_pullbacked', 1)
+            ->whereBetween('updated_at', [$fromDate, $toDate])
+            ->with([
+                'leadStatus:id,title',
+                'leadSource:id,title',
+                'course:id,title',
+            ])
+            ->get();
+
+        return view('admin.leads.partials.leads-table-rows-pullback', compact('leads'));
+    }
+
+    /**
+     * List all pullbacked leads
+     */
+    public function pullbackedLeads(Request $request)
+    {
+        $canView = RoleHelper::is_admin_or_super_admin() ||
+                   RoleHelper::is_general_manager() ||
+                   RoleHelper::is_senior_manager() ||
+                   RoleHelper::is_team_lead();
+
+        if (!$canView) {
+            abort(403, 'You do not have permission to view pullbacked leads.');
+        }
+
+        $filters = [
+            'search_key' => $request->get('search_key'),
+            'telecaller_id' => $request->get('telecaller_id'),
+            'lead_status_id' => $request->get('lead_status_id'),
+            'lead_source_id' => $request->get('lead_source_id'),
+            'from_date' => $request->get('from_date'),
+            'to_date' => $request->get('to_date'),
+        ];
+
+        $leadsQuery = Lead::withoutGlobalScope('exclude_pullbacked')
+            ->with(['telecaller:id,name', 'leadStatus:id,title', 'leadSource:id,title', 'course:id,title'])
+            ->where('is_pullbacked', 1);
+
+        if ($filters['search_key']) {
+            $search = $filters['search_key'];
+            $leadsQuery->where(function ($query) use ($search) {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        if ($filters['telecaller_id']) {
+            $leadsQuery->where('telecaller_id', $filters['telecaller_id']);
+        }
+
+        if ($filters['lead_status_id']) {
+            $leadsQuery->where('lead_status_id', $filters['lead_status_id']);
+        }
+
+        if ($filters['lead_source_id']) {
+            $leadsQuery->where('lead_source_id', $filters['lead_source_id']);
+        }
+
+        if ($filters['from_date']) {
+            $leadsQuery->whereDate('updated_at', '>=', $filters['from_date']);
+        }
+
+        if ($filters['to_date']) {
+            $leadsQuery->whereDate('updated_at', '<=', $filters['to_date']);
+        }
+
+        return view('admin.leads.pullbacked', [
+            'telecallers' => User::where('role_id', 3)->orderBy('name')->get(),
+            'leadStatuses' => LeadStatus::where('is_active', 1)->orderBy('title')->get(),
+            'leadSources' => LeadSource::where('is_active', 1)->orderBy('title')->get(),
+            'filters' => $filters,
+        ]);
+    }
+
+    /**
+     * Show assign pullbacked leads form
+     */
+    public function ajaxAssignPullbackedLeads()
+    {
+        $canAccess = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+
+        if (!$canAccess) {
+            abort(403, 'You do not have permission to assign pullbacked leads.');
+        }
+
+        $telecallers = User::where('role_id', 3)->orderBy('name')->get();
+
+        return view('admin.leads.ajax-pullbacked-assign', [
+            'telecallers' => $telecallers,
+        ]);
+    }
+
+    /**
+     * Assign pullbacked leads back to telecallers
+     */
+    public function assignPullbackedLeads(Request $request)
+    {
+        $canAssign = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+
+        if (!$canAssign) {
+            return redirect()->back()
+                ->with('error', 'You do not have permission to assign pullbacked leads.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'telecaller_id' => 'required|exists:users,id',
+            'lead_from_date' => 'required|date',
+            'lead_to_date' => 'required|date',
+            'lead_id' => 'required|array|min:1',
+            'lead_id.*' => 'exists:leads,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $telecallerId = $request->telecaller_id;
+        $successCount = 0;
+
+        DB::beginTransaction();
+        try {
+            foreach ($request->lead_id as $leadId) {
+                $updated = Lead::withoutGlobalScope('exclude_pullbacked')
+                    ->where('id', $leadId)
+                    ->where('is_pullbacked', 1)
+                    ->update([
+                        'telecaller_id' => $telecallerId,
+                        'is_pullbacked' => 0,
+                        'remarks' => null,
+                        'lead_status_id' => 1,
+                        'followup_date' => null,
+                        'rating' => null,
+                        'updated_by' => AuthHelper::getCurrentUserId(),
+                    ]);
+
+                if ($updated) {
+                    LeadActivity::where('lead_id', $leadId)->update(['is_pullbacked' => 0]);
+
+                    LeadActivity::create([
+                        'lead_id' => $leadId,
+                        'lead_status_id' => 1,
+                        'activity_type' => 'assign_from_pullback',
+                        'description' => 'Lead assigned from pullback',
+                        'remarks' => null,
+                        'is_pullbacked' => 1,
+                        'created_by' => AuthHelper::getCurrentUserId(),
+                        'updated_by' => AuthHelper::getCurrentUserId(),
+                    ]);
+
+                    $successCount++;
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Assign pullbacked leads failed', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('message_danger', 'Failed to assign pullbacked leads. Please try again.');
+        }
+
+        return redirect()->back()->with('message_success', "Successfully assigned {$successCount} pullbacked leads!");
+    }
+
+    /**
+     * AJAX endpoint for pullbacked leads DataTable
+     */
+    public function pullbackedLeadsData(Request $request): JsonResponse
+    {
+        $canView = RoleHelper::is_admin_or_super_admin() ||
+                   RoleHelper::is_general_manager() ||
+                   RoleHelper::is_senior_manager() ||
+                   RoleHelper::is_team_lead();
+
+        if (!$canView) {
+            return response()->json([
+                'draw' => intval($request->get('draw', 1)),
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+                'error' => 'You do not have permission to view pullbacked leads.'
+            ], 403);
+        }
+
+        $baseQuery = Lead::withoutGlobalScope('exclude_pullbacked')
+            ->select([
+                'id', 'title', 'code', 'phone', 'email',
+                'lead_status_id', 'lead_source_id', 'telecaller_id',
+                'course_id', 'remarks', 'updated_at'
+            ])
+            ->with([
+                'telecaller:id,name',
+                'leadStatus:id,title',
+                'leadSource:id,title',
+                'course:id,title'
+            ])
+            ->where('is_pullbacked', 1);
+
+        $recordsTotal = (clone $baseQuery)->count();
+        $query = clone $baseQuery;
+
+        $filters = [
+            'search_key' => $request->get('search_key'),
+            'telecaller_id' => $request->get('telecaller_id'),
+            'lead_status_id' => $request->get('lead_status_id'),
+            'lead_source_id' => $request->get('lead_source_id'),
+            'from_date' => $request->get('from_date'),
+            'to_date' => $request->get('to_date'),
+        ];
+
+        if ($filters['search_key']) {
+            $search = $filters['search_key'];
+            $query->where(function ($subQuery) use ($search) {
+                $subQuery->where('title', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        if ($filters['telecaller_id']) {
+            $query->where('telecaller_id', $filters['telecaller_id']);
+        }
+
+        if ($filters['lead_status_id']) {
+            $query->where('lead_status_id', $filters['lead_status_id']);
+        }
+
+        if ($filters['lead_source_id']) {
+            $query->where('lead_source_id', $filters['lead_source_id']);
+        }
+
+        if ($filters['from_date']) {
+            $query->whereDate('updated_at', '>=', $filters['from_date']);
+        }
+
+        if ($filters['to_date']) {
+            $query->whereDate('updated_at', '<=', $filters['to_date']);
+        }
+
+        if ($request->filled('search.value')) {
+            $searchValue = $request->input('search.value');
+            if ($searchValue !== null && $searchValue !== '') {
+                $query->where(function ($subQuery) use ($searchValue) {
+                    $subQuery->where('title', 'like', "%{$searchValue}%")
+                        ->orWhere('phone', 'like', "%{$searchValue}%")
+                        ->orWhere('email', 'like', "%{$searchValue}%");
+                });
+            }
+        }
+
+        $recordsFiltered = $query->count();
+
+        $columns = [
+            0 => 'id',
+            1 => 'title',
+            2 => 'phone',
+            3 => 'lead_status_id',
+            4 => 'lead_source_id',
+            5 => 'telecaller_id',
+            6 => 'course_id',
+            7 => 'updated_at',
+            8 => 'remarks',
+        ];
+
+        $orderColumnIndex = (int) $request->input('order.0.column', 7);
+        $orderDir = $request->input('order.0.dir', 'desc') === 'asc' ? 'asc' : 'desc';
+        $orderColumnName = $columns[$orderColumnIndex] ?? 'updated_at';
+
+        if ($orderColumnName === 'id') {
+            $query->orderBy('id', $orderDir);
+        } else {
+            $query->orderBy($orderColumnName, $orderDir);
+        }
+
+        $start = (int) $request->get('start', 0);
+        $length = (int) $request->get('length', 25);
+        if ($length > 0) {
+            $query->skip($start)->take($length);
+        }
+
+        $leads = $query->get();
+
+        $data = [];
+        foreach ($leads as $index => $lead) {
+            $nameHtml = '<strong>' . e($lead->title ?? 'N/A') . '</strong><br>'
+                . '<small class="text-muted">' . trim(($lead->code ?? '') . ' ' . ($lead->phone ?? '')) . '</small>';
+
+            $contactHtml = '<div>' . e($lead->phone ?? '-') . '</div>'
+                . '<div>' . e($lead->email ?? 'No email') . '</div>';
+
+            $statusHtml = '<span class="badge bg-primary">' . e($lead->leadStatus->title ?? 'N/A') . '</span>';
+            $sourceText = e($lead->leadSource->title ?? 'N/A');
+            $telecallerText = e($lead->telecaller->name ?? 'N/A');
+            $courseText = e($lead->course->title ?? 'N/A');
+            $pullbackedOn = optional($lead->updated_at)->format('d M Y, h:i A') ?? '-';
+            $remarksText = e($lead->remarks ?? 'N/A');
+
+            $data[] = [
+                'index' => $start + $index + 1,
+                'name' => $nameHtml,
+                'contact' => $contactHtml,
+                'status' => $statusHtml,
+                'source' => $sourceText,
+                'telecaller' => $telecallerText,
+                'course' => $courseText,
+                'pullbacked_on' => $pullbackedOn,
+                'remarks' => $remarksText,
+            ];
+        }
+
+        return response()->json([
+            'draw' => intval($request->get('draw', 1)),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ]);
     }
 
     /**

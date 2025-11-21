@@ -137,9 +137,9 @@
 
             <!-- Right Column - Lead History -->
             <div class="col-md-6 p-4" style="background-color: #f8f9fa; border-left: 1px solid #dee2e6;">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                     <h5 class="mb-0">LEAD HISTORY</h5>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="printLeadHistory('{{ $lead->title }}')">
+                    <button type="button" class="btn btn-primary btn-sm ms-auto" onclick="printLeadHistory('{{ $lead->title }}')">
                         <i class="ti ti-printer"></i> Print
                     </button>
                 </div>
@@ -271,93 +271,10 @@
 
 <script>
 function printLeadHistory(leadName) {
-    // Create a new window for printing
     const printWindow = window.open('', '_blank');
-    
-    // Get all timeline items from the visible timeline (they contain all activities)
-    const timelineItems = document.querySelectorAll('.timeline .timeline-item');
-    let timelineContent = '';
-    
-    // Build timeline content from all items
-    timelineItems.forEach((item, index) => {
-        const cardTitle = item.querySelector('.card-title');
-        const cardText = item.querySelector('.card-text');
-        const remarksDiv = item.querySelector('.bg-light');
-        const reasonBadge = item.querySelector('.badge.bg-info');
-        const followupBadge = item.querySelector('.badge.bg-warning');
-        const ratingBadge = item.querySelector('.badge.bg-success');
-        const smallElements = item.querySelectorAll('small');
-        
-        const activityType = cardTitle ? cardTitle.textContent.trim() : 'Activity';
-        const description = cardText ? cardText.textContent.trim() : '';
-        const remarks = remarksDiv ? remarksDiv.textContent.trim() : '';
-        const reason = reasonBadge ? reasonBadge.textContent.trim() : '';
-        const followupDate = followupBadge ? followupBadge.textContent.trim() : '';
-        const rating = ratingBadge ? ratingBadge.textContent.trim() : '';
-        
-        let updatedBy = 'N/A';
-        let date = 'N/A';
-        
-        // Find updated by and date from small elements
-        smallElements.forEach(small => {
-            const text = small.textContent.trim();
-            if (text.includes('Updated By:')) {
-                updatedBy = text.replace('Updated By:', '').trim();
-            } else if (text.includes('-') && text.includes(':')) {
-                date = text;
-            }
-        });
-        
-        const markerClass = activityType.toLowerCase().includes('disqualified') ? 'danger' : 
-                           activityType.toLowerCase().includes('converted') ? 'success' : 'info';
-        
-        timelineContent += `
-            <div class="timeline-item" style="position: relative; margin-bottom: 20px;">
-                <div class="timeline-marker bg-${markerClass}" style="position: absolute; left: -22px; top: 8px; width: 12px; height: 12px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #dee2e6;"></div>
-                <div class="timeline-content" style="margin-left: 0;">
-                    <div class="card" style="border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 15px;">
-                        <div class="card-body" style="padding: 15px;">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                                <h6 style="font-weight: bold; margin-bottom: 10px; text-transform: uppercase;">${activityType}</h6>
-                                <small style="color: #6c757d;">${date}</small>
-                            </div>
-                            <p style="margin-bottom: 10px;">${description}</p>
-                            ${reason ? `
-                                <div style="margin-top: 8px;">
-                                    <span style="color: #6c757d; font-weight: 600;">Reason:</span>
-                                    <span style="background-color: #17a2b8; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">${reason}</span>
-                                </div>
-                            ` : ''}
-                            ${followupDate ? `
-                                <div style="margin-top: 8px;">
-                                    <span style="color: #6c757d; font-weight: 600;">Followup Date:</span>
-                                    <span style="background-color: #ffc107; color: #212529; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">${followupDate}</span>
-                                </div>
-                            ` : ''}
-                            ${rating ? `
-                                <div style="margin-top: 8px;">
-                                    <span style="color: #6c757d; font-weight: 600;">Rating:</span>
-                                    <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">${rating}</span>
-                                </div>
-                            ` : ''}
-                            ${remarks ? `
-                                <div style="margin-top: 8px;">
-                                    <span style="color: #6c757d; font-weight: 600;">Remarks:</span>
-                                    <div style="margin-top: 4px; padding: 8px; background-color: #f8f9fa; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word;">${remarks}</div>
-                                </div>
-                            ` : ''}
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                                <small style="color: #6c757d;">Updated By: ${updatedBy}</small>
-                                <small style="color: #6c757d;">${date}</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    
-    // Create the print content
+    const timelineWrapper = document.querySelector('.timeline');
+    const clonedTimeline = timelineWrapper ? timelineWrapper.cloneNode(true) : null;
+
     const printContent = `
         <!DOCTYPE html>
         <html>
@@ -370,9 +287,11 @@ function printLeadHistory(leadName) {
                 .print-header p { margin: 5px 0 0 0; color: #666; }
                 .timeline { position: relative; padding-left: 30px; }
                 .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: #dee2e6; }
-                .bg-danger { background-color: #dc3545; }
-                .bg-success { background-color: #28a745; }
-                .bg-info { background-color: #17a2b8; }
+                .timeline-item { position: relative; margin-bottom: 20px; }
+                .timeline-marker { position: absolute; left: -22px; top: 8px; width: 12px; height: 12px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #dee2e6; }
+                .timeline-content { margin-left: 0; }
+                .card { border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 15px; }
+                .card-body { padding: 15px; }
                 @media print { 
                     body { margin: 0; }
                     .timeline::before { display: none; }
@@ -386,17 +305,14 @@ function printLeadHistory(leadName) {
                 <p>Generated on: ${new Date().toLocaleDateString()}</p>
             </div>
             <div class="timeline">
-                ${timelineContent}
+                ${clonedTimeline ? clonedTimeline.innerHTML : '<p>No lead history available.</p>'}
             </div>
         </body>
         </html>
     `;
-    
-    // Write content to print window
+
     printWindow.document.write(printContent);
     printWindow.document.close();
-    
-    // Wait for content to load, then print
     printWindow.onload = function() {
         printWindow.print();
         printWindow.close();

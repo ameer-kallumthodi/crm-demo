@@ -35,6 +35,17 @@
                 </li>
                 @endif
 
+                @if(has_permission('leads/pullbacked'))
+                <li class="pc-item {{ request()->routeIs('admin.leads.pullbacked') ? 'active' : '' }}">
+                    <a href="{{ route('admin.leads.pullbacked') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-arrow-back-up"></i>
+                        </span>
+                        <span class="pc-mtext">Pullbacked Leads</span>
+                    </a>
+                </li>
+                @endif
+
                 @if(has_permission('leads/followup'))
                 <li class="pc-item {{ request()->routeIs('leads.followup') ? 'active' : '' }}">
                     <a href="{{ route('leads.followup') }}" class="pc-link">

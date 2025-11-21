@@ -254,6 +254,7 @@ class PermissionHelper
             'admin/marketing/d2d-form', // D2D Form access
             'admin/marketing/marketing-leads', // Marketing Leads listing
             'profile/index',
+            'leads/pullback',
         ];
         return in_array($permission, $permissions);
     }

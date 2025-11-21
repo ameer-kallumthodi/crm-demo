@@ -382,9 +382,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/teams-remove-member', [TeamController::class, 'removeMember'])->name('teams.remove-member');
         Route::post('/teams-add-member', [TeamController::class, 'addMember'])->name('teams.add-member');
 
-        Route::resource('telecallers', TelecallerController::class);
+        Route::resource('telecallers', TelecallerController::class)->except(['edit']);
+        Route::get('/telecallers/{id}/edit', [TelecallerController::class, 'ajax_edit'])->name('telecallers.edit');
         Route::get('/telecallers-add', [TelecallerController::class, 'ajax_add'])->name('telecallers.add');
-        Route::get('/telecallers-edit/{id}', [TelecallerController::class, 'ajax_edit'])->name('telecallers.edit');
         Route::post('/telecallers-submit', [TelecallerController::class, 'submit'])->name('telecallers.submit');
         Route::put('/telecallers-update/{id}', [TelecallerController::class, 'update'])->name('telecallers.update');
         Route::delete('/telecallers-delete/{id}', [TelecallerController::class, 'delete'])->name('telecallers.delete');
@@ -581,6 +581,12 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // Bulk Operations Routes
         Route::get('/leads/bulk-reassign', [App\Http\Controllers\LeadController::class, 'ajaxBulkReassign'])->name('leads.bulk-reassign');
         Route::post('/leads/bulk-reassign', [App\Http\Controllers\LeadController::class, 'bulkReassign'])->name('leads.bulk-reassign.submit');
+        Route::get('/leads/pullback', [App\Http\Controllers\LeadController::class, 'ajaxPullbackLeads'])->name('leads.pullback');
+        Route::post('/leads/pullback', [App\Http\Controllers\LeadController::class, 'pullbackLeads'])->name('leads.pullback.submit');
+        Route::get('/leads/pullbacked', [App\Http\Controllers\LeadController::class, 'pullbackedLeads'])->name('leads.pullbacked');
+        Route::get('/leads/pullbacked/data', [App\Http\Controllers\LeadController::class, 'pullbackedLeadsData'])->name('leads.pullbacked.data');
+        Route::get('/leads/pullbacked/assign', [App\Http\Controllers\LeadController::class, 'ajaxAssignPullbackedLeads'])->name('leads.pullbacked.assign');
+        Route::post('/leads/pullbacked/assign', [App\Http\Controllers\LeadController::class, 'assignPullbackedLeads'])->name('leads.pullbacked.assign.submit');
         Route::get('/leads/bulk-delete', [App\Http\Controllers\LeadController::class, 'ajaxBulkDelete'])->name('leads.bulk-delete');
         Route::post('/leads/bulk-delete', [App\Http\Controllers\LeadController::class, 'bulkDelete'])->name('leads.bulk-delete.submit');
         Route::get('/leads/bulk-convert', [App\Http\Controllers\LeadController::class, 'ajaxBulkConvert'])->name('leads.bulk-convert');
@@ -590,6 +596,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // AJAX routes for bulk operations
         Route::post('/leads/get-leads-by-source', [App\Http\Controllers\LeadController::class, 'getLeadsBySource'])->name('leads.get-by-source');
         Route::post('/leads/get-leads-by-source-reassign', [App\Http\Controllers\LeadController::class, 'getLeadsBySourceReassign'])->name('leads.get-by-source-reassign');
+        Route::post('/leads/get-pullback-leads', [App\Http\Controllers\LeadController::class, 'getPullbackLeads'])->name('leads.get-pullback-leads');
+        Route::post('/leads/get-pullbacked-assign-leads', [App\Http\Controllers\LeadController::class, 'getAssignablePullbackedLeads'])->name('leads.get-pullbacked-assign-leads');
 
         // Converted Leads Routes
         Route::get('/converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'index'])->name('converted-leads.index');

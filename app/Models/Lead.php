@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -42,7 +43,8 @@ class Lead extends Model
         'marketing_remarks',
         'followup_date',
         'remarks',
-        'is_converted'
+        'is_converted',
+        'is_pullbacked',
     ];
 
     protected $casts = [
@@ -52,7 +54,18 @@ class Lead extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'is_pullbacked' => 'boolean',
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope('exclude_pullbacked', function (Builder $builder) {
+            $builder->where(function ($query) {
+                $query->whereNull('leads.is_pullbacked')
+                      ->orWhere('leads.is_pullbacked', 0);
+            });
+        });
+    }
 
     // Relationships
     public function leadStatus()

@@ -14,6 +14,7 @@ class LeadActivity extends Model
         'lead_id',
         'lead_status_id',
         'activity_type',
+        'is_pullbacked',
         'description',
         'followup_date',
         'reason',
@@ -29,6 +30,7 @@ class LeadActivity extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'is_pullbacked' => 'boolean',
     ];
 
     public function lead()

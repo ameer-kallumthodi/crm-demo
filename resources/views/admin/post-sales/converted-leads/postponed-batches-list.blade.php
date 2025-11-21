@@ -1,7 +1,7 @@
 <div class="row">
     @if($postponedBatches->isEmpty())
-    <div class="alert alert-info text-center">
-        <i class="ti ti-info-circle me-2"></i>
+    <div class="alert alert-warning text-center">
+        <i class="ti ti-warning-circle me-2"></i>
         No postponed batches found.
     </div>
     @else
