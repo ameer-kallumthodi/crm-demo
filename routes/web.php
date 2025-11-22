@@ -314,7 +314,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::delete('/universities-delete/{id}', [UniversityController::class, 'delete'])->name('universities.delete');
 
         // University Courses Routes
-        Route::resource('university-courses', App\Http\Controllers\UniversityCourseController::class);
+        Route::resource('university-courses', App\Http\Controllers\UniversityCourseController::class)->except(['edit']);
         Route::get('/university-courses-add', [App\Http\Controllers\UniversityCourseController::class, 'ajax_add'])->name('university-courses.add');
         Route::get('/university-courses-edit/{id}', [App\Http\Controllers\UniversityCourseController::class, 'ajax_edit'])->name('university-courses.edit');
         Route::post('/university-courses-submit', [App\Http\Controllers\UniversityCourseController::class, 'submit'])->name('university-courses.submit');
@@ -336,7 +336,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::put('/boards-update/{id}', [App\Http\Controllers\BoardController::class, 'update'])->name('boards.update');
 
         Route::delete('/batches-delete/{id}', [App\Http\Controllers\BatchController::class, 'delete'])->name('batches.delete');
-        Route::resource('batches', App\Http\Controllers\BatchController::class);
+        Route::resource('batches', App\Http\Controllers\BatchController::class)->except(['edit']);
         Route::get('/batches-add', [App\Http\Controllers\BatchController::class, 'ajax_add'])->name('batches.add');
         Route::get('/batches-edit/{id}', [App\Http\Controllers\BatchController::class, 'ajax_edit'])->name('batches.edit');
         Route::get('/batches-postpone/{id}', [App\Http\Controllers\BatchController::class, 'ajax_postpone'])->name('batches.postpone');
@@ -351,7 +351,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/admission-batches-submit', [App\Http\Controllers\AdmissionBatchController::class, 'submit'])->name('admission-batches.submit');
         Route::put('/admission-batches-update/{id}', [App\Http\Controllers\AdmissionBatchController::class, 'update'])->name('admission-batches.update');
 
-        Route::resource('courses', CourseController::class);
+        Route::resource('courses', CourseController::class)->except(['edit']);
         Route::get('/courses-add', [CourseController::class, 'ajax_add'])->name('courses.add');
         Route::get('/courses-edit/{id}', [CourseController::class, 'ajax_edit'])->name('courses.edit');
         Route::post('/courses-submit', [CourseController::class, 'submit'])->name('courses.submit');
