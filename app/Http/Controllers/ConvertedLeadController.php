@@ -1569,8 +1569,12 @@ class ConvertedLeadController extends Controller
             }
         }
 
-        // Get lead activities for this converted lead
+        // Get lead activities for this converted lead (exclude pullbacked activities)
         $leadActivities = \App\Models\LeadActivity::where('lead_id', $convertedLead->lead_id)
+            ->where(function ($query) {
+                $query->whereNull('is_pullbacked')
+                      ->orWhere('is_pullbacked', 0);
+            })
             ->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id')
             ->with(['leadStatus:id,title', 'createdBy:id,name'])
             ->orderBy('created_at', 'desc')
@@ -1759,8 +1763,12 @@ class ConvertedLeadController extends Controller
             'studentDetails'
         ])->findOrFail($id);
 
-        // Lead activities (same as show page)
+        // Lead activities (same as show page - exclude pullbacked activities)
         $leadActivities = \App\Models\LeadActivity::where('lead_id', $convertedLead->lead_id)
+            ->where(function ($query) {
+                $query->whereNull('is_pullbacked')
+                      ->orWhere('is_pullbacked', 0);
+            })
             ->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id')
             ->with(['leadStatus:id,title', 'createdBy:id,name'])
             ->orderBy('created_at', 'desc')
