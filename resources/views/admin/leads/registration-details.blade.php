@@ -665,7 +665,15 @@
                                         <label class="info-label">Class Time</label>
                                         <p class="info-value" data-field="class_time_id" data-lead-detail-id="{{ $studentDetail->id }}" data-course-id="{{ $studentDetail->course_id }}" data-current-id="{{ $studentDetail->class_time_id }}">
                                             @if($studentDetail->classTime)
-                                                {{ date('h:i A', strtotime($studentDetail->classTime->from_time)) }} - {{ date('h:i A', strtotime($studentDetail->classTime->to_time)) }}
+                                                @php
+                                                    $fromTime = $studentDetail->classTime->from_time 
+                                                        ? date('h:i A', strtotime($studentDetail->classTime->from_time))
+                                                        : '-';
+                                                    $toTime = $studentDetail->classTime->to_time 
+                                                        ? date('h:i A', strtotime($studentDetail->classTime->to_time))
+                                                        : '-';
+                                                @endphp
+                                                {{ $fromTime }} - {{ $toTime }}
                                             @else
                                                 N/A
                                             @endif

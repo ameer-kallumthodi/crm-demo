@@ -19,8 +19,6 @@ class ClassTime extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
-        'from_time' => 'datetime',
-        'to_time' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
