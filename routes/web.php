@@ -88,6 +88,8 @@ Route::get('/api/batches/by-course/{courseId}', [App\Http\Controllers\BatchContr
 Route::get('/api/sub-courses/by-course/{courseId}', [App\Http\Controllers\SubCourseController::class, 'getByCourse'])->name('api.sub-courses.by-course');
 Route::get('/api/admission-batches/by-batch/{batchId}', [App\Http\Controllers\AdmissionBatchController::class, 'getByBatch'])->name('api.admission-batches.by-batch');
 Route::get('/api/university-courses/by-university/{universityId}', [App\Http\Controllers\UniversityCourseController::class, 'getByUniversity'])->name('api.university-courses.by-university');
+Route::get('/api/class-times/by-course/{courseId}', [App\Http\Controllers\ClassTimeController::class, 'getByCourse'])->name('api.class-times.by-course');
+Route::get('/api/courses/{courseId}/needs-time', [App\Http\Controllers\CourseController::class, 'checkNeedsTime'])->name('api.courses.needs-time');
 
 // Public Lead Registration Routes
 Route::prefix('register')->group(function () {
@@ -171,11 +173,11 @@ Route::prefix('register')->group(function () {
     Route::get('/digital-marketing/subjects', [App\Http\Controllers\Public\LeadDigitalMarketingRegistrationController::class, 'getSubjects'])->name('public.lead.digital-marketing.subjects');
     Route::get('/digital-marketing/batches', [App\Http\Controllers\Public\LeadDigitalMarketingRegistrationController::class, 'getBatches'])->name('public.lead.digital-marketing.batches');
 
-    // AI Automation Registration Routes
-    Route::get('/ai-automation/{leadId?}', [App\Http\Controllers\Public\LeadAIAutomationRegistrationController::class, 'showAIAutomationForm'])->name('public.lead.ai-automation.register');
-    Route::post('/ai-automation', [App\Http\Controllers\Public\LeadAIAutomationRegistrationController::class, 'store'])->name('public.lead.ai-automation.register.store');
-    Route::get('/ai-automation/subjects', [App\Http\Controllers\Public\LeadAIAutomationRegistrationController::class, 'getSubjects'])->name('public.lead.ai-automation.subjects');
-    Route::get('/ai-automation/batches', [App\Http\Controllers\Public\LeadAIAutomationRegistrationController::class, 'getBatches'])->name('public.lead.ai-automation.batches');
+    // Diploma in Data Science Registration Routes
+    Route::get('/diploma-in-data-science/{leadId?}', [App\Http\Controllers\Public\LeadAIAutomationRegistrationController::class, 'showAIAutomationForm'])->name('public.lead.diploma-in-data-science.register');
+    Route::post('/diploma-in-data-science', [App\Http\Controllers\Public\LeadAIAutomationRegistrationController::class, 'store'])->name('public.lead.diploma-in-data-science.register.store');
+    Route::get('/diploma-in-data-science/subjects', [App\Http\Controllers\Public\LeadAIAutomationRegistrationController::class, 'getSubjects'])->name('public.lead.diploma-in-data-science.subjects');
+    Route::get('/diploma-in-data-science/batches', [App\Http\Controllers\Public\LeadAIAutomationRegistrationController::class, 'getBatches'])->name('public.lead.diploma-in-data-science.batches');
 
     // Web Development & Designing Registration Routes
     Route::get('/web-dev/{leadId?}', [App\Http\Controllers\Public\LeadWebDevRegistrationController::class, 'showWebDevForm'])->name('public.lead.web-dev.register');
@@ -194,6 +196,18 @@ Route::prefix('register')->group(function () {
     Route::post('/graphic-designing', [App\Http\Controllers\Public\LeadGraphicDesigningRegistrationController::class, 'store'])->name('public.lead.graphic-designing.register.store');
     Route::get('/graphic-designing/subjects', [App\Http\Controllers\Public\LeadGraphicDesigningRegistrationController::class, 'getSubjects'])->name('public.lead.graphic-designing.subjects');
     Route::get('/graphic-designing/batches', [App\Http\Controllers\Public\LeadGraphicDesigningRegistrationController::class, 'getBatches'])->name('public.lead.graphic-designing.batches');
+    
+    // Machine Learning Registration Routes
+    Route::get('/machine-learning/{leadId?}', [App\Http\Controllers\Public\LeadMachineLearningRegistrationController::class, 'showMachineLearningForm'])->name('public.lead.machine-learning.register');
+    Route::post('/machine-learning', [App\Http\Controllers\Public\LeadMachineLearningRegistrationController::class, 'store'])->name('public.lead.machine-learning.register.store');
+    Route::get('/machine-learning/subjects', [App\Http\Controllers\Public\LeadMachineLearningRegistrationController::class, 'getSubjects'])->name('public.lead.machine-learning.subjects');
+    Route::get('/machine-learning/batches', [App\Http\Controllers\Public\LeadMachineLearningRegistrationController::class, 'getBatches'])->name('public.lead.machine-learning.batches');
+    
+    // Flutter Registration Routes
+    Route::get('/flutter/{leadId?}', [App\Http\Controllers\Public\LeadFlutterRegistrationController::class, 'showFlutterForm'])->name('public.lead.flutter.register');
+    Route::post('/flutter', [App\Http\Controllers\Public\LeadFlutterRegistrationController::class, 'store'])->name('public.lead.flutter.register.store');
+    Route::get('/flutter/subjects', [App\Http\Controllers\Public\LeadFlutterRegistrationController::class, 'getSubjects'])->name('public.lead.flutter.subjects');
+    Route::get('/flutter/batches', [App\Http\Controllers\Public\LeadFlutterRegistrationController::class, 'getBatches'])->name('public.lead.flutter.batches');
 });
 
 
@@ -371,6 +385,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/subjects-edit/{id}', [App\Http\Controllers\SubjectController::class, 'ajax_edit'])->name('subjects.edit');
         Route::post('/subjects-submit', [App\Http\Controllers\SubjectController::class, 'submit'])->name('subjects.submit');
         Route::put('/subjects-update/{id}', [App\Http\Controllers\SubjectController::class, 'update'])->name('subjects.update');
+
+        // Class Times Routes
+        Route::resource('class-times', App\Http\Controllers\ClassTimeController::class)->except(['edit']);
+        Route::get('/class-times-add', [App\Http\Controllers\ClassTimeController::class, 'ajax_add'])->name('class-times.add');
+        Route::get('/class-times-edit/{id}', [App\Http\Controllers\ClassTimeController::class, 'ajax_edit'])->name('class-times.edit');
+        Route::post('/class-times-submit', [App\Http\Controllers\ClassTimeController::class, 'submit'])->name('class-times.submit');
+        Route::put('/class-times-update/{id}', [App\Http\Controllers\ClassTimeController::class, 'update'])->name('class-times.update');
+        Route::delete('/class-times-delete/{id}', [App\Http\Controllers\ClassTimeController::class, 'delete'])->name('class-times.delete');
 
         Route::resource('teams', TeamController::class);
         Route::get('/teams-add', [TeamController::class, 'ajax_add'])->name('teams.add');
@@ -645,6 +667,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/web-development-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'webDevIndex'])->name('web-development-converted-leads.index');
         Route::get('/vibe-coding-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'vibeCodingIndex'])->name('vibe-coding-converted-leads.index');
         Route::get('/graphic-designing-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'graphicDesigningIndex'])->name('graphic-designing-converted-leads.index');
+        Route::get('/machine-learning-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'machineLearningIndex'])->name('machine-learning-converted-leads.index');
+        Route::get('/flutter-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'flutterIndex'])->name('flutter-converted-leads.index');
         Route::get('/eduthanzeel-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'eduthanzeelIndex'])->name('eduthanzeel-converted-leads.index');
         Route::get('/e-school-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'eschoolIndex'])->name('e-school-converted-leads.index');
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
@@ -716,6 +740,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // Graphic Designing Support Converted Leads Routes
         Route::get('/support-graphic-designing-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'graphicDesigningIndex'])->name('support-graphic-designing-converted-leads.index');
         Route::post('/support-graphic-designing-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-graphic-designing-converted-leads.update-support-details');
+
+        // Diploma in Machine Learning Support Converted Leads Routes
+        Route::get('/support-machine-learning-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'machineLearningIndex'])->name('support-machine-learning-converted-leads.index');
+        Route::post('/support-machine-learning-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-machine-learning-converted-leads.update-support-details');
+
+        // Flutter Support Converted Leads Routes
+        Route::get('/support-flutter-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'flutterIndex'])->name('support-flutter-converted-leads.index');
+        Route::post('/support-flutter-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-flutter-converted-leads.update-support-details');
 
         // Eduthanzeel Support Converted Leads Routes
         Route::get('/support-eduthanzeel-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'eduthanzeelIndex'])->name('support-eduthanzeel-converted-leads.index');

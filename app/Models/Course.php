@@ -16,10 +16,12 @@ class Course extends Model
         'amount',
         'hod_number',
         'is_active',
+        'needs_time',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'needs_time' => 'boolean',
         'amount' => 'double',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -34,6 +36,11 @@ class Course extends Model
     public function subjects()
     {
         return $this->hasMany(Subject::class);
+    }
+
+    public function classTimes()
+    {
+        return $this->hasMany(ClassTime::class);
     }
 
 

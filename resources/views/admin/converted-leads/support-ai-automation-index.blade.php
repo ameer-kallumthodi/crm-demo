@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'AI Automation Converted Support List')
+@section('title', 'Diploma in Data Science Converted Support List')
 
 @section('content')
 <style>
@@ -28,7 +28,7 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">AI Automation Converted Support List</h5>
+                    <h5 class="m-b-10">Diploma in Data Science Converted Support List</h5>
                 </div>
             </div>
             <div class="col-md-6">
@@ -36,7 +36,7 @@
                     <ul class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                         <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                        <li class="breadcrumb-item">AI Automation Converted Support List</li>
+                        <li class="breadcrumb-item">Diploma in Data Science Converted Support List</li>
                     </ul>
                     <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-secondary">
                         <i class="ti ti-arrow-left"></i> Back to Converted Leads
@@ -81,7 +81,7 @@
                         <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
                     </a>
                     <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-robot"></i> AI Automation Converted Leads
+                        <i class="ti ti-robot"></i> Diploma in Data Science Converted Leads
                     </a>
                     <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-world"></i> Web Development & Designing Converted Leads
@@ -91,6 +91,12 @@
                     </a>
                     <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-palette"></i> Graphic Designing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-brain"></i> Diploma in Machine Learning Converted Leads
+                    </a>
+                    <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-mobile"></i> Flutter Converted Leads
                     </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
@@ -169,7 +175,7 @@
                         <i class="ti ti-headphones"></i> Digital Marketing Converted Support List
                     </a>
                     <a href="{{ route('admin.support-ai-automation-converted-leads.index') }}" class="btn btn-outline-primary active">
-                        <i class="ti ti-headphones"></i> AI Automation Converted Support List
+                        <i class="ti ti-headphones"></i> Diploma in Data Science Converted Support List
                     </a>
                     <a href="{{ route('admin.support-web-development-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Web Development & Designing Converted Support List
@@ -179,6 +185,12 @@
                     </a>
                     <a href="{{ route('admin.support-graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Graphic Designing Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Diploma in Machine Learning Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-flutter-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Flutter Converted Support List
                     </a>
                     <a href="{{ route('admin.support-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Eduthanzeel Converted Support List
@@ -266,7 +278,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5>AI Automation Converted Support List</h5>
+                <h5>Diploma in Data Science Converted Support List</h5>
             </div>
             <div class="card-body">
                 <!-- Desktop Table View -->

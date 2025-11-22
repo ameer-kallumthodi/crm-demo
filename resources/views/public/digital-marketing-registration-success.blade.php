@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration Successful - NIOS Course</title>
+    <title>Registration Successful - Digital Marketing</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -226,7 +226,7 @@
     
     <div class="success-container">
         <div class="logo-container mb-4">
-            <img src="{{ asset('storage/nios.webp') }}" alt="NIOS Logo" class="nios-logo">
+            <img src="{{ asset('storage/skill-park-logo.png') }}" alt="Skill Park Logo" class="nios-logo">
         </div>
         
         <div class="success-icon">

@@ -517,7 +517,7 @@ class SupportConvertedLeadController extends Controller
      */
     public function aiAutomationIndex(Request $request)
     {
-        return $this->getCourseSupportIndex($request, 12, 'AI Automation Converted Support List', 'admin.converted-leads.support-ai-automation-index');
+        return $this->getCourseSupportIndex($request, 12, 'Diploma in Data Science Converted Support List', 'admin.converted-leads.support-ai-automation-index');
     }
 
     /**
@@ -542,6 +542,22 @@ class SupportConvertedLeadController extends Controller
     public function graphicDesigningIndex(Request $request)
     {
         return $this->getCourseSupportIndex($request, 15, 'Graphic Designing Converted Support List', 'admin.converted-leads.support-graphic-designing-index');
+    }
+
+    /**
+     * Display a listing of Diploma in Machine Learning converted leads for support
+     */
+    public function machineLearningIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 20, 'Diploma in Machine Learning Converted Support List', 'admin.converted-leads.support-machine-learning-index');
+    }
+
+    /**
+     * Display a listing of Flutter converted leads for support
+     */
+    public function flutterIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 21, 'Flutter Converted Support List', 'admin.converted-leads.support-flutter-index');
     }
 
     /**

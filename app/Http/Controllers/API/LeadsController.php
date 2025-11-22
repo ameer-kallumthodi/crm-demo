@@ -325,7 +325,7 @@ class LeadsController extends Controller
             9 => 'public.lead.ugpg.register',
             10 => 'public.lead.python.register',
             11 => 'public.lead.digital-marketing.register',
-            12 => 'public.lead.ai-automation.register',
+            12 => 'public.lead.diploma-in-data-science.register',
             13 => 'public.lead.web-dev.register',
             14 => 'public.lead.vibe-coding.register',
             15 => 'public.lead.graphic-designing.register',

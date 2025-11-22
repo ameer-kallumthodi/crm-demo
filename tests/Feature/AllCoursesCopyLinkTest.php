@@ -108,7 +108,7 @@ class AllCoursesCopyLinkTest extends TestCase
             'public.lead.ugpg.register',
             'public.lead.python.register',
             'public.lead.digital-marketing.register',
-            'public.lead.ai-automation.register',
+            'public.lead.diploma-in-data-science.register',
             'public.lead.web-dev.register',
             'public.lead.vibe-coding.register',
             'public.lead.graphic-designing.register',

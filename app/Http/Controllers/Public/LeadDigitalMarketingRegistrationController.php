@@ -8,6 +8,7 @@ use App\Models\Lead;
 use App\Models\LeadDetail;
 use App\Models\Subject;
 use App\Models\Batch;
+use App\Models\ClassTime;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Services\MailService;
@@ -21,9 +22,15 @@ class LeadDigitalMarketingRegistrationController extends Controller
         if ($leadId) {
             $lead = Lead::find($leadId);
             
-            // Check if student has already registered
-            if ($lead && $lead->digitalMarketingStudentDetails) {
-                return view('public.digital-marketing-registration-success');
+            // Check if student has already registered (course_id = 11 for Digital Marketing)
+            if ($lead) {
+                $studentDetail = LeadDetail::where('lead_id', $leadId)
+                    ->where('course_id', 11)
+                    ->first();
+                
+                if ($studentDetail) {
+                    return view('public.digital-marketing-registration-success');
+                }
             }
         }
         
@@ -33,10 +40,17 @@ class LeadDigitalMarketingRegistrationController extends Controller
         // Get Digital Marketing course batches (course_id = 11)
         $batches = Batch::where('course_id', 11)->where('is_active', true)->get();
         
+        // Get class times for course_id = 11 (Digital Marketing) if course needs_time
+        $classTimes = collect();
+        $course = \App\Models\Course::find(11);
+        if ($course && $course->needs_time) {
+            $classTimes = ClassTime::where('course_id', 11)->where('is_active', true)->get();
+        }
+        
         // Get country codes
         $countryCodes = \App\Helpers\CountriesHelper::get_country_code();
         
-        return view('public.digital-marketing-registration', compact('subjects', 'batches', 'lead', 'countryCodes'));
+        return view('public.digital-marketing-registration', compact('subjects', 'batches', 'lead', 'countryCodes', 'classTimes'));
     }
     
     public function store(Request $request)
@@ -47,27 +61,35 @@ class LeadDigitalMarketingRegistrationController extends Controller
             'father_name' => 'required|string|max:255',
             'mother_name' => 'required|string|max:255',
             'date_of_birth' => 'required|date',
+            'gender' => 'required|in:male,female',
+            'is_employed' => 'required|boolean',
             'email' => 'required|email|max:255',
             'personal_number' => 'required|string|max:20',
             'personal_code' => 'required|string|max:10',
-            'parents_number' => 'required|string|max:20',
-            'parents_code' => 'required|string|max:10',
+            'father_contact_number' => 'required|string|max:20',
+            'father_contact_code' => 'required|string|max:10',
+            'mother_contact_number' => 'required|string|max:20',
+            'mother_contact_code' => 'required|string|max:10',
             'whatsapp_number' => 'required|string|max:20',
             'whatsapp_code' => 'required|string|max:10',
-            'batch_id' => 'required|exists:batches,id',
+            'programme_type' => 'required|in:online,offline',
+            'location' => 'required_if:programme_type,offline|in:Ernakulam,Malappuram',
+            'class_time_id' => 'nullable|exists:class_times,id',
             'street' => 'required|string',
             'locality' => 'required|string|max:255',
             'post_office' => 'required|string|max:255',
             'district' => 'required|string|max:255',
             'state' => 'required|string|max:255',
             'pin_code' => 'required|string|regex:/^[0-9]{6}$/',
-            'sslc_certificate' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'plus_two_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'passport_photo' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             'adhar_front' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'adhar_back' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'signature' => 'required|file|mimes:jpg,jpeg,png|max:2048',
-            'message' => 'nullable|string',
+            'sslc_certificate' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'plus_two_certificate' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'graduation_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'post_graduation_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'other_relevant_documents' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ], [
             'lead_id.required' => 'Lead ID is required.',
             'lead_id.exists' => 'Invalid lead.',
@@ -80,12 +102,15 @@ class LeadDigitalMarketingRegistrationController extends Controller
             'email.email' => 'Please enter a valid email address.',
             'personal_number.required' => 'Personal number is required.',
             'personal_code.required' => 'Personal country code is required.',
-            'parents_number.required' => 'Parents number is required.',
-            'parents_code.required' => 'Parents country code is required.',
+            'father_contact_number.required' => 'Father contact number is required.',
+            'father_contact_code.required' => 'Father contact country code is required.',
+            'mother_contact_number.required' => 'Mother contact number is required.',
+            'mother_contact_code.required' => 'Mother contact country code is required.',
             'whatsapp_number.required' => 'WhatsApp number is required.',
             'whatsapp_code.required' => 'WhatsApp country code is required.',
-            'batch_id.required' => 'Batch selection is required.',
-            'batch_id.exists' => 'Please select a valid batch.',
+            'programme_type.required' => 'Course type is required.',
+            'location.required_if' => 'Location is required for offline courses.',
+            'class_time_id.exists' => 'Please select a valid class time.',
             'street.required' => 'Street address is required.',
             'locality.required' => 'Locality is required.',
             'post_office.required' => 'Post office is required.',
@@ -97,6 +122,7 @@ class LeadDigitalMarketingRegistrationController extends Controller
             'sslc_certificate.file' => 'SSLC certificate must be a valid file.',
             'sslc_certificate.mimes' => 'SSLC certificate must be a PDF or image file.',
             'sslc_certificate.max' => 'SSLC certificate file size must not exceed 2MB.',
+            'plus_two_certificate.required' => 'Plus Two certificate is required.',
             'plus_two_certificate.file' => 'Plus Two certificate must be a valid file.',
             'plus_two_certificate.mimes' => 'Plus Two certificate must be a PDF or image file.',
             'plus_two_certificate.max' => 'Plus Two certificate file size must not exceed 2MB.',
@@ -116,12 +142,17 @@ class LeadDigitalMarketingRegistrationController extends Controller
             'signature.file' => 'Signature must be a valid file.',
             'signature.mimes' => 'Signature must be an image file (JPG, PNG).',
             'signature.max' => 'Signature file size must not exceed 2MB.',
+            'gender.required' => 'Gender is required.',
+            'is_employed.required' => 'Employment status is required.',
+            'graduation_certificate.file' => 'Graduation certificate must be a valid file.',
+            'post_graduation_certificate.file' => 'Post-graduation certificate must be a valid file.',
+            'other_relevant_documents.file' => 'Other relevant documents must be a valid file.',
         ]);
         
         try {
             // Handle file uploads
             $filePaths = [];
-            $fileFields = ['sslc_certificate', 'plus_two_certificate', 'passport_photo', 'adhar_front', 'adhar_back', 'signature'];
+            $fileFields = ['passport_photo', 'adhar_front', 'adhar_back', 'signature', 'sslc_certificate', 'plus_two_certificate', 'graduation_certificate', 'post_graduation_certificate', 'other_relevant_documents'];
             
             foreach ($fileFields as $field) {
                 if ($request->hasFile($field)) {
@@ -139,7 +170,7 @@ class LeadDigitalMarketingRegistrationController extends Controller
                 'email' => $request->email,
                 'phone' => $request->personal_number,
                 'code' => $request->personal_code,
-                'batch_id' => $request->batch_id,
+                'gender' => $request->gender,
             ]);
             
             // Create student detail record
@@ -150,27 +181,35 @@ class LeadDigitalMarketingRegistrationController extends Controller
                 'father_name' => $request->father_name,
                 'mother_name' => $request->mother_name,
                 'date_of_birth' => $request->date_of_birth,
+                'gender' => $request->gender,
+                'is_employed' => $request->is_employed,
                 'email' => $request->email,
                 'personal_number' => $request->personal_number,
                 'personal_code' => $request->personal_code,
-                'parents_number' => $request->parents_number,
-                'parents_code' => $request->parents_code,
+                'father_contact_number' => $request->father_contact_number,
+                'father_contact_code' => $request->father_contact_code,
+                'mother_contact_number' => $request->mother_contact_number,
+                'mother_contact_code' => $request->mother_contact_code,
                 'whatsapp_number' => $request->whatsapp_number,
                 'whatsapp_code' => $request->whatsapp_code,
-                'batch_id' => $request->batch_id,
+                'programme_type' => $request->programme_type,
+                'location' => $request->location,
+                'class_time_id' => $request->class_time_id,
                 'street' => $request->street,
                 'locality' => $request->locality,
                 'post_office' => $request->post_office,
                 'district' => $request->district,
                 'state' => $request->state,
                 'pin_code' => $request->pin_code,
-                'sslc_certificate' => $filePaths['sslc_certificate'] ?? null,
-                'plus_two_certificate' => $filePaths['plus_two_certificate'] ?? null,
                 'passport_photo' => $filePaths['passport_photo'] ?? null,
                 'adhar_front' => $filePaths['adhar_front'] ?? null,
                 'adhar_back' => $filePaths['adhar_back'] ?? null,
                 'signature' => $filePaths['signature'] ?? null,
-                'message' => $request->message,
+                'sslc_certificate' => $filePaths['sslc_certificate'] ?? null,
+                'plus_two_certificate' => $filePaths['plus_two_certificate'] ?? null,
+                'ug_certificate' => $filePaths['graduation_certificate'] ?? null,
+                'post_graduation_certificate' => $filePaths['post_graduation_certificate'] ?? null,
+                'other_document' => $filePaths['other_relevant_documents'] ?? null,
                 'status' => 'pending',
             ]);
             

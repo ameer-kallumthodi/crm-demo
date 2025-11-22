@@ -76,7 +76,7 @@
                         <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
                     </a>
                     <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-robot"></i> AI Automation Converted Leads
+                        <i class="ti ti-robot"></i> Diploma in Data Science Converted Leads
                     </a>
                     <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-world"></i> Web Development & Designing Converted Leads
@@ -86,6 +86,12 @@
                     </a>
                     <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-palette"></i> Graphic Designing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-brain"></i> Diploma in Machine Learning Converted Leads
+                    </a>
+                    <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-mobile"></i> Flutter Converted Leads
                     </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
@@ -159,7 +165,7 @@
                         <i class="ti ti-headphones"></i> Digital Marketing Converted Support List
                     </a>
                     <a href="{{ route('admin.support-ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> AI Automation Converted Support List
+                        <i class="ti ti-headphones"></i> Diploma in Data Science Converted Support List
                     </a>
                     <a href="{{ route('admin.support-web-development-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Web Development & Designing Converted Support List
@@ -169,6 +175,12 @@
                     </a>
                     <a href="{{ route('admin.support-graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Graphic Designing Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Diploma in Machine Learning Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-flutter-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Flutter Converted Support List
                     </a>
                     <a href="{{ route('admin.support-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Eduthanzeel Converted Support List

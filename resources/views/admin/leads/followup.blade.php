@@ -438,12 +438,12 @@
                                                 </div>
                                                 @elseif($lead->course_id == 12)
                                                 <div class="d-flex gap-1">
-                                                    <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open AI Automation Registration Form">
+                                                    <a href="{{ route('public.lead.diploma-in-data-science.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Diploma in Data Science Registration Form">
                                                         <i class="ti ti-external-link"></i>
                                                     </a>
                                                     <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
-                                                            data-url="{{ route('public.lead.ai-automation.register', $lead->id) }}" 
-                                                            title="Copy AI Automation Registration Link">
+                                                            data-url="{{ route('public.lead.diploma-in-data-science.register', $lead->id) }}" 
+                                                            title="Copy Diploma in Data Science Registration Link">
                                                         <i class="ti ti-copy"></i>
                                                     </button>
                                                 </div>
@@ -912,12 +912,12 @@
                                         </div>
                                         @elseif($lead->course_id == 12)
                                         <div class="d-flex gap-1 mt-2">
-                                            <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open AI Automation Registration Form">
+                                            <a href="{{ route('public.lead.diploma-in-data-science.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open Diploma in Data Science Registration Form">
                                                 <i class="ti ti-external-link f-12"></i>
                                             </a>
                                             <button type="button" class="btn btn-sm btn-info copy-link-btn" 
-                                                    data-url="{{ route('public.lead.ai-automation.register', $lead->id) }}" 
-                                                    title="Copy AI Automation Registration Link">
+                                                    data-url="{{ route('public.lead.diploma-in-data-science.register', $lead->id) }}" 
+                                                    title="Copy Diploma in Data Science Registration Link">
                                                 <i class="ti ti-copy f-12"></i>
                                             </button>
                                         </div>

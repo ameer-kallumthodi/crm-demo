@@ -193,6 +193,11 @@ class Lead extends Model
         return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 9);
     }
 
+    public function aiAutomationStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 12);
+    }
+
     // Scopes
     public function scopeWithStatusCount($query)
     {

@@ -22,11 +22,17 @@ class LeadDetail extends Model
         'father_name',
         'mother_name',
         'date_of_birth',
+        'gender',
+        'is_employed',
         'email',
         'personal_number',
         'personal_code',
         'parents_number',
         'parents_code',
+        'father_contact_number',
+        'father_contact_code',
+        'mother_contact_number',
+        'mother_contact_code',
         'whatsapp_number',
         'whatsapp_code',
         'subject_id',
@@ -35,6 +41,9 @@ class LeadDetail extends Model
         'class',
         'second_language',
         'passed_year',
+        'programme_type',
+        'location',
+        'class_time_id',
         'street',
         'locality',
         'post_office',
@@ -49,6 +58,8 @@ class LeadDetail extends Model
         'other_document',
         'plustwo_certificate',
         'sslc_certificate',
+        'ug_certificate',
+        'post_graduation_certificate',
         'message',
         'status',
         'admin_remarks',
@@ -64,6 +75,9 @@ class LeadDetail extends Model
         'ug_verification_status',
         'ug_verified_by',
         'ug_verified_at',
+        'post_graduation_certificate_verification_status',
+        'post_graduation_certificate_verified_by',
+        'post_graduation_certificate_verified_at',
         'passport_photo_verification_status',
         'passport_photo_verified_by',
         'passport_photo_verified_at',
@@ -86,10 +100,12 @@ class LeadDetail extends Model
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'is_employed' => 'boolean',
         'reviewed_at' => 'datetime',
         'sslc_verified_at' => 'datetime',
         'plustwo_verified_at' => 'datetime',
         'ug_verified_at' => 'datetime',
+        'post_graduation_certificate_verified_at' => 'datetime',
         'passport_photo_verified_at' => 'datetime',
         'adhar_front_verified_at' => 'datetime',
         'adhar_back_verified_at' => 'datetime',
@@ -137,6 +153,11 @@ class LeadDetail extends Model
         return $this->belongsTo(SubCourse::class, 'sub_course_id');
     }
 
+    public function classTime()
+    {
+        return $this->belongsTo(ClassTime::class, 'class_time_id');
+    }
+
     public function reviewedBy()
     {
         return $this->belongsTo(User::class, 'reviewed_by');
@@ -156,6 +177,11 @@ class LeadDetail extends Model
     public function ugVerifiedBy()
     {
         return $this->belongsTo(User::class, 'ug_verified_by');
+    }
+
+    public function postGraduationCertificateVerifiedBy()
+    {
+        return $this->belongsTo(User::class, 'post_graduation_certificate_verified_by');
     }
 
     public function passportPhotoVerifiedBy()
@@ -206,6 +232,7 @@ class LeadDetail extends Model
             'sslc_certificate' => ['field' => 'sslc_certificate', 'status' => 'sslc_verification_status'],
             'plustwo_certificate' => ['field' => 'plustwo_certificate', 'status' => 'plustwo_verification_status'],
             'ug_certificate' => ['field' => 'ug_certificate', 'status' => 'ug_verification_status'],
+            'post_graduation_certificate' => ['field' => 'post_graduation_certificate', 'status' => 'post_graduation_certificate_verification_status'],
             'birth_certificate' => ['field' => 'birth_certificate', 'status' => 'birth_certificate_verification_status'],
             'passport_photo' => ['field' => 'passport_photo', 'status' => 'passport_photo_verification_status'],
             'adhar_front' => ['field' => 'adhar_front', 'status' => 'adhar_front_verification_status'],

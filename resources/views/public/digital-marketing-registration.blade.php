@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>NIOS Course Registration</title>
+    <title>Digital Marketing Registration</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -313,9 +313,9 @@
     <div class="wizard-container">
         <div class="wizard-header">
             <div class="logo-container mb-3">
-                <img src="{{ asset('storage/nios.webp') }}" alt="NIOS Logo" class="nios-logo">
+                <img src="{{ asset('storage/skill-park-logo.png') }}" alt="Skill Park Logo" class="nios-logo">
             </div>
-            <h2><i class="fas fa-graduation-cap me-2"></i>NIOS Course Registration</h2>
+            <h2><i class="fas fa-graduation-cap me-2"></i>Digital Marketing Registration</h2>
             <p class="mb-0">Complete your registration in a few simple steps</p>
         </div>
         
@@ -373,20 +373,20 @@
                 @csrf
                 <input type="hidden" name="lead_id" value="{{ $lead->id ?? '' }}">
                 
-                <!-- Step 1: Personal Information -->
+                <!-- Step 1: Personal Details -->
                 <div class="form-step active" id="formStep1">
-                    <h4 class="mb-4"><i class="fas fa-user me-2"></i>Personal Information</h4>
+                    <h4 class="mb-4"><i class="fas fa-user me-2"></i>Personal Details</h4>
                     
                     <div class="row">
                         <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">Student Name <span class="required">*</span></label>
-                                    <input type="text" class="form-control" name="student_name" value="{{ $lead->title ?? '' }}" required>
-                                </div>
+                            <div class="form-group">
+                                <label class="form-label">Candidate Name <span class="required">*</span></label>
+                                <input type="text" class="form-control" name="student_name" value="{{ $lead->title ?? '' }}" required>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Father Name <span class="required">*</span></label>
+                                <label class="form-label">Father's Name <span class="required">*</span></label>
                                 <input type="text" class="form-control" name="father_name" required>
                             </div>
                         </div>
@@ -395,7 +395,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Mother Name <span class="required">*</span></label>
+                                <label class="form-label">Mother's Name <span class="required">*</span></label>
                                 <input type="text" class="form-control" name="mother_name" required>
                             </div>
                         </div>
@@ -409,14 +409,46 @@
                     
                     <div class="row">
                         <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">Email <span class="required">*</span></label>
-                                    <input type="email" class="form-control" name="email" value="{{ $lead->email ?? '' }}" required>
+                            <div class="form-group">
+                                <label class="form-label">Gender <span class="required">*</span></label>
+                                <div class="mt-2">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="gender" id="gender_male" value="male" required>
+                                        <label class="form-check-label" for="gender_male">Male</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="gender" id="gender_female" value="female" required>
+                                        <label class="form-check-label" for="gender_female">Female</label>
+                                    </div>
                                 </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Personal Number <span class="required">*</span></label>
+                                <label class="form-label">Are you employed? <span class="required">*</span></label>
+                                <div class="mt-2">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="is_employed" id="employed_yes" value="1" required>
+                                        <label class="form-check-label" for="employed_yes">Yes</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="is_employed" id="employed_no" value="0" required>
+                                        <label class="form-check-label" for="employed_no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Communication Details -->
+                <div class="form-step" id="formStep2">
+                    <h4 class="mb-4"><i class="fas fa-phone me-2"></i>Communication Details</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Candidate Contact No. <span class="required">*</span></label>
                                 <div class="row">
                                     <div class="col-4">
                                         <select class="form-control" name="personal_code" required>
@@ -431,29 +463,9 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Parents Number <span class="required">*</span></label>
-                                <div class="row">
-                                    <div class="col-4">
-                                        <select class="form-control" name="parents_code" required>
-                                            @foreach($countryCodes as $code => $country)
-                                                <option value="{{ $code }}">{{ $code }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-8">
-                                        <input type="tel" class="form-control" name="parents_number" required>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">WhatsApp Number <span class="required">*</span></label>
+                                <label class="form-label">Candidate WhatsApp No. <span class="required">*</span></label>
                                 <div class="row">
                                     <div class="col-4">
                                         <select class="form-control" name="whatsapp_code" required>
@@ -469,33 +481,40 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Step 2: Academic Information -->
-                <div class="form-step" id="formStep2">
-                    <h4 class="mb-4"><i class="fas fa-book me-2"></i>Academic Information</h4>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Subject <span class="required">*</span></label>
-                                <select class="form-control" name="subject_id" required>
-                                    <option value="">Select Subject</option>
-                                    @foreach($subjects as $subject)
-                                        <option value="{{ $subject->id }}">{{ $subject->title }}</option>
-                                    @endforeach
-                                </select>
+                                <label class="form-label">Father's Contact No. <span class="required">*</span></label>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <select class="form-control" name="father_contact_code" required>
+                                            @foreach($countryCodes as $code => $country)
+                                                <option value="{{ $code }}">{{ $code }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="tel" class="form-control" name="father_contact_number" required>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Batch <span class="required">*</span></label>
-                                <select class="form-control" name="batch_id" required>
-                                    <option value="">Select Batch</option>
-                                    @foreach($batches as $batch)
-                                        <option value="{{ $batch->id }}">{{ $batch->title }}</option>
-                                    @endforeach
-                                </select>
+                                <label class="form-label">Mother's Contact No. <span class="required">*</span></label>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <select class="form-control" name="mother_contact_code" required>
+                                            @foreach($countryCodes as $code => $country)
+                                                <option value="{{ $code }}">{{ $code }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="tel" class="form-control" name="mother_contact_number" required>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -503,52 +522,25 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Class <span class="required">*</span></label>
-                                <select class="form-control" name="class" required>
-                                    <option value="">Select Class</option>
-                                    <option value="sslc">SSLC</option>
-                                    <option value="plustwo">Plus Two</option>
-                                </select>
+                                <label class="form-label">Email Address <span class="required">*</span></label>
+                                <input type="email" class="form-control" name="email" value="{{ $lead->email ?? '' }}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Second Language <span class="required">*</span></label>
-                                <select class="form-control" name="second_language" required>
-                                    <option value="">Select Language</option>
-                                    <option value="malayalam">Malayalam</option>
-                                    <option value="hindi">Hindi</option>
-                                </select>
+                                <label class="form-label">Residential Address <span class="required">*</span></label>
+                                <textarea class="form-control" name="street" rows="3" required></textarea>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Step 3: Address Information -->
-                <div class="form-step" id="formStep3">
-                    <h4 class="mb-4"><i class="fas fa-map-marker-alt me-2"></i>Address Information</h4>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Street Address <span class="required">*</span></label>
-                        <textarea class="form-control" name="street" rows="3" required></textarea>
-                    </div>
                     
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label class="form-label">Locality <span class="required">*</span></label>
                                 <input type="text" class="form-control" name="locality" required>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Post Office <span class="required">*</span></label>
-                                <input type="text" class="form-control" name="post_office" required>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="form-label">District <span class="required">*</span></label>
@@ -561,7 +553,16 @@
                                 <input type="text" class="form-control" name="state" required>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Post Office <span class="required">*</span></label>
+                                <input type="text" class="form-control" name="post_office" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">Pin Code <span class="required">*</span></label>
                                 <input type="text" class="form-control" name="pin_code" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" required>
@@ -571,26 +572,60 @@
                     </div>
                 </div>
                 
-                <!-- Step 4: Documents & Final -->
-                <div class="form-step" id="formStep4">
-                    <h4 class="mb-4"><i class="fas fa-file-upload me-2"></i>Document Upload</h4>
+                <!-- Step 3: Programme Details -->
+                <div class="form-step" id="formStep3">
+                    <h4 class="mb-4"><i class="fas fa-graduation-cap me-2"></i>Programme Details</h4>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Birth Certificate</label>
-                                <div class="file-upload-area" onclick="document.getElementById('birth_certificate').click()">
-                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                    <p class="mb-0">Click to upload or drag & drop</p>
-                                    <small class="text-muted">PDF, JPG, PNG (Max 2MB)</small>
-                                </div>
-                                <input type="file" id="birth_certificate" name="birth_certificate" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
-                                <div class="file-preview" id="birth_certificate_preview"></div>
+                                <label class="form-label">Course Type <span class="required">*</span></label>
+                                <select class="form-control" name="programme_type" id="programme_type" required>
+                                    <option value="">Select Course Type</option>
+                                    <option value="online">Online</option>
+                                    <option value="offline">Offline</option>
+                                </select>
                             </div>
                         </div>
                         <div class="col-md-6">
+                            <div class="form-group" id="location_group" style="display: none;">
+                                <label class="form-label">Choose Please <span class="required">*</span></label>
+                                <select class="form-control" name="location" id="location">
+                                    <option value="">Select Location</option>
+                                    <option value="Ernakulam">Ernakulam</option>
+                                    <option value="Malappuram">Malappuram</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            @if($classTimes && $classTimes->count() > 0)
                             <div class="form-group">
-                                <label class="form-label">Passport Photo <span class="required">*</span></label>
+                                <label class="form-label">Class Time <span class="required">*</span></label>
+                                <select class="form-control" name="class_time_id" id="class_time_id" required>
+                                    <option value="">Select Class Time</option>
+                                    @foreach($classTimes as $classTime)
+                                        <option value="{{ $classTime->id }}">
+                                            {{ date('h:i A', strtotime($classTime->from_time)) }} - {{ date('h:i A', strtotime($classTime->to_time)) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 4: Upload Documents -->
+                <div class="form-step" id="formStep4">
+                    <h4 class="mb-4"><i class="fas fa-file-upload me-2"></i>Upload Documents</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Recent Passport Size Photograph <span class="required">*</span></label>
                                 <div class="file-upload-area" onclick="document.getElementById('passport_photo').click()">
                                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                     <p class="mb-0">Click to upload or drag & drop</p>
@@ -600,12 +635,9 @@
                                 <div class="file-preview" id="passport_photo_preview"></div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Aadhar Front <span class="required">*</span></label>
+                                <label class="form-label">Aadhar Card (Front) <span class="required">*</span></label>
                                 <div class="file-upload-area" onclick="document.getElementById('adhar_front').click()">
                                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                     <p class="mb-0">Click to upload or drag & drop</p>
@@ -615,9 +647,12 @@
                                 <div class="file-preview" id="adhar_front_preview"></div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Aadhar Back <span class="required">*</span></label>
+                                <label class="form-label">Aadhar Card (Back) <span class="required">*</span></label>
                                 <div class="file-upload-area" onclick="document.getElementById('adhar_back').click()">
                                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                     <p class="mb-0">Click to upload or drag & drop</p>
@@ -627,9 +662,6 @@
                                 <div class="file-preview" id="adhar_back_preview"></div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">Signature <span class="required">*</span></label>
@@ -642,26 +674,77 @@
                                 <div class="file-preview" id="signature_preview"></div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">Additional Message</label>
-                                <textarea class="form-control" name="message" rows="4" placeholder="Enter any message or additional details..."></textarea>
+                                <label class="form-label">Secondary (10th) Certificate <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('sslc_certificate').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 2MB)</small>
+                                </div>
+                                <input type="file" id="sslc_certificate" name="sslc_certificate" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
+                                <div class="file-preview" id="sslc_certificate_preview"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Senior Secondary (12th) Certificate <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('plus_two_certificate').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 2MB)</small>
+                                </div>
+                                <input type="file" id="plus_two_certificate" name="plus_two_certificate" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
+                                <div class="file-preview" id="plus_two_certificate_preview"></div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- SSLC Certificate (conditional) - Full width below other fields -->
-                    <div class="form-group" id="sslc_certificate_group" style="display: none;">
-                        <label class="form-label">SSLC Certificate <span class="required">*</span></label>
-                        <div class="file-upload-area" onclick="document.getElementById('sslc_certificate').click()">
-                            <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                            <p class="mb-0">Click to upload or drag & drop</p>
-                            <small class="text-muted">PDF, JPG, PNG (Max 2MB)</small>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Graduation Certificate</label>
+                                <div class="file-upload-area" onclick="document.getElementById('graduation_certificate').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 2MB)</small>
+                                </div>
+                                <input type="file" id="graduation_certificate" name="graduation_certificate" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                                <div class="file-preview" id="graduation_certificate_preview"></div>
+                            </div>
                         </div>
-                        <input type="file" id="sslc_certificate" name="sslc_certificate" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
-                        <div class="file-preview" id="sslc_certificate_preview"></div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Post-Graduation Certificate</label>
+                                <div class="file-upload-area" onclick="document.getElementById('post_graduation_certificate').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 2MB)</small>
+                                </div>
+                                <input type="file" id="post_graduation_certificate" name="post_graduation_certificate" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                                <div class="file-preview" id="post_graduation_certificate_preview"></div>
+                            </div>
+                        </div>
                     </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Other Relevant Documents</label>
+                                <div class="file-upload-area" onclick="document.getElementById('other_relevant_documents').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 2MB)</small>
+                                </div>
+                                <input type="file" id="other_relevant_documents" name="other_relevant_documents" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                                <div class="file-preview" id="other_relevant_documents_preview"></div>
+                            </div>
+                        </div>
                     </div>
+                </div>
                     
                     <!-- Navigation Buttons -->
                     <div class="d-flex justify-content-between mt-4">
@@ -686,7 +769,7 @@
     <script>
         let currentStep = 1;
         const totalSteps = 4;
-        const STORAGE_KEY = 'nios_form_data';
+        const STORAGE_KEY = 'digital_marketing_form_data';
 
         // Load saved data on page load
         function loadSavedData() {
@@ -697,15 +780,43 @@
                     
                     // Fill form fields with saved data
                     Object.keys(data).forEach(key => {
+                        const value = data[key];
+                        
+                        // Handle radio buttons
+                        const radioButtons = document.querySelectorAll(`[name="${key}"][type="radio"]`);
+                        if (radioButtons.length > 0) {
+                            radioButtons.forEach(radio => {
+                                if (radio.value === String(value)) {
+                                    radio.checked = true;
+                                }
+                            });
+                            return;
+                        }
+                        
+                        // Handle checkboxes
+                        const checkbox = document.querySelector(`[name="${key}"][type="checkbox"]`);
+                        if (checkbox) {
+                            checkbox.checked = value === '1' || value === 1 || value === true;
+                            return;
+                        }
+                        
+                        // Handle regular inputs and selects
                         const element = document.querySelector(`[name="${key}"]`);
                         if (element) {
                             if (element.type === 'file') {
                                 // Skip file inputs as they can't be restored
                                 return;
                             }
-                            element.value = data[key];
+                            element.value = value;
                         }
                     });
+                    
+                    // After loading data, trigger programme type change to show/hide location
+                    const programmeTypeSelect = document.getElementById('programme_type');
+                    if (programmeTypeSelect && programmeTypeSelect.value) {
+                        // Trigger change event to show/hide location field
+                        programmeTypeSelect.dispatchEvent(new Event('change'));
+                    }
                 } catch (e) {
                     console.error('Error loading saved data:', e);
                 }
@@ -714,14 +825,40 @@
 
         // Save form data to localStorage
         function saveFormData() {
-            const formData = new FormData(document.getElementById('registrationForm'));
+            const form = document.getElementById('registrationForm');
+            const formData = new FormData(form);
             const data = {};
             
-                    for (let [key, value] of formData.entries()) {
-                        if (key !== 'lead_id' && key !== '_token') {
-                            data[key] = value;
-                        }
+            // Get all form elements
+            const formElements = form.elements;
+            
+            for (let i = 0; i < formElements.length; i++) {
+                const element = formElements[i];
+                const name = element.name;
+                
+                if (!name || name === 'lead_id' || name === '_token') {
+                    continue;
+                }
+                
+                // Handle radio buttons - only save the checked one
+                if (element.type === 'radio') {
+                    if (element.checked) {
+                        data[name] = element.value;
                     }
+                }
+                // Handle checkboxes
+                else if (element.type === 'checkbox') {
+                    data[name] = element.checked ? element.value : '0';
+                }
+                // Handle file inputs - skip them
+                else if (element.type === 'file') {
+                    continue;
+                }
+                // Handle other inputs (text, select, textarea, etc.)
+                else {
+                    data[name] = element.value;
+                }
+            }
             
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
@@ -746,7 +883,16 @@
 
         // Load saved data when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            // Setup programme type change handler first (before loading data)
+            setupProgrammeTypeHandler();
+            
+            // Setup file upload handlers
+            setupFileUploadHandlers();
+            
+            // Load saved data after handlers are set up
             loadSavedData();
+            
+            // Setup auto-save
             setupAutoSave();
             
             // Add input validation for pin code
@@ -757,42 +903,52 @@
                     e.target.value = e.target.value.replace(/[^0-9]/g, '');
                 });
             }
-            
-            // Setup class selection change handler
-            setupClassSelectionHandler();
         });
         
-        // Function to handle class selection changes
-        function setupClassSelectionHandler() {
-            const classSelect = document.querySelector('select[name="class"]');
-            const sslcGroup = document.getElementById('sslc_certificate_group');
-            const sslcInput = document.getElementById('sslc_certificate');
+        // Function to handle programme type changes
+        function setupProgrammeTypeHandler() {
+            const programmeTypeSelect = document.getElementById('programme_type');
+            const locationGroup = document.getElementById('location_group');
+            const locationSelect = document.getElementById('location');
             
-            if (classSelect && sslcGroup && sslcInput) {
-                classSelect.addEventListener('change', function() {
-                    if (this.value === 'plustwo') {
-                        sslcGroup.style.display = 'block';
-                        sslcInput.setAttribute('required', 'required');
+            if (programmeTypeSelect) {
+                programmeTypeSelect.addEventListener('change', function() {
+                    if (this.value === 'offline') {
+                        locationGroup.style.display = 'block';
+                        locationSelect.setAttribute('required', 'required');
                     } else {
-                        sslcGroup.style.display = 'none';
-                        sslcInput.removeAttribute('required');
-                        sslcInput.value = ''; // Clear the file input
-                        // Clear preview
-                        const preview = document.getElementById('sslc_certificate_preview');
-                        if (preview) {
-                            preview.innerHTML = '';
-                            preview.style.display = 'none';
-                        }
+                        locationGroup.style.display = 'none';
+                        locationSelect.removeAttribute('required');
+                        locationSelect.value = '';
                     }
                 });
-                
-                // Check initial value on page load
-                if (classSelect.value === 'plustwo') {
-                    sslcGroup.style.display = 'block';
-                    sslcInput.setAttribute('required', 'required');
-                }
             }
         }
+        
+        // Function to setup file upload handlers for all file inputs
+        function setupFileUploadHandlers() {
+            const fileInputs = [
+                'passport_photo', 'adhar_front', 'adhar_back', 'signature',
+                'sslc_certificate', 'plus_two_certificate', 'graduation_certificate',
+                'post_graduation_certificate', 'other_relevant_documents'
+            ];
+            
+            fileInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.addEventListener('change', function(e) {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const preview = document.getElementById(inputId + '_preview');
+                            if (preview) {
+                                preview.innerHTML = '<div class="alert alert-success mt-2"><i class="fas fa-check-circle me-2"></i>' + file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)</div>';
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        
         
         function changeStep(direction) {
             const currentStepElement = document.getElementById(`formStep${currentStep}`);
@@ -1040,7 +1196,7 @@
             submitBtn.disabled = true;
             submitBtn.classList.add('loading');
             
-                    fetch('{{ route("public.lead.nios.store") }}', {
+                    fetch('{{ route("public.lead.digital-marketing.register.store") }}', {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -1077,3 +1233,5 @@
     </script>
 </body>
 </html>
+
+

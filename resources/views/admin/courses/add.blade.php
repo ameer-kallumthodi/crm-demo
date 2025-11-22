@@ -59,6 +59,18 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <div class="form-check mt-4">
+                        <input type="hidden" name="needs_time" value="0">
+                        <input class="form-check-input" type="checkbox" id="needs_time" name="needs_time" value="1">
+                        <label class="form-check-label" for="needs_time">
+                            Needs Time
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <button type="submit" class="btn btn-success float-end">Submit</button>

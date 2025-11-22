@@ -254,13 +254,55 @@
                                         <label class="info-label">Date of Birth</label>
                                         <p class="info-value" data-field="date_of_birth" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->date_of_birth ? $studentDetail->date_of_birth->format('Y-m-d') : '' }}">
                                             {{ $studentDetail->date_of_birth ? $studentDetail->date_of_birth->format('M d, Y') : 'N/A' }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </button>
+                                            @endif
                                         </p>
                                     </div>
                                 </div>
                             </div>
+                            @if($studentDetail->gender)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-gender-bigender text-info"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Gender</label>
+                                        <p class="info-value" data-field="gender" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->gender }}">
+                                            {{ ucfirst($studentDetail->gender) }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field-type="select" data-options='{"male":"Male","female":"Female"}' title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if(isset($studentDetail->is_employed))
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-briefcase text-success"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Are you employed?</label>
+                                        <p class="info-value" data-field="is_employed" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->is_employed ? '1' : '0' }}">
+                                            {{ $studentDetail->is_employed ? 'Yes' : 'No' }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field-type="select" data-options='{"1":"Yes","0":"No"}' title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     </div>
 
@@ -331,6 +373,46 @@
                                     </div>
                                 </div>
                             </div>
+                            @if($studentDetail->father_contact_number)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-phone-call text-primary"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Father's Contact No.</label>
+                                        <p class="info-value" data-field="father_contact" data-lead-detail-id="{{ $studentDetail->id }}" data-phone-code="{{ $studentDetail->father_contact_code }}" data-phone-number="{{ $studentDetail->father_contact_number }}">
+                                            {{ \App\Helpers\PhoneNumberHelper::display($studentDetail->father_contact_code, $studentDetail->father_contact_number) }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-phone-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if($studentDetail->mother_contact_number)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-phone-call text-info"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Mother's Contact No.</label>
+                                        <p class="info-value" data-field="mother_contact" data-lead-detail-id="{{ $studentDetail->id }}" data-phone-code="{{ $studentDetail->mother_contact_code }}" data-phone-number="{{ $studentDetail->mother_contact_number }}">
+                                            {{ \App\Helpers\PhoneNumberHelper::display($studentDetail->mother_contact_code, $studentDetail->mother_contact_number) }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-phone-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     </div>
 
@@ -527,6 +609,70 @@
                                             {{ $studentDetail->passed_year ?? 'N/A' }}
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if($studentDetail->programme_type)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-device-desktop text-primary"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Course Type</label>
+                                        <p class="info-value" data-field="programme_type" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->programme_type }}">
+                                            {{ ucfirst($studentDetail->programme_type) }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field-type="select" data-options='{"online":"Online","offline":"Offline"}' title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if($studentDetail->programme_type === 'offline')
+                            <div class="col-md-6 location-field-container">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-map-pin text-warning"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Location</label>
+                                        <p class="info-value" data-field="location" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->location ?? '' }}">
+                                            {{ $studentDetail->location ?? 'N/A' }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field-type="select" data-options='{"Ernakulam":"Ernakulam","Malappuram":"Malappuram"}' title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if($studentDetail->classTime || (isset($classTimes) && $classTimes->count() > 0))
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-clock text-info"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Class Time</label>
+                                        <p class="info-value" data-field="class_time_id" data-lead-detail-id="{{ $studentDetail->id }}" data-course-id="{{ $studentDetail->course_id }}" data-current-id="{{ $studentDetail->class_time_id }}">
+                                            @if($studentDetail->classTime)
+                                                {{ date('h:i A', strtotime($studentDetail->classTime->from_time)) }} - {{ date('h:i A', strtotime($studentDetail->classTime->to_time)) }}
+                                            @else
+                                                N/A
+                                            @endif
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-class-time-field" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
                                             @endif
                                         </p>
                                     </div>
@@ -775,69 +921,7 @@
                                 </div>
                             </div>
                             
-                            @if($studentDetail->course_id == 5 || $studentDetail->course_id == 6)
-                            {{-- For ESchool (5) and Eduthanzeel (6): Show Other Document instead of Aadhaar --}}
-                            @if($studentDetail->other_document)
-                            <div class="col-12 col-md-6">
-                                <div class="document-card">
-                                    <div class="document-icon">
-                                        <i class="ti ti-file text-info"></i>
-                                    </div>
-                                    <div class="document-content">
-                                        <div class="document-info">
-                                            <label class="document-label">Other Document</label>
-                                            <div class="verification-status">
-                                                <span class="badge bg-{{ $studentDetail->other_document_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="other_document">
-                                                    {{ ucfirst($studentDetail->other_document_verification_status ?? 'pending') }}
-                                                </span>
-                                                @if($studentDetail->other_document_verified_at)
-                                                <small class="text-muted d-block">
-                                                    Verified by: {{ $studentDetail->otherDocumentVerifiedBy->name ?? 'Unknown' }}<br>
-                                                    Date: {{ $studentDetail->other_document_verified_at->format('M d, Y h:i A') }}
-                                                </small>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="document-actions">
-                                            <a href="{{ Storage::url($studentDetail->other_document) }}" target="_blank" class="btn btn-sm btn-outline-info">
-                                                <i class="ti ti-eye me-1"></i>View
-                                            </a>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
-                                            <button class="btn btn-sm btn-success" onclick="openVerificationModal('other_document', '{{ $studentDetail->other_document_verification_status ?? 'pending' }}')">
-                                                <i class="ti ti-check me-1"></i>Verify
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            @else
-                            {{-- Show upload option if other_document is missing --}}
-                            <div class="col-12 col-md-6">
-                                <div class="document-card border-dashed">
-                                    <div class="document-icon">
-                                        <i class="ti ti-file-upload text-muted"></i>
-                                    </div>
-                                    <div class="document-content">
-                                        <div class="document-info">
-                                            <label class="document-label">Other Document</label>
-                                            <div class="verification-status">
-                                                <span class="badge bg-secondary">Not Uploaded</span>
-                                            </div>
-                                        </div>
-                                        <div class="document-actions">
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                            <button class="btn btn-sm btn-primary w-100 w-md-auto" onclick="openUploadOtherDocumentModal()">
-                                                <i class="ti ti-upload me-1"></i><span class="d-none d-md-inline">Upload </span>Document
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-                            @else
-                            {{-- For other courses: Show Aadhaar Front and Back --}}
+                            {{-- Show Aadhaar Front and Back for all courses if uploaded --}}
                             @if($studentDetail->adhar_front)
                             <div class="col-12 col-md-6">
                                 <div class="document-card">
@@ -909,10 +993,8 @@
                                 </div>
                             </div>
                             @endif
-                            @endif
                             
-                            @if($studentDetail->course_id != 5 && $studentDetail->course_id != 6)
-                            {{-- Show signature only for courses other than ESchool (5) and Eduthanzeel (6) --}}
+                            {{-- Show signature for all courses if uploaded --}}
                             @if($studentDetail->signature)
                             <div class="col-12 col-md-6">
                                 <div class="document-card">
@@ -948,6 +1030,103 @@
                                 </div>
                             </div>
                             @endif
+                            
+                            {{-- Show Other Document for all courses --}}
+                            @if($studentDetail->other_document)
+                            <div class="col-12 col-md-6">
+                                <div class="document-card">
+                                    <div class="document-icon">
+                                        <i class="ti ti-file text-info"></i>
+                                    </div>
+                                    <div class="document-content">
+                                        <div class="document-info">
+                                            <label class="document-label">Other Document</label>
+                                            <div class="verification-status">
+                                                <span class="badge bg-{{ $studentDetail->other_document_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="other_document">
+                                                    {{ ucfirst($studentDetail->other_document_verification_status ?? 'pending') }}
+                                                </span>
+                                                @if($studentDetail->other_document_verified_at)
+                                                <small class="text-muted d-block">
+                                                    Verified by: {{ $studentDetail->otherDocumentVerifiedBy->name ?? 'Unknown' }}<br>
+                                                    Date: {{ $studentDetail->other_document_verified_at->format('M d, Y h:i A') }}
+                                                </small>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="document-actions">
+                                            <a href="{{ Storage::url($studentDetail->other_document) }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                                <i class="ti ti-eye me-1"></i>View
+                                            </a>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
+                                            <button class="btn btn-sm btn-success" onclick="openVerificationModal('other_document', '{{ $studentDetail->other_document_verification_status ?? 'pending' }}')">
+                                                <i class="ti ti-check me-1"></i>Verify
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @else
+                            {{-- Show upload option if other_document is missing (for all courses) --}}
+                            <div class="col-12 col-md-6">
+                                <div class="document-card border-dashed">
+                                    <div class="document-icon">
+                                        <i class="ti ti-file-upload text-muted"></i>
+                                    </div>
+                                    <div class="document-content">
+                                        <div class="document-info">
+                                            <label class="document-label">Other Document</label>
+                                            <div class="verification-status">
+                                                <span class="badge bg-secondary">Not Uploaded</span>
+                                            </div>
+                                        </div>
+                                        <div class="document-actions">
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                            <button class="btn btn-sm btn-primary w-100 w-md-auto" onclick="openUploadOtherDocumentModal()">
+                                                <i class="ti ti-upload me-1"></i><span class="d-none d-md-inline">Upload </span>Document
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            
+                            {{-- Show Post Graduation Certificate if uploaded --}}
+                            @if($studentDetail->post_graduation_certificate)
+                            <div class="col-12 col-md-6">
+                                <div class="document-card">
+                                    <div class="document-icon">
+                                        <i class="ti ti-file-certificate text-success"></i>
+                                    </div>
+                                    <div class="document-content">
+                                        <div class="document-info">
+                                            <label class="document-label">Post-Graduation Certificate</label>
+                                            <div class="verification-status">
+                                                <span class="badge bg-{{ $studentDetail->post_graduation_certificate_verification_status === 'verified' ? 'success' : 'warning' }}" data-document-type="post_graduation_certificate">
+                                                    {{ ucfirst($studentDetail->post_graduation_certificate_verification_status ?? 'pending') }}
+                                                </span>
+                                                @if($studentDetail->post_graduation_certificate_verified_at)
+                                                <small class="text-muted d-block">
+                                                    Verified by: {{ $studentDetail->postGraduationCertificateVerifiedBy->name ?? 'Unknown' }}<br>
+                                                    Date: {{ $studentDetail->post_graduation_certificate_verified_at->format('M d, Y h:i A') }}
+                                                </small>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="document-actions">
+                                            <a href="{{ Storage::url($studentDetail->post_graduation_certificate) }}" target="_blank" class="btn btn-sm btn-outline-success">
+                                                <i class="ti ti-eye me-1"></i>View
+                                            </a>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller())
+                                            <button class="btn btn-sm btn-success" onclick="openVerificationModal('post_graduation_certificate', '{{ $studentDetail->post_graduation_certificate_verification_status ?? 'pending' }}')">
+                                                <i class="ti ti-check me-1"></i>Verify
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             @endif
                         </div>
                     </div>
@@ -1977,9 +2156,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Create edit form
                 if (['subject_id', 'batch_id', 'sub_course_id'].includes(field)) {
                     createCourseDependentEditForm(field, courseId, currentId, leadDetailId, infoValue);
+                } else if (field === 'class_time_id') {
+                    // Handle class time field separately (will be handled by edit-class-time-field handler)
+                    return;
                 } else {
-                    const editForm = createEditForm(field, currentValue, leadDetailId);
-                    infoValue.innerHTML = editForm;
+                    // Check if field has field-type attribute for select fields
+                    const fieldType = button.dataset.fieldType;
+                    if (fieldType === 'select') {
+                        const options = JSON.parse(button.dataset.options || '{}');
+                        let optionsHtml = '';
+                        Object.entries(options).forEach(([val, label]) => {
+                            optionsHtml += `<option value="${val}" ${currentValue == val ? 'selected' : ''}>${label}</option>`;
+                        });
+                        const editForm = `
+                            <div class="edit-form">
+                                <select name="${field}" class="form-select form-select-sm">
+                                    ${optionsHtml}
+                                </select>
+                                <div class="btn-group mt-1">
+                                    <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                                    <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                                </div>
+                            </div>
+                        `;
+                        infoValue.innerHTML = editForm;
+                    } else {
+                        const editForm = createEditForm(field, currentValue, leadDetailId);
+                        infoValue.innerHTML = editForm;
+                    }
                     
                     // Focus on input
                     const input = infoValue.querySelector('input, textarea, select');
@@ -2006,6 +2210,68 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Focus on phone number input
                 const phoneInput = infoValue.querySelector('input[name="phone_number"]');
                 if (phoneInput) phoneInput.focus();
+            }
+        });
+        
+        // Handle class time field editing
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.edit-class-time-field')) {
+                e.preventDefault();
+                const button = e.target.closest('.edit-class-time-field');
+                const infoValue = button.closest('.info-value');
+                const field = infoValue.dataset.field;
+                const leadDetailId = infoValue.dataset.leadDetailId;
+                const courseId = infoValue.dataset.courseId;
+                const currentId = infoValue.dataset.currentId || '';
+                
+                // Check if course needs time
+                fetch(`/api/courses/${courseId}/needs-time`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.needs_time) {
+                            toast_error('This course does not require class time.');
+                            return;
+                        }
+                        
+                        // Fetch class times for the course
+                        fetch(`/api/class-times/by-course/${courseId}`)
+                            .then(response => response.json())
+                            .then(classTimes => {
+                                let options = '<option value="">Select Class Time</option>';
+                                if (classTimes && classTimes.length > 0) {
+                                    classTimes.forEach(ct => {
+                                        const fromTime = new Date('1970-01-01T' + ct.from_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                                        const toTime = new Date('1970-01-01T' + ct.to_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                                        options += `<option value="${ct.id}" ${ct.id == currentId ? 'selected' : ''}>${fromTime} - ${toTime}</option>`;
+                                    });
+                                }
+                                
+                                const editForm = `
+                                    <div class="edit-form">
+                                        <select name="${field}" class="form-select form-select-sm">
+                                            ${options}
+                                        </select>
+                                        <div class="btn-group mt-1">
+                                            <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                                            <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                                        </div>
+                                    </div>
+                                `;
+                                infoValue.innerHTML = editForm;
+                                
+                                // Focus on select
+                                const select = infoValue.querySelector('select');
+                                if (select) select.focus();
+                            })
+                            .catch(error => {
+                                console.error('Error fetching class times:', error);
+                                toast_error('Error loading class times. Please try again.');
+                            });
+                    })
+                    .catch(error => {
+                        console.error('Error checking course needs_time:', error);
+                        toast_error('Error checking course settings. Please try again.');
+                    });
             }
         });
         
@@ -2069,7 +2335,28 @@ function createEditForm(field, currentValue, leadDetailId) {
             <select name="${field}" class="form-select form-select-sm">
                 <option value="male" ${currentValue === 'male' ? 'selected' : ''}>Male</option>
                 <option value="female" ${currentValue === 'female' ? 'selected' : ''}>Female</option>
-                <option value="other" ${currentValue === 'other' ? 'selected' : ''}>Other</option>
+            </select>
+        `;
+    } else if (field === 'is_employed') {
+        inputHtml = `
+            <select name="${field}" class="form-select form-select-sm">
+                <option value="1" ${currentValue === '1' || currentValue === 1 ? 'selected' : ''}>Yes</option>
+                <option value="0" ${currentValue === '0' || currentValue === 0 ? 'selected' : ''}>No</option>
+            </select>
+        `;
+    } else if (field === 'programme_type') {
+        inputHtml = `
+            <select name="${field}" class="form-select form-select-sm">
+                <option value="online" ${currentValue === 'online' ? 'selected' : ''}>Online</option>
+                <option value="offline" ${currentValue === 'offline' ? 'selected' : ''}>Offline</option>
+            </select>
+        `;
+    } else if (field === 'location') {
+        inputHtml = `
+            <select name="${field}" class="form-select form-select-sm">
+                <option value="">Select Location</option>
+                <option value="Ernakulam" ${currentValue === 'Ernakulam' ? 'selected' : ''}>Ernakulam</option>
+                <option value="Malappuram" ${currentValue === 'Malappuram' ? 'selected' : ''}>Malappuram</option>
             </select>
         `;
     } else if (field === 'message') {
@@ -2224,10 +2511,23 @@ function saveFieldEdit(field, value, leadDetailId, infoValue) {
     .then(data => {
         if (data.success) {
             // Update the display value
-            if (field.includes('phone') || field === 'whatsapp') {
+            if (field.includes('phone') || field === 'whatsapp' || field === 'father_contact' || field === 'mother_contact') {
                 const [code, number] = value.split('|');
                 const displayValue = code && number ? `${code} ${number}` : 'N/A';
+                // Update data attributes for phone fields
+                if (infoValue.dataset) {
+                    if (field === 'father_contact') {
+                        infoValue.dataset.phoneCode = code;
+                        infoValue.dataset.phoneNumber = number;
+                    } else if (field === 'mother_contact') {
+                        infoValue.dataset.phoneCode = code;
+                        infoValue.dataset.phoneNumber = number;
+                    }
+                }
                 infoValue.innerHTML = `${displayValue} <button class="btn btn-sm btn-outline-primary ms-2 edit-phone-field" title="Edit"><i class="ti ti-edit"></i></button>`;
+            } else if (field === 'class_time_id') {
+                const displayValue = data.new_value || 'N/A';
+                infoValue.innerHTML = `${displayValue} <button class="btn btn-sm btn-outline-primary ms-2 edit-class-time-field" title="Edit"><i class="ti ti-edit"></i></button>`;
             } else {
                 const displayValue = data.new_value || value;
                 const fieldName = infoValue.dataset.field || field;
@@ -2240,11 +2540,76 @@ function saveFieldEdit(field, value, leadDetailId, infoValue) {
                 let editButton = '';
                 if (['subject_id', 'batch_id', 'sub_course_id'].includes(fieldName)) {
                     editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="${fieldName}" data-lead-detail-id="${leadDetailIdValue}" data-course-id="${courseId}" data-current-id="${updatedId}" title="Edit"><i class="ti ti-edit"></i></button>`;
+                } else if (fieldName === 'class_time_id') {
+                    editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-class-time-field" title="Edit"><i class="ti ti-edit"></i></button>`;
+                } else if (['gender', 'is_employed', 'programme_type', 'location'].includes(fieldName)) {
+                    // For select fields, preserve data attributes
+                    const dataValue = data.new_value || value;
+                    let optionsAttr = '';
+                    if (fieldName === 'gender') {
+                        optionsAttr = `data-options='{"male":"Male","female":"Female"}'`;
+                    } else if (fieldName === 'is_employed') {
+                        optionsAttr = `data-options='{"1":"Yes","0":"No"}'`;
+                    } else if (fieldName === 'programme_type') {
+                        optionsAttr = `data-options='{"online":"Online","offline":"Offline"}'`;
+                    } else if (fieldName === 'location') {
+                        optionsAttr = `data-options='{"Ernakulam":"Ernakulam","Malappuram":"Malappuram"}'`;
+                    }
+                    editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field-type="select" ${optionsAttr} title="Edit"><i class="ti ti-edit"></i></button>`;
+                    if (infoValue.dataset) {
+                        infoValue.dataset.value = dataValue;
+                    }
                 } else {
                     editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit"><i class="ti ti-edit"></i></button>`;
                 }
                 
                 infoValue.innerHTML = `${displayValue} ${editButton}`;
+            }
+            
+            // Handle location field visibility based on programme_type
+            if (field === 'programme_type') {
+                const locationContainer = document.querySelector('.location-field-container');
+                if (data.hide_location) {
+                    // Hide location field if programme_type is changed to online
+                    if (locationContainer) {
+                        locationContainer.style.display = 'none';
+                    }
+                } else if (data.show_location) {
+                    // Show location field if programme_type is changed to offline
+                    // If container doesn't exist, we need to create it
+                    if (!locationContainer) {
+                        // Find the programme_type field container to insert location field after it
+                        const programmeTypeContainer = infoValue.closest('.col-md-6');
+                        if (programmeTypeContainer) {
+                            const leadDetailId = infoValue.dataset.leadDetailId;
+                            // Check if user has permission to edit (we'll show edit button if they can edit other fields)
+                            const canEdit = infoValue.querySelector('.edit-field') !== null;
+                            const editButtonHtml = canEdit ? 
+                                `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field-type="select" data-options='{"Ernakulam":"Ernakulam","Malappuram":"Malappuram"}' title="Edit"><i class="ti ti-edit"></i></button>` : '';
+                            
+                            const locationHtml = `
+                                <div class="col-md-6 location-field-container">
+                                    <div class="info-card">
+                                        <div class="info-icon">
+                                            <i class="ti ti-map-pin text-warning"></i>
+                                        </div>
+                                        <div class="info-content">
+                                            <label class="info-label">Location</label>
+                                            <p class="info-value" data-field="location" data-lead-detail-id="${leadDetailId}" data-value="">
+                                                N/A
+                                                ${editButtonHtml}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            programmeTypeContainer.insertAdjacentHTML('afterend', locationHtml);
+                        }
+                    } else {
+                        // Container exists, just show it
+                        locationContainer.style.display = '';
+                    }
+                }
             }
             
             toast_success(data.message);

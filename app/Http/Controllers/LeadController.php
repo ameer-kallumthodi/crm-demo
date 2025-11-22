@@ -590,11 +590,13 @@ class LeadController extends Controller
             9 => ['route' => 'public.lead.ugpg.register', 'title' => 'UG/PG'],
             10 => ['route' => 'public.lead.python.register', 'title' => 'Python'],
             11 => ['route' => 'public.lead.digital-marketing.register', 'title' => 'Digital Marketing'],
-            12 => ['route' => 'public.lead.ai-automation.register', 'title' => 'AI Automation'],
+            12 => ['route' => 'public.lead.diploma-in-data-science.register', 'title' => 'Diploma in Data Science'],
             13 => ['route' => 'public.lead.web-dev.register', 'title' => 'Web Development & Designing'],
             14 => ['route' => 'public.lead.vibe-coding.register', 'title' => 'Vibe Coding'],
             15 => ['route' => 'public.lead.graphic-designing.register', 'title' => 'Graphic Designing'],
-            16 => ['route' => 'public.lead.gmvss.register', 'title' => 'GMVSS']
+            16 => ['route' => 'public.lead.gmvss.register', 'title' => 'GMVSS'],
+            20 => ['route' => 'public.lead.machine-learning.register', 'title' => 'Diploma in Machine Learning'],
+            21 => ['route' => 'public.lead.flutter.register', 'title' => 'Flutter']
         ];
         
         if (isset($courseRoutes[$lead->course_id])) {
@@ -841,7 +843,7 @@ class LeadController extends Controller
             9 => 'public.lead.ugpg.register',
             10 => 'public.lead.python.register',
             11 => 'public.lead.digital-marketing.register',
-            12 => 'public.lead.ai-automation.register',
+            12 => 'public.lead.diploma-in-data-science.register',
             13 => 'public.lead.web-dev.register',
             14 => 'public.lead.vibe-coding.register',
             15 => 'public.lead.graphic-designing.register',
@@ -3597,8 +3599,10 @@ class LeadController extends Controller
                 'studentDetails.subject', 
                 'studentDetails.batch',
                 'studentDetails.subCourse',
+                'studentDetails.classTime',
                 'studentDetails.sslcCertificates',
                 'studentDetails.sslcCertificates.verifiedBy',
+                'studentDetails.postGraduationCertificateVerifiedBy',
                 'course',
                 'leadStatus',
                 'leadSource',
@@ -3623,7 +3627,18 @@ class LeadController extends Controller
                     ->exists();
             }
             
-            return view('admin.leads.registration-details', compact('studentDetail', 'lead', 'country_codes', 'hasSubCourses'));
+            // Get class times for the course if it needs time
+            $classTimes = collect();
+            if ($studentDetail->course_id) {
+                $course = \App\Models\Course::find($studentDetail->course_id);
+                if ($course && $course->needs_time) {
+                    $classTimes = \App\Models\ClassTime::where('course_id', $studentDetail->course_id)
+                        ->where('is_active', true)
+                        ->get();
+                }
+            }
+            
+            return view('admin.leads.registration-details', compact('studentDetail', 'lead', 'country_codes', 'hasSubCourses', 'classTimes'));
             
         } catch (\Exception $e) {
             return view('admin.leads.registration-details', compact('lead'))
@@ -3714,7 +3729,7 @@ class LeadController extends Controller
             
             $request->validate([
                 'lead_detail_id' => 'required|exists:leads_details,id',
-                'document_type' => 'required|in:sslc_certificate,plustwo_certificate,plus_two_certificate,ug_certificate,birth_certificate,passport_photo,adhar_front,adhar_back,signature,other_document',
+                'document_type' => 'required|in:sslc_certificate,plustwo_certificate,plus_two_certificate,ug_certificate,post_graduation_certificate,birth_certificate,passport_photo,adhar_front,adhar_back,signature,other_document',
                 'verification_status' => 'required|in:pending,verified',
                 'need_to_change_document' => 'sometimes|boolean',
                 'new_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048'
@@ -3761,6 +3776,7 @@ class LeadController extends Controller
                 'birth_certificate' => 'birth_certificate',
                 'sslc_certificate' => 'sslc',
                 'ug_certificate' => 'ug',
+                'post_graduation_certificate' => 'post_graduation_certificate',
                 'passport_photo' => 'passport_photo',
                 'adhar_front' => 'adhar_front',
                 'adhar_back' => 'adhar_back',
@@ -3803,6 +3819,7 @@ class LeadController extends Controller
                     'birth_certificate' => 'birth_certificate',
                     'sslc_certificate' => 'sslc_certificate',
                     'ug_certificate' => 'ug_certificate',
+                    'post_graduation_certificate' => 'post_graduation_certificate',
                     'passport_photo' => 'passport_photo',
                     'adhar_front' => 'adhar_front',
                     'adhar_back' => 'adhar_back',
@@ -4031,9 +4048,10 @@ class LeadController extends Controller
 
             // Define allowed fields for security
             $allowedFields = [
-                'student_name', 'father_name', 'mother_name', 'date_of_birth', 'gender',
-                'email', 'phone', 'whatsapp', 'street', 'locality', 'post_office', 'district', 'state', 'pin_code',
-                'message', 'subject_id', 'batch_id', 'sub_course_id', 'passed_year'
+                'student_name', 'father_name', 'mother_name', 'date_of_birth', 'gender', 'is_employed',
+                'email', 'phone', 'whatsapp', 'parents_phone', 'father_contact_number', 'father_contact_code',
+                'mother_contact_number', 'mother_contact_code', 'street', 'locality', 'post_office', 'district', 'state', 'pin_code',
+                'message', 'subject_id', 'batch_id', 'sub_course_id', 'passed_year', 'programme_type', 'location', 'class_time_id'
             ];
 
             if (!in_array($field, $allowedFields)) {
@@ -4044,7 +4062,7 @@ class LeadController extends Controller
             }
 
             // Handle phone fields specially
-            if (in_array($field, ['phone', 'whatsapp', 'parents_phone'])) {
+            if (in_array($field, ['phone', 'whatsapp', 'parents_phone', 'father_contact', 'mother_contact'])) {
                 if (strpos($value, '|') !== false) {
                     [$code, $number] = explode('|', $value, 2);
                     
@@ -4063,6 +4081,16 @@ class LeadController extends Controller
                             'parents_code' => $code,
                             'parents_number' => $number
                         ]);
+                    } elseif ($field === 'father_contact') {
+                        $studentDetail->update([
+                            'father_contact_code' => $code,
+                            'father_contact_number' => $number
+                        ]);
+                    } elseif ($field === 'mother_contact') {
+                        $studentDetail->update([
+                            'mother_contact_code' => $code,
+                            'mother_contact_number' => $number
+                        ]);
                     }
                 } else {
                     return response()->json([
@@ -4070,6 +4098,44 @@ class LeadController extends Controller
                         'message' => 'Invalid phone number format.'
                     ], 400);
                 }
+            } elseif ($field === 'class_time_id') {
+                // Handle class_time_id - validate course needs_time and class_time belongs to course
+                $value = $value ? (int)$value : null;
+                
+                if ($value) {
+                    $course = \App\Models\Course::find($studentDetail->course_id);
+                    if (!$course || !$course->needs_time) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'This course does not require class time.'
+                        ], 400);
+                    }
+                    
+                    $classTime = \App\Models\ClassTime::where('id', $value)
+                        ->where('course_id', $studentDetail->course_id)
+                        ->where('is_active', true)
+                        ->first();
+                    if (!$classTime) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Invalid class time selected.'
+                        ], 400);
+                    }
+                }
+                
+                $studentDetail->update([$field => $value]);
+                
+                // Reload relationship to get updated value
+                $studentDetail->load('classTime');
+                $newValue = $studentDetail->classTime 
+                    ? date('h:i A', strtotime($studentDetail->classTime->from_time)) . ' - ' . date('h:i A', strtotime($studentDetail->classTime->to_time))
+                    : 'N/A';
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Class time updated successfully.',
+                    'new_value' => $newValue
+                ]);
             } elseif (in_array($field, ['subject_id', 'batch_id', 'sub_course_id'])) {
                 // Handle ID fields - validate they exist and belong to the course
                 $value = $value ? (int)$value : null;
@@ -4145,6 +4211,73 @@ class LeadController extends Controller
                     'success' => true,
                     'message' => 'Registration details updated successfully.',
                     'new_value' => $value ?? 'N/A'
+                ]);
+            } elseif ($field === 'is_employed') {
+                // Handle is_employed as boolean
+                $value = $value === '1' || $value === 1 || $value === 'true' || $value === true ? 1 : 0;
+                $studentDetail->update([$field => $value]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'new_value' => $value ? 'Yes' : 'No'
+                ]);
+            } elseif ($field === 'gender') {
+                // Validate gender value
+                if (!in_array($value, ['male', 'female'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid gender value.'
+                    ], 400);
+                }
+                $studentDetail->update([$field => $value]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'new_value' => ucfirst($value)
+                ]);
+            } elseif ($field === 'programme_type') {
+                // Validate programme_type value
+                if (!in_array($value, ['online', 'offline'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid programme type value.'
+                    ], 400);
+                }
+                
+                // If changing to online, clear location
+                if ($value === 'online') {
+                    $studentDetail->update([
+                        $field => $value,
+                        'location' => null
+                ]);
+            } else {
+                    // If changing to offline, keep location as is (don't clear it)
+                    $studentDetail->update([$field => $value]);
+                }
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'new_value' => ucfirst($value),
+                    'hide_location' => $value === 'online',
+                    'show_location' => $value === 'offline'
+                ]);
+            } elseif ($field === 'location') {
+                // Validate location value
+                if (!in_array($value, ['Ernakulam', 'Malappuram'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid location value.'
+                    ], 400);
+                }
+                $studentDetail->update([$field => $value]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'new_value' => $value
                 ]);
             } else {
                 $studentDetail->update([$field => $value]);

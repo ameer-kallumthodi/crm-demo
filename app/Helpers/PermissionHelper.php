@@ -127,6 +127,7 @@ class PermissionHelper
             'admin/reports/course-summary',
             'admin/courses/index',
             'admin/subjects/index',
+            'admin/class-times/index',
             'admin/sub-courses/index',
             'admin/course-documents/index',
             'admin/universities/index',

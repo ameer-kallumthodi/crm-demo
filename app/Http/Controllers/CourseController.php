@@ -30,6 +30,7 @@ class CourseController extends Controller
             'amount' => 'required|numeric|min:0',
             'hod_number' => 'nullable|string|max:20',
             'is_active' => 'nullable|boolean',
+            'needs_time' => 'nullable|boolean',
         ]);
 
         $course = Course::create([
@@ -38,6 +39,7 @@ class CourseController extends Controller
             'amount' => $request->amount,
             'hod_number' => $request->hod_number,
             'is_active' => $request->has('is_active') ? 1 : 0,
+            'needs_time' => $request->has('needs_time') ? 1 : 0,
         ]);
 
         return response()->json([
@@ -100,6 +102,7 @@ class CourseController extends Controller
                 'amount' => 'required|numeric|min:0',
                 'hod_number' => 'nullable|string|max:20',
                 'is_active' => 'nullable|boolean',
+                'needs_time' => 'nullable|boolean',
             ]);
 
             $course = Course::create([
@@ -108,6 +111,7 @@ class CourseController extends Controller
                 'amount' => $request->amount,
                 'hod_number' => $request->hod_number,
                 'is_active' => $request->boolean('is_active'),
+                'needs_time' => $request->boolean('needs_time'),
             ]);
 
             // For AJAX requests, return JSON response
@@ -172,6 +176,7 @@ class CourseController extends Controller
                 'amount' => 'required|numeric|min:0',
                 'hod_number' => 'nullable|string|max:20',
                 'is_active' => 'nullable|boolean',
+                'needs_time' => 'nullable|boolean',
             ]);
 
             $course = Course::findOrFail($id);
@@ -181,6 +186,7 @@ class CourseController extends Controller
                 'amount' => $request->amount,
                 'hod_number' => $request->hod_number,
                 'is_active' => $request->boolean('is_active'),
+                'needs_time' => $request->boolean('needs_time'),
             ]);
 
             // For AJAX requests, return JSON response
@@ -252,5 +258,15 @@ class CourseController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('admin.courses.index')->with('message_danger', 'An error occurred while deleting the course. Please try again.');
         }
+    }
+
+    public function checkNeedsTime($courseId)
+    {
+        $course = Course::find($courseId);
+        if (!$course) {
+            return response()->json(['needs_time' => false], 404);
+        }
+
+        return response()->json(['needs_time' => (bool)$course->needs_time]);
     }
 }

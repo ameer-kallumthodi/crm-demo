@@ -381,8 +381,8 @@
                                         </div>
                                         @elseif($lead->course_id == 8)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.ai-automation.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Open AI Automation Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>AI Automation Form
+                                        <a href="{{ route('public.lead.diploma-in-data-science.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Open Diploma in Data Science Registration Form">
+                                            <i class="ti ti-external-link me-1"></i>Diploma in Data Science Form
                                         </a>
                                         </div>
                                         @elseif($lead->course_id == 9)
