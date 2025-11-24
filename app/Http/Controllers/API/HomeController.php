@@ -8,6 +8,7 @@ use App\Models\LeadStatus;
 use App\Models\ConvertedLead;
 use App\Models\Notification;
 use App\Models\User;
+use App\Models\MarketingLead;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -224,6 +225,175 @@ class HomeController extends Controller
         } elseif ($user->role_id == 3) {
             // Telecaller: Can only see converted leads they created
             $query->where('created_by', $user->id);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Get marketing home dashboard data
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function marketingHome(Request $request)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // Check access: Only marketing users, admins, and senior managers can access
+        $isMarketing = $user->role_id == 13;
+        $isAdminOrManager = $user->role_id == 1 || $user->role_id == 2 || $user->is_senior_manager;
+
+        if (!$isMarketing && !$isAdminOrManager) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied.'
+            ], 403);
+        }
+
+        // Get date ranges
+        $today = Carbon::today();
+        $weekStart = Carbon::now()->startOfWeek();
+        $weekEnd = Carbon::now()->endOfWeek();
+
+        // Base query for marketing leads
+        $baseMarketingLeadQuery = MarketingLead::query();
+        
+        // Apply role-based filtering for marketing leads
+        $this->applyRoleBasedFilterToMarketingLeads($baseMarketingLeadQuery, $user);
+
+        // Total marketing leads count
+        $totalMarketingLeads = (clone $baseMarketingLeadQuery)->count();
+
+        // Today's marketing leads count
+        $todaysMarketingLeads = (clone $baseMarketingLeadQuery)
+            ->whereDate('created_at', $today)
+            ->count();
+
+        // This week total marketing leads
+        $thisWeekTotalLead = (clone $baseMarketingLeadQuery)
+            ->whereBetween('created_at', [$weekStart, $weekEnd])
+            ->count();
+
+        // Assigned leads count (all time)
+        $assignedLeads = (clone $baseMarketingLeadQuery)
+            ->where('is_telecaller_assigned', true)
+            ->count();
+
+        // This week assigned leads
+        $thisWeekAssigned = (clone $baseMarketingLeadQuery)
+            ->where('is_telecaller_assigned', true)
+            ->whereBetween('created_at', [$weekStart, $weekEnd])
+            ->count();
+
+        // Not assigned leads count (all time)
+        $notAssigned = (clone $baseMarketingLeadQuery)
+            ->where('is_telecaller_assigned', false)
+            ->count();
+
+        // This week not assigned leads
+        $thisWeekNotAssigned = (clone $baseMarketingLeadQuery)
+            ->where('is_telecaller_assigned', false)
+            ->whereBetween('created_at', [$weekStart, $weekEnd])
+            ->count();
+
+        // Recent marketing leads (latest 10) with role-based filtering
+        $recentMarketingLeadsQuery = MarketingLead::with(['marketingBde:id,name', 'assignedTo:id,name', 'lead.leadStatus']);
+        $this->applyRoleBasedFilterToMarketingLeads($recentMarketingLeadsQuery, $user);
+        $recentMarketingLeads = $recentMarketingLeadsQuery
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($marketingLead) {
+                // Format phone with code
+                $phone = '';
+                if ($marketingLead->code && $marketingLead->phone) {
+                    $phone = '+' . $marketingLead->code . ' ' . $marketingLead->phone;
+                } elseif ($marketingLead->phone) {
+                    $phone = $marketingLead->phone;
+                }
+
+                // Format whatsapp with code
+                $whatsapp = '';
+                if ($marketingLead->whatsapp_code && $marketingLead->whatsapp) {
+                    $whatsapp = '+' . $marketingLead->whatsapp_code . ' ' . $marketingLead->whatsapp;
+                } elseif ($marketingLead->whatsapp) {
+                    $whatsapp = $marketingLead->whatsapp;
+                }
+
+                return [
+                    'id' => $marketingLead->id,
+                    'lead_name' => $marketingLead->lead_name,
+                    'phone' => $phone,
+                    'whatsapp' => $whatsapp,
+                    'location' => $marketingLead->location,
+                    'date_of_visit' => $marketingLead->date_of_visit ? $marketingLead->date_of_visit->format('d-m-Y') : '',
+                    'lead_type' => $marketingLead->lead_type,
+                    'is_telecaller_assigned' => $marketingLead->is_telecaller_assigned ? 1 : 0,
+                    'marketing_bde' => $marketingLead->marketingBde ? $marketingLead->marketingBde->name : '',
+                    'assigned_to' => $marketingLead->assignedTo ? $marketingLead->assignedTo->name : '',
+                    'lead_status' => $marketingLead->lead && $marketingLead->lead->leadStatus ? $marketingLead->lead->leadStatus->title : '',
+                    'created_at' => $marketingLead->created_at->format('d-m-Y')
+                ];
+            });
+
+        // Unread notification count
+        $notifications = Notification::forUser($user->id, $user->role_id)->get();
+        $unreadNotificationCount = $notifications->filter(function ($notification) use ($user) {
+            return !$notification->isReadBy($user->id);
+        })->count();
+
+        // Get current token from request (bearer token)
+        $currentToken = $request->bearerToken();
+
+        // Get user data using model method
+        $userData = $user->getApiUserData($currentToken);
+
+        // Prepare response data
+        $data = [
+            'count' => [
+                'total_marketing_leads' => $totalMarketingLeads,
+                'todays_marketing_leads' => $todaysMarketingLeads,
+                'this_week_total_lead' => $thisWeekTotalLead,
+                'assigned_leads' => $assignedLeads,
+                'this_week_assigned' => $thisWeekAssigned,
+                'not_assigned' => $notAssigned,
+                'this_week_not_assigned' => $thisWeekNotAssigned
+            ],
+            'recent_marketing_leads' => $recentMarketingLeads,
+            'unread_notification_count' => $unreadNotificationCount,
+            'user_data' => $userData
+        ];
+
+        return response()->json([
+            'status' => true,
+            'data' => $data
+        ], 200);
+    }
+
+    /**
+     * Apply role-based filtering to marketing leads queries
+     */
+    private function applyRoleBasedFilterToMarketingLeads($query, $user)
+    {
+        // Check if user is marketing (role_id == 13)
+        $isMarketing = $user->role_id == 13;
+        
+        // Check if user is admin or senior manager (can see all marketing leads)
+        $isAdminOrManager = $user->role_id == 1 || // Super Admin
+            $user->role_id == 2 || // Admin
+            $user->is_senior_manager;
+
+        // If marketing user, only show their own leads
+        if ($isMarketing && !$isAdminOrManager) {
+            $query->where('marketing_bde_id', $user->id);
         }
 
         return $query;
