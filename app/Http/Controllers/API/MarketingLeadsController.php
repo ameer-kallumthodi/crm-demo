@@ -139,6 +139,8 @@ class MarketingLeadsController extends Controller
                 'address' => $lead->address,
                 'location' => $lead->location,
                 'house_number' => $lead->house_number,
+                'latitude' => $lead->latitude,
+                'longitude' => $lead->longitude,
                 'lead_type' => $lead->lead_type,
                 'interested_courses' => $lead->interested_courses ?? [],
                 'remarks' => $lead->remarks,
@@ -438,6 +440,8 @@ class MarketingLeadsController extends Controller
             'marketing_bde_id' => $marketingBdeId,
             'date_of_visit' => $request->date_of_visit,
             'location' => $request->location,
+            'latitude' => $request->input('latitude'),
+            'longitude' => $request->input('longitude'),
             'house_number' => $request->house_number,
             'lead_name' => $request->lead_name,
             'code' => $request->code,
@@ -457,43 +461,9 @@ class MarketingLeadsController extends Controller
         $marketingLead = MarketingLead::create($marketingLeadData);
 
         if ($marketingLead) {
-            // Format response data
-            $phone = '';
-            if ($marketingLead->code && $marketingLead->phone) {
-                $phone = '+' . $marketingLead->code . ' ' . $marketingLead->phone;
-            } elseif ($marketingLead->phone) {
-                $phone = $marketingLead->phone;
-            }
-
-            $whatsapp = '';
-            if ($marketingLead->whatsapp_code && $marketingLead->whatsapp) {
-                $whatsapp = '+' . $marketingLead->whatsapp_code . ' ' . $marketingLead->whatsapp;
-            } elseif ($marketingLead->whatsapp) {
-                $whatsapp = $marketingLead->whatsapp;
-            }
-
             return response()->json([
                 'status' => true,
-                'message' => 'Marketing lead created successfully!',
-                'data' => [
-                    'id' => $marketingLead->id,
-                    'date_of_visit' => $marketingLead->date_of_visit ? $marketingLead->date_of_visit->format('Y-m-d') : null,
-                    'location' => $marketingLead->location,
-                    'house_number' => $marketingLead->house_number,
-                    'lead_name' => $marketingLead->lead_name,
-                    'phone' => $phone,
-                    'code' => $marketingLead->code,
-                    'phone_number' => $marketingLead->phone,
-                    'whatsapp' => $whatsapp,
-                    'whatsapp_code' => $marketingLead->whatsapp_code,
-                    'whatsapp_number' => $marketingLead->whatsapp,
-                    'address' => $marketingLead->address,
-                    'lead_type' => $marketingLead->lead_type,
-                    'interested_courses' => $marketingLead->interested_courses ?? [],
-                    'remarks' => $marketingLead->remarks,
-                    'is_telecaller_assigned' => $marketingLead->is_telecaller_assigned ? true : false,
-                    'created_at' => $marketingLead->created_at->format('Y-m-d H:i:s'),
-                ]
+                'message' => 'Marketing lead created successfully!'
             ], 201);
         }
 

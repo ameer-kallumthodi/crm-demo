@@ -23,6 +23,8 @@ class MarketingLead extends Model
         'whatsapp_code',
         'whatsapp',
         'address',
+        'latitude',
+        'longitude',
         'lead_type',
         'interested_courses',
         'remarks',
@@ -43,6 +45,8 @@ class MarketingLead extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     // Relationships
