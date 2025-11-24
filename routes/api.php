@@ -6,6 +6,7 @@ use App\Http\Controllers\API\HomeController;
 use App\Http\Controllers\API\LeadsController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\MarketingLeadsController;
+use App\Http\Controllers\API\FollowupLeadsController;
 
 Route::prefix('v1')->group(function() {
     Route::post('auth/login', [AuthController::class, 'login']);
@@ -25,6 +26,11 @@ Route::prefix('v1')->group(function() {
         Route::post('marketing-leads', [MarketingLeadsController::class, 'store']);
         Route::get('marketing-leads/d2d-form-messages', [MarketingLeadsController::class, 'd2dFormMessages']);
         Route::get('marketing-leads/form-data', [MarketingLeadsController::class, 'formData']);
+        Route::get('marketing-leads/filters', [MarketingLeadsController::class, 'filters']);
+
+        // Follow-up Leads APIs
+        Route::get('followup-leads', [FollowupLeadsController::class, 'index']);
+        Route::get('followup-leads/filters', [FollowupLeadsController::class, 'filters']);
     });
 });
 

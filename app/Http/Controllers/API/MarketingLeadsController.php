@@ -321,6 +321,96 @@ class MarketingLeadsController extends Controller
     }
 
     /**
+     * Get marketing lead filters (BDE list, assignment status, date filter meta)
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function filters(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        $isMarketing = $user->role_id == 13;
+        $isAdminOrManager = $user->role_id == 1 || $user->role_id == 2 || $user->is_senior_manager;
+
+        if (!$isMarketing && !$isAdminOrManager) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied.'
+            ], 403);
+        }
+
+        $bdeOptions = [
+            [
+                'value' => '',
+                'label' => 'All BDEs'
+            ]
+        ];
+
+        if ($isMarketing) {
+            $bdeOptions[] = [
+                'value' => $user->id,
+                'label' => $user->name
+            ];
+        } else {
+            $bdeOptions = array_merge(
+                $bdeOptions,
+                User::where('role_id', 13)
+                    ->where('is_active', true)
+                    ->orderBy('name')
+                    ->get()
+                    ->map(function ($bdeUser) {
+                        return [
+                            'value' => $bdeUser->id,
+                            'label' => $bdeUser->name
+                        ];
+                    })
+                    ->toArray()
+            );
+        }
+
+        $assignmentStatuses = [
+            [
+                'value' => '',
+                'label' => 'All'
+            ],
+            [
+                'value' => '1',
+                'label' => 'Assigned'
+            ],
+            [
+                'value' => '0',
+                'label' => 'Not Assigned'
+            ],
+        ];
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'filters' => [
+                    'can_filter_by_bde' => !$isMarketing,
+                    'bde_options' => $bdeOptions,
+                    'assignment_statuses' => $assignmentStatuses,
+                    'date_filter' => [
+                        'key_from' => 'date_from',
+                        'key_to' => 'date_to',
+                        'label_from' => 'Date From',
+                        'label_to' => 'Date To',
+                        'description' => 'Filters marketing leads by Date of Visit range'
+                    ],
+                ]
+            ]
+        ], 200);
+    }
+
+    /**
      * Add new marketing lead
      *
      * @param Request $request

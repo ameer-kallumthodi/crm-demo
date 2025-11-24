@@ -2382,7 +2382,7 @@ class ConvertedLeadController extends Controller
         
         // If mentor, restrict to allowed fields only
         $mentorAllowedFields = ['register_number', 'phone', 'enroll_no', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks'];
-        $financeAllowedFields = ['status', 'exam_fee'];
+        $financeAllowedFields = ['status', 'exam_fee', 'registration_link_id'];
 
         $convertedLead = ConvertedLead::findOrFail($id);
         

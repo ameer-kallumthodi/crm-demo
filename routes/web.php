@@ -299,26 +299,26 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     // Admin routes
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/lead-statuses-delete/{id}', [LeadStatusController::class, 'delete'])->name('lead-statuses.delete');
-        Route::resource('lead-statuses', LeadStatusController::class);
+        Route::resource('lead-statuses', LeadStatusController::class)->except(['create', 'edit']);
         Route::get('/lead-statuses-add', [LeadStatusController::class, 'ajax_add'])->name('lead-statuses.add');
         Route::get('/lead-statuses-edit/{id}', [LeadStatusController::class, 'ajax_edit'])->name('lead-statuses.edit');
         Route::post('/lead-statuses-submit', [LeadStatusController::class, 'submit'])->name('lead-statuses.submit');
         Route::put('/lead-statuses-update/{id}', [LeadStatusController::class, 'update'])->name('lead-statuses.update');
 
-        Route::resource('lead-sources', LeadSourceController::class);
+        Route::resource('lead-sources', LeadSourceController::class)->except(['create', 'edit']);
         Route::get('/lead-sources-add', [LeadSourceController::class, 'ajax_add'])->name('lead-sources.add');
         Route::get('/lead-sources-edit/{id}', [LeadSourceController::class, 'ajax_edit'])->name('lead-sources.edit');
         Route::post('/lead-sources-submit', [LeadSourceController::class, 'submit'])->name('lead-sources.submit');
         Route::put('/lead-sources-update/{leadSource}', [LeadSourceController::class, 'update'])->name('lead-sources.update');
         Route::delete('/lead-sources-delete/{id}', [LeadSourceController::class, 'delete'])->name('lead-sources.delete');
 
-        Route::resource('universities', UniversityController::class);
+        Route::resource('universities', UniversityController::class)->except(['create', 'edit']);
         Route::get('/universities-add', [UniversityController::class, 'ajax_add'])->name('universities.add');
         Route::get('/universities-edit/{id}', [UniversityController::class, 'ajax_edit'])->name('universities.edit');
         Route::post('/universities-submit', [UniversityController::class, 'submit'])->name('universities.submit');
 
         // Registration Links Routes
-        Route::resource('registration-links', App\Http\Controllers\RegistrationLinkController::class);
+        Route::resource('registration-links', App\Http\Controllers\RegistrationLinkController::class)->except(['create', 'edit']);
         Route::get('/registration-links-add', [App\Http\Controllers\RegistrationLinkController::class, 'ajax_add'])->name('registration-links.add');
         Route::get('/registration-links-edit/{id}', [App\Http\Controllers\RegistrationLinkController::class, 'ajax_edit'])->name('registration-links.edit');
         Route::post('/registration-links-submit', [App\Http\Controllers\RegistrationLinkController::class, 'submit'])->name('registration-links.submit');
@@ -328,14 +328,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::delete('/universities-delete/{id}', [UniversityController::class, 'delete'])->name('universities.delete');
 
         // University Courses Routes
-        Route::resource('university-courses', App\Http\Controllers\UniversityCourseController::class)->except(['edit']);
+        Route::resource('university-courses', App\Http\Controllers\UniversityCourseController::class)->except(['create', 'edit']);
         Route::get('/university-courses-add', [App\Http\Controllers\UniversityCourseController::class, 'ajax_add'])->name('university-courses.add');
         Route::get('/university-courses-edit/{id}', [App\Http\Controllers\UniversityCourseController::class, 'ajax_edit'])->name('university-courses.edit');
         Route::post('/university-courses-submit', [App\Http\Controllers\UniversityCourseController::class, 'submit'])->name('university-courses.submit');
         Route::put('/university-courses-update/{id}', [App\Http\Controllers\UniversityCourseController::class, 'update'])->name('university-courses.update');
         Route::delete('/university-courses-delete/{id}', [App\Http\Controllers\UniversityCourseController::class, 'delete'])->name('university-courses.delete');
 
-        Route::resource('countries', CountryController::class);
+        Route::resource('countries', CountryController::class)->except(['create', 'edit']);
         Route::get('/countries-add', [CountryController::class, 'ajax_add'])->name('countries.add');
         Route::get('/countries-edit/{id}', [CountryController::class, 'ajax_edit'])->name('countries.edit');
         Route::post('/countries-submit', [CountryController::class, 'submit'])->name('countries.submit');
@@ -343,14 +343,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::delete('/countries-delete/{id}', [CountryController::class, 'delete'])->name('countries.delete');
 
         Route::delete('/boards-delete/{id}', [App\Http\Controllers\BoardController::class, 'delete'])->name('boards.delete');
-        Route::resource('boards', App\Http\Controllers\BoardController::class);
+        Route::resource('boards', App\Http\Controllers\BoardController::class)->except(['create', 'edit']);
         Route::get('/boards-add', [App\Http\Controllers\BoardController::class, 'ajax_add'])->name('boards.add');
         Route::get('/boards-edit/{id}', [App\Http\Controllers\BoardController::class, 'ajax_edit'])->name('boards.edit');
         Route::post('/boards-submit', [App\Http\Controllers\BoardController::class, 'submit'])->name('boards.submit');
         Route::put('/boards-update/{id}', [App\Http\Controllers\BoardController::class, 'update'])->name('boards.update');
 
         Route::delete('/batches-delete/{id}', [App\Http\Controllers\BatchController::class, 'delete'])->name('batches.delete');
-        Route::resource('batches', App\Http\Controllers\BatchController::class)->except(['edit']);
+        Route::resource('batches', App\Http\Controllers\BatchController::class)->except(['create', 'edit']);
         Route::get('/batches-add', [App\Http\Controllers\BatchController::class, 'ajax_add'])->name('batches.add');
         Route::get('/batches-edit/{id}', [App\Http\Controllers\BatchController::class, 'ajax_edit'])->name('batches.edit');
         Route::get('/batches-postpone/{id}', [App\Http\Controllers\BatchController::class, 'ajax_postpone'])->name('batches.postpone');
@@ -359,13 +359,13 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::put('/batches-update/{id}', [App\Http\Controllers\BatchController::class, 'update'])->name('batches.update');
 
         Route::delete('/admission-batches-delete/{id}', [App\Http\Controllers\AdmissionBatchController::class, 'delete'])->name('admission-batches.delete');
-        Route::resource('admission-batches', App\Http\Controllers\AdmissionBatchController::class);
+        Route::resource('admission-batches', App\Http\Controllers\AdmissionBatchController::class)->except(['create', 'edit']);
         Route::get('/admission-batches-add', [App\Http\Controllers\AdmissionBatchController::class, 'ajax_add'])->name('admission-batches.add');
         Route::get('/admission-batches-edit/{id}', [App\Http\Controllers\AdmissionBatchController::class, 'ajax_edit'])->name('admission-batches.edit');
         Route::post('/admission-batches-submit', [App\Http\Controllers\AdmissionBatchController::class, 'submit'])->name('admission-batches.submit');
         Route::put('/admission-batches-update/{id}', [App\Http\Controllers\AdmissionBatchController::class, 'update'])->name('admission-batches.update');
 
-        Route::resource('courses', CourseController::class)->except(['edit']);
+        Route::resource('courses', CourseController::class)->except(['create', 'edit']);
         Route::get('/courses-add', [CourseController::class, 'ajax_add'])->name('courses.add');
         Route::get('/courses-edit/{id}', [CourseController::class, 'ajax_edit'])->name('courses.edit');
         Route::post('/courses-submit', [CourseController::class, 'submit'])->name('courses.submit');
@@ -380,21 +380,21 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::put('/sub-courses-update/{id}', [App\Http\Controllers\SubCourseController::class, 'updateForm'])->name('sub-courses.updateForm');
 
         Route::delete('/subjects-delete/{id}', [App\Http\Controllers\SubjectController::class, 'delete'])->name('subjects.delete');
-        Route::resource('subjects', App\Http\Controllers\SubjectController::class);
+        Route::resource('subjects', App\Http\Controllers\SubjectController::class)->except(['create', 'edit']);
         Route::get('/subjects-add', [App\Http\Controllers\SubjectController::class, 'ajax_add'])->name('subjects.add');
         Route::get('/subjects-edit/{id}', [App\Http\Controllers\SubjectController::class, 'ajax_edit'])->name('subjects.edit');
         Route::post('/subjects-submit', [App\Http\Controllers\SubjectController::class, 'submit'])->name('subjects.submit');
         Route::put('/subjects-update/{id}', [App\Http\Controllers\SubjectController::class, 'update'])->name('subjects.update');
 
         // Class Times Routes
-        Route::resource('class-times', App\Http\Controllers\ClassTimeController::class)->except(['edit']);
+        Route::resource('class-times', App\Http\Controllers\ClassTimeController::class)->except(['create', 'edit']);
         Route::get('/class-times-add', [App\Http\Controllers\ClassTimeController::class, 'ajax_add'])->name('class-times.add');
         Route::get('/class-times-edit/{id}', [App\Http\Controllers\ClassTimeController::class, 'ajax_edit'])->name('class-times.edit');
         Route::post('/class-times-submit', [App\Http\Controllers\ClassTimeController::class, 'submit'])->name('class-times.submit');
         Route::put('/class-times-update/{id}', [App\Http\Controllers\ClassTimeController::class, 'update'])->name('class-times.update');
         Route::delete('/class-times-delete/{id}', [App\Http\Controllers\ClassTimeController::class, 'delete'])->name('class-times.delete');
 
-        Route::resource('teams', TeamController::class);
+        Route::resource('teams', TeamController::class)->except(['create', 'edit']);
         Route::get('/teams-add', [TeamController::class, 'ajax_add'])->name('teams.add');
         Route::get('/teams-edit/{id}', [TeamController::class, 'ajax_edit'])->name('teams.edit');
         Route::post('/teams-submit', [TeamController::class, 'submit'])->name('teams.submit');
@@ -404,7 +404,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/teams-remove-member', [TeamController::class, 'removeMember'])->name('teams.remove-member');
         Route::post('/teams-add-member', [TeamController::class, 'addMember'])->name('teams.add-member');
 
-        Route::resource('telecallers', TelecallerController::class)->except(['edit']);
+        Route::resource('telecallers', TelecallerController::class)->except(['create', 'edit']);
         Route::get('/telecallers/{id}/edit', [TelecallerController::class, 'ajax_edit'])->name('telecallers.edit');
         Route::get('/telecallers-add', [TelecallerController::class, 'ajax_add'])->name('telecallers.add');
         Route::post('/telecallers-submit', [TelecallerController::class, 'submit'])->name('telecallers.submit');
@@ -413,7 +413,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/telecallers-change-password/{id}', [TelecallerController::class, 'changePassword'])->name('telecallers.change-password');
         Route::post('/telecallers-update-password/{id}', [TelecallerController::class, 'updatePassword'])->name('telecallers.update-password');
 
-        Route::resource('marketing', MarketingController::class);
+        Route::resource('marketing', MarketingController::class)->except(['create', 'edit']);
         Route::get('/marketing-add', [MarketingController::class, 'ajax_add'])->name('marketing.add');
         Route::get('/marketing-edit/{id}', [MarketingController::class, 'ajax_edit'])->name('marketing.edit');
         Route::post('/marketing-submit', [MarketingController::class, 'submit'])->name('marketing.submit');
@@ -436,14 +436,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/marketing-leads/get-by-filters-assign', [MarketingController::class, 'getMarketingLeadsByFiltersAssign'])->name('marketing.get-by-filters-assign');
 
         // Teacher routes (role_id = 10)
-        Route::resource('teachers', App\Http\Controllers\TeacherController::class);
+        Route::resource('teachers', App\Http\Controllers\TeacherController::class)->except(['create', 'edit']);
         Route::get('/teachers-add', [App\Http\Controllers\TeacherController::class, 'ajax_add'])->name('teachers.add');
         Route::get('/teachers-edit/{id}', [App\Http\Controllers\TeacherController::class, 'ajax_edit'])->name('teachers.edit');
         Route::post('/teachers-submit', [App\Http\Controllers\TeacherController::class, 'submit'])->name('teachers.submit');
         Route::put('/teachers-update/{id}', [App\Http\Controllers\TeacherController::class, 'updateForm'])->name('teachers.update-form');
 
         // Admission Counsellor routes (role_id = 4)
-        Route::resource('admission-counsellors', App\Http\Controllers\AdmissionCounsellorController::class);
+        Route::resource('admission-counsellors', App\Http\Controllers\AdmissionCounsellorController::class)->except(['create', 'edit']);
         Route::get('/admission-counsellors-add', [App\Http\Controllers\AdmissionCounsellorController::class, 'ajax_add'])->name('admission-counsellors.add');
         Route::get('/admission-counsellors-edit/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'ajax_edit'])->name('admission-counsellors.edit');
         Route::post('/admission-counsellors-submit', [App\Http\Controllers\AdmissionCounsellorController::class, 'submit'])->name('admission-counsellors.submit');
@@ -453,7 +453,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/admission-counsellors-update-password/{id}', [App\Http\Controllers\AdmissionCounsellorController::class, 'updatePassword'])->name('admission-counsellors.update-password');
 
         // General Manager routes (role_id = 11)
-        Route::resource('general-managers', App\Http\Controllers\GeneralManagerController::class);
+        Route::resource('general-managers', App\Http\Controllers\GeneralManagerController::class)->except(['create', 'edit']);
         Route::get('/general-managers-add', [App\Http\Controllers\GeneralManagerController::class, 'ajax_add'])->name('general-managers.add');
         Route::get('/general-managers-edit/{id}', [App\Http\Controllers\GeneralManagerController::class, 'ajax_edit'])->name('general-managers.edit');
         Route::post('/general-managers-submit', [App\Http\Controllers\GeneralManagerController::class, 'submit'])->name('general-managers.submit');
@@ -463,7 +463,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/general-managers-update-password/{id}', [App\Http\Controllers\GeneralManagerController::class, 'updatePassword'])->name('general-managers.update-password');
 
         // Auditor routes (role_id = 12)
-        Route::resource('auditors', App\Http\Controllers\AuditorController::class);
+        Route::resource('auditors', App\Http\Controllers\AuditorController::class)->except(['create', 'edit']);
         Route::get('/auditors-add', [App\Http\Controllers\AuditorController::class, 'ajax_add'])->name('auditors.add');
         Route::get('/auditors-edit/{id}', [App\Http\Controllers\AuditorController::class, 'ajax_edit'])->name('auditors.edit');
         Route::post('/auditors-submit', [App\Http\Controllers\AuditorController::class, 'submit'])->name('auditors.submit');
@@ -473,7 +473,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/auditors-update-password/{id}', [App\Http\Controllers\AuditorController::class, 'updatePassword'])->name('auditors.update-password');
 
         // Academic Assistant routes (role_id = 5)
-        Route::resource('academic-assistants', App\Http\Controllers\AcademicAssistantController::class);
+        Route::resource('academic-assistants', App\Http\Controllers\AcademicAssistantController::class)->except(['create', 'edit']);
         Route::get('/academic-assistants-add', [App\Http\Controllers\AcademicAssistantController::class, 'ajax_add'])->name('academic-assistants.add');
         Route::get('/academic-assistants-edit/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'ajax_edit'])->name('academic-assistants.edit');
         Route::post('/academic-assistants-submit', [App\Http\Controllers\AcademicAssistantController::class, 'submit'])->name('academic-assistants.submit');
@@ -483,7 +483,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/academic-assistants-update-password/{id}', [App\Http\Controllers\AcademicAssistantController::class, 'updatePassword'])->name('academic-assistants.update-password');
 
         // Finance routes (role_id = 6)
-        Route::resource('finance', App\Http\Controllers\FinanceController::class);
+        Route::resource('finance', App\Http\Controllers\FinanceController::class)->except(['create', 'edit']);
         Route::get('/finance-add', [App\Http\Controllers\FinanceController::class, 'ajax_add'])->name('finance.add');
         Route::get('/finance-edit/{id}', [App\Http\Controllers\FinanceController::class, 'ajax_edit'])->name('finance.edit');
         Route::post('/finance-submit', [App\Http\Controllers\FinanceController::class, 'submit'])->name('finance.submit');
@@ -493,7 +493,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/finance-update-password/{id}', [App\Http\Controllers\FinanceController::class, 'updatePassword'])->name('finance.update-password');
 
         // Support Team routes (role_id = 8)
-        Route::resource('support-team', App\Http\Controllers\SupportTeamController::class);
+        Route::resource('support-team', App\Http\Controllers\SupportTeamController::class)->except(['create', 'edit']);
         Route::get('/support-team-add', [App\Http\Controllers\SupportTeamController::class, 'ajax_add'])->name('support-team.add');
         Route::get('/support-team-edit/{id}', [App\Http\Controllers\SupportTeamController::class, 'ajax_edit'])->name('support-team.edit');
         Route::post('/support-team-submit', [App\Http\Controllers\SupportTeamController::class, 'submit'])->name('support-team.submit');
@@ -503,7 +503,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/support-team-update-password/{id}', [App\Http\Controllers\SupportTeamController::class, 'updatePassword'])->name('support-team.update-password');
 
         // Mentor routes (role_id = 9)
-        Route::resource('mentor', App\Http\Controllers\MentorController::class);
+        Route::resource('mentor', App\Http\Controllers\MentorController::class)->except(['create', 'edit']);
         Route::get('/mentor-add', [App\Http\Controllers\MentorController::class, 'ajax_add'])->name('mentor.add');
         Route::get('/mentor-edit/{id}', [App\Http\Controllers\MentorController::class, 'ajax_edit'])->name('mentor.edit');
         Route::post('/mentor-submit', [App\Http\Controllers\MentorController::class, 'submit'])->name('mentor.submit');
@@ -513,7 +513,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/mentor-update-password/{id}', [App\Http\Controllers\MentorController::class, 'updatePassword'])->name('mentor.update-password');
 
         // Post-sales routes (role_id = 7)
-        Route::resource('post-sales', App\Http\Controllers\PostSalesController::class);
+        Route::resource('post-sales', App\Http\Controllers\PostSalesController::class)->except(['create', 'edit']);
         Route::get('/post-sales-add', [App\Http\Controllers\PostSalesController::class, 'ajax_add'])->name('post-sales.add');
         Route::get('/post-sales-edit/{id}', [App\Http\Controllers\PostSalesController::class, 'ajax_edit'])->name('post-sales.edit');
         Route::post('/post-sales-submit', [App\Http\Controllers\PostSalesController::class, 'submit'])->name('post-sales.submit');
