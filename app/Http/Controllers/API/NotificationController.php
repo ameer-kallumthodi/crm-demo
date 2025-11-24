@@ -38,10 +38,21 @@ class NotificationController extends Controller
         });
 
         $notifications = $latestNotifications->map(function ($notification) use ($user) {
+            // Clean up HTML message: remove \r\n, normalize whitespace, but keep HTML structure
+            $cleanedMessage = $notification->message;
+            if ($cleanedMessage) {
+                // Remove carriage return and line feed characters
+                $cleanedMessage = str_replace(["\r\n", "\r", "\n"], '', $cleanedMessage);
+                // Remove extra whitespace between HTML tags
+                $cleanedMessage = preg_replace('/>\s+</', '><', $cleanedMessage);
+                // Remove leading/trailing whitespace
+                $cleanedMessage = trim($cleanedMessage);
+            }
+            
             return [
                 'id' => $notification->id,
                 'title' => $notification->title,
-                'message' => $notification->message,
+                'message' => $cleanedMessage,
                 'type' => $notification->type,
                 'is_read' => $notification->isReadBy($user->id),
                 'created_at' => $notification->created_at->toIso8601String(),
