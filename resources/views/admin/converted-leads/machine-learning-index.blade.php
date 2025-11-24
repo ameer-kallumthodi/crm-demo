@@ -70,7 +70,7 @@
                         <i class="ti ti-certificate"></i> GMVSS Converted Leads
                     </a>
                     <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-code"></i> Diploma in Data Science Converted Leads
+                        <i class="ti ti-code"></i> AI with Python Converted Leads
                     </a>
                     <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
@@ -84,8 +84,14 @@
                     <a href="{{ route('admin.vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-device-desktop"></i> Vibe Coding Converted Leads
                     </a>
+                    <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-palette"></i> Graphic Designing Converted Leads
+                    </a>
                     <a href="{{ route('admin.machine-learning-converted-leads.index') }}" class="btn btn-primary active">
                         <i class="ti ti-brain"></i> Diploma in Machine Learning Converted Leads
+                    </a>
+                    <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-mobile"></i> Flutter Converted Leads
                     </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads

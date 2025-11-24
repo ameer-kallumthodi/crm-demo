@@ -70,7 +70,7 @@
                         <i class="ti ti-certificate"></i> GMVSS Converted Leads
                     </a>
                     <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-primary active">
-                        <i class="ti ti-code"></i> Diploma in Data Science Converted Leads
+                        <i class="ti ti-code"></i> AI with Python Converted Leads
                     </a>
                     <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-marketing"></i> Digital Marketing Converted Leads

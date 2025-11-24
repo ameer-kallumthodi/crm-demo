@@ -76,7 +76,7 @@
                         <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
                     </a>
                     <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-robot"></i> Diploma in Data Science Converted Leads
+                        <i class="ti ti-robot"></i> AI Automation Converted Leads
                     </a>
                     <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-world"></i> Web Development & Designing Converted Leads
