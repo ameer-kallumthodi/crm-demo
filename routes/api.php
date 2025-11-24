@@ -7,6 +7,7 @@ use App\Http\Controllers\API\LeadsController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\MarketingLeadsController;
 use App\Http\Controllers\API\FollowupLeadsController;
+use App\Http\Controllers\API\RegistrationLeadsController;
 
 Route::prefix('v1')->group(function() {
     Route::post('auth/login', [AuthController::class, 'login']);
@@ -31,6 +32,11 @@ Route::prefix('v1')->group(function() {
         // Follow-up Leads APIs
         Route::get('followup-leads', [FollowupLeadsController::class, 'index']);
         Route::get('followup-leads/filters', [FollowupLeadsController::class, 'filters']);
+
+        // Registration Form Submitted Leads APIs
+        Route::get('registration-leads', [RegistrationLeadsController::class, 'index']);
+        Route::get('registration-leads/filters', [RegistrationLeadsController::class, 'filters']);
+        Route::get('registration-leads/{lead}', [RegistrationLeadsController::class, 'show'])->whereNumber('lead');
     });
 });
 
