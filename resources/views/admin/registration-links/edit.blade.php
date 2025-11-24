@@ -9,6 +9,14 @@
             </div>
         </div>
 
+        <div class="col-12">
+            <div class="p-1">
+                <label for="color_code" class="form-label">Display Color <span class="text-danger">*</span></label>
+                <input type="color" class="form-control form-control-color w-100" name="color_code" id="color_code" value="{{ $edit_data->color_code ?? '#0d6efd' }}" required>
+                <small class="text-muted d-block mt-1">Update the color used to highlight this registration link across dashboards.</small>
+            </div>
+        </div>
+
         <div class="col-12 p-2">
             <button class="btn btn-primary float-end" type="submit">Update Registration Link</button>
         </div>

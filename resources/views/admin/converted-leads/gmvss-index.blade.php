@@ -423,8 +423,14 @@
                                         </div>
                                     </td>
                                     <td>
+                                        <?php
+                                            $currentRegistrationLink = optional($convertedLead->studentDetails)->registrationLink;
+                                            $registrationLinkColor = optional($currentRegistrationLink)->color_code;
+                                        ?>
                                         <div class="inline-edit" data-field="registration_link_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->registration_link_id }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->registrationLink?->title ?? 'N/A' }}</span>
+                                            <span class="display-value fw-semibold" style="<?php echo e($registrationLinkColor ? 'color: ' . $registrationLinkColor . ';' : ''); ?>">
+                                                {{ $currentRegistrationLink?->title ?? 'N/A' }}
+                                            </span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -671,7 +677,18 @@
 @endsection
 
 <script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
-<script id="registration-links-json" type="application/json">{!! json_encode($registration_links ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+<script id="registration-links-json" type="application/json">
+{!! json_encode(
+    ($registration_links ?? collect())->map(function($link) {
+        return [
+            'id' => $link->id,
+            'title' => $link->title,
+            'color_code' => $link->color_code,
+        ];
+    })->values(),
+    JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+) !!}
+</script>
 
 @push('styles')
 <style>
@@ -815,6 +832,34 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+        const registrationLinksEl = document.getElementById('registration-links-json');
+        let registrationLinks = [];
+        const registrationLinkMap = {};
+        try {
+            registrationLinks = registrationLinksEl ? JSON.parse(registrationLinksEl.textContent || '[]') : [];
+        } catch (e) {
+            registrationLinks = [];
+        }
+        registrationLinks.forEach(function(link) {
+            registrationLinkMap[String(link.id)] = link;
+        });
+
+        function applyRegistrationLinkColor(container, linkId) {
+            const link = registrationLinkMap[String(linkId)];
+            const color = link && link.color_code ? link.color_code : '';
+            const displayValue = container.find('.display-value');
+            if (color) {
+                displayValue.css({
+                    color: color,
+                    'font-weight': 600
+                });
+            } else {
+                displayValue.css({
+                    color: '',
+                    'font-weight': ''
+                });
+            }
+        }
         // Handle filter form submission
         $('#filterForm').on('submit', function(e) {
             e.preventDefault();
@@ -918,6 +963,15 @@
             return false;
         });
 
+        // Apply initial colors for registration link labels
+        $('.inline-edit[data-field="registration_link_id"]').each(function() {
+            const container = $(this);
+            const currentId = container.data('current');
+            if (currentId) {
+                applyRegistrationLinkColor(container, currentId);
+            }
+        });
+
         // Inline editing functionality
         $(document).on('click', '.edit-btn', function(e) {
             e.preventDefault();
@@ -994,7 +1048,18 @@
                 }, extra),
                 success: function(response) {
                     if (response.success) {
-                        container.find('.display-value').text(response.value || value);
+                        if (field === 'registration_link_id') {
+                            const selectedLink = registrationLinkMap[String(value)] || null;
+                            container.data('current', value || '');
+                            if (selectedLink) {
+                                container.find('.display-value').text(selectedLink.title);
+                            } else {
+                                container.find('.display-value').text(response.value || value || 'N/A');
+                            }
+                            applyRegistrationLinkColor(container, value);
+                        } else {
+                            container.find('.display-value').text(response.value || value);
+                        }
                         if (field === 'phone') {
                             const codeVal = extra.code || '';
                             container.siblings('.inline-code-value').data('current', codeVal);
@@ -1100,13 +1165,6 @@
             
             switch(field) {
                 case 'registration_link_id':
-                    const registrationLinksEl = document.getElementById('registration-links-json');
-                    let registrationLinks = {};
-                    try {
-                        registrationLinks = registrationLinksEl ? JSON.parse(registrationLinksEl.textContent || '[]') : [];
-                    } catch (e) {
-                        registrationLinks = [];
-                    }
                     options = '<option value="">Select Registration Link</option>';
                     registrationLinks.forEach(function(link) {
                         const isSelected = String(selectedValue) === String(link.id) ? 'selected' : '';

@@ -12,5 +12,6 @@ class RegistrationLink extends Model
 
     protected $fillable = [
         'title',
+        'color_code',
     ];
 }

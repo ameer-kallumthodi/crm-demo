@@ -382,8 +382,14 @@
                                         </div>
                                     </td>
                                     <td>
+                                        <?php
+                                            $mentorRegistrationLink = optional($convertedLead->studentDetails)->registrationLink;
+                                            $mentorRegistrationLinkColor = optional($mentorRegistrationLink)->color_code;
+                                        ?>
                                         <div class="inline-edit" data-field="registration_link_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->registration_link_id }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->registrationLink?->title ?? 'N/A' }}</span>
+                                            <span class="display-value fw-semibold" style="<?php echo e($mentorRegistrationLinkColor ? 'color: ' . $mentorRegistrationLinkColor . ';' : ''); ?>">
+                                                {{ $mentorRegistrationLink?->title ?? 'N/A' }}
+                                            </span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -484,7 +490,18 @@
 </div>
 <!-- [ Main Content ] end -->
 
-<script id="registration-links-json" type="application/json">{!! json_encode($registration_links ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+<script id="registration-links-json" type="application/json">
+{!! json_encode(
+    ($registration_links ?? collect())->map(function($link) {
+        return [
+            'id' => $link->id,
+            'title' => $link->title,
+            'color_code' => $link->color_code,
+        ];
+    })->values(),
+    JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+) !!}
+</script>
 
 @push('styles')
 <style>
@@ -556,6 +573,34 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+        const registrationLinksEl = document.getElementById('registration-links-json');
+        let registrationLinks = [];
+        const registrationLinkMap = {};
+        try {
+            registrationLinks = registrationLinksEl ? JSON.parse(registrationLinksEl.textContent || '[]') : [];
+        } catch (e) {
+            registrationLinks = [];
+        }
+        registrationLinks.forEach(function(link) {
+            registrationLinkMap[String(link.id)] = link;
+        });
+
+        function applyRegistrationLinkColor(container, linkId) {
+            const link = registrationLinkMap[String(linkId)];
+            const color = link && link.color_code ? link.color_code : '';
+            const displayValue = container.find('.display-value');
+            if (color) {
+                displayValue.css({
+                    color: color,
+                    'font-weight': 600
+                });
+            } else {
+                displayValue.css({
+                    color: '',
+                    'font-weight': ''
+                });
+            }
+        }
         // Handle filter form submission
         $('#filterForm').on('submit', function(e) {
             e.preventDefault();
@@ -613,10 +658,9 @@
         function createSelectField(field, currentValue) {
             let html = '<div class="edit-form"><div class="mb-2">';
             if (field === 'registration_link_id') {
-                const links = JSON.parse($('#registration-links-json').html());
                 html += `<select class="form-select form-select-sm">`;
                 html += `<option value="">Select Registration Link</option>`;
-                links.forEach(function(link) {
+                registrationLinks.forEach(function(link) {
                     const selected = String(currentValue) === String(link.id) ? 'selected' : '';
                     html += `<option value="${link.id}" ${selected}>${link.title}</option>`;
                 });
@@ -659,6 +703,15 @@
             const value = currentValue === 'N/A' ? '' : currentValue;
             return `<div class="edit-form"><div class="mb-2"><textarea class="form-control form-control-sm" rows="3">${value}</textarea></div><div class="btn-group"><button type="button" class="btn btn-sm btn-primary save-edit">Save</button><button type="button" class="btn btn-sm btn-secondary cancel-edit">Cancel</button></div></div>`;
         }
+
+        // Apply initial colors for registration link labels
+        $('.inline-edit[data-field="registration_link_id"]').each(function() {
+            const container = $(this);
+            const currentId = container.data('current');
+            if (currentId) {
+                applyRegistrationLinkColor(container, currentId);
+            }
+        });
 
         // Inline editing functionality
         $(document).on('click', '.edit-btn', function(e) {
@@ -740,14 +793,16 @@
                         }
                         
                         // Special handling for registration_link_id
-                        if (field === 'registration_link_id' && value) {
-                            const links = JSON.parse($('#registration-links-json').html());
-                            const link = links.find(l => String(l.id) === String(value));
-                            displayValue = link ? link.title : value;
+                        if (field === 'registration_link_id') {
+                            const link = registrationLinkMap[String(value)] || null;
+                            displayValue = link ? link.title : (value || 'N/A');
+                            container.data('current', value || '');
+                            applyRegistrationLinkColor(container, value);
+                        } else {
+                            container.data('current', response.value || value);
                         }
                         
                         container.find('.display-value').text(displayValue || 'N/A');
-                        container.data('current', response.value || value);
                         toast_success(response.message || 'Updated successfully');
                     } else {
                         toast_error(response.error || 'Update failed');

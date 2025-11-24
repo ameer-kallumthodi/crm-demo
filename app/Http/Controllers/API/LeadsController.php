@@ -7,13 +7,20 @@ use App\Models\Lead;
 use App\Models\LeadStatus;
 use App\Models\LeadSource;
 use App\Models\Course;
+use App\Models\LeadActivity;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
 class LeadsController extends Controller
 {
+    private array $followupRequiredStatusIds = [2, 7, 8, 9];
+    private const DEMO_BOOKING_STATUS_ID = 6;
+
     /**
      * Get leads list with lazy loading (pagination)
      *
@@ -284,6 +291,269 @@ class LeadsController extends Controller
     }
 
     /**
+     * Fetch status update data (mirrors web modal content).
+     */
+    public function statusUpdateData(Request $request, Lead $lead)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        if (!$this->userCanAccessLead($lead->id, $user)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied for this lead.'
+            ], 403);
+        }
+
+        $canViewPullbackHistory = in_array($user->role_id, [1, 2, 11], true);
+
+        $lead->load([
+            'leadStatus:id,title',
+            'leadActivities' => function ($query) use ($canViewPullbackHistory) {
+                $query->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id', 'is_pullbacked')
+                    ->with(['leadStatus:id,title', 'createdBy:id,name'])
+                    ->orderByDesc('created_at')
+                    ->limit(10);
+
+                if (!$canViewPullbackHistory) {
+                    $query->where(function ($subQuery) {
+                        $subQuery->whereNull('is_pullbacked')
+                            ->orWhere('is_pullbacked', 0);
+                    });
+                }
+            },
+        ]);
+
+        $leadStatuses = LeadStatus::select('id', 'title')
+            ->orderBy('title')
+            ->get();
+
+        $courses = Course::active()
+            ->orderBy('title')
+            ->get(['id', 'title']);
+
+        $previousReason = $lead->leadActivities
+            ->firstWhere(function ($activity) {
+                return !empty($activity->reason);
+            })
+            ?->reason;
+
+        $activityHistory = $lead->leadActivities->map(function ($activity) {
+            return [
+                'id' => $activity->id,
+                'activity_type' => $activity->activity_type,
+                'status' => $activity->leadStatus ? [
+                    'id' => $activity->leadStatus->id,
+                    'title' => $activity->leadStatus->title,
+                ] : null,
+                'reason' => $activity->reason,
+                'description' => $activity->description,
+                'remarks' => $activity->remarks,
+                'rating' => $activity->rating,
+                'followup_date' => $activity->followup_date ? $activity->followup_date->format('Y-m-d') : null,
+                'created_at' => $activity->created_at ? $activity->created_at->format('Y-m-d H:i:s') : null,
+                'created_at_human' => $activity->created_at ? $activity->created_at->format('M d, h:i A') : null,
+                'created_by' => $activity->createdBy ? [
+                    'id' => $activity->createdBy->id,
+                    'name' => $activity->createdBy->name,
+                ] : null,
+            ];
+        })->values();
+
+        $leadData = [
+            'id' => $lead->id,
+            'name' => $lead->title,
+            'phone_code' => $lead->code,
+            'phone_number' => $lead->phone,
+            'phone_formatted' => $this->formatPhoneNumber($lead->code, $lead->phone),
+            'current_status' => $lead->leadStatus ? [
+                'id' => $lead->leadStatus->id,
+                'title' => $lead->leadStatus->title,
+            ] : null,
+            'course_id' => $lead->course_id,
+            'rating' => $lead->rating,
+            'remarks' => $lead->remarks,
+            'followup_date' => $lead->followup_date ? Carbon::parse($lead->followup_date)->format('Y-m-d') : null,
+        ];
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'lead' => $leadData,
+                'lead_statuses' => $leadStatuses,
+                'courses' => $courses,
+                'followup_required_status_ids' => $this->followupRequiredStatusIds,
+                'demo_booking_status_id' => self::DEMO_BOOKING_STATUS_ID,
+                'defaults' => [
+                    'reason' => $previousReason,
+                    'remarks' => $lead->remarks,
+                    'rating' => $lead->rating,
+                    'date' => now()->format('Y-m-d'),
+                    'time' => now()->format('H:i'),
+                    'followup_date' => $lead->followup_date ? Carbon::parse($lead->followup_date)->format('Y-m-d') : null,
+                ],
+                'activity_history' => $activityHistory,
+            ],
+        ]);
+    }
+
+    /**
+     * Update a lead's status (API equivalent of web status-update flow).
+     */
+    public function statusUpdate(Request $request, Lead $lead)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        if (!$this->userCanAccessLead($lead->id, $user)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied for this lead.'
+            ], 403);
+        }
+
+        $followupRequiredStatuses = $this->followupRequiredStatusIds;
+
+        $rules = [
+            'lead_status_id' => 'required|exists:lead_statuses,id',
+            'reason' => 'required|string|max:255',
+            'remarks' => 'required|string|max:1000',
+            'rating' => 'required|integer|min:1|max:10',
+            'date' => 'required|date',
+            'time' => 'required|date_format:H:i',
+            'course_id' => 'nullable|exists:courses,id',
+            'followup_date' => 'nullable|date',
+        ];
+
+        if (in_array((int) $request->lead_status_id, $followupRequiredStatuses, true)) {
+            $rules['followup_date'] = 'required|date|after_or_equal:today';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $leadStatus = LeadStatus::find($request->lead_status_id);
+
+        if (!$leadStatus) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Selected status is no longer available.'
+            ], 422);
+        }
+
+        try {
+            $activityTimestamp = Carbon::parse($request->date . ' ' . $request->time);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid activity date or time provided.'
+            ], 422);
+        }
+
+        $currentStatusTitle = optional($lead->leadStatus)->title ?? 'Unknown';
+        $newStatusTitle = $leadStatus->title;
+        $interestStatus = $leadStatus->interest_status;
+        $currentUserId = $user->id;
+
+        $leadUpdateData = [
+            'lead_status_id' => $leadStatus->id,
+            'interest_status' => $interestStatus,
+            'rating' => $request->rating,
+            'remarks' => $request->remarks,
+            'updated_by' => $currentUserId,
+            'followup_date' => null,
+        ];
+
+        if ($request->filled('course_id')) {
+            $leadUpdateData['course_id'] = $request->course_id;
+        }
+
+        if (in_array($leadStatus->id, $followupRequiredStatuses, true) && $request->followup_date) {
+            $leadUpdateData['followup_date'] = $request->followup_date;
+        }
+
+        $statusChangeRemark = "Status changed from '{$currentStatusTitle}' to '{$newStatusTitle}'";
+        $finalRemarks = $statusChangeRemark;
+
+        if (!empty($request->remarks)) {
+            $finalRemarks .= " | User Note: " . $request->remarks;
+        }
+
+        $activityPayload = [
+            'lead_id' => $lead->id,
+            'lead_status_id' => $leadStatus->id,
+            'activity_type' => 'status_update',
+            'description' => 'Status updated to ' . $newStatusTitle,
+            'reason' => $request->reason,
+            'rating' => $request->rating,
+            'remarks' => $finalRemarks,
+            'created_by' => $currentUserId,
+            'updated_by' => $currentUserId,
+        ];
+
+        if (in_array($leadStatus->id, $followupRequiredStatuses, true) && $request->followup_date) {
+            $activityPayload['followup_date'] = $request->followup_date;
+        }
+
+        try {
+            DB::transaction(function () use ($lead, $leadUpdateData, $activityPayload, $activityTimestamp) {
+                $updatePayload = $leadUpdateData;
+                $updatePayload['updated_at'] = $activityTimestamp;
+
+                $updated = Lead::where('id', $lead->id)->update($updatePayload);
+
+                if (!$updated) {
+                    throw new \RuntimeException('Failed to update lead record.');
+                }
+
+                $lead->leadActivities()->create(array_merge($activityPayload, [
+                    'created_at' => $activityTimestamp,
+                    'updated_at' => $activityTimestamp,
+                ]));
+            });
+        } catch (\Exception $e) {
+            Log::error('API lead status update failed', [
+                'lead_id' => $lead->id,
+                'user_id' => $currentUserId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while updating the status.'
+            ], 500);
+        }
+
+        $lead->refresh();
+        $lead->load(['leadStatus', 'leadSource', 'course', 'telecaller']);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Lead status updated successfully.',
+            'data' => $lead,
+        ]);
+    }
+
+    /**
      * Format lead data for API response
      */
     private function formatLeadData($lead)
@@ -363,12 +633,14 @@ class LeadsController extends Controller
             'id' => $lead->id,
             'name' => $lead->title ?? '',
             'profile_completed_percentage' => $profileCompletedPercentage,
+            'lead_status_id' => $lead->lead_status_id,
             'phone' => $phone,
             'email' => $lead->email ?? '',
             'lead_status' => $lead->leadStatus ? $lead->leadStatus->title : '',
             'rating' => $lead->rating ?? '',
             'lead_source' => $lead->leadSource ? $lead->leadSource->title : '',
             'course_name' => $lead->course ? $lead->course->title : '',
+            'course_id' => $lead->course_id,
             'telecaller_name' => $lead->telecaller ? $lead->telecaller->name : '',
             'is_lead_reg_form_submitted' => $isLeadRegFormSubmitted,
             'show_lead_reg_form_link' => $showLeadRegFormLink,
@@ -518,6 +790,33 @@ class LeadsController extends Controller
         $stripped = preg_replace("/[ \t]+/", ' ', $stripped);
 
         return trim($stripped);
+    }
+
+    /**
+     * Ensure the authenticated user can access the specific lead.
+     */
+    private function userCanAccessLead(int $leadId, $user): bool
+    {
+        $query = Lead::query()->where('id', $leadId);
+        $this->applyRoleBasedFilter($query, $user);
+
+        return $query->exists();
+    }
+
+    /**
+     * Format phone/code similar to the web modal.
+     */
+    private function formatPhoneNumber(?string $code, ?string $number): ?string
+    {
+        if (!$number) {
+            return null;
+        }
+
+        if ($code) {
+            return '+' . ltrim($code, '+') . ' ' . $number;
+        }
+
+        return $number;
     }
 }
 

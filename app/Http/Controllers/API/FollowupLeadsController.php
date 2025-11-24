@@ -71,6 +71,7 @@ class FollowupLeadsController extends Controller
             $followupDate = $lead->followup_date
                 ? Carbon::parse($lead->followup_date)
                 : null;
+            $createdAt = $lead->created_at ? Carbon::parse($lead->created_at) : null;
 
             $lastReasonEntry = $lead->leadActivities->first();
 
@@ -100,6 +101,8 @@ class FollowupLeadsController extends Controller
                 'last_reason_at' => $lastReasonEntry ? $lastReasonEntry->created_at->format('Y-m-d H:i:s') : null,
                 'is_converted' => (bool) $lead->is_converted,
                 'student_status' => $lead->studentDetails ? $lead->studentDetails->status : null,
+                'date' => $createdAt ? $createdAt->format('d-m-Y') : null,
+                'time' => $createdAt ? $createdAt->format('h:i A') : null,
                 'created_at' => $lead->created_at ? $lead->created_at->format('Y-m-d H:i:s') : null,
             ];
         });

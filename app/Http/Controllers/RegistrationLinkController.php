@@ -34,9 +34,10 @@ class RegistrationLinkController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255|unique:registration_links,title',
+            'color_code' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
         ]);
 
-        $registrationLink = RegistrationLink::create($request->all());
+        $registrationLink = RegistrationLink::create($request->only(['title', 'color_code']));
 
         return response()->json([
             'success' => true,
@@ -68,9 +69,10 @@ class RegistrationLinkController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255|unique:registration_links,title,' . $registrationLink->id,
+            'color_code' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
         ]);
 
-        $registrationLink->update($request->all());
+        $registrationLink->update($request->only(['title', 'color_code']));
 
         return response()->json([
             'success' => true,
@@ -127,10 +129,12 @@ class RegistrationLinkController extends Controller
         try {
             $request->validate([
                 'title' => 'required|string|max:255|unique:registration_links,title',
+                'color_code' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             ]);
 
             $registrationLink = RegistrationLink::create([
                 'title' => $request->title,
+                'color_code' => $request->color_code,
             ]);
 
             return redirect()->route('admin.registration-links.index')->with('message_success', 'Registration Link created successfully!');
@@ -164,11 +168,13 @@ class RegistrationLinkController extends Controller
         try {
             $request->validate([
                 'title' => 'required|string|max:255|unique:registration_links,title,' . $id,
+                'color_code' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             ]);
 
             $registrationLink = RegistrationLink::findOrFail($id);
             $registrationLink->update([
                 'title' => $request->title,
+                'color_code' => $request->color_code,
             ]);
 
             return redirect()->route('admin.registration-links.index')->with('message_success', 'Registration Link updated successfully!');

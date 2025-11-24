@@ -64,6 +64,14 @@ class Team extends Model
     }
 
     /**
+     * Backward compatible title accessor (legacy code expects title field).
+     */
+    public function getTitleAttribute(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
      * Override the delete method to set deleted_by
      */
     public function delete()

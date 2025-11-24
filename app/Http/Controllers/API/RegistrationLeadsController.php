@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClassTime;
 use App\Models\Lead;
 use App\Models\LeadDetail;
 use App\Models\LeadStatus;
@@ -13,6 +14,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class RegistrationLeadsController extends Controller
 {
@@ -189,18 +191,18 @@ class RegistrationLeadsController extends Controller
             'leadSource:id,title',
             'course:id,title,needs_time',
             'telecaller:id,name,team_id',
-            'team:id,title',
+            'team:id,name',
             'studentDetails' => function ($query) {
                 $query->with([
                     'course:id,title,needs_time',
                     'subject:id,title',
                     'batch:id,title',
                     'subCourse:id,title',
-                    'classTime:id,title,start_time,end_time',
+                    'classTime:id,course_id,from_time,to_time',
                     'university:id,title',
                     'universityCourse:id,title',
                     'reviewedBy:id,name',
-                    'sslcCertificates:id,lead_detail_id,file_path,verification_status,verified_by',
+                    'sslcCertificates:id,lead_detail_id,certificate_path,verification_status,verified_by',
                     'sslcCertificates.verifiedBy:id,name',
                 ]);
             },
@@ -273,7 +275,6 @@ class RegistrationLeadsController extends Controller
                         'subject_id',
                         'batch_id',
                         'class_time_id',
-                        'sub_course_id',
                         'sslc_certificate',
                         'plustwo_certificate',
                         'ug_certificate',
@@ -302,7 +303,7 @@ class RegistrationLeadsController extends Controller
                         'subject:id,title',
                         'batch:id,title',
                         'subCourse:id,title',
-                        'classTime:id,title,start_time,end_time',
+                        'classTime:id,course_id,from_time,to_time',
                         'reviewedBy:id,name',
                     ]);
                 },
@@ -471,9 +472,9 @@ class RegistrationLeadsController extends Controller
             'batch' => $detail->batch ? $detail->batch->title : null,
             'sub_course' => $detail->subCourse ? $detail->subCourse->title : null,
             'class_time' => $detail->classTime ? [
-                'title' => $detail->classTime->title,
-                'start_time' => $detail->classTime->start_time,
-                'end_time' => $detail->classTime->end_time,
+                'title' => $this->formatClassTimeLabel($detail->classTime),
+                'start_time' => $detail->classTime->from_time,
+                'end_time' => $detail->classTime->to_time,
             ] : null,
             'second_language' => $detail->second_language,
             'passed_year' => $detail->passed_year,
@@ -577,7 +578,7 @@ class RegistrationLeadsController extends Controller
         if ($detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
             $documents['sslc_multiple'] = $detail->sslcCertificates->map(function ($certificate) {
                 return [
-                    'url' => $this->buildFileUrl($certificate->file_path ?? null),
+                    'url' => $this->buildFileUrl($certificate->certificate_path ?? $certificate->file_path ?? null),
                     'status' => $certificate->verification_status,
                     'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
                 ];
@@ -621,6 +622,45 @@ class RegistrationLeadsController extends Controller
         }
 
         return $number;
+    }
+
+    /**
+     * Build a readable class time label.
+     */
+    private function formatClassTimeLabel(?ClassTime $classTime): ?string
+    {
+        if (!$classTime) {
+            return null;
+        }
+
+        $from = $this->formatTimeValue($classTime->from_time);
+        $to = $this->formatTimeValue($classTime->to_time);
+
+        if ($from && $to) {
+            return "{$from} - {$to}";
+        }
+
+        return $from ?? $to;
+    }
+
+    /**
+     * Format a single time value to h:i A, fallback to raw string.
+     */
+    private function formatTimeValue(?string $time): ?string
+    {
+        if (!$time) {
+            return null;
+        }
+
+        try {
+            return Carbon::createFromFormat('H:i:s', $time)->format('h:i A');
+        } catch (\Exception $e) {
+            try {
+                return Carbon::parse($time)->format('h:i A');
+            } catch (\Exception $e) {
+                return $time;
+            }
+        }
     }
 
     /**
