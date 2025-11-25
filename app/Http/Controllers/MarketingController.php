@@ -682,7 +682,8 @@ class MarketingController extends Controller
                 'marketingBde:id,name', 
                 'createdBy:id,name',
                 'lead.leadStatus',
-                'lead.telecaller:id,name'
+                'lead.telecaller:id,name',
+                'lead.convertedLead'
             ]);
             
             // If marketing user, only show their own leads
@@ -705,6 +706,23 @@ class MarketingController extends Controller
             }
             if ($request->filled('is_assigned')) {
                 $query->where('is_telecaller_assigned', $request->is_assigned == '1');
+            }
+            if ($request->has('is_converted') && $request->is_converted !== '') {
+                if ($request->is_converted === '1') {
+                    $query->whereHas('lead', function ($leadQuery) {
+                        $leadQuery->where('is_converted', true);
+                    });
+                } elseif ($request->is_converted === '0') {
+                    $query->where(function ($subQuery) {
+                        $subQuery->whereDoesntHave('lead')
+                            ->orWhereHas('lead', function ($leadQuery) {
+                                $leadQuery->where(function ($conversionQuery) {
+                                    $conversionQuery->where('is_converted', false)
+                                        ->orWhereNull('is_converted');
+                                });
+                            });
+                    });
+                }
             }
             
             // Apply DataTables search (from DataTables search box)
@@ -739,16 +757,17 @@ class MarketingController extends Controller
                 11 => 'remarks', // Remarks
                 12 => 'id', // Telecaller Remarks (no sorting)
                 13 => 'id', // Lead Status (no sorting)
-                14 => 'id', // Telecaller Name (no sorting)
-                15 => 'is_telecaller_assigned', // Assignment Status
-                16 => 'assigned_at', // Assigned At
-                17 => 'created_at', // Created At
-                18 => 'id', // Actions (no sorting)
+                14 => 'id', // Converted (no sorting)
+                15 => 'id', // Telecaller Name (no sorting)
+                16 => 'is_telecaller_assigned', // Assignment Status
+                17 => 'assigned_at', // Assigned At
+                18 => 'created_at', // Created At
+                19 => 'id', // Actions (no sorting)
             ];
             
             // Apply ordering
             $order = $request->get('order', []);
-            $orderColumn = isset($order[0]['column']) ? (int)$order[0]['column'] : 17; // Default to created_at
+            $orderColumn = isset($order[0]['column']) ? (int)$order[0]['column'] : 18; // Default to created_at
             $orderDir = isset($order[0]['dir']) ? $order[0]['dir'] : 'desc';
             
             $orderColumnName = $columns[$orderColumn] ?? 'created_at';
@@ -809,6 +828,13 @@ class MarketingController extends Controller
                         $telecallerName = htmlspecialchars($telecaller->name);
                     }
                 }
+
+                $convertedLeadHtml = '<span class="badge bg-secondary">No</span>';
+                $hasConvertedRecord = $relatedLead && ($relatedLead->is_converted || $relatedLead->convertedLead);
+
+                if ($hasConvertedRecord) {
+                    $convertedLeadHtml = '<span class="badge bg-success">Yes</span>';
+                }
                 
                 $row = [
                     'index' => $start + $index + 1,
@@ -825,6 +851,7 @@ class MarketingController extends Controller
                     'remarks' => $remarksHtml,
                     'telecaller_remarks' => $telecallerRemarksHtml,
                     'lead_status' => $leadStatusHtml,
+                    'converted_lead' => $convertedLeadHtml,
                     'telecaller_name' => $telecallerName,
                     'assignment_status' => $lead->is_telecaller_assigned 
                         ? '<span class="badge bg-success">Assigned</span>' 
@@ -1161,9 +1188,14 @@ class MarketingController extends Controller
         $query = MarketingLead::where('is_telecaller_assigned', false)
             ->whereBetween('date_of_visit', [$request->date_from, $request->date_to]);
 
+        $bdeId = $request->bde_id;
+        if ($bdeId === 'all') {
+            $bdeId = null;
+        }
+
         // Filter by BDE if provided
-        if ($request->filled('bde_id')) {
-            $query->where('marketing_bde_id', $request->bde_id);
+        if (!empty($bdeId)) {
+            $query->where('marketing_bde_id', $bdeId);
         }
 
         $marketingLeads = $query->orderBy('date_of_visit', 'desc')

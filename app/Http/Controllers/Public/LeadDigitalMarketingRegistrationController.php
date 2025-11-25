@@ -12,6 +12,7 @@ use App\Models\ClassTime;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Services\MailService;
+use Illuminate\Support\Facades\Validator;
 
 class LeadDigitalMarketingRegistrationController extends Controller
 {
@@ -55,7 +56,7 @@ class LeadDigitalMarketingRegistrationController extends Controller
     
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'lead_id' => 'required|exists:leads,id',
             'student_name' => 'required|string|max:255',
             'father_name' => 'required|string|max:255',
@@ -73,7 +74,7 @@ class LeadDigitalMarketingRegistrationController extends Controller
             'whatsapp_number' => 'required|string|max:20',
             'whatsapp_code' => 'required|string|max:10',
             'programme_type' => 'required|in:online,offline',
-            'location' => 'required_if:programme_type,offline|in:Ernakulam,Malappuram',
+            'location' => 'nullable|required_if:programme_type,offline|in:Ernakulam,Malappuram',
             'class_time_id' => 'nullable|exists:class_times,id',
             'street' => 'required|string',
             'locality' => 'required|string|max:255',
@@ -148,6 +149,14 @@ class LeadDigitalMarketingRegistrationController extends Controller
             'post_graduation_certificate.file' => 'Post-graduation certificate must be a valid file.',
             'other_relevant_documents.file' => 'Other relevant documents must be a valid file.',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed. Please correct the highlighted fields.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
         
         try {
             // Handle file uploads

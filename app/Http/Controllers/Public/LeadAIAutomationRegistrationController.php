@@ -69,7 +69,7 @@ class LeadAIAutomationRegistrationController extends Controller
             'whatsapp_number' => 'required|string|max:20',
             'whatsapp_code' => 'required|string|max:10',
             'programme_type' => 'required|in:online,offline',
-            'location' => 'required_if:programme_type,offline|in:Ernakulam,Malappuram',
+            'location' => 'nullable|required_if:programme_type,offline|in:Ernakulam,Malappuram',
             'class_time_id' => 'nullable|exists:class_times,id',
             'street' => 'required|string',
             'locality' => 'required|string|max:255',

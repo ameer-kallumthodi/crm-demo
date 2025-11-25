@@ -17,7 +17,8 @@
             <div class="p-1">
                 <label for="bde_id" class="form-label">BDE Name</label>
                 <select class="form-control" name="bde_id" id="bde_id">
-                    <option value="">Select BDEs</option>
+                    <option value="">Select BDE</option>
+                    <option value="all">All BDEs</option>
                     @foreach ($marketingUsers as $bde)
                     <option value="{{ $bde->id }}">{{ $bde->name }}</option>
                     @endforeach
@@ -201,7 +202,8 @@ $(document).ready(function() {
 
     // AJAX to fetch marketing leads
     $('#bde_id, #date_from, #date_to').on('change', function() {
-        var bdeId = $('#bde_id').val();
+        var selectedBde = $('#bde_id').val();
+        var bdeId = selectedBde === 'all' ? '' : selectedBde;
         var dateFrom = $('#date_from').val();
         var dateTo = $('#date_to').val();
 

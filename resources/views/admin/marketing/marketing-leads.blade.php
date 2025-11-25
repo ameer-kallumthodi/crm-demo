@@ -72,6 +72,14 @@
                             <option value="0" {{ request('is_assigned') == '0' ? 'selected' : '' }}>Not Assigned</option>
                         </select>
                     </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Conversion Status</label>
+                        <select name="is_converted" id="filter_is_converted" class="form-select">
+                            <option value="">All</option>
+                            <option value="1" {{ request('is_converted') == '1' ? 'selected' : '' }}>Converted</option>
+                            <option value="0" {{ request('is_converted') == '0' ? 'selected' : '' }}>Not Converted</option>
+                        </select>
+                    </div>
                     <div class="col-md-12">
                         <button type="button" class="btn btn-primary btn-sm" id="applyFilters">
                             <i class="ti ti-filter"></i> Filter
@@ -101,6 +109,7 @@
                                 <th>Remarks</th>
                                 <th>Telecaller Remarks</th>
                                 <th>Lead Status</th>
+                                <th>Converted</th>
                                 <th>Telecaller Name</th>
                                 <th>Assignment Status</th>
                                 <th>Assigned At</th>
@@ -140,6 +149,7 @@ $columns = [
     ['data' => 'remarks', 'name' => 'remarks'],
     ['data' => 'telecaller_remarks', 'name' => 'telecaller_remarks', 'orderable' => false, 'searchable' => false],
     ['data' => 'lead_status', 'name' => 'lead_status', 'orderable' => false, 'searchable' => false],
+    ['data' => 'converted_lead', 'name' => 'converted_lead', 'orderable' => false, 'searchable' => false],
     ['data' => 'telecaller_name', 'name' => 'telecaller_name', 'orderable' => false, 'searchable' => false],
     ['data' => 'assignment_status', 'name' => 'assignment_status', 'orderable' => false, 'searchable' => false],
     ['data' => 'assigned_at', 'name' => 'assigned_at'],
@@ -152,6 +162,7 @@ $columns = [
 <script>
 // Store table instance globally
 var marketingLeadsTable = null;
+var canFilterByBde = {{ !$isMarketing ? 'true' : 'false' }};
 
 $(document).ready(function() {
     // Check for success message in URL parameter
@@ -175,11 +186,9 @@ $(document).ready(function() {
     // Get filter values from form
     function getFilterParams() {
         var params = {};
-        @if(!$isMarketing)
-        if ($('#filter_bde_id').val()) {
+        if (canFilterByBde && $('#filter_bde_id').val()) {
             params.bde_id = $('#filter_bde_id').val();
         }
-        @endif
         if ($('#filter_date_from').val()) {
             params.date_from = $('#filter_date_from').val();
         }
@@ -188,6 +197,9 @@ $(document).ready(function() {
         }
         if ($('#filter_is_assigned').val() !== '') {
             params.is_assigned = $('#filter_is_assigned').val();
+        }
+        if ($('#filter_is_converted').val() !== '') {
+            params.is_converted = $('#filter_is_converted').val();
         }
         return params;
     }
@@ -207,7 +219,8 @@ $(document).ready(function() {
                 '<th>Phone</th><th>WhatsApp</th><th>Address</th><th>Location</th>' +
                 '<th>House Number</th><th>Lead Type</th><th>Interested Courses</th>' +
                 '<th>Remarks</th><th>Telecaller Remarks</th><th>Lead Status</th>' +
-                '<th>Telecaller Name</th><th>Assignment Status</th><th>Assigned At</th>' +
+                '<th>Converted</th><th>Telecaller Name</th>' +
+                '<th>Assignment Status</th><th>Assigned At</th>' +
                 '<th>Created At</th><th>Actions</th></tr></thead>');
         }
         
@@ -230,7 +243,7 @@ $(document).ready(function() {
         },
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-        order: [[17, 'desc']], // Sort by created_at (column 17)
+        order: [[18, 'desc']], // Sort by created_at (column 18)
         dom: "Bfrtip",
         buttons: ["csv", "excel", "print", "pdf"],
         stateSave: true,
@@ -253,12 +266,13 @@ $(document).ready(function() {
     
     // Clear filters button
     $('#clearFilters').on('click', function() {
-        @if(!$isMarketing)
-        $('#filter_bde_id').val('');
-        @endif
+        if (canFilterByBde) {
+            $('#filter_bde_id').val('');
+        }
         $('#filter_date_from').val('');
         $('#filter_date_to').val('');
         $('#filter_is_assigned').val('');
+        $('#filter_is_converted').val('');
         if (marketingLeadsTable) {
             marketingLeadsTable.ajax.reload();
         }
