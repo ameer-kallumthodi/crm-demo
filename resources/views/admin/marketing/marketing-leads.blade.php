@@ -49,7 +49,7 @@
                 <!-- Filters -->
                 <div class="row g-3 mb-4" id="filterForm">
                     @if(!$isMarketing)
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">BDE</label>
                         <select name="bde_id" id="filter_bde_id" class="form-select">
                             <option value="">All BDEs</option>
@@ -59,15 +59,15 @@
                         </select>
                     </div>
                     @endif
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Date From</label>
                         <input type="date" name="date_from" id="filter_date_from" class="form-control" value="{{ request('date_from') }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Date To</label>
                         <input type="date" name="date_to" id="filter_date_to" class="form-control" value="{{ request('date_to') }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Assignment Status</label>
                         <select name="is_assigned" id="filter_is_assigned" class="form-select">
                             <option value="">All</option>
@@ -75,7 +75,7 @@
                             <option value="0" {{ request('is_assigned') == '0' ? 'selected' : '' }}>Not Assigned</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Conversion Status</label>
                         <select name="is_converted" id="filter_is_converted" class="form-select">
                             <option value="">All</option>
