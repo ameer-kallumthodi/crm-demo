@@ -127,7 +127,7 @@ class LeadController extends Controller
             'course_id', 'telecaller_id', 'team_id', 'place', 'rating', 'interest_status', 
             'followup_date', 'remarks', 'is_converted', 'created_at', 'updated_at',
             'gender', 'age', 'whatsapp', 'whatsapp_code', 'qualification', 'country_id', 
-            'address' // Added for profile completeness calculation
+            'address', 'first_created_at' // Added for profile completeness calculation and auditing
         ])
         ->where('is_converted', 0) // Direct condition instead of scope for better performance
         ->with([
@@ -263,6 +263,7 @@ class LeadController extends Controller
             $isAdmissionCounsellor = RoleHelper::is_admission_counsellor();
             $isPostSales = RoleHelper::is_post_sales();
             $hasLeadActionPermission = \App\Helpers\PermissionHelper::has_lead_action_permission();
+            $canViewFirstCreated = $isAdminOrSuperAdmin || $isGeneralManager;
             
             // Check if registration_details column is included
             $hasRegistrationDetails = $isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor;
@@ -280,6 +281,9 @@ class LeadController extends Controller
             
             // Continue with remaining columns
             $columns[$columnIndex++] = 'created_at'; // Created At
+            if ($canViewFirstCreated) {
+                $columns[$columnIndex++] = 'first_created_at'; // First Created At
+            }
             $columns[$columnIndex++] = 'title'; // Name
             $columns[$columnIndex++] = 'id'; // Profile - no sorting
             $columns[$columnIndex++] = 'phone'; // Phone
@@ -325,6 +329,7 @@ class LeadController extends Controller
             $isAcademicAssistant = RoleHelper::is_academic_assistant();
             $isAdmissionCounsellor = RoleHelper::is_admission_counsellor();
             $hasLeadActionPermission = \App\Helpers\PermissionHelper::has_lead_action_permission();
+            $canViewFirstCreated = $isAdminOrSuperAdmin || $isGeneralManager;
             
             // Check if registration_details column is included
             $hasRegistrationDetails = $isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor;
@@ -342,6 +347,9 @@ class LeadController extends Controller
             
             // Continue with remaining columns
             $columns[$columnIndex++] = 'created_at'; // Created At
+            if ($canViewFirstCreated) {
+                $columns[$columnIndex++] = 'first_created_at'; // First Created At
+            }
             $columns[$columnIndex++] = 'title'; // Name
             $columns[$columnIndex++] = 'id'; // Profile - no sorting
             $columns[$columnIndex++] = 'phone'; // Phone
@@ -439,6 +447,12 @@ class LeadController extends Controller
                     // Mobile view data
                     'mobile_view' => $this->renderMobileView($lead, $profileCompleteness, $profileStatus, $missingFieldsDisplayClean, count($missingFields), $courseName, $isAdminOrSuperAdmin, $isTelecallerRole, $isAcademicAssistant, $isAdmissionCounsellor, $hasLeadActionPermission)
                 ];
+
+                if ($canViewFirstCreated) {
+                    $row['first_created_at'] = $lead->first_created_at
+                        ? $lead->first_created_at->format('d-m-Y h:i A')
+                        : '-';
+                }
 
                 $data[] = $row;
             }
@@ -1380,6 +1394,7 @@ class LeadController extends Controller
             $lead = DB::transaction(function () use ($leadData, $request, $currentUserId) {
                 $leadData['created_by'] = $currentUserId;
                 $leadData['updated_by'] = $currentUserId;
+                $leadData['first_created_at'] = now();
 
                 $lead = Lead::create($leadData);
 
@@ -1461,6 +1476,7 @@ class LeadController extends Controller
         $data['interest_status'] = $interestStatus; // Override with lead status interest_status
         $data['created_by'] = AuthHelper::getCurrentUserId();
         $data['updated_by'] = AuthHelper::getCurrentUserId();
+        $data['first_created_at'] = now();
 
         $lead = Lead::create($data);
 
@@ -2275,7 +2291,8 @@ class LeadController extends Controller
                     'telecaller_id' => $telecallerId,
                     'created_by' => AuthHelper::getCurrentUserId(),
                     'updated_by' => AuthHelper::getCurrentUserId(),
-                    'is_converted' => false
+                    'is_converted' => false,
+                    'first_created_at' => now(),
                 ]);
 
                 if ($lead) {
@@ -2898,15 +2915,17 @@ class LeadController extends Controller
 
                 $fromTelecallerName = $lead->telecaller ? $lead->telecaller->name : 'Unknown';
 
-                $lead->update([
+                $lead->forceFill([
                     'telecaller_id' => $telecallerId,
                     'is_pullbacked' => 0,
                     'remarks' => null,
                     'lead_status_id' => 1,
                     'followup_date' => null,
                     'rating' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                     'updated_by' => AuthHelper::getCurrentUserId(),
-                ]);
+                ])->save();
 
                 LeadActivity::where('lead_id', $lead->id)->update(['is_pullbacked' => 1]);
 

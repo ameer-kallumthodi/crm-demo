@@ -45,6 +45,7 @@ class Lead extends Model
         'remarks',
         'is_converted',
         'is_pullbacked',
+        'first_created_at',
     ];
 
     protected $casts = [
@@ -55,6 +56,7 @@ class Lead extends Model
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
         'is_pullbacked' => 'boolean',
+        'first_created_at' => 'datetime',
     ];
 
     protected static function booted()
@@ -64,6 +66,12 @@ class Lead extends Model
                 $query->whereNull('leads.is_pullbacked')
                       ->orWhere('leads.is_pullbacked', 0);
             });
+        });
+
+        static::creating(function (Lead $lead) {
+            if (empty($lead->first_created_at)) {
+                $lead->first_created_at = now();
+            }
         });
     }
 

@@ -961,6 +961,7 @@ class MarketingController extends Controller
                 'marketing_remarks' => $marketingRemarks, // Set marketing_remarks field (original marketing remarks only)
                 'telecaller_id' => $request->telecaller_id,
                 'created_by' => AuthHelper::getCurrentUserId(),
+                'first_created_at' => now(),
             ]);
 
             // Create lead activity with marketing remarks and course information
@@ -1117,6 +1118,7 @@ class MarketingController extends Controller
                         'marketing_remarks' => $marketingRemarks, // Set marketing_remarks field (original marketing remarks only)
                         'telecaller_id' => $request->telecaller_id,
                         'created_by' => AuthHelper::getCurrentUserId(),
+                        'first_created_at' => now(),
                     ]);
 
                     // Create lead activity with marketing remarks and course information

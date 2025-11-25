@@ -260,6 +260,9 @@
                     <div class="table-responsive" style="overflow-x: auto;">
 <table class="table table-hover" id="leadsTable" style="min-width: 1900px;">
                             <thead>
+@php
+$canViewFirstCreated = $isAdminOrSuperAdmin || $isGeneralManager;
+@endphp
                                 <tr>
                                     <th>#</th>
                                     <th>Actions</th>
@@ -267,6 +270,9 @@
                                     <th>Registration Details</th>
                                     @endif
                                     <th>Created At</th>
+                                    @if($canViewFirstCreated)
+                                    <th>First Created At</th>
+                                    @endif
                                     <th>Name</th>
                                     <th>Profile</th>
                                     <th>Phone</th>
@@ -321,6 +327,13 @@ if ($isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmi
 
 $columns = array_merge($columns, [
     ['data' => 'created_at', 'name' => 'created_at'],
+]);
+
+if ($canViewFirstCreated) {
+    $columns[] = ['data' => 'first_created_at', 'name' => 'first_created_at'];
+}
+
+$columns = array_merge($columns, [
     ['data' => 'name', 'name' => 'name'],
     ['data' => 'profile', 'name' => 'profile', 'orderable' => false, 'searchable' => false],
     ['data' => 'phone', 'name' => 'phone'],
