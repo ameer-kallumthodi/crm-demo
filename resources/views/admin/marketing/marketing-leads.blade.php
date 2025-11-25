@@ -32,6 +32,9 @@
                     <h5 class="mb-0">D2D Marketing Leads</h5>
                     <div class="d-flex gap-2">
                         @if(isset($isAdminOrManager) && $isAdminOrManager)
+                        <button type="button" class="btn btn-outline-info btn-sm px-3" id="exportMarketingLeads">
+                            <i class="ti ti-download"></i> Export Excel
+                        </button>
                         <button type="button" class="btn btn-success btn-sm px-3" onclick="show_large_modal('{{ route('admin.marketing.bulk-assign.ajax') }}', 'Bulk Assign to Telecaller')">
                             <i class="ti ti-users"></i> Bulk Assign
                         </button>
@@ -163,6 +166,7 @@ $columns = [
 // Store table instance globally
 var marketingLeadsTable = null;
 var canFilterByBde = {{ !$isMarketing ? 'true' : 'false' }};
+var exportMarketingLeadsUrl = '{{ route('admin.marketing.marketing-leads.export') }}';
 
 $(document).ready(function() {
     // Check for success message in URL parameter
@@ -262,6 +266,17 @@ $(document).ready(function() {
         if (marketingLeadsTable) {
             marketingLeadsTable.ajax.reload();
         }
+    });
+
+    // Export button
+    $('#exportMarketingLeads').on('click', function() {
+        var filters = getFilterParams();
+        var queryString = $.param(filters);
+        var exportUrl = exportMarketingLeadsUrl;
+        if (queryString) {
+            exportUrl += '?' + queryString;
+        }
+        window.location.href = exportUrl;
     });
     
     // Clear filters button

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MarketingLeadsExport;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Models\Team;
@@ -14,9 +15,12 @@ use App\Models\MarketingLead;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Helpers\RoleHelper;
 use App\Helpers\AuthHelper;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MarketingController extends Controller
 {
@@ -884,6 +888,86 @@ class MarketingController extends Controller
                 'error' => 'Error loading data. Please try again.'
             ], 500);
         }
+    }
+
+    /**
+     * Export marketing leads based on current filters
+     */
+    public function exportMarketingLeads(Request $request)
+    {
+        set_time_limit(config('timeout.max_execution_time', 300));
+
+        $currentUser = AuthHelper::getCurrentUser();
+
+        if (!$currentUser) {
+            return redirect()->route('admin.marketing.marketing-leads')
+                ->with('message_danger', 'Please login to access this page.');
+        }
+
+        $isMarketing = $currentUser->role_id == 13;
+        $isAdminOrManager = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager();
+
+        if (!$isMarketing && !$isAdminOrManager) {
+            return redirect()->route('admin.marketing.marketing-leads')
+                ->with('message_danger', 'Access denied.');
+        }
+
+        $query = MarketingLead::with([
+            'marketingBde:id,name',
+            'createdBy:id,name',
+            'lead.leadStatus',
+            'lead.telecaller:id,name',
+            'lead.convertedLead'
+        ]);
+
+        if ($isMarketing) {
+            $query->where('marketing_bde_id', $currentUser->id);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->where('date_of_visit', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->where('date_of_visit', '<=', $request->date_to);
+        }
+
+        if ($request->filled('bde_id')) {
+            $query->where('marketing_bde_id', $request->bde_id);
+        }
+
+        if ($request->filled('is_assigned')) {
+            $query->where('is_telecaller_assigned', $request->is_assigned == '1');
+        }
+
+        if ($request->has('is_converted') && $request->is_converted !== '') {
+            if ($request->is_converted === '1') {
+                $query->whereHas('lead', function ($leadQuery) {
+                    $leadQuery->where('is_converted', true);
+                });
+            } elseif ($request->is_converted === '0') {
+                $query->where(function ($subQuery) {
+                    $subQuery->whereDoesntHave('lead')
+                        ->orWhereHas('lead', function ($leadQuery) {
+                            $leadQuery->where(function ($conversionQuery) {
+                                $conversionQuery->where('is_converted', false)
+                                    ->orWhereNull('is_converted');
+                            });
+                        });
+                });
+            }
+        }
+
+        $marketingLeads = $query->orderBy('created_at', 'desc')->get();
+
+        if ($marketingLeads->isEmpty()) {
+            return redirect()->route('admin.marketing.marketing-leads')
+                ->with('message_danger', 'No marketing leads found for export.');
+        }
+
+        $filename = 'marketing_leads_export_' . now()->format('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(new MarketingLeadsExport($marketingLeads), $filename);
     }
 
     /**
