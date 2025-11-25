@@ -2731,7 +2731,7 @@ class LeadController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'tele_caller_id' => 'required|exists:users,id',
+            'source_telecaller_id' => 'required|exists:users,id',
             'from_date' => 'required|date',
             'to_date' => 'required|date',
         ]);
@@ -2751,7 +2751,7 @@ class LeadController extends Controller
                 'id', 'title', 'code', 'phone', 'email', 'lead_status_id',
                 'lead_source_id', 'course_id', 'telecaller_id', 'remarks', 'created_at'
             ])
-            ->where('telecaller_id', $request->tele_caller_id)
+            ->where('telecaller_id', $request->source_telecaller_id)
             ->where('is_pullbacked', 1)
             ->whereBetween('updated_at', [$fromDate, $toDate])
             ->with([
@@ -2860,6 +2860,7 @@ class LeadController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
+            'source_telecaller_id' => 'required|exists:users,id',
             'telecaller_id' => 'required|exists:users,id',
             'lead_from_date' => 'required|date',
             'lead_to_date' => 'required|date',
@@ -2871,41 +2872,62 @@ class LeadController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        if ($request->source_telecaller_id == $request->telecaller_id) {
+            return redirect()->back()->with('message_danger', 'Please select different telecallers for source and assignment.');
+        }
+
         $telecallerId = $request->telecaller_id;
+        $sourceTelecallerId = $request->source_telecaller_id;
         $successCount = 0;
+        $targetTelecaller = User::find($telecallerId);
 
         DB::beginTransaction();
         try {
-            foreach ($request->lead_id as $leadId) {
-                $updated = Lead::withoutGlobalScope('exclude_pullbacked')
-                    ->where('id', $leadId)
-                    ->where('is_pullbacked', 1)
-                    ->update([
-                        'telecaller_id' => $telecallerId,
-                        'is_pullbacked' => 0,
-                        'remarks' => null,
-                        'lead_status_id' => 1,
-                        'followup_date' => null,
-                        'rating' => null,
-                        'updated_by' => AuthHelper::getCurrentUserId(),
-                    ]);
+            $leads = Lead::withoutGlobalScope('exclude_pullbacked')
+                ->whereIn('id', $request->lead_id)
+                ->where('is_pullbacked', 1)
+                ->with('telecaller:id,name')
+                ->get();
 
-                if ($updated) {
-                    LeadActivity::where('lead_id', $leadId)->update(['is_pullbacked' => 1]);
+            foreach ($leads as $lead) {
+                $fromTelecallerId = $lead->telecaller_id;
 
-                    LeadActivity::create([
-                        'lead_id' => $leadId,
-                        'lead_status_id' => 1,
-                        'activity_type' => 'assign_from_pullback',
-                        'description' => 'Lead assigned from pullback',
-                        'remarks' => null,
-                        'is_pullbacked' => 1,
-                        'created_by' => AuthHelper::getCurrentUserId(),
-                        'updated_by' => AuthHelper::getCurrentUserId(),
-                    ]);
-
-                    $successCount++;
+                if ($sourceTelecallerId && $fromTelecallerId != $sourceTelecallerId) {
+                    continue;
                 }
+
+                $fromTelecallerName = $lead->telecaller ? $lead->telecaller->name : 'Unknown';
+
+                $lead->update([
+                    'telecaller_id' => $telecallerId,
+                    'is_pullbacked' => 0,
+                    'remarks' => null,
+                    'lead_status_id' => 1,
+                    'followup_date' => null,
+                    'rating' => null,
+                    'updated_by' => AuthHelper::getCurrentUserId(),
+                ]);
+
+                LeadActivity::where('lead_id', $lead->id)->update(['is_pullbacked' => 1]);
+
+                $remarks = sprintf(
+                    'Lead reassigned from telecaller %s to %s via pullback assignment.',
+                    $fromTelecallerName,
+                    optional($targetTelecaller)->name ?? 'Unknown'
+                );
+
+                LeadActivity::create([
+                    'lead_id' => $lead->id,
+                    'lead_status_id' => 1,
+                    'activity_type' => 'assign_from_pullback',
+                    'description' => 'Lead assigned from pullback',
+                    'remarks' => $remarks,
+                    'is_pullbacked' => 1,
+                    'created_by' => AuthHelper::getCurrentUserId(),
+                    'updated_by' => AuthHelper::getCurrentUserId(),
+                ]);
+
+                $successCount++;
             }
 
             DB::commit();

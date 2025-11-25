@@ -3,7 +3,19 @@
     <div class="row g-3">
         <div class="col-lg-3">
             <div class="p-1">
-                <label for="telecaller_id" class="form-label">Telecaller</label>
+                <label for="source_telecaller_id" class="form-label">Pullbacked From Telecaller</label>
+                <select class="form-control" name="source_telecaller_id" id="source_telecaller_id" required>
+                    <option value="">Select Telecaller</option>
+                    @foreach ($telecallers as $telecaller)
+                        <option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="p-1">
+                <label for="telecaller_id" class="form-label">Assign To Telecaller</label>
                 <select class="form-control" name="telecaller_id" id="telecaller_id" required>
                     <option value="">Select Telecaller</option>
                     @foreach ($telecallers as $telecaller)
@@ -76,10 +88,12 @@
         const $checkAll = $('#check_all');
         const $assignBtn = $('#assign_btn');
         const $selectedCount = $('#selected_count');
+        const $assignTelecaller = $('#telecaller_id');
 
         function toggleSubmitButton() {
             const anyChecked = $leadTableBody.find('input[type="checkbox"]:checked').length > 0;
-            $assignBtn.prop('disabled', !anyChecked);
+            const hasAssignTelecaller = Boolean($assignTelecaller.val());
+            $assignBtn.prop('disabled', !(anyChecked && hasAssignTelecaller));
             updateSelectedCount();
         }
 
@@ -108,17 +122,19 @@
             toggleSubmitButton();
         });
 
+        $assignTelecaller.on('change', toggleSubmitButton);
+
         function fetchPullbackedLeads() {
-            const telecallerId = $('#telecaller_id').val();
+            const sourceTelecallerId = $('#source_telecaller_id').val();
             const fromDate = $('#lead_from_date').val();
             const toDate = $('#lead_to_date').val();
 
-            if (telecallerId && fromDate && toDate) {
+            if (sourceTelecallerId && fromDate && toDate) {
                 $.ajax({
                     url: '{{ route("admin.leads.get-pullbacked-assign-leads") }}',
                     type: 'POST',
                     data: {
-                        tele_caller_id: telecallerId,
+                        source_telecaller_id: sourceTelecallerId,
                         from_date: fromDate,
                         to_date: toDate
                     },
@@ -143,7 +159,7 @@
             }
         }
 
-        $('#telecaller_id, #lead_from_date, #lead_to_date').on('change', fetchPullbackedLeads);
+        $('#source_telecaller_id, #lead_from_date, #lead_to_date').on('change', fetchPullbackedLeads);
     });
 </script>
 
