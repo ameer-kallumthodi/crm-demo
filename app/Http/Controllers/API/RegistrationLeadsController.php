@@ -937,24 +937,13 @@ class RegistrationLeadsController extends Controller
             return [];
         }
 
-        $documentTypes = [
-            'sslc_certificate' => 'SSLC Certificate',
-            'plustwo_certificate' => 'Plus Two Certificate',
-            'ug_certificate' => 'UG Certificate',
-            'post_graduation_certificate' => 'Post Graduation Certificate',
-            'birth_certificate' => 'Birth Certificate',
-            'passport_photo' => 'Passport Photo',
-            'adhar_front' => 'Aadhar Front',
-            'adhar_back' => 'Aadhar Back',
-            'signature' => 'Signature',
-            'other_document' => 'Other Document',
-        ];
-
+        $documentTypes = $this->documentTypeConfigs();
         $summary = [];
 
-        foreach ($documentTypes as $field => $label) {
+        foreach ($documentTypes as $field => $config) {
             $statusField = $field . '_verification_status';
             $verifiedAtField = $field . '_verified_at';
+            $label = $config['label'];
             [$uploaded, $status, $verifiedAt] = $this->resolveDocumentSummary($detail, $field, $statusField, $verifiedAtField);
 
             $summary[$field] = [
@@ -962,6 +951,7 @@ class RegistrationLeadsController extends Controller
                 'uploaded' => $uploaded,
                 'status' => $status,
                 'verified_at' => $verifiedAt,
+                'url' => $this->buildFileUrl($config['path_resolver']($detail)),
             ];
         }
 
@@ -984,29 +974,19 @@ class RegistrationLeadsController extends Controller
      */
     private function buildDocumentPayload(LeadDetail $detail): array
     {
-        $documentTypes = [
-            'sslc_certificate' => 'SSLC Certificate',
-            'plustwo_certificate' => 'Plus Two Certificate',
-            'ug_certificate' => 'UG Certificate',
-            'post_graduation_certificate' => 'Post Graduation Certificate',
-            'birth_certificate' => 'Birth Certificate',
-            'passport_photo' => 'Passport Photo',
-            'adhar_front' => 'Aadhar Front',
-            'adhar_back' => 'Aadhar Back',
-            'signature' => 'Signature',
-            'other_document' => 'Other Document',
-        ];
+        $documentTypes = $this->documentTypeConfigs();
+        $documentTypes = $this->documentTypeConfigs();
 
         $documents = [];
 
-        foreach ($documentTypes as $field => $label) {
+        foreach ($documentTypes as $field => $config) {
             $statusField = $field . '_verification_status';
             $verifiedByField = $field . '_verified_by';
             $verifiedAtField = $field . '_verified_at';
 
             $documents[$field] = [
-                'label' => $label,
-                'url' => $this->buildFileUrl($detail->$field),
+                'label' => $config['label'],
+                'url' => $this->buildFileUrl($config['path_resolver']($detail)),
                 'status' => $detail->$statusField ?? (!empty($detail->$field) ? 'pending' : null),
                 'verified_by' => $detail->$verifiedByField,
                 'verified_at' => $this->formatDateTimeValue($detail->$verifiedAtField),
@@ -1114,7 +1094,7 @@ class RegistrationLeadsController extends Controller
             return null;
         }
 
-        if ($value instanceof Carbon) {
+        if ($value instanceof \DateTimeInterface) {
             return $value->format('Y-m-d H:i:s');
         }
 
@@ -1162,6 +1142,55 @@ class RegistrationLeadsController extends Controller
         }
 
         return [$uploaded, $status, $verifiedAt];
+    }
+
+    /**
+     * Document configuration (label & path resolver).
+     */
+    private function documentTypeConfigs(): array
+    {
+        return [
+            'sslc_certificate' => [
+                'label' => 'SSLC Certificate',
+                'path_resolver' => fn ($detail) => $detail->sslc_certificate,
+            ],
+            'plustwo_certificate' => [
+                'label' => 'Plus Two Certificate',
+                'path_resolver' => fn ($detail) => $detail->plustwo_certificate,
+            ],
+            'ug_certificate' => [
+                'label' => 'UG Certificate',
+                'path_resolver' => fn ($detail) => $detail->ug_certificate,
+            ],
+            'post_graduation_certificate' => [
+                'label' => 'Post Graduation Certificate',
+                'path_resolver' => fn ($detail) => $detail->post_graduation_certificate,
+            ],
+            'birth_certificate' => [
+                'label' => 'Birth Certificate',
+                'path_resolver' => fn ($detail) => $detail->birth_certificate,
+            ],
+            'passport_photo' => [
+                'label' => 'Passport Photo',
+                'path_resolver' => fn ($detail) => $detail->passport_photo,
+            ],
+            'adhar_front' => [
+                'label' => 'Aadhar Front',
+                'path_resolver' => fn ($detail) => $detail->adhar_front,
+            ],
+            'adhar_back' => [
+                'label' => 'Aadhar Back',
+                'path_resolver' => fn ($detail) => $detail->adhar_back,
+            ],
+            'signature' => [
+                'label' => 'Signature',
+                'path_resolver' => fn ($detail) => $detail->signature,
+            ],
+            'other_document' => [
+                'label' => 'Other Document',
+                'path_resolver' => fn ($detail) => $detail->other_document,
+            ],
+        ];
     }
 
     /**
