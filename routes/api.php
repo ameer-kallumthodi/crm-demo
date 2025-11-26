@@ -20,6 +20,8 @@ Route::prefix('v1')->group(function() {
         Route::get('leads', [LeadsController::class, 'index']);
         Route::get('leads/filters', [LeadsController::class, 'filters']);
         Route::get('leads/call', [LeadsController::class, 'callLead']);
+        Route::get('leads/{lead}/status-update', [LeadsController::class, 'statusUpdateData'])->whereNumber('lead');
+        Route::post('leads/{lead}/status-update', [LeadsController::class, 'statusUpdate'])->whereNumber('lead');
         Route::get('notifications', [NotificationController::class, 'index']);
         
         // Marketing Leads APIs
