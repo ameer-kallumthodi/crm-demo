@@ -11,10 +11,20 @@ use App\Models\LeadSource;
 use App\Models\Course;
 use App\Models\Country;
 use App\Models\User;
+use App\Models\ConvertedLead;
+use App\Models\Board;
+use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\Batch;
+use App\Models\University;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Filesystem\FilesystemAdapter;
 
 class RegistrationLeadsController extends Controller
 {
@@ -245,8 +255,377 @@ class RegistrationLeadsController extends Controller
     }
 
     /**
+     * Fetch metadata required for converting a lead (mirrors web convert view).
+     */
+    public function convert(Request $request, Lead $lead)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        if (!$this->canViewLead($lead, $user)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied for this lead.',
+            ], 403);
+        }
+
+        if ($lead->is_converted) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lead already converted.',
+            ], 409);
+        }
+
+        $lead->loadMissing([
+            'studentDetails.course',
+            'studentDetails.subject',
+            'studentDetails.batch',
+            'studentDetails.subCourse',
+            'studentDetails.classTime',
+            'studentDetails.university',
+            'batch',
+            'course',
+        ]);
+
+        $boards = Board::where('is_active', true)
+            ->orderBy('title')
+            ->get(['id', 'title'])
+            ->map(function ($board) {
+                return [
+                    'value' => $board->id,
+                    'label' => $board->title,
+                ];
+            });
+
+        $countryCodes = get_country_code();
+
+        $course = $lead->course;
+        $batch = $lead->batch ?: ($lead->studentDetails?->batch);
+        $courseAmount = $course ? (float) ($course->amount ?? 0) : 0.0;
+        $batchAmount = $batch ? (float) ($batch->amount ?? 0) : 0.0;
+        $extraAmount = 0.0;
+        $universityAmount = 0.0;
+        $courseType = null;
+        $university = $lead->studentDetails?->university;
+
+        if ($lead->course_id == 16 && $lead->studentDetails && $lead->studentDetails->class === 'sslc') {
+            $extraAmount = 10000.0;
+        }
+
+        if ($lead->course_id == 9 && $lead->studentDetails) {
+            $courseType = $lead->studentDetails->course_type;
+            $universityId = $lead->studentDetails->university_id;
+
+            if ($universityId) {
+                $universityModel = $university ?: University::find($universityId);
+                if ($universityModel) {
+                    $university = $universityModel;
+                    if ($courseType === 'UG') {
+                        $universityAmount = (float) ($universityModel->ug_amount ?? 0);
+                    } elseif ($courseType === 'PG') {
+                        $universityAmount = (float) ($universityModel->pg_amount ?? 0);
+                    }
+                }
+            }
+        }
+
+        $additionalAmount = $extraAmount + $universityAmount;
+        $totalAmount = $courseAmount + $batchAmount + $additionalAmount;
+        $dob = ($lead->studentDetails && $lead->studentDetails->date_of_birth)
+            ? Carbon::parse($lead->studentDetails->date_of_birth)->format('Y-m-d')
+            : null;
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'lead' => [
+                    'id' => $lead->id,
+                    'name' => $lead->title,
+                    'code' => $lead->code,
+                    'phone' => $lead->phone,
+                    'email' => $lead->email,
+                    'dob' => $dob,
+                    'course_id' => $lead->course_id,
+                    'batch_id' => $lead->batch_id,
+                ],
+                'student_detail' => $lead->studentDetails
+                    ? $this->transformStudentDetail($lead->studentDetails)
+                    : null,
+                'form_meta' => [
+                    'boards' => $boards,
+                    'country_codes' => $countryCodes,
+                    'course' => $course ? [
+                        'id' => $course->id,
+                        'title' => $course->title,
+                    ] : null,
+                    'batch' => $batch ? [
+                        'id' => $batch->id,
+                        'title' => $batch->title,
+                    ] : null,
+                    'course_type' => $courseType,
+                    'university' => $university ? [
+                        'id' => $university->id,
+                        'title' => $university->title,
+                    ] : null,
+                    'amounts' => [
+                        'course' => $courseAmount,
+                        'batch' => $batchAmount,
+                        'extra' => $extraAmount,
+                        'university' => $universityAmount,
+                        'additional' => $additionalAmount,
+                        'total' => $totalAmount,
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Convert a lead into a student (mirrors web convert submit).
+     */
+    public function convertSubmit(Request $request, Lead $lead)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        if (!$this->canViewLead($lead, $user)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied for this lead.',
+            ], 403);
+        }
+
+        if ($lead->is_converted) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lead already converted.',
+            ], 409);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:10',
+            'phone' => 'required|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'dob' => 'nullable|date|before_or_equal:today',
+            'board_id' => 'nullable|exists:boards,id',
+            'remarks' => 'nullable|string|max:1000',
+            'payment_collected' => 'boolean',
+            'payment_amount' => 'required_if:payment_collected,1|required_if:payment_collected,true|required_if:payment_collected,"1"|nullable|numeric|min:0.01',
+            'payment_type' => 'required_if:payment_collected,1|required_if:payment_collected,true|required_if:payment_collected,"1"|nullable|in:Cash,Online,Bank,Cheque,Card,Other',
+            'transaction_id' => 'nullable|string|max:255',
+            'payment_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please correct the errors below.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $leadDetail = LeadDetail::firstOrCreate(
+                ['lead_id' => $lead->id],
+                ['course_id' => $lead->course_id]
+            );
+
+            if ($request->filled('dob')) {
+                $leadDetail->update(['date_of_birth' => $request->dob]);
+            }
+
+            $dob = $request->dob ?? (($leadDetail && $leadDetail->date_of_birth)
+                ? Carbon::parse($leadDetail->date_of_birth)->format('Y-m-d')
+                : null);
+            $subjectId = $leadDetail ? $leadDetail->subject_id : null;
+
+            $convertedLead = ConvertedLead::create([
+                'lead_id' => $lead->id,
+                'name' => $request->name,
+                'code' => $request->code,
+                'phone' => $request->phone,
+                'email' => $request->email,
+                'dob' => $dob,
+                'course_id' => $lead->course_id,
+                'batch_id' => $lead->batch_id,
+                'board_id' => $request->board_id,
+                'subject_id' => $subjectId,
+                'candidate_status_id' => 1,
+                'remarks' => $request->remarks,
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
+            ]);
+
+            $lead->update([
+                'is_converted' => true,
+                'updated_by' => $user->id,
+            ]);
+
+            $invoice = null;
+            if ($lead->course_id) {
+                $invoice = $this->autoGenerateInvoice($convertedLead, $lead->course_id, $user->id);
+            }
+
+            if ($request->boolean('payment_collected') && $invoice) {
+                $this->autoCreatePayment(
+                    $invoice,
+                    (float) $request->payment_amount,
+                    $request->payment_type,
+                    $request->transaction_id,
+                    $request->file('payment_file'),
+                    $user->id
+                );
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Lead converted successfully!',
+                'data' => [
+                    'converted_lead_id' => $convertedLead->id,
+                    'invoice_id' => $invoice?->id,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while converting the lead. Please try again.',
+            ], 500);
+        }
+    }
+
+    /**
      * Build the base query with eager loaded relationships.
      */
+    private function autoGenerateInvoice(ConvertedLead $student, int $courseId, int $userId): ?Invoice
+    {
+        try {
+            $course = Course::find($courseId);
+            if (!$course) {
+                return null;
+            }
+
+            $existingInvoice = Invoice::where('student_id', $student->id)
+                ->where('course_id', $courseId)
+                ->first();
+
+            if ($existingInvoice) {
+                return $existingInvoice;
+            }
+
+            $totalAmount = (float) ($course->amount ?? 0);
+            $batchId = $student->batch_id ?? optional($student->leadDetail)->batch_id;
+
+            if ($batchId) {
+                $batch = Batch::find($batchId);
+                if ($batch && $batch->amount) {
+                    $totalAmount += (float) $batch->amount;
+                }
+            }
+
+            if ($courseId == 9 && $student->leadDetail) {
+                $courseType = $student->leadDetail->course_type;
+                $universityId = $student->leadDetail->university_id;
+
+                if ($courseType && $universityId) {
+                    $university = University::find($universityId);
+                    if ($university) {
+                        if ($courseType === 'UG') {
+                            $totalAmount += (float) ($university->ug_amount ?? 0);
+                        } elseif ($courseType === 'PG') {
+                            $totalAmount += (float) ($university->pg_amount ?? 0);
+                        }
+                    }
+                }
+            } elseif ($courseId == 16 && $student->leadDetail && $student->leadDetail->class === 'sslc') {
+                $totalAmount += 10000; // ₹10,000 extra for GMVSS SSLC class
+            }
+
+            return Invoice::create([
+                'invoice_number' => $this->generateInvoiceNumber(),
+                'invoice_type' => 'course',
+                'course_id' => $courseId,
+                'batch_id' => $batchId,
+                'student_id' => $student->id,
+                'total_amount' => $totalAmount,
+                'invoice_date' => now()->toDateString(),
+                'created_by' => $userId,
+                'updated_by' => $userId,
+            ]);
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Auto-create payment linked to invoice (pending approval).
+     */
+    private function autoCreatePayment(Invoice $invoice, float $amount, string $paymentType, ?string $transactionId, ?UploadedFile $fileUpload, int $userId): ?Payment
+    {
+        try {
+            $previousBalance = Payment::where('invoice_id', $invoice->id)
+                ->where('status', 'Approved')
+                ->sum('amount_paid');
+
+            $filePath = null;
+            if ($fileUpload) {
+                $fileName = time() . '_' . $fileUpload->getClientOriginalName();
+                $filePath = $fileUpload->storeAs('payments', $fileName, 'public');
+            }
+
+            return Payment::create([
+                'invoice_id' => $invoice->id,
+                'amount_paid' => $amount,
+                'previous_balance' => $previousBalance,
+                'payment_type' => $paymentType,
+                'transaction_id' => $transactionId,
+                'file_upload' => $filePath,
+                'status' => 'Pending Approval',
+                'created_by' => $userId,
+            ]);
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Generate invoice number similar to web counterpart.
+     */
+    private function generateInvoiceNumber(): string
+    {
+        $prefix = 'INV';
+        $year = now()->year;
+        $month = now()->format('m');
+
+        $lastInvoice = Invoice::where('invoice_number', 'like', $prefix . $year . $month . '%')
+            ->orderBy('invoice_number', 'desc')
+            ->first();
+
+        $newNumber = $lastInvoice
+            ? ((int) substr($lastInvoice->invoice_number, -4)) + 1
+            : 1;
+
+        return $prefix . $year . $month . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+    }
+
     private function buildBaseQuery()
     {
         return Lead::select([
@@ -313,6 +692,8 @@ class RegistrationLeadsController extends Controller
                         'subCourse:id,title',
                         'classTime:id,course_id,from_time,to_time',
                         'reviewedBy:id,name',
+                        'sslcCertificates:id,lead_detail_id,certificate_path,verification_status,verified_at,verified_by',
+                        'sslcCertificates.verifiedBy:id,name',
                     ]);
                 },
                 'leadActivities' => function ($query) {
@@ -443,6 +824,7 @@ class RegistrationLeadsController extends Controller
     {
         $studentDetail = $lead->studentDetails;
         $latestActivity = $lead->leadActivities->first();
+        $documentsStatus = $studentDetail ? $studentDetail->getDocumentVerificationStatus() : null;
 
         return [
             'id' => $lead->id,
@@ -458,6 +840,10 @@ class RegistrationLeadsController extends Controller
             'interest_status' => $lead->interest_status,
             'registration_status' => $studentDetail ? $studentDetail->status : null,
             'admin_remarks' => $studentDetail?->admin_remarks,
+            'documents_status' => $documentsStatus,
+            'documents_status_label' => $documentsStatus
+                ? $this->formatDocumentStatusLabel($documentsStatus)
+                : null,
             'last_activity' => $latestActivity ? [
                 'reason' => $latestActivity->reason,
                 'created_at' => $latestActivity->created_at?->format('Y-m-d H:i:s'),
@@ -473,6 +859,8 @@ class RegistrationLeadsController extends Controller
      */
     private function transformStudentDetail(LeadDetail $detail): array
     {
+        $documentsStatus = $detail->getDocumentVerificationStatus();
+
         return [
             'id' => $detail->id,
             'status' => $detail->status,
@@ -491,7 +879,9 @@ class RegistrationLeadsController extends Controller
             'student_name' => $detail->student_name,
             'father_name' => $detail->father_name,
             'mother_name' => $detail->mother_name,
-            'date_of_birth' => $detail->date_of_birth ? $detail->date_of_birth->format('Y-m-d') : null,
+            'date_of_birth' => $detail->date_of_birth
+                ? Carbon::parse($detail->date_of_birth)->format('Y-m-d')
+                : null,
             'gender' => $detail->gender,
             'contact' => [
                 'personal' => $this->formatPhone($detail->personal_code, $detail->personal_number),
@@ -511,6 +901,10 @@ class RegistrationLeadsController extends Controller
             'admin_remarks' => $detail->admin_remarks,
             'reviewed_by' => $detail->reviewedBy ? $detail->reviewedBy->name : null,
             'reviewed_at' => $detail->reviewed_at ? $detail->reviewed_at->format('Y-m-d H:i:s') : null,
+            'documents_status' => $documentsStatus,
+            'documents_status_label' => $documentsStatus
+                ? $this->formatDocumentStatusLabel($documentsStatus)
+                : null,
         ];
     }
 
@@ -540,11 +934,26 @@ class RegistrationLeadsController extends Controller
 
         foreach ($documentTypes as $field => $label) {
             $statusField = $field . '_verification_status';
+            $verifiedAtField = $field . '_verified_at';
+            [$uploaded, $status, $verifiedAt] = $this->resolveDocumentSummary($detail, $field, $statusField, $verifiedAtField);
+
             $summary[$field] = [
                 'label' => $label,
-                'uploaded' => !empty($detail->$field),
-                'status' => $detail->$statusField ?? null,
+                'uploaded' => $uploaded,
+                'status' => $status,
+                'verified_at' => $verifiedAt,
             ];
+        }
+
+        if ($detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
+            $summary['sslc_multiple'] = $detail->sslcCertificates->map(function ($certificate) {
+                return [
+                    'url' => $this->buildFileUrl($certificate->certificate_path ?? $certificate->file_path ?? null),
+                    'status' => $certificate->verification_status ?? 'pending',
+                    'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
+                    'verified_at' => $this->formatDateTimeValue($certificate->verified_at),
+                ];
+            });
         }
 
         return $summary;
@@ -578,9 +987,9 @@ class RegistrationLeadsController extends Controller
             $documents[$field] = [
                 'label' => $label,
                 'url' => $this->buildFileUrl($detail->$field),
-                'status' => $detail->$statusField ?? null,
+                'status' => $detail->$statusField ?? (!empty($detail->$field) ? 'pending' : null),
                 'verified_by' => $detail->$verifiedByField,
-                'verified_at' => $detail->$verifiedAtField ? $detail->$verifiedAtField->format('Y-m-d H:i:s') : null,
+                'verified_at' => $this->formatDateTimeValue($detail->$verifiedAtField),
             ];
         }
 
@@ -590,6 +999,7 @@ class RegistrationLeadsController extends Controller
                     'url' => $this->buildFileUrl($certificate->certificate_path ?? $certificate->file_path ?? null),
                     'status' => $certificate->verification_status,
                     'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
+                    'verified_at' => $this->formatDateTimeValue($certificate->verified_at),
                 ];
             });
         }
@@ -610,8 +1020,11 @@ class RegistrationLeadsController extends Controller
             return $path;
         }
 
-        if (Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->url($path);
+        $publicDisk = Storage::disk('public');
+
+        if ($publicDisk->exists($path)) {
+            /** @var FilesystemAdapter $publicDisk */
+            return $publicDisk->url($path);
         }
 
         return asset('storage/' . ltrim($path, '/'));
@@ -670,6 +1083,65 @@ class RegistrationLeadsController extends Controller
                 return $time;
             }
         }
+    }
+
+    /**
+     * Format a datetime value to Y-m-d H:i:s.
+     */
+    private function formatDateTimeValue($value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        if ($value instanceof Carbon) {
+            return $value->format('Y-m-d H:i:s');
+        }
+
+        try {
+            return Carbon::parse($value)->format('Y-m-d H:i:s');
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Build human friendly label for document status badge.
+     */
+    private function formatDocumentStatusLabel(string $status): string
+    {
+        return $status === 'verified' ? 'Documents Verified' : 'Documents Pending';
+    }
+
+    /**
+     * Resolve upload/status info for document summary.
+     */
+    private function resolveDocumentSummary(LeadDetail $detail, string $field, string $statusField, string $verifiedAtField): array
+    {
+        $uploaded = !empty($detail->$field);
+        $status = $detail->$statusField ?? null;
+        $verifiedAt = $this->formatDateTimeValue($detail->$verifiedAtField);
+
+        if ($uploaded) {
+            $status = $status ?? 'pending';
+        }
+
+        if ($field === 'sslc_certificate' && $detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
+            $uploaded = true;
+            $hasPending = $detail->sslcCertificates->contains(function ($certificate) {
+                return ($certificate->verification_status ?? 'pending') !== 'verified';
+            });
+
+            $status = $hasPending ? 'pending' : 'verified';
+
+            $firstVerified = $detail->sslcCertificates->firstWhere('verification_status', 'verified');
+
+            if ($firstVerified && $firstVerified->verified_at) {
+                $verifiedAt = $this->formatDateTimeValue($firstVerified->verified_at);
+            }
+        }
+
+        return [$uploaded, $status, $verifiedAt];
     }
 
     /**

@@ -37,6 +37,8 @@ Route::prefix('v1')->group(function() {
         Route::get('registration-leads', [RegistrationLeadsController::class, 'index']);
         Route::get('registration-leads/filters', [RegistrationLeadsController::class, 'filters']);
         Route::get('registration-leads/{lead}', [RegistrationLeadsController::class, 'show'])->whereNumber('lead');
+        Route::get('registration-leads/{lead}/convert', [RegistrationLeadsController::class, 'convert'])->whereNumber('lead');
+        Route::post('registration-leads/{lead}/convert', [RegistrationLeadsController::class, 'convertSubmit'])->whereNumber('lead');
     });
 });
 
