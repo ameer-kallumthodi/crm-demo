@@ -222,6 +222,15 @@ class RegistrationLeadsController extends Controller
                     'reviewedBy:id,name',
                     'sslcCertificates:id,lead_detail_id,certificate_path,verification_status,verified_by',
                     'sslcCertificates.verifiedBy:id,name',
+                    'birthCertificateVerifiedBy:id,name',
+                    'passportPhotoVerifiedBy:id,name',
+                    'adharFrontVerifiedBy:id,name',
+                    'adharBackVerifiedBy:id,name',
+                    'signatureVerifiedBy:id,name',
+                    'otherDocumentVerifiedBy:id,name',
+                    'plustwoVerifiedBy:id,name',
+                    'ugVerifiedBy:id,name',
+                    'postGraduationCertificateVerifiedBy:id,name',
                 ]);
             },
         ])->findOrFail($leadId);
@@ -944,14 +953,21 @@ class RegistrationLeadsController extends Controller
             $statusField = $field . '_verification_status';
             $verifiedAtField = $field . '_verified_at';
             $label = $config['label'];
-            [$uploaded, $status, $verifiedAt] = $this->resolveDocumentSummary($detail, $field, $statusField, $verifiedAtField);
+            $filePath = $this->resolveDocumentPath($detail, $field, $config);
+            [$uploaded, $status, $verifiedAt] = $this->resolveDocumentStatusMeta(
+                $detail,
+                $field,
+                $statusField,
+                $verifiedAtField,
+                $filePath
+            );
 
             $summary[$field] = [
                 'label' => $label,
                 'uploaded' => $uploaded,
                 'status' => $status,
                 'verified_at' => $verifiedAt,
-                'url' => $this->buildFileUrl($config['path_resolver']($detail)),
+                'url' => $this->buildFileUrl($filePath),
             ];
         }
 
@@ -983,13 +999,25 @@ class RegistrationLeadsController extends Controller
             $statusField = $field . '_verification_status';
             $verifiedByField = $field . '_verified_by';
             $verifiedAtField = $field . '_verified_at';
+            $filePath = $this->resolveDocumentPath($detail, $field, $config);
+            [$uploaded, $status, $verifiedAt] = $this->resolveDocumentStatusMeta(
+                $detail,
+                $field,
+                $statusField,
+                $verifiedAtField,
+                $filePath
+            );
 
             $documents[$field] = [
                 'label' => $config['label'],
-                'url' => $this->buildFileUrl($config['path_resolver']($detail)),
-                'status' => $detail->$statusField ?? (!empty($detail->$field) ? 'pending' : null),
-                'verified_by' => $detail->$verifiedByField,
-                'verified_at' => $this->formatDateTimeValue($detail->$verifiedAtField),
+                'url' => $this->buildFileUrl($filePath),
+                'status' => $status,
+                'verified_by' => $this->resolveVerifiedBy(
+                    $detail,
+                    $verifiedByField,
+                    $config['verified_relation'] ?? null
+                ),
+                'verified_at' => $verifiedAt,
             ];
         }
 
@@ -1116,9 +1144,14 @@ class RegistrationLeadsController extends Controller
     /**
      * Resolve upload/status info for document summary.
      */
-    private function resolveDocumentSummary(LeadDetail $detail, string $field, string $statusField, string $verifiedAtField): array
-    {
-        $uploaded = !empty($detail->$field);
+    private function resolveDocumentStatusMeta(
+        LeadDetail $detail,
+        string $field,
+        string $statusField,
+        string $verifiedAtField,
+        ?string $filePath
+    ): array {
+        $uploaded = !empty($filePath);
         $status = $detail->$statusField ?? null;
         $verifiedAt = $this->formatDateTimeValue($detail->$verifiedAtField);
 
@@ -1144,6 +1177,30 @@ class RegistrationLeadsController extends Controller
         return [$uploaded, $status, $verifiedAt];
     }
 
+    private function resolveDocumentPath(LeadDetail $detail, string $field, array $config): ?string
+    {
+        $pathResolver = $config['path_resolver'] ?? null;
+        $path = $pathResolver ? $pathResolver($detail) : ($detail->$field ?? null);
+
+        if ($field === 'sslc_certificate' && empty($path) && $detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
+            $firstCertificate = $detail->sslcCertificates->first();
+            if ($firstCertificate) {
+                $path = $firstCertificate->certificate_path ?? $firstCertificate->file_path;
+            }
+        }
+
+        return $path;
+    }
+
+    private function resolveVerifiedBy(LeadDetail $detail, string $verifiedByField, ?string $relationName = null)
+    {
+        if ($relationName && $detail->relationLoaded($relationName) && $detail->$relationName) {
+            return $detail->$relationName->name;
+        }
+
+        return $detail->$verifiedByField;
+    }
+
     /**
      * Document configuration (label & path resolver).
      */
@@ -1153,42 +1210,52 @@ class RegistrationLeadsController extends Controller
             'sslc_certificate' => [
                 'label' => 'SSLC Certificate',
                 'path_resolver' => fn ($detail) => $detail->sslc_certificate,
+                'verified_relation' => 'sslcVerifiedBy',
             ],
             'plustwo_certificate' => [
                 'label' => 'Plus Two Certificate',
                 'path_resolver' => fn ($detail) => $detail->plustwo_certificate,
+                'verified_relation' => 'plustwoVerifiedBy',
             ],
             'ug_certificate' => [
                 'label' => 'UG Certificate',
                 'path_resolver' => fn ($detail) => $detail->ug_certificate,
+                'verified_relation' => 'ugVerifiedBy',
             ],
             'post_graduation_certificate' => [
                 'label' => 'Post Graduation Certificate',
                 'path_resolver' => fn ($detail) => $detail->post_graduation_certificate,
+                'verified_relation' => 'postGraduationCertificateVerifiedBy',
             ],
             'birth_certificate' => [
                 'label' => 'Birth Certificate',
                 'path_resolver' => fn ($detail) => $detail->birth_certificate,
+                'verified_relation' => 'birthCertificateVerifiedBy',
             ],
             'passport_photo' => [
                 'label' => 'Passport Photo',
                 'path_resolver' => fn ($detail) => $detail->passport_photo,
+                'verified_relation' => 'passportPhotoVerifiedBy',
             ],
             'adhar_front' => [
                 'label' => 'Aadhar Front',
                 'path_resolver' => fn ($detail) => $detail->adhar_front,
+                'verified_relation' => 'adharFrontVerifiedBy',
             ],
             'adhar_back' => [
                 'label' => 'Aadhar Back',
                 'path_resolver' => fn ($detail) => $detail->adhar_back,
+                'verified_relation' => 'adharBackVerifiedBy',
             ],
             'signature' => [
                 'label' => 'Signature',
                 'path_resolver' => fn ($detail) => $detail->signature,
+                'verified_relation' => 'signatureVerifiedBy',
             ],
             'other_document' => [
                 'label' => 'Other Document',
                 'path_resolver' => fn ($detail) => $detail->other_document,
+                'verified_relation' => 'otherDocumentVerifiedBy',
             ],
         ];
     }
