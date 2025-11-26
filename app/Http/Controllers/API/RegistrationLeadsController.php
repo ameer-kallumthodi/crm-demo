@@ -17,6 +17,10 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Batch;
 use App\Models\University;
+use App\Models\LeadActivity;
+use App\Models\Subject;
+use App\Models\SubCourse;
+use App\Models\SSLCertificate;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -25,6 +29,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Log;
 
 class RegistrationLeadsController extends Controller
 {
@@ -369,6 +374,7 @@ class RegistrationLeadsController extends Controller
                 'form_meta' => [
                     'boards' => $boards,
                     'country_codes' => $countryCodes,
+                    'payment_types' => ['Cash', 'Online', 'Bank', 'Cheque', 'Card', 'Other'],
                     'course' => $course ? [
                         'id' => $course->id,
                         'title' => $course->title,
@@ -517,6 +523,520 @@ class RegistrationLeadsController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'An error occurred while converting the lead. Please try again.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Inline update for registration detail fields (mirrors web inline edit).
+     */
+    public function inlineUpdate(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        if (!$this->canAccessRegistrationData($user)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied.',
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'lead_detail_id' => 'required|exists:leads_details,id',
+            'field' => 'required|string',
+            'value' => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please correct the errors below.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $studentDetail = LeadDetail::with('lead.telecaller')->findOrFail($request->lead_detail_id);
+
+            if (!$studentDetail->lead || !$this->canViewLead($studentDetail->lead, $user)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Access denied for this lead.',
+                ], 403);
+            }
+
+            $field = $request->field;
+            $value = $request->value;
+            $allowedFields = [
+                'student_name', 'father_name', 'mother_name', 'date_of_birth', 'gender', 'is_employed',
+                'email', 'phone', 'whatsapp', 'parents_phone', 'father_contact_number', 'father_contact_code',
+                'mother_contact_number', 'mother_contact_code', 'street', 'locality', 'post_office', 'district', 'state', 'pin_code',
+                'message', 'subject_id', 'batch_id', 'sub_course_id', 'passed_year', 'programme_type', 'location', 'class_time_id'
+            ];
+
+            if (!in_array($field, $allowedFields)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid field for editing.',
+                ], 400);
+            }
+
+            if (in_array($field, ['phone', 'whatsapp', 'parents_phone', 'father_contact', 'mother_contact'])) {
+                if (strpos($value, '|') === false) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Invalid phone number format.',
+                    ], 400);
+                }
+
+                [$code, $number] = explode('|', $value, 2);
+
+                if ($field === 'phone') {
+                    $studentDetail->update([
+                        'personal_code' => $code,
+                        'personal_number' => $number,
+                    ]);
+                } elseif ($field === 'whatsapp') {
+                    $studentDetail->update([
+                        'whatsapp_code' => $code,
+                        'whatsapp_number' => $number,
+                    ]);
+                } elseif ($field === 'parents_phone') {
+                    $studentDetail->update([
+                        'parents_code' => $code,
+                        'parents_number' => $number,
+                    ]);
+                } elseif ($field === 'father_contact') {
+                    $studentDetail->update([
+                        'father_contact_code' => $code,
+                        'father_contact_number' => $number,
+                    ]);
+                } elseif ($field === 'mother_contact') {
+                    $studentDetail->update([
+                        'mother_contact_code' => $code,
+                        'mother_contact_number' => $number,
+                    ]);
+                }
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Contact updated successfully.',
+                ]);
+            }
+
+            if ($field === 'class_time_id') {
+                $value = $value ? (int) $value : null;
+
+                if ($value) {
+                    $course = Course::find($studentDetail->course_id);
+                    if (!$course || !$course->needs_time) {
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'This course does not require class time.',
+                        ], 400);
+                    }
+
+                    $classTime = ClassTime::where('id', $value)
+                        ->where('course_id', $studentDetail->course_id)
+                        ->where('is_active', true)
+                        ->first();
+
+                    if (!$classTime) {
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Invalid class time selected.',
+                        ], 400);
+                    }
+                }
+
+                $studentDetail->update([$field => $value]);
+                $studentDetail->load('classTime');
+                $newValue = $studentDetail->classTime
+                    ? $this->formatClassTimeLabel($studentDetail->classTime)
+                    : 'N/A';
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Class time updated successfully.',
+                    'data' => [
+                        'new_value' => $newValue,
+                    ],
+                ]);
+            }
+
+            if (in_array($field, ['subject_id', 'batch_id', 'sub_course_id'])) {
+                $value = $value ? (int) $value : null;
+
+                if ($field === 'subject_id' && $value) {
+                    if (!in_array($studentDetail->course_id, [1, 2])) {
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Subject selection is not applicable for this course.',
+                        ], 400);
+                    }
+
+                    $subject = Subject::where('id', $value)
+                        ->where('course_id', $studentDetail->course_id)
+                        ->first();
+
+                    if (!$subject) {
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Invalid subject selected.',
+                        ], 400);
+                    }
+                } elseif ($field === 'batch_id' && $value) {
+                    $batch = Batch::where('id', $value)
+                        ->where('course_id', $studentDetail->course_id)
+                        ->first();
+
+                    if (!$batch) {
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Invalid batch selected.',
+                        ], 400);
+                    }
+                } elseif ($field === 'sub_course_id' && $value) {
+                    $subCourse = SubCourse::where('id', $value)
+                        ->where('course_id', $studentDetail->course_id)
+                        ->first();
+
+                    if (!$subCourse) {
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Invalid sub course selected.',
+                        ], 400);
+                    }
+                }
+
+                $studentDetail->update([$field => $value]);
+
+                if ($field === 'batch_id') {
+                    Lead::where('id', $studentDetail->lead_id)->update(['batch_id' => $value]);
+                }
+
+                $studentDetail->loadMissing('subject', 'batch', 'subCourse');
+                $newValue = null;
+
+                if ($field === 'subject_id') {
+                    $newValue = $studentDetail->subject->title ?? 'N/A';
+                } elseif ($field === 'batch_id') {
+                    $newValue = $studentDetail->batch->title ?? 'N/A';
+                } elseif ($field === 'sub_course_id') {
+                    $newValue = $studentDetail->subCourse->title ?? 'N/A';
+                }
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'data' => [
+                        'new_value' => $newValue,
+                        'updated_id' => $value,
+                    ],
+                ]);
+            }
+
+            if ($field === 'passed_year') {
+                $value = $value ? (int) $value : null;
+                $studentDetail->update([$field => $value]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'data' => [
+                        'new_value' => $value ?? 'N/A',
+                    ],
+                ]);
+            }
+
+            if ($field === 'is_employed') {
+                $value = $value === '1' || $value === 1 || $value === 'true' || $value === true ? 1 : 0;
+                $studentDetail->update([$field => $value]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'data' => [
+                        'new_value' => $value ? 'Yes' : 'No',
+                    ],
+                ]);
+            }
+
+            if ($field === 'gender') {
+                if (!in_array($value, ['male', 'female'])) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Invalid gender value.',
+                    ], 400);
+                }
+
+                $studentDetail->update([$field => $value]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'data' => [
+                        'new_value' => ucfirst($value),
+                    ],
+                ]);
+            }
+
+            if ($field === 'programme_type') {
+                if (!in_array($value, ['online', 'offline'])) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Invalid programme type value.',
+                    ], 400);
+                }
+
+                if ($value === 'online') {
+                    $studentDetail->update([
+                        $field => $value,
+                        'location' => null,
+                    ]);
+                } else {
+                    $studentDetail->update([$field => $value]);
+                }
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'data' => [
+                        'new_value' => ucfirst($value),
+                        'hide_location' => $value === 'online',
+                        'show_location' => $value === 'offline',
+                    ],
+                ]);
+            }
+
+            if ($field === 'location') {
+                if (!in_array($value, ['Ernakulam', 'Malappuram'])) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Invalid location value.',
+                    ], 400);
+                }
+
+                $studentDetail->update([$field => $value]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'data' => [
+                        'new_value' => $value,
+                    ],
+                ]);
+            }
+
+            $studentDetail->update([$field => $value]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Registration details updated successfully.',
+                'data' => [
+                    'new_value' => $value,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('API inline update failed: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Error updating registration details.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Update document verification details for registration leads.
+     */
+    public function verifyDocument(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        if (!$this->canAccessRegistrationData($user)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied.',
+            ], 403);
+        }
+
+        if ($request->has('need_to_change_document')) {
+            $request->merge([
+                'need_to_change_document' => $request->boolean('need_to_change_document'),
+            ]);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'lead_detail_id' => 'required|exists:leads_details,id',
+            'document_type' => 'required|in:sslc_certificate,plustwo_certificate,plus_two_certificate,ug_certificate,post_graduation_certificate,birth_certificate,passport_photo,adhar_front,adhar_back,signature,other_document',
+            'verification_status' => 'required|in:pending,verified',
+            'need_to_change_document' => 'sometimes|boolean',
+            'new_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please correct the errors below.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $leadDetail = LeadDetail::with('lead.telecaller')->findOrFail($request->lead_detail_id);
+
+            if (!$leadDetail->lead || !$this->canViewLead($leadDetail->lead, $user)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Access denied for this lead.',
+                ], 403);
+            }
+
+            $documentType = $request->document_type;
+            $verificationStatus = $request->verification_status;
+            $needToChangeDocument = $request->boolean('need_to_change_document');
+
+            if ($needToChangeDocument && !$request->hasFile('new_file')) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'File upload is required when "Need to change document" is checked.',
+                ], 422);
+            }
+
+            $fieldMapping = [
+                'plustwo_certificate' => 'plustwo',
+                'plus_two_certificate' => 'plus_two',
+                'birth_certificate' => 'birth_certificate',
+                'sslc_certificate' => 'sslc',
+                'ug_certificate' => 'ug',
+                'post_graduation_certificate' => 'post_graduation_certificate',
+                'passport_photo' => 'passport_photo',
+                'adhar_front' => 'adhar_front',
+                'adhar_back' => 'adhar_back',
+                'signature' => 'signature',
+                'other_document' => 'other_document',
+            ];
+
+            $baseField = $fieldMapping[$documentType] ?? $documentType;
+            $verificationField = $baseField . '_verification_status';
+            $verifiedByField = $baseField . '_verified_by';
+            $verifiedAtField = $baseField . '_verified_at';
+
+            $updateData = [
+                $verificationField => $verificationStatus,
+                $verifiedByField => $user->id,
+                $verifiedAtField => now(),
+            ];
+
+            if ($needToChangeDocument) {
+                $updateData['status'] = 'pending';
+                $updateData['reviewed_by'] = null;
+                $updateData['reviewed_at'] = null;
+            }
+
+            $fileFieldMapping = [
+                'plustwo_certificate' => 'plustwo_certificate',
+                'plus_two_certificate' => 'plus_two_certificate',
+                'birth_certificate' => 'birth_certificate',
+                'sslc_certificate' => 'sslc_certificate',
+                'ug_certificate' => 'ug_certificate',
+                'post_graduation_certificate' => 'post_graduation_certificate',
+                'passport_photo' => 'passport_photo',
+                'adhar_front' => 'adhar_front',
+                'adhar_back' => 'adhar_back',
+                'signature' => 'signature',
+                'other_document' => 'other_document',
+            ];
+
+            $fileField = $fileFieldMapping[$documentType] ?? $documentType;
+            $documentUrl = $this->buildFileUrl($leadDetail->$fileField);
+            $isDocumentUpload = false;
+            $isDocumentChange = false;
+
+            if ($request->hasFile('new_file')) {
+                $file = $request->file('new_file');
+                $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('student-documents', $fileName, 'public');
+
+                $oldDocumentPath = $leadDetail->$fileField;
+                $isDocumentChange = !empty($oldDocumentPath) && $needToChangeDocument;
+                $isDocumentUpload = empty($oldDocumentPath) || !$needToChangeDocument;
+
+                $updateData[$fileField] = $filePath;
+                $documentUrl = $this->buildFileUrl($filePath);
+            }
+
+            $leadDetail->update($updateData);
+
+            if ($needToChangeDocument) {
+                $leadDetail->status = 'pending';
+                $leadDetail->reviewed_by = null;
+                $leadDetail->reviewed_at = null;
+                $leadDetail->save();
+            }
+
+            $documentName = ucfirst(str_replace('_', ' ', $documentType));
+
+            if ($isDocumentUpload && !$isDocumentChange) {
+                LeadActivity::create([
+                    'lead_id' => $leadDetail->lead_id,
+                    'activity_type' => 'document_upload',
+                    'description' => $documentName . ' uploaded',
+                    'reason' => 'Document: ' . $documentName . ' | Status: ' . ucfirst($verificationStatus),
+                    'created_by' => $user->id,
+                ]);
+            } elseif ($isDocumentChange) {
+                LeadActivity::create([
+                    'lead_id' => $leadDetail->lead_id,
+                    'activity_type' => 'document_change',
+                    'description' => $documentName . ' changed',
+                    'reason' => 'Document: ' . $documentName . ' | Old document replaced with new file | Registration status reset to pending',
+                    'created_by' => $user->id,
+                ]);
+            } else {
+                LeadActivity::create([
+                    'lead_id' => $leadDetail->lead_id,
+                    'activity_type' => 'document_verification',
+                    'description' => $documentName . ' verification updated',
+                    'reason' => 'Document: ' . $documentName . ' | Status: ' . ucfirst($verificationStatus),
+                    'created_by' => $user->id,
+                ]);
+            }
+
+            $leadDetail->refresh();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Document verification updated successfully.',
+                'data' => [
+                    'document_type' => $documentType,
+                    'verification_status' => $verificationStatus,
+                    'need_to_change_document' => $needToChangeDocument,
+                    'lead_status' => $leadDetail->status,
+                    'document_url' => $documentUrl,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('API document verification failed: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Error updating document verification.',
             ], 500);
         }
     }

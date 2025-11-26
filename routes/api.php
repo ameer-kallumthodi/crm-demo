@@ -39,6 +39,8 @@ Route::prefix('v1')->group(function() {
         Route::get('registration-leads/{lead}', [RegistrationLeadsController::class, 'show'])->whereNumber('lead');
         Route::get('registration-leads/{lead}/convert', [RegistrationLeadsController::class, 'convert'])->whereNumber('lead');
         Route::post('registration-leads/{lead}/convert', [RegistrationLeadsController::class, 'convertSubmit'])->whereNumber('lead');
+        Route::post('registration-leads/inline-update', [RegistrationLeadsController::class, 'inlineUpdate']);
+        Route::post('registration-leads/document-verification', [RegistrationLeadsController::class, 'verifyDocument']);
     });
 });
 
