@@ -220,7 +220,7 @@ class RegistrationLeadsController extends Controller
                     'university:id,title',
                     'universityCourse:id,title',
                     'reviewedBy:id,name',
-                    'sslcCertificates:id,lead_detail_id,certificate_path,file_path,verification_status,verified_by,verified_at',
+                    'sslcCertificates:id,lead_detail_id,certificate_path,verification_status,verified_by,verified_at',
                     'sslcCertificates.verifiedBy:id,name',
                     'birthCertificateVerifiedBy:id,name',
                     'passportPhotoVerifiedBy:id,name',
@@ -721,7 +721,7 @@ class RegistrationLeadsController extends Controller
                         'subCourse:id,title',
                         'classTime:id,course_id,from_time,to_time',
                         'reviewedBy:id,name',
-                        'sslcCertificates:id,lead_detail_id,certificate_path,file_path,verification_status,verified_at,verified_by',
+                        'sslcCertificates:id,lead_detail_id,certificate_path,verification_status,verified_at,verified_by',
                         'sslcCertificates.verifiedBy:id,name',
                     ]);
                 },
@@ -978,7 +978,7 @@ class RegistrationLeadsController extends Controller
                     return [
                         'id' => $certificate->id,
                         'label' => 'SSLC Certificate ' . ($index + 1),
-                        'url' => $this->buildFileUrl($certificate->certificate_path ?? $certificate->file_path ?? null),
+                        'url' => $this->buildFileUrl($certificate->certificate_path),
                         'status' => $certificate->verification_status ?? 'pending',
                         'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
                         'verified_at' => $this->formatDateTimeValue($certificate->verified_at),
@@ -1031,7 +1031,7 @@ class RegistrationLeadsController extends Controller
                     return [
                         'id' => $certificate->id,
                         'label' => 'SSLC Certificate ' . ($index + 1),
-                        'url' => $this->buildFileUrl($certificate->certificate_path ?? $certificate->file_path ?? null),
+                        'url' => $this->buildFileUrl($certificate->certificate_path),
                         'status' => $certificate->verification_status ?? 'pending',
                         'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
                         'verified_at' => $this->formatDateTimeValue($certificate->verified_at),
