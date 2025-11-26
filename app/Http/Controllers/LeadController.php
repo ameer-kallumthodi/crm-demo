@@ -998,12 +998,13 @@ class LeadController extends Controller
         }
 
         $currentUser = AuthHelper::getCurrentUser();
+        $isTeamLead = $currentUser ? AuthHelper::isTeamLead() : false;
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        $isSeniorManager = $currentUser ? RoleHelper::is_senior_manager() : false;
         
         // Role-based lead filtering
-        if ($currentUser) {
-            
-             if (AuthHelper::isTeamLead() == 1) {
-                
+        if ($currentUser && !$isSeniorManager) {
+            if ($isTeamLead) {
                 // Team Lead: Can see their own leads + their team members' leads
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
@@ -1015,10 +1016,10 @@ class LeadController extends Controller
                     // If no team assigned, only show their own leads
                     $query->where('telecaller_id', AuthHelper::getCurrentUserId());
                 }
-            } elseif (AuthHelper::isTelecaller()) {
+            } elseif ($isTelecaller) {
                 // Telecaller: Can only see their own leads
                 $query->where('telecaller_id', AuthHelper::getCurrentUserId());
-            }elseif ($request->filled('telecaller_id') && !AuthHelper::isTelecaller()) {
+            } elseif ($request->filled('telecaller_id') && !$isTelecaller) {
                 // Admin/Super Admin: Can filter by specific telecaller
                 $query->where('telecaller_id', $request->telecaller_id);
             }
@@ -1040,13 +1041,8 @@ class LeadController extends Controller
         $courseName = $courses->pluck('title', 'id')->toArray();
         $telecallerList = $telecallers->pluck('name', 'id')->toArray();
 
-        // Get current user for role checking
-        $currentUser = AuthHelper::getCurrentUser();
-        $isTelecaller = $currentUser && $currentUser->role_id == 3;
-        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
-        
         // Filter telecallers based on role
-        if ($isTeamLead) {
+        if ($isTeamLead && !$isSeniorManager) {
             // Team Lead: Show only their team members
             $teamId = $currentUser->team_id;
             if ($teamId) {
@@ -1056,7 +1052,7 @@ class LeadController extends Controller
             } else {
                 $telecallers = collect([$currentUser]); // Only themselves if no team
             }
-        } elseif ($isTelecaller) {
+        } elseif ($isTelecaller && !$isSeniorManager) {
             // Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
         }
@@ -1072,8 +1068,8 @@ class LeadController extends Controller
             ->notDropped();
         
         // Apply role-based filtering
-        if ($currentUser) {
-            if (AuthHelper::isTeamLead() == 1) {
+        if ($currentUser && !$isSeniorManager) {
+            if ($isTeamLead) {
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
@@ -1082,7 +1078,7 @@ class LeadController extends Controller
                 } else {
                     $baseQuery->where('telecaller_id', AuthHelper::getCurrentUserId());
                 }
-            } elseif (AuthHelper::isTelecaller()) {
+            } elseif ($isTelecaller) {
                 $baseQuery->where('telecaller_id', AuthHelper::getCurrentUserId());
             }
         }
@@ -1119,6 +1115,7 @@ class LeadController extends Controller
     {
         $isTelecaller = AuthHelper::isTelecaller();
         $isTeamLead = AuthHelper::isTeamLead();
+        $isSeniorManager = RoleHelper::is_senior_manager();
 
         // Base query for follow-up leads (status = 2)
         $query = Lead::select([
@@ -1169,21 +1166,24 @@ class LeadController extends Controller
             $query->where('telecaller_id', $request->telecaller_id);
         }
 
-        // Role-based filtering
-        if ($isTelecaller && !$isTeamLead) {
-            // Telecaller: Can only see their own leads
-            $query->where('telecaller_id', AuthHelper::getCurrentUserId());
-        } elseif ($isTeamLead) {
-            // Team Lead: Can see leads from their team
-            $teamId = AuthHelper::getCurrentUser()->team_id ?? null;
-            if ($teamId) {
-                $query->whereHas('telecaller', function($q) use ($teamId) {
-                    $q->where('team_id', $teamId);
-                });
-            }
-            // Admin/Super Admin: Can filter by specific telecaller
-            if ($request->filled('telecaller_id')) {
-                $query->where('telecaller_id', $request->telecaller_id);
+        // Role-based filtering (skip for senior managers)
+        if (!$isSeniorManager) {
+            if ($isTelecaller && !$isTeamLead) {
+                // Telecaller: Can only see their own leads
+                $query->where('telecaller_id', AuthHelper::getCurrentUserId());
+            } elseif ($isTeamLead) {
+                // Team Lead: Can see leads from their team
+                $teamId = AuthHelper::getCurrentUser()->team_id ?? null;
+                if ($teamId) {
+                    $query->whereHas('telecaller', function($q) use ($teamId) {
+                        $q->where('team_id', $teamId);
+                    });
+                }
+
+                // Admin/Super Admin: Can filter by specific telecaller
+                if ($request->filled('telecaller_id')) {
+                    $query->where('telecaller_id', $request->telecaller_id);
+                }
             }
         }
 
