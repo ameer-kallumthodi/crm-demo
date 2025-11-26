@@ -40,37 +40,45 @@ class RegistrationLeadsController extends Controller
         }
 
         $query = $this->buildBaseQuery();
-        $this->applyFilters($query, $request);
+        $this->applyFilters($query, $request, ['skip_registration_status' => true]); // Skip status filter to get all leads
         $this->applyRoleRestrictions($query, $user, $request);
 
-        $filteredCount = (clone $query)->count();
-        $page = max(1, (int) $request->get('page', 1));
-        $perPage = max(1, min(100, (int) $request->get('per_page', 25)));
-
-        $leads = (clone $query)
+        // Get all leads (no pagination) to group by status
+        $allLeads = (clone $query)
             ->orderBy('id', 'desc')
-            ->skip(($page - 1) * $perPage)
-            ->take($perPage)
             ->get();
 
-        $data = $leads->map(function (Lead $lead) {
-            return $this->transformLead($lead);
-        });
+        // Transform and group leads by registration status
+        $groupedLeads = [
+            'pending' => [],
+            'approved' => [],
+            'rejected' => [],
+        ];
+
+        foreach ($allLeads as $lead) {
+            $transformedLead = $this->transformLead($lead);
+            $status = $transformedLead['registration_status'] ?? 'pending';
+            
+            // Only include in grouped array if status is one of the expected values
+            if (in_array($status, ['pending', 'approved', 'rejected'])) {
+                $groupedLeads[$status][] = $transformedLead;
+            }
+        }
 
         $counts = $this->calculateRegistrationCounts($user, $request);
 
         return response()->json([
             'status' => true,
             'data' => [
-                'leads' => $data,
+                'leads' => $groupedLeads,
                 'counts' => $counts,
                 'pagination' => [
-                    'current_page' => $page,
-                    'per_page' => $perPage,
-                    'total' => $filteredCount,
-                    'last_page' => $perPage > 0 ? (int) ceil($filteredCount / $perPage) : 0,
-                    'from' => $filteredCount > 0 ? (($page - 1) * $perPage) + 1 : 0,
-                    'to' => min($page * $perPage, $filteredCount),
+                    'current_page' => 1,
+                    'per_page' => $allLeads->count(),
+                    'total' => $allLeads->count(),
+                    'last_page' => 1,
+                    'from' => $allLeads->count() > 0 ? 1 : 0,
+                    'to' => $allLeads->count(),
                 ],
             ],
         ]);
