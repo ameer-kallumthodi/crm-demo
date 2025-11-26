@@ -153,12 +153,12 @@ class RegistrationLeadsController extends Controller
                     'courses' => $courses,
                     'telecallers' => $telecallers,
                     'registration_statuses' => [
+                        ['value' => 'all', 'label' => 'All'],
                         ['value' => 'pending', 'label' => 'Pending'],
                         ['value' => 'approved', 'label' => 'Approved'],
                         ['value' => 'rejected', 'label' => 'Rejected'],
-                        ['value' => 'all', 'label' => 'All'],
                     ],
-                    'default_registration_status' => 'pending',
+                    'default_registration_status' => 'all',
                     'can_filter_by_telecaller' => $user->role_id != 3 || $user->is_team_lead,
                 ],
             ],
@@ -351,13 +351,14 @@ class RegistrationLeadsController extends Controller
         }
 
         if (!$skipRegistrationStatus) {
-            $registrationStatus = $request->get('registration_status', 'pending');
+            $registrationStatus = $request->get('registration_status', 'all');
 
             if (in_array($registrationStatus, ['pending', 'approved', 'rejected'])) {
                 $query->whereHas('studentDetails', function ($q) use ($registrationStatus) {
                     $q->where('status', $registrationStatus);
                 });
             }
+            // If 'all' or not provided, don't filter by status - show all leads
         }
 
         if ($request->filled('search_key')) {
