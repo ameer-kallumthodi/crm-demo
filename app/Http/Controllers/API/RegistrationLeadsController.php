@@ -220,7 +220,7 @@ class RegistrationLeadsController extends Controller
                     'university:id,title',
                     'universityCourse:id,title',
                     'reviewedBy:id,name',
-                    'sslcCertificates:id,lead_detail_id,certificate_path,verification_status,verified_by,verified_at',
+                    'sslcCertificates:id,lead_detail_id,certificate_path,verification_status,verified_by',
                     'sslcCertificates.verifiedBy:id,name',
                     'birthCertificateVerifiedBy:id,name',
                     'passportPhotoVerifiedBy:id,name',
@@ -972,18 +972,14 @@ class RegistrationLeadsController extends Controller
         }
 
         if ($detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
-            $summary['sslc_multiple'] = $detail->sslcCertificates
-                ->values()
-                ->map(function ($certificate, $index) {
-                    return [
-                        'id' => $certificate->id,
-                        'label' => 'SSLC Certificate ' . ($index + 1),
-                        'url' => $this->buildFileUrl($certificate->certificate_path),
-                        'status' => $certificate->verification_status ?? 'pending',
-                        'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
-                        'verified_at' => $this->formatDateTimeValue($certificate->verified_at),
-                    ];
-                });
+            $summary['sslc_multiple'] = $detail->sslcCertificates->map(function ($certificate) {
+                return [
+                    'url' => $this->buildFileUrl($certificate->certificate_path ?? $certificate->file_path ?? null),
+                    'status' => $certificate->verification_status ?? 'pending',
+                    'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
+                    'verified_at' => $this->formatDateTimeValue($certificate->verified_at),
+                ];
+            });
         }
 
         return $summary;
@@ -994,6 +990,7 @@ class RegistrationLeadsController extends Controller
      */
     private function buildDocumentPayload(LeadDetail $detail): array
     {
+        $documentTypes = $this->documentTypeConfigs();
         $documentTypes = $this->documentTypeConfigs();
 
         $documents = [];
@@ -1025,18 +1022,14 @@ class RegistrationLeadsController extends Controller
         }
 
         if ($detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
-            $documents['sslc_multiple'] = $detail->sslcCertificates
-                ->values()
-                ->map(function ($certificate, $index) {
-                    return [
-                        'id' => $certificate->id,
-                        'label' => 'SSLC Certificate ' . ($index + 1),
-                        'url' => $this->buildFileUrl($certificate->certificate_path),
-                        'status' => $certificate->verification_status ?? 'pending',
-                        'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
-                        'verified_at' => $this->formatDateTimeValue($certificate->verified_at),
-                    ];
-                });
+            $documents['sslc_multiple'] = $detail->sslcCertificates->map(function ($certificate) {
+                return [
+                    'url' => $this->buildFileUrl($certificate->certificate_path ?? $certificate->file_path ?? null),
+                    'status' => $certificate->verification_status,
+                    'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
+                    'verified_at' => $this->formatDateTimeValue($certificate->verified_at),
+                ];
+            });
         }
 
         return $documents;
@@ -1167,7 +1160,18 @@ class RegistrationLeadsController extends Controller
         }
 
         if ($field === 'sslc_certificate' && $detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
-            return [false, null, null];
+            $uploaded = true;
+            $hasPending = $detail->sslcCertificates->contains(function ($certificate) {
+                return ($certificate->verification_status ?? 'pending') !== 'verified';
+            });
+
+            $status = $hasPending ? 'pending' : 'verified';
+
+            $firstVerified = $detail->sslcCertificates->firstWhere('verification_status', 'verified');
+
+            if ($firstVerified && $firstVerified->verified_at) {
+                $verifiedAt = $this->formatDateTimeValue($firstVerified->verified_at);
+            }
         }
 
         return [$uploaded, $status, $verifiedAt];
@@ -1176,7 +1180,16 @@ class RegistrationLeadsController extends Controller
     private function resolveDocumentPath(LeadDetail $detail, string $field, array $config): ?string
     {
         $pathResolver = $config['path_resolver'] ?? null;
-        return $pathResolver ? $pathResolver($detail) : ($detail->$field ?? null);
+        $path = $pathResolver ? $pathResolver($detail) : ($detail->$field ?? null);
+
+        if ($field === 'sslc_certificate' && empty($path) && $detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
+            $firstCertificate = $detail->sslcCertificates->first();
+            if ($firstCertificate) {
+                $path = $firstCertificate->certificate_path ?? $firstCertificate->file_path;
+            }
+        }
+
+        return $path;
     }
 
     private function resolveVerifiedBy(LeadDetail $detail, string $verifiedByField, ?string $relationName = null)
