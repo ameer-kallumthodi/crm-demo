@@ -551,6 +551,22 @@ class ConvertedLeadController extends Controller
                     // If no admission batches assigned, return empty result
                     $query->whereRaw('1 = 0');
                 }
+            } elseif (RoleHelper::is_senior_manager()) {
+                // Senior Manager: Filter by their own leads or team leads if they have a team
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
+                } else {
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
+                }
+            } elseif (RoleHelper::is_general_manager()) {
+                // General Manager: Can see all leads
+                // No additional filtering needed
             } elseif (RoleHelper::is_admission_counsellor()) {
                 // Can see all
             } elseif (RoleHelper::is_academic_assistant()) {

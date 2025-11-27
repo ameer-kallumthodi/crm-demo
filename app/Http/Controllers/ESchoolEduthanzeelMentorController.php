@@ -39,7 +39,7 @@ class ESchoolEduthanzeelMentorController extends Controller
     private function getMentorIndex(Request $request, $courseId, $courseName)
     {
         // Check permissions
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor() && !RoleHelper::is_telecaller() && !RoleHelper::is_team_lead() && !RoleHelper::is_senior_manager() && !RoleHelper::is_general_manager()) {
             return redirect()->route('dashboard')
                 ->with('message_danger', 'Access denied.');
         }
@@ -94,6 +94,22 @@ class ESchoolEduthanzeelMentorController extends Controller
                         $q->where('telecaller_id', AuthHelper::getCurrentUserId());
                     });
                 }
+            } elseif (RoleHelper::is_senior_manager()) {
+                // Senior Manager: Filter by their own leads or team leads if they have a team
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
+                } else {
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
+                }
+            } elseif (RoleHelper::is_general_manager()) {
+                // General Manager: Can see all leads
+                // No additional filtering needed
             } elseif (RoleHelper::is_telecaller()) {
                 $query->whereHas('lead', function($q) {
                     $q->where('telecaller_id', AuthHelper::getCurrentUserId());
@@ -164,7 +180,7 @@ class ESchoolEduthanzeelMentorController extends Controller
     public function updateMentorDetails(Request $request, $id)
     {
         // Check permissions
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor() && !RoleHelper::is_telecaller() && !RoleHelper::is_team_lead() && !RoleHelper::is_senior_manager() && !RoleHelper::is_general_manager()) {
             return response()->json([
                 'success' => false,
                 'error' => 'Access denied.'
