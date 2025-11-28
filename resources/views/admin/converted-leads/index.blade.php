@@ -331,10 +331,10 @@
                                     <th>#</th>
                                     <th>Academic</th>
                                     <th>Support</th>
+                                    <th>Date</th>
                                     <th>Academic Verified At</th>
                                     <th>Support Verified At</th>
                                     <th>Register Number</th>
-                                    <th>Date</th>
                                     <th>DOB</th>
                                     <th>Name</th>
                                     <th>Phone</th>
@@ -383,6 +383,7 @@
                                             ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
                                             : null;
                                     @endphp
+                                    <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>
                                         @if($academicVerifiedAt)
                                             {{ $academicVerifiedAt }}
@@ -404,7 +405,6 @@
                                         <span class="text-muted">Not Set</span>
                                         @endif
                                     </td>
-                                    <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>
                                         @php
                                             $dobDisplay = $convertedLead->dob ? (strtotime($convertedLead->dob) ? date('d-m-Y', strtotime($convertedLead->dob)) : $convertedLead->dob) : 'N/A';

@@ -307,6 +307,8 @@
                             <tr>
                                 <th>SL No</th>
                                 <th>Converted Date</th>
+                                <th>Academic Verified At</th>
+                                <th>Support Verified At</th>
                                 <th>Registration Number</th>
                                 <th>Name</th>
                                 <th>DOB</th>
@@ -315,8 +317,6 @@
                                 <th>Subject</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
-                                <th>Academic Verified</th>
-                                <th>Support Verified</th>
                                 <th>Registration Status</th>
                                 <th>Technology Side</th>
                                 <th>Student Status</th>
@@ -371,6 +371,20 @@
                                 @endphp
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
+                                <td>
+                                    @if($academicVerifiedAt)
+                                        {{ $academicVerifiedAt }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($supportVerifiedAt)
+                                        {{ $supportVerifiedAt }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
                                 <td>{{ $convertedLead->register_number ?? '-' }}</td>
                                 <td>{{ $convertedLead->name }}</td>
                                 <td>{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</td>
@@ -388,20 +402,6 @@
                                 </td>
                                 <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
                                 <td>{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</td>
-                                <td>
-                                    @if($academicVerifiedAt)
-                                        {{ $academicVerifiedAt }}
-                                    @else
-                                        <span class="text-muted">N/A</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($supportVerifiedAt)
-                                        {{ $supportVerifiedAt }}
-                                    @else
-                                        <span class="text-muted">N/A</span>
-                                    @endif
-                                </td>
                                 <td>
                                     <div class="inline-edit" data-field="registration_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->registration_status }}">
                                         <span class="display-value">{{ $convertedLead->mentorDetails?->registration_status ?? '-' }}</span>
@@ -868,16 +868,16 @@
                                     <span class="fw-medium">{{ $convertedLead->created_at->format('d-m-Y') }}</span>
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block">Subject</small>
-                                    <span class="fw-medium">{{ $convertedLead->mentorDetails?->subject?->title ?? $convertedLead->subject?->title ?? 'N/A' }}</span>
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Academic Verified</small>
+                                    <small class="text-muted d-block">Academic Verified At</small>
                                     <span class="fw-medium">{{ $academicVerifiedAtMobile ?? 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block">Support Verified</small>
+                                    <small class="text-muted d-block">Support Verified At</small>
                                     <span class="fw-medium">{{ $supportVerifiedAtMobile ?? 'N/A' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Subject</small>
+                                    <span class="fw-medium">{{ $convertedLead->mentorDetails?->subject?->title ?? $convertedLead->subject?->title ?? 'N/A' }}</span>
                                 </div>
                             </div>
                             

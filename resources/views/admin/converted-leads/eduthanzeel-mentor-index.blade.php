@@ -297,13 +297,13 @@
                                 <th>Support Verified</th>
                                 @endif
                                 <th>Converted Date</th>
+                                <th>Academic Verified At</th>
+                                <th>Support Verified At</th>
                                 <th>Registration No</th>
                                 <th>Name</th>
                                 <th>Phone</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
-                                <th>Academic Verified</th>
-                                <th>Support Verified</th>
                                 <th>Subcourse</th>
                                 <th>Call 1</th>
                                 <th>WhatsApp Group</th>
@@ -358,6 +358,20 @@
                                 @endif
                                 <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                 <td>
+                                    @if($academicVerifiedAt)
+                                        {{ $academicVerifiedAt }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($supportVerifiedAt)
+                                        {{ $supportVerifiedAt }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
                                     <div class="inline-edit" data-field="register_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->register_number }}">
                                         <span class="display-value">{{ $convertedLead->register_number ?: '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
@@ -381,20 +395,6 @@
                                 </td>
                                 <td>{{ $convertedLead->batch?->title ?: '-' }}</td>
                                 <td>{{ $convertedLead->admissionBatch?->title ?: '-' }}</td>
-                                <td>
-                                    @if($academicVerifiedAt)
-                                        {{ $academicVerifiedAt }}
-                                    @else
-                                        <span class="text-muted">N/A</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($supportVerifiedAt)
-                                        {{ $supportVerifiedAt }}
-                                    @else
-                                        <span class="text-muted">N/A</span>
-                                    @endif
-                                </td>
                                 <td>{{ $convertedLead->subCourse?->title ?: '-' }}</td>
                                 <td>
                                     <div class="inline-edit" data-field="call_1" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->call_1 }}">
@@ -754,8 +754,18 @@
 </style>
 @endpush
 
+@php
+    $mentorTeacherOptions = isset($teachers)
+        ? $teachers->map(function ($teacher) {
+            return ['id' => $teacher->id, 'name' => $teacher->name];
+        })->values()
+        : collect();
+@endphp
+
 @push('scripts')
 <script>
+    const mentorTeachers = <?php echo $mentorTeacherOptions->toJson(); ?>;
+
     $(document).ready(function() {
         // Dependent filters: load admission batches by batch
         function loadAdmissionBatchesByBatch(batchId, selectedId) {
@@ -1110,10 +1120,10 @@
 
         function loadTutorOptions($select, currentValue) {
             let options = '<option value="">Select Tutor</option>';
-            @foreach($teachers as $teacher)
-                const selected{{ $teacher->id }} = String(currentValue) === '{{ $teacher->id }}' ? 'selected' : '';
-                options += `<option value="{{ $teacher->id }}" ${selected{{ $teacher->id }}}>{{ $teacher->name }}</option>`;
-            @endforeach
+            mentorTeachers.forEach(function(teacher) {
+                const isSelected = String(currentValue ?? '') === String(teacher.id) ? 'selected' : '';
+                options += `<option value="${teacher.id}" ${isSelected}>${teacher.name}</option>`;
+            });
             $select.html(options);
         }
 
