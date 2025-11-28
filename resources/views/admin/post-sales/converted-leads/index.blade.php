@@ -51,6 +51,19 @@
                             </select>
                         </div>
 
+                        <!-- Batch -->
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <label for="batch_id" class="form-label">Batch</label>
+                            <select class="form-select form-select-sm" name="batch_id" id="batch_id" data-selected="{{ request('batch_id') }}">
+                                <option value="">All Batches</option>
+                                @foreach($batches as $batch)
+                                <option value="{{ $batch->id }}" {{ request('batch_id') == $batch->id ? 'selected' : '' }}>
+                                    {{ $batch->title }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <!-- BDE -->
                         <div class="col-6 col-md-4 col-lg-2">
                             <label for="telecaller_id" class="form-label">BDE</label>
@@ -84,7 +97,7 @@
                                 <button type="submit" class="btn btn-primary btn-sm flex-fill flex-lg-grow-0">
                                     <i class="ti ti-filter me-1"></i> Filter
                                 </button>
-                                <a href="{{ route('admin.post-sales.converted-leads.index') }}" class="btn btn-outline-secondary btn-sm flex-fill flex-lg-grow-0">
+                                <a href="{{ route('admin.post-sales.converted-leads.index') }}" class="btn btn-outline-secondary btn-sm flex-fill flex-lg-grow-0" id="clearFiltersBtn">
                                     <i class="ti ti-x me-1"></i> Clear
                                 </a>
                             </div>
@@ -293,10 +306,54 @@ $columns = [
                 return {
                     search: $('#search').val() || '',
                     course_id: $('#course_id').val() || '',
+                    batch_id: $('#batch_id').val() || '',
                     telecaller_id: $('#telecaller_id').val() || '',
                     date_from: $('#date_from').val() || '',
                     date_to: $('#date_to').val() || ''
                 };
+            }
+
+            // Update URL with filter parameters
+            function updateUrlWithFilters() {
+                const filters = getFilterParams();
+                const params = new URLSearchParams();
+                
+                Object.keys(filters).forEach(function(key) {
+                    if (filters[key]) {
+                        params.append(key, filters[key]);
+                    }
+                });
+                
+                const newUrl = params.toString()
+                    ? `${window.location.pathname}?${params.toString()}`
+                    : window.location.pathname;
+                
+                // Update URL without reloading page
+                window.history.pushState({path: newUrl}, '', newUrl);
+            }
+
+            // Load filters from URL on page load
+            function loadFiltersFromUrl() {
+                const urlParams = new URLSearchParams(window.location.search);
+                
+                if (urlParams.get('search')) {
+                    $('#search').val(urlParams.get('search'));
+                }
+                if (urlParams.get('course_id')) {
+                    $('#course_id').val(urlParams.get('course_id'));
+                }
+                if (urlParams.get('batch_id')) {
+                    $('#batch_id').data('selected', urlParams.get('batch_id'));
+                }
+                if (urlParams.get('telecaller_id')) {
+                    $('#telecaller_id').val(urlParams.get('telecaller_id'));
+                }
+                if (urlParams.get('date_from')) {
+                    $('#date_from').val(urlParams.get('date_from'));
+                }
+                if (urlParams.get('date_to')) {
+                    $('#date_to').val(urlParams.get('date_to'));
+                }
             }
             
             // Store last JSON response for mobile view
@@ -365,18 +422,140 @@ $columns = [
                 }
             });
             
-            // Reload table when filters change
-            $('#dateFilterForm').on('submit', function(e) {
+            // Load batches by course
+            function loadBatchesByCourse(courseId, selectedBatchId, callback) {
+                const $batch = $('#batch_id');
+                $batch.html('<option value="">Loading...</option>');
+                if (!courseId) {
+                    $batch.html('<option value="">All Batches</option>');
+                    if (callback) callback();
+                    return;
+                }
+                $.get(`/api/batches/by-course/${courseId}`).done(function(response) {
+                    let opts = '<option value="">All Batches</option>';
+                    if (response.success && response.batches) {
+                        response.batches.forEach(function(b) {
+                            const sel = String(selectedBatchId) === String(b.id) ? 'selected' : '';
+                            opts += `<option value="${b.id}" ${sel}>${b.title}</option>`;
+                        });
+                    }
+                    $batch.html(opts);
+                    // Set the value after populating options
+                    if (selectedBatchId) {
+                        $batch.val(selectedBatchId);
+                    }
+                    if (callback) callback();
+                }).fail(function() {
+                    $batch.html('<option value="">All Batches</option>');
+                    if (callback) callback();
+                });
+            }
+
+            // Load filters from URL on page load
+            loadFiltersFromUrl();
+
+            // Initialize batches on page load if course is selected
+            const initialCourseId = $('#course_id').val();
+            const initialBatchId = $('#batch_id').data('selected');
+            if (initialCourseId) {
+                loadBatchesByCourse(initialCourseId, initialBatchId, function() {
+                    // After batches are loaded, ensure URL is updated
+                    updateUrlWithFilters();
+                });
+            } else {
+                // Update URL on initial load even if no filters
+                updateUrlWithFilters();
+            }
+
+            // Handle clear button
+            $('#clearFiltersBtn').on('click', function(e) {
                 e.preventDefault();
+                // Clear all filters
+                $('#search').val('');
+                $('#course_id').val('');
+                $('#batch_id').html('<option value="">All Batches</option>').val('');
+                $('#telecaller_id').val('');
+                $('#date_from').val('');
+                $('#date_to').val('');
+                // Update URL to base path
+                window.history.pushState({path: window.location.pathname}, '', window.location.pathname);
                 // Reset mobile view state
                 mobileViewState.allData = [];
                 mobileViewState.currentPage = 1;
                 mobileViewState.hasMore = true;
                 convertedTable.ajax.reload();
             });
-            
+
+            // Reload table when filters change
+            $('#dateFilterForm').on('submit', function(e) {
+                e.preventDefault();
+                updateUrlWithFilters();
+                // Reset mobile view state
+                mobileViewState.allData = [];
+                mobileViewState.currentPage = 1;
+                mobileViewState.hasMore = true;
+                convertedTable.ajax.reload();
+            });
+
+            // On course change → reload batches
+            $('#course_id').on('change', function() {
+                const courseId = $(this).val();
+                loadBatchesByCourse(courseId, '');
+                // Clear batch selection when course changes
+                $('#batch_id').val('');
+                updateUrlWithFilters();
+                // Reset mobile view state
+                mobileViewState.allData = [];
+                mobileViewState.currentPage = 1;
+                mobileViewState.hasMore = true;
+                convertedTable.ajax.reload();
+            });
+
             // Reload on filter change
-            $('#search, #course_id, #telecaller_id, #date_from, #date_to').on('change', function() {
+            $('#batch_id, #telecaller_id, #date_from, #date_to').on('change', function() {
+                updateUrlWithFilters();
+                // Reset mobile view state
+                mobileViewState.allData = [];
+                mobileViewState.currentPage = 1;
+                mobileViewState.hasMore = true;
+                convertedTable.ajax.reload();
+            });
+
+            // Handle search input with debounce
+            let searchTimeout;
+            $('#search').on('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    updateUrlWithFilters();
+                    // Reset mobile view state
+                    mobileViewState.allData = [];
+                    mobileViewState.currentPage = 1;
+                    mobileViewState.hasMore = true;
+                    convertedTable.ajax.reload();
+                }, 500); // Wait 500ms after user stops typing
+            });
+
+            // Handle browser back/forward buttons
+            window.addEventListener('popstate', function(event) {
+                // Reload filters from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                $('#search').val(urlParams.get('search') || '');
+                $('#course_id').val(urlParams.get('course_id') || '');
+                $('#telecaller_id').val(urlParams.get('telecaller_id') || '');
+                $('#date_from').val(urlParams.get('date_from') || '');
+                $('#date_to').val(urlParams.get('date_to') || '');
+                
+                // Reload batches if course changed
+                const courseId = $('#course_id').val();
+                const batchId = urlParams.get('batch_id') || '';
+                if (courseId) {
+                    loadBatchesByCourse(courseId, batchId);
+                } else {
+                    $('#batch_id').html('<option value="">All Batches</option>');
+                }
+                
+                // Batch value will be set by loadBatchesByCourse function
+                
                 // Reset mobile view state
                 mobileViewState.allData = [];
                 mobileViewState.currentPage = 1;

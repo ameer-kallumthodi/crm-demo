@@ -27,8 +27,17 @@ class PostSalesConvertedLeadController extends Controller
 
         $courses = Course::where('is_active', 1)->orderBy('title')->get(['id', 'title']);
         $telecallers = User::select('id', 'name')->nonMarketingTelecallers()->where('is_active', true)->orderBy('name')->get();
+        
+        // Load batches only if a course is selected
+        $batches = collect();
+        if ($request->filled('course_id')) {
+            $batches = Batch::where('course_id', $request->course_id)
+                ->where('is_active', 1)
+                ->orderBy('title')
+                ->get(['id', 'title']);
+        }
 
-        return view('admin.post-sales.converted-leads.index', compact('courses', 'telecallers'));
+        return view('admin.post-sales.converted-leads.index', compact('courses', 'telecallers', 'batches'));
     }
 
     /**
@@ -85,6 +94,10 @@ class PostSalesConvertedLeadController extends Controller
                 $query->whereHas('lead', function($q) use ($request) {
                     $q->where('telecaller_id', $request->telecaller_id);
                 });
+            }
+
+            if ($request->filled('batch_id')) {
+                $query->where('batch_id', $request->batch_id);
             }
 
             // Get total count before filtering

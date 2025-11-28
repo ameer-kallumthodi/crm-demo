@@ -50,7 +50,7 @@
             <div class="card-body">
                 <h6 class="mb-3">Filter by Course</h6>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary {{ !request('course_id') ? 'active' : '' }}">
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary {{ request()->routeIs('admin.converted-leads.index') && !request('course_id') ? 'active' : '' }}">
                         <i class="ti ti-list"></i> All Converted Leads
                     </a>
                     <a href="{{ route('admin.nios-converted-leads.index') }}" class="btn btn-outline-success">
@@ -211,7 +211,7 @@
                             <input type="text" class="form-control" id="search" name="search"
                                 value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
                         </div>
-@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance())
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance() || \App\Helpers\RoleHelper::is_mentor())
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="course_id" class="form-label">Course</label>
                             <select class="form-select" id="course_id" name="course_id">

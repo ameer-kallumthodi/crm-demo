@@ -70,14 +70,14 @@ class ConvertedLeadController extends Controller
                 $query->where('is_academic_verified', 1);
             } elseif (RoleHelper::is_mentor()) {
                 // Mentor: Filter by admission_batch_id where mentor_id matches
-                // Also filter by is_support_verified = 1 and course condition
+                // Mentors should only see converted leads assigned to their admission batches
                 $mentorAdmissionBatchIds = \App\Models\AdmissionBatch::where('mentor_id', AuthHelper::getCurrentUserId())
+                    ->where('is_active', 1)
                     ->pluck('id')
                     ->toArray();
                 
                 if (!empty($mentorAdmissionBatchIds)) {
-                    $query->whereIn('admission_batch_id', $mentorAdmissionBatchIds)
-                          ->where('is_support_verified', 1);
+                    $query->whereIn('admission_batch_id', $mentorAdmissionBatchIds);
                 } else {
                     // If mentor has no admission batches, return empty result
                     $query->whereRaw('1 = 0');
