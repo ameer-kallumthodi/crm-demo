@@ -181,56 +181,70 @@ class PostSalesReportController extends Controller
     {
         $this->checkAccess();
         
-        // Get all invoices that are fully paid (no date filter - get all fully paid invoices)
-        $fullyPaidInvoices = Invoice::where('status', 'Fully Paid')
-            ->with(['course', 'student'])
-            ->get();
+        $postSalesUsers = User::where('role_id', 7)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
-        // Group by course
-        $courseData = [];
-        foreach ($fullyPaidInvoices as $invoice) {
-            if (!$invoice->course) {
-                continue;
-            }
+        $selectedPostSalesId = $request->get('post_sales_user_id');
 
-            $courseId = $invoice->course_id;
-            $courseName = $invoice->course->title;
-            $studentId = $invoice->student_id;
-
-            if (!isset($courseData[$courseId])) {
-                $courseData[$courseId] = [
-                    'course_name' => $courseName,
-                    'student_ids' => [],
-                    'total_amount' => 0
-                ];
-            }
-
-            // Add unique student ID
-            if (!in_array($studentId, $courseData[$courseId]['student_ids'])) {
-                $courseData[$courseId]['student_ids'][] = $studentId;
-            }
-
-            // Add total amount (use paid_amount as it's fully paid)
-            $courseData[$courseId]['total_amount'] += $invoice->paid_amount;
-        }
-
-        // Convert to array format
         $reportData = [];
         $grandTotal = 0;
         $grandTotalStudents = 0;
 
-        foreach ($courseData as $courseId => $data) {
-            $studentCount = count($data['student_ids']);
-            $reportData[] = [
-                'course_name' => $data['course_name'],
-                'student_count' => $studentCount,
-                'total_amount' => $data['total_amount']
-            ];
-            $grandTotal += $data['total_amount'];
-            $grandTotalStudents += $studentCount;
+        if ($selectedPostSalesId) {
+            $payments = Payment::with(['invoice.course', 'invoice.student'])
+                ->where('status', 'Approved')
+                ->where('collected_by', $selectedPostSalesId)
+                ->whereHas('invoice', function($query) {
+                    $query->where('status', 'Fully Paid');
+                })
+                ->get();
+
+            $courseData = [];
+            foreach ($payments as $payment) {
+                if (!$payment->invoice || !$payment->invoice->course) {
+                    continue;
+                }
+
+                $courseId = $payment->invoice->course_id;
+                $courseName = $payment->invoice->course->title;
+                $studentId = $payment->invoice->student_id;
+
+                if (!isset($courseData[$courseId])) {
+                    $courseData[$courseId] = [
+                        'course_name' => $courseName,
+                        'student_ids' => [],
+                        'total_amount' => 0
+                    ];
+                }
+
+                if (!in_array($studentId, $courseData[$courseId]['student_ids'])) {
+                    $courseData[$courseId]['student_ids'][] = $studentId;
+                }
+
+                $courseData[$courseId]['total_amount'] += $payment->amount_paid;
+            }
+
+            foreach ($courseData as $courseId => $data) {
+                $studentCount = count($data['student_ids']);
+                $reportData[] = [
+                    'course_name' => $data['course_name'],
+                    'student_count' => $studentCount,
+                    'total_amount' => $data['total_amount']
+                ];
+                $grandTotal += $data['total_amount'];
+                $grandTotalStudents += $studentCount;
+            }
         }
 
-        return view('admin.reports.bde-collected-amount-course-ways', compact('reportData', 'grandTotal', 'grandTotalStudents'));
+        return view('admin.reports.bde-collected-amount-course-ways', compact(
+            'reportData',
+            'grandTotal',
+            'grandTotalStudents',
+            'postSalesUsers',
+            'selectedPostSalesId'
+        ));
     }
 }
 

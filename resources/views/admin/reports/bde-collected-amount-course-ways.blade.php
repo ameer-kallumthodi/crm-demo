@@ -26,15 +26,68 @@
 <!-- [ breadcrumb ] end -->
 
 
+<!-- [ Filter Section ] start -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" action="{{ route('admin.reports.bde-collected-amount-course-ways') }}">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-md-4">
+                            <label for="post_sales_user_id" class="form-label">Select Post Sales User</label>
+                            <select class="form-select" name="post_sales_user_id" id="post_sales_user_id" required>
+                                <option value="">-- Select Post Sales User --</option>
+                                @foreach($postSalesUsers as $user)
+                                    <option value="{{ $user->id }}" {{ (string)$selectedPostSalesId === (string)$user->id ? 'selected' : '' }}>
+                                        {{ $user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="ti ti-filter"></i> Generate Report
+                                </button>
+                                <a href="{{ route('admin.reports.bde-collected-amount-course-ways') }}" class="btn btn-outline-secondary">
+                                    <i class="ti ti-refresh"></i> Reset
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Filter Section ] end -->
+
+@php
+    $selectedUser = $postSalesUsers->firstWhere('id', (int) $selectedPostSalesId);
+@endphp
+
 <!-- [ Reports Content ] start -->
-@if(count($reportData) > 0)
+@if(!$selectedPostSalesId)
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="ti ti-filter f-48 text-muted mb-3"></i>
+                    <p class="text-muted mb-0">Please select a Post Sales user to view the report.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+@elseif(count($reportData) > 0)
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="ti ti-chart-line me-2"></i>BDE Collected Amount Course Ways Report
-                        <small class="text-muted">(All Fully Paid Invoices)</small>
+                        @if($selectedUser)
+                            <small class="text-muted">({{ $selectedUser->name }} &middot; Fully Paid Invoices)</small>
+                        @endif
                     </h5>
                 </div>
                 <div class="card-body">
@@ -75,7 +128,7 @@
             <div class="card">
                 <div class="card-body text-center py-5">
                     <i class="ti ti-inbox f-48 text-muted mb-3"></i>
-                    <p class="text-muted mb-0">No fully paid invoices found.</p>
+                    <p class="text-muted mb-0">No fully paid invoices found for the selected Post Sales user.</p>
                 </div>
             </div>
         </div>
