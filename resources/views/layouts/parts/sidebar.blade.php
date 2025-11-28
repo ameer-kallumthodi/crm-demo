@@ -358,6 +358,42 @@
                 @endif
                 @endif
                 
+                {{-- Post Sales Reports Section --}}
+                @php
+                    $canAccessPostSalesReports = \App\Helpers\RoleHelper::is_finance() || 
+                                                  \App\Helpers\RoleHelper::is_admin_or_super_admin() || 
+                                                  \App\Helpers\RoleHelper::is_post_sales_head();
+                @endphp
+                @if($canAccessPostSalesReports)
+                <li class="pc-item pc-caption">
+                    <label>Post Sales Reports</label>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.reports.post-sales-month-ways*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.post-sales-month-ways') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-calendar-month"></i>
+                        </span>
+                        <span class="pc-mtext">Post Sales Month Ways</span>
+                    </a>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.reports.total-monthly*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.total-monthly') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-chart-bar"></i>
+                        </span>
+                        <span class="pc-mtext">Total Monthly Report</span>
+                    </a>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.reports.bde-collected-amount-course-ways*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.bde-collected-amount-course-ways') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-currency-rupee"></i>
+                        </span>
+                        <span class="pc-mtext">BDE Collected Amount</span>
+                    </a>
+                </li>
+                @endif
+                
                 {{-- Notifications Section --}}
                 @if(has_permission('admin/notifications/index'))
                 <li class="pc-item pc-caption">

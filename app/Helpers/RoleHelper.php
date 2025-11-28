@@ -189,6 +189,24 @@ class RoleHelper
     }
 
     /**
+     * Check if current user is Post Sales Head
+     */
+    public static function is_post_sales_head()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        // Must be post sales (role_id == 7) and is_head == 1
+        return $user->role_id == 7 && $user->is_head == 1;
+    }
+
+    /**
      * Check if current user is Support Team
      */
     public static function is_support_team()

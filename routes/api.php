@@ -9,11 +9,11 @@ use App\Http\Controllers\API\MarketingLeadsController;
 use App\Http\Controllers\API\FollowupLeadsController;
 use App\Http\Controllers\API\RegistrationLeadsController;
 
-Route::prefix('v1')->group(function() {
+Route::prefix('v1')->group(function () {
     Route::post('auth/login', [AuthController::class, 'login']);
-    
+
     // Protected routes
-    Route::middleware('auth:sanctum')->group(function() {
+    Route::middleware('auth:sanctum')->group(function () {
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('home', [HomeController::class, 'index']);
         Route::get('marketing-home', [HomeController::class, 'marketingHome']);
@@ -23,7 +23,7 @@ Route::prefix('v1')->group(function() {
         Route::get('leads/{lead}/status-update', [LeadsController::class, 'statusUpdateData'])->whereNumber('lead');
         Route::post('leads/{lead}/status-update', [LeadsController::class, 'statusUpdate'])->whereNumber('lead');
         Route::get('notifications', [NotificationController::class, 'index']);
-        
+
         // Marketing Leads APIs
         Route::get('marketing-leads', [MarketingLeadsController::class, 'index']);
         Route::post('marketing-leads', [MarketingLeadsController::class, 'store']);
@@ -45,4 +45,3 @@ Route::prefix('v1')->group(function() {
         Route::post('registration-leads/document-verification', [RegistrationLeadsController::class, 'verifyDocument']);
     });
 });
-
