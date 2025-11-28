@@ -1093,8 +1093,8 @@ class PaymentController extends Controller
                 'payment_type' => 'Razorpay',
                 'transaction_id' => $transactionId, // Base ID, will be updated with details
                 'status' => 'Pending Approval',
-                'created_by' => AuthHelper::getCurrentUserId(),
-                'collected_by' => $paymentLink->created_by, // Set to payment link creator
+                'created_by' => $paymentLink->created_by ?? AuthHelper::getCurrentUserId(),
+                'collected_by' => $paymentLink->created_by ?? AuthHelper::getCurrentUserId(), // Set to payment link creator
             ]);
 
             Log::info('Payment created from Razorpay payment link', [

@@ -58,9 +58,10 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            'timezone' => env('DB_TIMEZONE', '+05:30'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET time_zone='+05:30'",
+                PDO::MYSQL_ATTR_INIT_COMMAND => env('DB_TIMEZONE') ? "SET time_zone='" . env('DB_TIMEZONE', '+05:30') . "'" : null,
             ]) : [],
         ],
 
