@@ -108,7 +108,7 @@ class PostSalesReportController extends Controller
 
     /**
      * Total Monthly Report
-     * Shows course-wise total for the month
+     * Shows course-wise total for the month (only post-sales users data)
      */
     public function totalMonthlyReport(Request $request)
     {
@@ -120,8 +120,15 @@ class PostSalesReportController extends Controller
         $startDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
         $endDate = Carbon::createFromFormat('Y-m', $month)->endOfMonth();
 
-        // Get all approved payments in the month
+        // Get all post-sales users (role_id = 7)
+        $postSaleUserIds = User::where('role_id', 7)
+            ->where('is_active', true)
+            ->pluck('id')
+            ->toArray();
+
+        // Get all approved payments in the month collected by post-sales users only
         $payments = Payment::where('status', 'Approved')
+            ->whereIn('collected_by', $postSaleUserIds)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->with(['invoice.course', 'invoice.student'])
             ->get();

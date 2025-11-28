@@ -331,7 +331,7 @@
                                     <th>#</th>
                                     <th>Academic</th>
                                     <th>Support</th>
-                                    <th>Date</th>
+                                    <th>Converted Date</th>
                                     <th>Academic Verified At</th>
                                     <th>Support Verified At</th>
                                     <th>Register Number</th>
@@ -382,8 +382,11 @@
                                         $supportVerifiedAt = $convertedLead->support_verified_at
                                             ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
                                             : null;
+                                        $convertedDate = $convertedLead->studentDetails?->converted_date 
+                                            ? \Carbon\Carbon::parse($convertedLead->studentDetails->converted_date)->format('d-m-Y')
+                                            : $convertedLead->created_at->format('d-m-Y');
                                     @endphp
-                                    <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
+                                    <td>{{ $convertedDate }}</td>
                                     <td>
                                         @if($academicVerifiedAt)
                                             {{ $academicVerifiedAt }}
@@ -587,7 +590,14 @@
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
-                                    <span class="fw-medium">{{ $convertedLead->created_at->format('d-m-Y') }}</span>
+                                    <span class="fw-medium">
+                                        @php
+                                            $convertedDateMobile = $convertedLead->studentDetails?->converted_date 
+                                                ? \Carbon\Carbon::parse($convertedLead->studentDetails->converted_date)->format('d-m-Y')
+                                                : $convertedLead->created_at->format('d-m-Y');
+                                        @endphp
+                                        {{ $convertedDateMobile }}
+                                    </span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Status</small>
