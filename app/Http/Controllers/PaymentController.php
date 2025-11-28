@@ -223,6 +223,7 @@ class PaymentController extends Controller
                 'file_upload' => $filePath,
                 'status' => 'Pending Approval',
                 'created_by' => AuthHelper::getCurrentUserId(),
+                'collected_by' => AuthHelper::getCurrentUserId(),
             ]);
 
             // Don't update invoice until payment is approved
@@ -1183,6 +1184,7 @@ class PaymentController extends Controller
         if (isset($razorpayPayment['amount'])) {
             $razorpayAmount = round(((float) $razorpayPayment['amount']) / 100, 2);
             if ($razorpayAmount > 0 && abs($razorpayAmount - (float) $payment->amount_paid) > 0.01) {
+                /** @phpstan-ignore-next-line */
                 $payment->amount_paid = $razorpayAmount;
             }
         }
