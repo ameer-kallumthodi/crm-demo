@@ -58,6 +58,11 @@
                             <span class="badge bg-{{ $studentDetail->status === 'approved' ? 'success' : ($studentDetail->status === 'rejected' ? 'danger' : 'warning') }} fs-6">
                                 {{ ucfirst($studentDetail->status ?? 'pending') }}
                             </span>
+                            @if($studentDetail->reviewed_at && in_array($studentDetail->status, ['approved', 'rejected']))
+                            <small class="text-muted d-block mt-1">
+                                {{ ucfirst($studentDetail->status) }} on {{ $studentDetail->reviewed_at->format('M d, Y h:i A') }}
+                            </small>
+                            @endif
                         </div>
                     </div>
                     <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto justify-content-end">

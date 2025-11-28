@@ -241,6 +241,12 @@
                                 @forelse($leads as $index => $lead)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
+                                    @php
+                                        $canConvertLead = !$lead->is_converted 
+                                            && $lead->studentDetails 
+                                            && (strtolower($lead->studentDetails->status ?? '') === 'approved');
+                                        $canTriggerConvert = $canConvertLead && !empty($hasLeadActionPermission);
+                                    @endphp
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary"
@@ -248,7 +254,7 @@
                                                 title="View Lead">
                                                 <i class="ti ti-eye"></i>
                                             </a>
-                                            @if(isset($canEditLead) && $canEditLead)
+                                            @if(!empty($canEditLead) && $canEditLead)
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
                                                 onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
                                                 title="Edit Lead">
@@ -259,7 +265,8 @@
                                                 title="Update Status">
                                                 <i class="ti ti-arrow-up"></i>
                                             </a>
-                                            @if(!$lead->is_converted && $lead->studentDetails && (strtolower($lead->studentDetails->status ?? '') === 'approved'))
+                                            @endif
+                                            @if($canTriggerConvert)
                                             <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning"
                                                 onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
                                                 title="Convert Lead">
@@ -304,8 +311,6 @@
                                             </a>
                                             @endif
                                         </div>
-
-                                        @endif
                                     </td>
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                     <td class="text-center">
@@ -329,6 +334,12 @@
                                                         @endif">
                                                 {{ ucfirst($lead->studentDetails->status) }}
                                             </span>
+                                            @php
+                                                $hasFinalStatus = in_array($lead->studentDetails->status, ['approved', 'rejected']);
+                                            @endphp
+                                            @if($hasFinalStatus && $lead->studentDetails->reviewed_at)
+                                            <small class="text-muted">{{ ucfirst($lead->studentDetails->status) }} on {{ $lead->studentDetails->reviewed_at->format('M d, Y h:i A') }}</small>
+                                            @endif
                                             @endif
                                             <a href="{{ route('leads.registration-details', $lead->id) }}"
                                                 class="btn btn-sm btn-outline-primary mt-1"
@@ -544,6 +555,12 @@
                     @forelse($leads as $index => $lead)
                     <div class="card mb-2">
                         <div class="card-body p-3">
+                            @php
+                                $canConvertLead = !$lead->is_converted 
+                                    && $lead->studentDetails 
+                                    && (strtolower($lead->studentDetails->status ?? '') === 'approved');
+                                $canTriggerConvert = $canConvertLead && !empty($hasLeadActionPermission);
+                            @endphp
                             <!-- Lead Header -->
                             <div class="d-flex align-items-start justify-content-between mb-2">
                                 <div class="d-flex align-items-center flex-grow-1">
@@ -562,7 +579,7 @@
                                         title="View Lead">
                                         <i class="ti ti-eye f-12"></i>
                                     </a>
-                                    @if(isset($canEditLead) && $canEditLead)
+                                    @if(!empty($canEditLead) && $canEditLead)
                                     <a href="javascript:void(0);" class="btn btn-sm btn-outline-secondary"
                                         onclick="show_ajax_modal('{{ route('leads.ajax-edit', $lead->id) }}', 'Edit Lead')"
                                         title="Edit Lead">
@@ -573,20 +590,22 @@
                                         title="Update Status">
                                         <i class="ti ti-arrow-up f-12"></i>
                                     </a>
-                                    @if(!$lead->is_converted && $lead->studentDetails && (strtolower($lead->studentDetails->status ?? '') === 'approved'))
+                                    @endif
+                                    @if($canTriggerConvert)
                                     <a href="javascript:void(0);" class="btn btn-sm btn-outline-warning"
                                         onclick="show_ajax_modal('{{ route('leads.convert', $lead->id) }}', 'Convert Lead')"
                                         title="Convert Lead">
                                         <i class="ti ti-refresh f-12"></i>
                                     </a>
                                     @endif
-                                    @endif
+                                    @if(!empty($canEditLead) && $canEditLead)
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
                                     <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger"
                                         onclick="delete_modal('{{ route('leads.destroy', $lead->id) }}')"
                                         title="Delete Lead">
                                         <i class="ti ti-trash f-12"></i>
                                     </a>
+                                    @endif
                                     @endif
                                 </div>
                             </div>
@@ -657,6 +676,12 @@
                                                     @endif">
                                             {{ ucfirst($lead->studentDetails->status) }}
                                         </span>
+                                        @php
+                                            $hasFinalStatus = in_array($lead->studentDetails->status, ['approved', 'rejected']);
+                                        @endphp
+                                        @if($hasFinalStatus && $lead->studentDetails->reviewed_at)
+                                        <small class="text-muted">{{ ucfirst($lead->studentDetails->status) }} on {{ $lead->studentDetails->reviewed_at->format('M d, Y h:i A') }}</small>
+                                        @endif
                                         @endif
                                         <a href="{{ route('leads.registration-details', $lead->id) }}"
                                             class="btn btn-sm btn-outline-primary mt-1"

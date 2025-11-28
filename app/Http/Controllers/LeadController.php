@@ -145,7 +145,8 @@ class LeadController extends Controller
                     'sslc_verification_status', 'plustwo_verification_status', 'ug_verification_status',
                     'birth_certificate_verification_status', 'passport_photo_verification_status',
                     'adhar_front_verification_status', 'adhar_back_verification_status',
-                    'signature_verification_status', 'other_document_verification_status'
+                    'signature_verification_status', 'other_document_verification_status',
+                    'reviewed_at'
                 ]);
             },
             'studentDetails.sslcCertificates:id,lead_detail_id,verification_status'
@@ -584,6 +585,12 @@ class LeadController extends Controller
                 $statusClass = $lead->studentDetails->status == 'approved' ? 'bg-success' : 
                     ($lead->studentDetails->status == 'rejected' ? 'bg-danger' : 'bg-warning');
                 $html .= '<span class="badge ' . $statusClass . '">' . ucfirst($lead->studentDetails->status) . '</span>';
+                
+                if (in_array($lead->studentDetails->status, ['approved', 'rejected'], true) && $lead->studentDetails->reviewed_at) {
+                    $statusLabel = $lead->studentDetails->status == 'approved' ? 'Approved' : 'Rejected';
+                    $formattedDate = $lead->studentDetails->reviewed_at->format('M d, Y h:i A');
+                    $html .= '<small class="text-muted d-block">' . $statusLabel . ' on ' . $formattedDate . '</small>';
+                }
             }
             
             $html .= '<a href="' . route('leads.registration-details', $lead->id) . '" class="btn btn-sm btn-outline-primary mt-1" title="View Registration Details"><i class="ti ti-eye me-1"></i>View Details</a>';
@@ -810,7 +817,8 @@ class LeadController extends Controller
             'student_details' => $lead->studentDetails ? [
                 'status' => $lead->studentDetails->status,
                 'course_title' => $this->cleanUtf8($lead->studentDetails->_course_title ?? ($courseName[$lead->studentDetails->course_id] ?? 'Unknown Course')),
-                'document_verification_status' => $lead->studentDetails->getDocumentVerificationStatus()
+                'document_verification_status' => $lead->studentDetails->getDocumentVerificationStatus(),
+                'reviewed_at' => $lead->studentDetails->reviewed_at ? $lead->studentDetails->reviewed_at->format('d-m-Y h:i A') : null,
             ] : null,
             'course_id' => $lead->course_id,
             'lead_status_id' => $lead->lead_status_id,
@@ -927,7 +935,8 @@ class LeadController extends Controller
                     'sslc_verification_status', 'plustwo_verification_status', 'ug_verification_status',
                     'birth_certificate_verification_status', 'passport_photo_verification_status',
                     'adhar_front_verification_status', 'adhar_back_verification_status',
-                    'signature_verification_status', 'other_document_verification_status'
+                    'signature_verification_status', 'other_document_verification_status',
+                    'reviewed_at'
                 ]);
             },
             'studentDetails.sslcCertificates:id,lead_detail_id,verification_status',
@@ -1001,6 +1010,11 @@ class LeadController extends Controller
         $isTeamLead = $currentUser ? AuthHelper::isTeamLead() : false;
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
         $isSeniorManager = $currentUser ? RoleHelper::is_senior_manager() : false;
+        $canEditLead = RoleHelper::is_admin_or_super_admin() || 
+                       RoleHelper::is_general_manager() || 
+                       RoleHelper::is_team_lead() || 
+                       RoleHelper::is_senior_manager();
+        $hasLeadActionPermission = \App\Helpers\PermissionHelper::has_lead_action_permission();
         
         // Role-based lead filtering
         if ($currentUser && !$isSeniorManager) {
@@ -1104,7 +1118,8 @@ class LeadController extends Controller
             'leads', 'leadStatuses', 'leadSources', 'countries', 'courses', 'telecallers',
             'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList',
             'fromDate', 'toDate', 'isTelecaller', 'isTeamLead',
-            'allCount', 'pendingCount', 'rejectedCount', 'approvedCount'
+            'allCount', 'pendingCount', 'rejectedCount', 'approvedCount',
+            'canEditLead', 'hasLeadActionPermission'
         ))->with('search_key', $request->search_key);
     }
 

@@ -1120,6 +1120,10 @@ $columns = array_merge($columns, [
                     const statusBadge = (studentStatus === 'approved') ? 'bg-success' : ((studentStatus === 'rejected') ? 'bg-danger' : 'bg-warning');
                     const statusText = studentStatus ? (studentStatus.charAt(0).toUpperCase() + studentStatus.slice(1)) : 'Pending';
                     cardHtml += '<div class="col-6"><small class="text-muted f-10">Status:</small><div><span class="badge ' + statusBadge + ' f-10">' + escapeHtml(statusText) + '</span></div></div>';
+                    if (data.student_details.reviewed_at && (studentStatus === 'approved' || studentStatus === 'rejected')) {
+                        const label = studentStatus === 'approved' ? 'Approved on' : 'Rejected on';
+                        cardHtml += '<div class="col-12"><small class="text-muted f-10">' + label + ':</small><div class="fw-medium f-11">' + escapeHtml(data.student_details.reviewed_at) + '</div></div>';
+                    }
                     // Document verification status
                     const docVerificationStatus = data.student_details.document_verification_status;
                     if (docVerificationStatus !== null && docVerificationStatus !== undefined) {
