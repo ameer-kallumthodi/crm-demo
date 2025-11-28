@@ -3,6 +3,7 @@
 @section('title', 'E-School Converted Mentor List')
 
 @section('content')
+@php $appTimezone = config('app.timezone'); @endphp
 <style>
     .table td {
         white-space: nowrap;
@@ -301,6 +302,8 @@
                                 <th>Phone</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
+                                <th>Academic Verified</th>
+                                <th>Support Verified</th>
                                 <th>Subcourse</th>
                                 <th>Call 1</th>
                                 <th>WhatsApp Group</th>
@@ -333,6 +336,14 @@
                         <tbody>
                             @forelse($convertedLeads as $index => $convertedLead)
                             <tr>
+                                @php
+                                    $academicVerifiedAt = $convertedLead->academic_verified_at
+                                        ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                        : null;
+                                    $supportVerifiedAt = $convertedLead->support_verified_at
+                                        ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                        : null;
+                                @endphp
                                 <td>{{ $index + 1 }}</td>
                                 @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                 <td>
@@ -370,6 +381,20 @@
                                 </td>
                                 <td>{{ $convertedLead->batch?->title ?: '-' }}</td>
                                 <td>{{ $convertedLead->admissionBatch?->title ?: '-' }}</td>
+                                <td>
+                                    @if($academicVerifiedAt)
+                                        {{ $academicVerifiedAt }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($supportVerifiedAt)
+                                        {{ $supportVerifiedAt }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
                                 <td>{{ $convertedLead->subCourse?->title ?: '-' }}</td>
                                 <td>
                                     <div class="inline-edit" data-field="call_1" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->call_1 }}">

@@ -3,6 +3,7 @@
 @section('title', 'NIOS Converted Mentor List')
 
 @section('content')
+@php $appTimezone = config('app.timezone'); @endphp
 <style>
     .table td {
         white-space: nowrap;
@@ -326,6 +327,8 @@
                                     <th>Subject</th>
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
+                                    <th>Academic Verified</th>
+                                    <th>Support Verified</th>
                                     <th>Technology Side</th>
                                     <th>Student Status</th>
                                     <th>CALL - 1</th>
@@ -372,6 +375,14 @@
                             <tbody>
                                 @forelse($convertedLeads as $index => $convertedLead)
                                 <tr>
+                                    @php
+                                        $academicVerifiedAt = $convertedLead->academic_verified_at
+                                            ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                            : null;
+                                        $supportVerifiedAt = $convertedLead->support_verified_at
+                                            ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                            : null;
+                                    @endphp
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>{{ $convertedLead->register_number ?? '-' }}</td>
@@ -393,6 +404,20 @@
                                     </td>
                                     <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
                                     <td>{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</td>
+                                    <td>
+                                        @if($academicVerifiedAt)
+                                            {{ $academicVerifiedAt }}
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($supportVerifiedAt)
+                                            {{ $supportVerifiedAt }}
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="inline-edit" data-field="technology_side" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->technology_side }}">
                                             <span class="display-value">{{ $convertedLead->mentorDetails?->technology_side ?? '-' }}</span>
@@ -826,6 +851,14 @@
                                     <h6 class="mb-0">{{ $convertedLead->name }}</h6>
                                 </div>
                                 <div class="card-body">
+                                    @php
+                                        $academicVerifiedAtMobile = $convertedLead->academic_verified_at
+                                            ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                            : null;
+                                        $supportVerifiedAtMobile = $convertedLead->support_verified_at
+                                            ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                            : null;
+                                    @endphp
                                     <div class="row g-2 mb-3">
                                         <div class="col-6">
                                             <small class="text-muted d-block">Phone</small>
@@ -850,6 +883,14 @@
                                         <div class="col-6">
                                             <small class="text-muted d-block">Batch</small>
                                             <span class="fw-medium">{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Academic Verified</small>
+                                            <span class="fw-medium">{{ $academicVerifiedAtMobile ?? 'N/A' }}</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Support Verified</small>
+                                            <span class="fw-medium">{{ $supportVerifiedAtMobile ?? 'N/A' }}</span>
                                         </div>
                                     </div>
                                 </div>

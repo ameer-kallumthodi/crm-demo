@@ -3,6 +3,7 @@
 @section('title', 'Vibe Coding Converted Support List')
 
 @section('content')
+@php $appTimezone = config('app.timezone'); @endphp
 <style>
     .table td {
         white-space: nowrap;
@@ -289,6 +290,7 @@
                             <tr>
                                 <th>SL No</th>
                                 <th>Support</th>
+                                <th>Academic Verified At</th>
                                 <th>Converted Date</th>
                                 <th>Registration Number</th>
                                 <th>Name</th>
@@ -325,6 +327,18 @@
                                         'title' => 'support',
                                         'useModal' => true
                                     ])
+                                </td>
+                                @php
+                                    $academicVerifiedAt = $convertedLead->academic_verified_at
+                                        ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                        : null;
+                                @endphp
+                                <td>
+                                    @if($academicVerifiedAt)
+                                        {{ $academicVerifiedAt }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
                                 </td>
                                 <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                 <td>{{ $convertedLead->register_number ?? '-' }}</td>
@@ -416,7 +430,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="16" class="text-center">No converted leads found for support</td>
+                                <td colspan="17" class="text-center">No converted leads found for support</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -429,6 +443,11 @@
                     @forelse($convertedLeads as $index => $convertedLead)
                     <div class="card mb-3">
                         <div class="card-body">
+                            @php
+                                $academicVerifiedAt = $convertedLead->academic_verified_at
+                                    ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                    : null;
+                            @endphp
                             <!-- Lead Header -->
                             <div class="d-flex align-items-center mb-3">
                                 <div class="avtar avtar-s rounded-circle bg-light-primary me-3 d-flex align-items-center justify-content-center">
@@ -476,6 +495,14 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Subject</small>
                                     <span class="fw-medium">{{ $convertedLead->supportDetails?->subject?->title ?? $convertedLead->subject?->title ?? 'N/A' }}</span>
+                                </div>
+                                <div class="col-12">
+                                    <small class="text-muted d-block">Academic Verified At</small>
+                                    @if($academicVerifiedAt)
+                                        <span class="fw-medium">{{ $academicVerifiedAt }}</span>
+                                    @else
+                                        <span class="fw-medium text-muted">N/A</span>
+                                    @endif
                                 </div>
                             </div>
                             

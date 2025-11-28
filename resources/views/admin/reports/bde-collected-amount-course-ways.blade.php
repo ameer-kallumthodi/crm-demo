@@ -86,7 +86,7 @@
                     <h5 class="mb-0">
                         <i class="ti ti-chart-line me-2"></i>BDE Collected Amount Course Ways Report
                         @if($selectedUser)
-                            <small class="text-muted">({{ $selectedUser->name }} &middot; Fully Paid Invoices)</small>
+                            <small class="text-muted">({{ $selectedUser->name }} &middot; Approved Payments)</small>
                         @endif
                     </h5>
                 </div>
@@ -128,7 +128,7 @@
             <div class="card">
                 <div class="card-body text-center py-5">
                     <i class="ti ti-inbox f-48 text-muted mb-3"></i>
-                    <p class="text-muted mb-0">No fully paid invoices found for the selected Post Sales user.</p>
+                    <p class="text-muted mb-0">No approved payments found for the selected Post Sales user.</p>
                 </div>
             </div>
         </div>

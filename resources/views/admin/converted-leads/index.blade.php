@@ -3,6 +3,7 @@
 @section('title', 'Converted Leads')
 
 @section('content')
+@php $appTimezone = config('app.timezone'); @endphp
 <style>
     .table td {
         white-space: nowrap;
@@ -330,6 +331,8 @@
                                     <th>#</th>
                                     <th>Academic</th>
                                     <th>Support</th>
+                                    <th>Academic Verified At</th>
+                                    <th>Support Verified At</th>
                                     <th>Register Number</th>
                                     <th>Date</th>
                                     <th>DOB</th>
@@ -371,6 +374,28 @@
                                             'title' => 'support',
                                             'useModal' => true
                                         ])
+                                    </td>
+                                    @php
+                                        $academicVerifiedAt = $convertedLead->academic_verified_at
+                                            ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                            : null;
+                                        $supportVerifiedAt = $convertedLead->support_verified_at
+                                            ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                            : null;
+                                    @endphp
+                                    <td>
+                                        @if($academicVerifiedAt)
+                                            {{ $academicVerifiedAt }}
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($supportVerifiedAt)
+                                            {{ $supportVerifiedAt }}
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($convertedLead->register_number)
@@ -423,9 +448,10 @@
                                             </button>
                                             @php $courseChanged = (bool) ($convertedLead->is_course_changed ?? false); @endphp
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                                <button type="button" class="btn btn-sm {{ $courseChanged ? 'btn-success' : 'btn-danger' }}"
+                                                <button type="button" class="btn btn-sm {{ $courseChanged ? 'btn-success' : 'btn-danger' }} js-change-course-modal"
                                                     title="Change Course"
-                                                    onclick="show_ajax_modal('{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}', 'Change Course')">
+                                                    data-modal-url="{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}"
+                                                    data-modal-title="Change Course">
                                                     <i class="ti ti-exchange"></i>
                                                 </button>
                                             @endif
@@ -452,7 +478,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="15" class="text-center">No converted leads found</td>
+                                    <td colspan="17" class="text-center">No converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -500,8 +526,9 @@
                                         @php $courseChanged = (bool) ($convertedLead->is_course_changed ?? false); @endphp
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                         <li>
-                                            <button type="button" class="dropdown-item {{ $courseChanged ? 'text-success' : 'text-danger' }}"
-                                                onclick="show_ajax_modal('{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}', 'Change Course')">
+                                            <button type="button" class="dropdown-item {{ $courseChanged ? 'text-success' : 'text-danger' }} js-change-course-modal"
+                                                data-modal-url="{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}"
+                                                data-modal-title="Change Course">
                                                 <i class="ti ti-exchange me-2"></i>Change Course
                                             </button>
                                         </li>
@@ -574,11 +601,23 @@
                                     <small class="text-muted d-block">Academic</small>
                                     @php $isVerified = (bool) ($convertedLead->is_academic_verified ?? false); @endphp
                                     <span class="badge {{ $isVerified ? 'bg-success' : 'bg-secondary' }}">{{ $isVerified ? 'Verified' : 'Not Verified' }}</span>
+                                    @php
+                                        $academicVerifiedAtMobile = $convertedLead->academic_verified_at
+                                            ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                            : null;
+                                    @endphp
+                                    <div class="small text-muted">{{ $academicVerifiedAtMobile ?? 'N/A' }}</div>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Support</small>
                                     @php $isSupportVerified = (bool) ($convertedLead->is_support_verified ?? false); @endphp
                                     <span class="badge {{ $isSupportVerified ? 'bg-success' : 'bg-secondary' }}">{{ $isSupportVerified ? 'Verified' : 'Not Verified' }}</span>
+                                    @php
+                                        $supportVerifiedAtMobile = $convertedLead->support_verified_at
+                                            ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                            : null;
+                                    @endphp
+                                    <div class="small text-muted">{{ $supportVerifiedAtMobile ?? 'N/A' }}</div>
                                 </div>
                             </div>
                             
@@ -850,6 +889,16 @@
             const url = new URL(window.location.href);
             url.search = params.toString();
             window.location.href = url.toString();
+        });
+
+        // Handle Change Course modal buttons
+        $(document).on('click', '.js-change-course-modal', function(e) {
+            e.preventDefault();
+            const url = $(this).data('modal-url');
+            const title = $(this).data('modal-title') || 'Change Course';
+            if (typeof show_ajax_modal === 'function' && url) {
+                show_ajax_modal(url, title);
+            }
         });
 
         // Handle clear button

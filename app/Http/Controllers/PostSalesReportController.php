@@ -196,9 +196,6 @@ class PostSalesReportController extends Controller
             $payments = Payment::with(['invoice.course', 'invoice.student'])
                 ->where('status', 'Approved')
                 ->where('collected_by', $selectedPostSalesId)
-                ->whereHas('invoice', function($query) {
-                    $query->where('status', 'Fully Paid');
-                })
                 ->get();
 
             $courseData = [];
