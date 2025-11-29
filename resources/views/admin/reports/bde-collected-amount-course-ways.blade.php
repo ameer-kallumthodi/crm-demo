@@ -33,7 +33,7 @@
             <div class="card-body">
                 <form method="GET" action="{{ route('admin.reports.bde-collected-amount-course-ways') }}">
                     <div class="row g-3 align-items-end">
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3">
                             <label for="post_sales_user_id" class="form-label">Select Post Sales User</label>
                             <select class="form-select" name="post_sales_user_id" id="post_sales_user_id" required>
                                 <option value="">-- Select Post Sales User --</option>
@@ -44,7 +44,17 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3">
+                            <label for="from_date" class="form-label">From Date (optional)</label>
+                            <input type="date" class="form-control" id="from_date" name="from_date"
+                                   value="{{ $fromDate ?? '' }}">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label for="to_date" class="form-label">To Date (optional)</label>
+                            <input type="date" class="form-control" id="to_date" name="to_date"
+                                   value="{{ $toDate ?? '' }}">
+                        </div>
+                        <div class="col-12 col-md-3">
                             <div class="d-flex gap-2 flex-wrap">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="ti ti-filter"></i> Generate Report
@@ -86,7 +96,20 @@
                     <h5 class="mb-0">
                         <i class="ti ti-chart-line me-2"></i>BDE Collected Amount Course Ways Report
                         @if($selectedUser)
-                            <small class="text-muted">({{ $selectedUser->name }} &middot; Approved Payments)</small>
+                            <small class="text-muted">
+                                ({{ $selectedUser->name }} &middot; Approved Payments
+                                @if(!empty($fromDate) || !empty($toDate))
+                                    &middot;
+                                    @if($fromDate)
+                                        From {{ \Carbon\Carbon::parse($fromDate)->format('d M Y') }}
+                                    @endif
+                                    @if($toDate)
+                                        @if($fromDate) - @endif
+                                        To {{ \Carbon\Carbon::parse($toDate)->format('d M Y') }}
+                                    @endif
+                                @endif
+                                )
+                            </small>
                         @endif
                     </h5>
                 </div>
@@ -128,7 +151,7 @@
             <div class="card">
                 <div class="card-body text-center py-5">
                     <i class="ti ti-inbox f-48 text-muted mb-3"></i>
-                    <p class="text-muted mb-0">No approved payments found for the selected Post Sales user.</p>
+                    <p class="text-muted mb-0">No approved payments found for the selected Post Sales user{{ ($fromDate || $toDate) ? ' and selected date range' : '' }}.</p>
                 </div>
             </div>
         </div>

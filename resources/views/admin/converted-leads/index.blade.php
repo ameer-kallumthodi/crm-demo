@@ -331,6 +331,7 @@
                                     <th>#</th>
                                     <th>Academic</th>
                                     <th>Support</th>
+                                    <th>Academic Document Approved</th>
                                     <th>Converted Date</th>
                                     <th>Academic Verified At</th>
                                     <th>Support Verified At</th>
@@ -386,6 +387,18 @@
                                             ? \Carbon\Carbon::parse($convertedLead->studentDetails->converted_date)->format('d-m-Y')
                                             : $convertedLead->created_at->format('d-m-Y');
                                     @endphp
+                                    @php
+                                        $academicDocumentApprovedAt = $convertedLead->leadDetail?->reviewed_at
+                                            ? $convertedLead->leadDetail->reviewed_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                            : null;
+                                    @endphp
+                                    <td>
+                                        @if($academicDocumentApprovedAt)
+                                            {{ $academicDocumentApprovedAt }}
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $convertedDate }}</td>
                                     <td>
                                         @if($academicVerifiedAt)
@@ -587,6 +600,15 @@
                                     @else
                                     <span class="text-muted">Not Set</span>
                                     @endif
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Academic Document Approved</small>
+                                    @php
+                                        $academicDocumentApprovedAtMobile = $convertedLead->leadDetail?->reviewed_at
+                                            ? $convertedLead->leadDetail->reviewed_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                            : null;
+                                    @endphp
+                                    <span class="fw-medium">{{ $academicDocumentApprovedAtMobile ?? 'N/A' }}</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>

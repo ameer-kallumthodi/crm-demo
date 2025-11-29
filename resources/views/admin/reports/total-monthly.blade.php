@@ -25,19 +25,24 @@
 </div>
 <!-- [ breadcrumb ] end -->
 
-<!-- [ Month Filter ] start -->
+<!-- [ Date Range Filter ] start -->
 <div class="row mb-3">
     <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <form method="GET" action="{{ route('admin.reports.total-monthly') }}" id="reportFilterForm">
                     <div class="row g-3 align-items-end">
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <label for="month" class="form-label">Select Month</label>
-                            <input type="month" class="form-control" id="month" name="month" 
-                                   value="{{ $month }}" required>
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <label for="from_date" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="from_date" name="from_date"
+                                   value="{{ $fromDate ?? '' }}" required>
                         </div>
-                        <div class="col-12 col-sm-6 col-md-4">
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <label for="to_date" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="to_date" name="to_date"
+                                   value="{{ $toDate ?? '' }}" required>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4 mt-3 mt-md-0">
                             <div class="d-flex gap-2 flex-wrap">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="ti ti-filter"></i> Generate Report
@@ -53,16 +58,22 @@
         </div>
     </div>
 </div>
-<!-- [ Month Filter ] end -->
+<!-- [ Date Range Filter ] end -->
 
 <!-- [ Reports Content ] start -->
 @if(count($reportData) > 0)
     <div class="row">
         <div class="col-12">
-            <div class="card">
+                        <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="ti ti-chart-bar me-2"></i>Total Monthly Report - {{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y') }}
+                        <i class="ti ti-chart-bar me-2"></i>Total Monthly Report
+                        @if(!empty($fromDate) && !empty($toDate))
+                            <small class="text-muted ms-2">
+                                ({{ \Carbon\Carbon::parse($fromDate)->format('d M Y') }} -
+                                {{ \Carbon\Carbon::parse($toDate)->format('d M Y') }})
+                            </small>
+                        @endif
                     </h5>
                 </div>
                 <div class="card-body">
@@ -103,7 +114,7 @@
             <div class="card">
                 <div class="card-body text-center py-5">
                     <i class="ti ti-inbox f-48 text-muted mb-3"></i>
-                    <p class="text-muted mb-0">No data found for the selected month.</p>
+                    <p class="text-muted mb-0">No data found for the selected date range.</p>
                 </div>
             </div>
         </div>

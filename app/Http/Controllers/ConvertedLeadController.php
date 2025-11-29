@@ -31,7 +31,15 @@ class ConvertedLeadController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails']);
+        $query = ConvertedLead::with([
+            'lead',
+            'course',
+            'academicAssistant',
+            'createdBy',
+            'subject',
+            'studentDetails',
+            'leadDetail', // For Academic Document Approved (leads_details.reviewed_at)
+        ]);
 
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();

@@ -35,12 +35,23 @@ class PostSalesReportController extends Controller
     public function postSalesMonthWaysReport(Request $request)
     {
         $this->checkAccess();
-        
-        $month = $request->get('month', Carbon::now()->format('Y-m'));
-        
-        // Parse month to get start and end dates
-        $startDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
-        $endDate = Carbon::createFromFormat('Y-m', $month)->endOfMonth();
+
+        // Date range filter (from_date & to_date)
+        $fromDateInput = $request->get('from_date');
+        $toDateInput = $request->get('to_date');
+
+        // Default range: 1st day of current month to today
+        if (!$fromDateInput || !$toDateInput) {
+            $fromDate = Carbon::now()->startOfMonth();
+            $toDate = Carbon::now();
+        } else {
+            $fromDate = Carbon::createFromFormat('Y-m-d', $fromDateInput)->startOfDay();
+            $toDate = Carbon::createFromFormat('Y-m-d', $toDateInput)->endOfDay();
+        }
+
+        // Normalized strings for form values
+        $fromDateStr = $fromDate->format('Y-m-d');
+        $toDateStr = $toDate->format('Y-m-d');
 
         // Get all post sale users (role_id = 7)
         $postSaleUsers = User::where('role_id', 7)
@@ -51,10 +62,10 @@ class PostSalesReportController extends Controller
         $reports = [];
 
         foreach ($postSaleUsers as $postSaleUser) {
-            // Get payments collected by this post sale user in the month
+            // Get payments collected by this post sale user in the selected date range
             $payments = Payment::where('collected_by', $postSaleUser->id)
                 ->where('status', 'Approved')
-                ->whereBetween('created_at', [$startDate, $endDate])
+                ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
                 ->with(['invoice.course', 'invoice.student'])
                 ->get();
 
@@ -103,7 +114,11 @@ class PostSalesReportController extends Controller
             ];
         }
 
-        return view('admin.reports.post-sales-month-ways', compact('reports', 'month'));
+        return view('admin.reports.post-sales-month-ways', [
+            'reports' => $reports,
+            'fromDate' => $fromDateStr,
+            'toDate' => $toDateStr,
+        ]);
     }
 
     /**
@@ -113,12 +128,23 @@ class PostSalesReportController extends Controller
     public function totalMonthlyReport(Request $request)
     {
         $this->checkAccess();
-        
-        $month = $request->get('month', Carbon::now()->format('Y-m'));
-        
-        // Parse month to get start and end dates
-        $startDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
-        $endDate = Carbon::createFromFormat('Y-m', $month)->endOfMonth();
+
+        // Date range filter (from_date & to_date)
+        $fromDateInput = $request->get('from_date');
+        $toDateInput = $request->get('to_date');
+
+        // Default range: 1st day of current month to today
+        if (!$fromDateInput || !$toDateInput) {
+            $fromDate = Carbon::now()->startOfMonth();
+            $toDate = Carbon::now();
+        } else {
+            $fromDate = Carbon::createFromFormat('Y-m-d', $fromDateInput)->startOfDay();
+            $toDate = Carbon::createFromFormat('Y-m-d', $toDateInput)->endOfDay();
+        }
+
+        // Normalized strings for form values
+        $fromDateStr = $fromDate->format('Y-m-d');
+        $toDateStr = $toDate->format('Y-m-d');
 
         // Get all post-sales users (role_id = 7)
         $postSaleUserIds = User::where('role_id', 7)
@@ -129,7 +155,7 @@ class PostSalesReportController extends Controller
         // Get all approved payments in the month collected by post-sales users only
         $payments = Payment::where('status', 'Approved')
             ->whereIn('collected_by', $postSaleUserIds)
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
             ->with(['invoice.course', 'invoice.student'])
             ->get();
 
@@ -177,7 +203,13 @@ class PostSalesReportController extends Controller
             $grandTotalStudents += $studentCount;
         }
 
-        return view('admin.reports.total-monthly', compact('reportData', 'grandTotal', 'grandTotalStudents', 'month'));
+        return view('admin.reports.total-monthly', [
+            'reportData' => $reportData,
+            'grandTotal' => $grandTotal,
+            'grandTotalStudents' => $grandTotalStudents,
+            'fromDate' => $fromDateStr,
+            'toDate' => $toDateStr,
+        ]);
     }
 
     /**
@@ -195,6 +227,20 @@ class PostSalesReportController extends Controller
 
         $selectedPostSalesId = $request->get('post_sales_user_id');
 
+        // Optional date range filter
+        $fromDateInput = $request->get('from_date');
+        $toDateInput = $request->get('to_date');
+
+        $fromDate = null;
+        $toDate = null;
+
+        if ($fromDateInput) {
+            $fromDate = Carbon::createFromFormat('Y-m-d', $fromDateInput)->startOfDay();
+        }
+        if ($toDateInput) {
+            $toDate = Carbon::createFromFormat('Y-m-d', $toDateInput)->endOfDay();
+        }
+
         $reportData = [];
         $grandTotal = 0;
         $grandTotalStudents = 0;
@@ -202,8 +248,17 @@ class PostSalesReportController extends Controller
         if ($selectedPostSalesId) {
             $payments = Payment::with(['invoice.course', 'invoice.student'])
                 ->where('status', 'Approved')
-                ->where('collected_by', $selectedPostSalesId)
-                ->get();
+                ->where('collected_by', $selectedPostSalesId);
+
+            // Apply optional date filters
+            if ($fromDate) {
+                $payments->where('created_at', '>=', $fromDate);
+            }
+            if ($toDate) {
+                $payments->where('created_at', '<=', $toDate);
+            }
+
+            $payments = $payments->get();
 
             $courseData = [];
             foreach ($payments as $payment) {
@@ -242,13 +297,15 @@ class PostSalesReportController extends Controller
             }
         }
 
-        return view('admin.reports.bde-collected-amount-course-ways', compact(
-            'reportData',
-            'grandTotal',
-            'grandTotalStudents',
-            'postSalesUsers',
-            'selectedPostSalesId'
-        ));
+        return view('admin.reports.bde-collected-amount-course-ways', [
+            'reportData' => $reportData,
+            'grandTotal' => $grandTotal,
+            'grandTotalStudents' => $grandTotalStudents,
+            'postSalesUsers' => $postSalesUsers,
+            'selectedPostSalesId' => $selectedPostSalesId,
+            'fromDate' => $fromDateInput,
+            'toDate' => $toDateInput,
+        ]);
     }
 }
 
