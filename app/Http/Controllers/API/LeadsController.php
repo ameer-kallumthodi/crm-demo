@@ -38,25 +38,15 @@ class LeadsController extends Controller
             ], 401);
         }
 
-        // Base query for leads
-        $query = Lead::with([
-            'leadStatus:id,title',
-            'leadSource:id,title',
-            'course:id,title',
-            'telecaller:id,name',
-            'studentDetails:id,lead_id,status',
-            'convertedLead' => function($q) {
-                $q->with([
-                    'course:id,title',
-                    'batch:id,title',
-                    'admissionBatch:id,title',
-                    'subject:id,title',
-                    'studentDetails',
-                    'academicAssistant:id,name',
-                    'leadDetail:lead_id,reviewed_at'
-                ]);
-            }
-        ]);
+        // Base query for leads - exclude converted leads (same as web page)
+        $query = Lead::where('is_converted', 0)
+            ->with([
+                'leadStatus:id,title',
+                'leadSource:id,title',
+                'course:id,title',
+                'telecaller:id,name',
+                'studentDetails:id,lead_id,status'
+            ]);
 
         // Apply role-based filtering
         $this->applyRoleBasedFilter($query, $user);
@@ -640,105 +630,6 @@ class LeadsController extends Controller
 
         $registrationDetailsStatus = $isLeadRegFormSubmitted ? $this->getRegistrationDetailsStatus($lead) : '';
 
-        // Format converted lead data if exists
-        $convertedLeadData = null;
-        if ($lead->is_converted && $lead->convertedLead) {
-            $convertedLead = $lead->convertedLead;
-            $appTimezone = config('app.timezone');
-            
-            // Format dates
-            $academicVerifiedAt = $convertedLead->academic_verified_at
-                ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                : null;
-
-            $supportVerifiedAt = $convertedLead->support_verified_at
-                ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                : null;
-
-            $academicDocumentApprovedAt = $convertedLead->leadDetail?->reviewed_at
-                ? $convertedLead->leadDetail->reviewed_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                : null;
-
-            $convertedDate = $convertedLead->studentDetails?->converted_date 
-                ? Carbon::parse($convertedLead->studentDetails->converted_date)->format('d-m-Y')
-                : $convertedLead->created_at->format('d-m-Y');
-
-            // Format DOB
-            $dobDisplay = $convertedLead->dob 
-                ? (strtotime($convertedLead->dob) ? date('d-m-Y', strtotime($convertedLead->dob)) : $convertedLead->dob)
-                : null;
-
-            // Format phone number
-            $phoneDisplay = '';
-            if ($convertedLead->code && $convertedLead->phone) {
-                $phoneDisplay = '+' . $convertedLead->code . ' ' . $convertedLead->phone;
-            } elseif ($convertedLead->phone) {
-                $phoneDisplay = $convertedLead->phone;
-            }
-
-            $convertedLeadData = [
-                'id' => $convertedLead->id,
-                'lead_id' => $convertedLead->lead_id,
-                'name' => $convertedLead->name,
-                'phone' => $convertedLead->phone,
-                'phone_code' => $convertedLead->code,
-                'phone_display' => $phoneDisplay,
-                'email' => $convertedLead->email,
-                'dob' => $convertedLead->dob,
-                'dob_display' => $dobDisplay,
-                'register_number' => $convertedLead->register_number,
-                'status' => $convertedLead->status,
-                'converted_date' => $convertedDate,
-                'created_at' => $convertedLead->created_at ? $convertedLead->created_at->format('Y-m-d H:i:s') : null,
-                'created_at_display' => $convertedLead->created_at ? $convertedLead->created_at->format('d-m-Y h:i A') : null,
-                'is_academic_verified' => (bool) ($convertedLead->is_academic_verified ?? false),
-                'academic_verified_at' => $convertedLead->academic_verified_at ? $convertedLead->academic_verified_at->format('Y-m-d H:i:s') : null,
-                'academic_verified_at_display' => $academicVerifiedAt,
-                'academic_verified_by_id' => $convertedLead->academic_verified_by,
-                'is_support_verified' => (bool) ($convertedLead->is_support_verified ?? false),
-                'support_verified_at' => $convertedLead->support_verified_at ? $convertedLead->support_verified_at->format('Y-m-d H:i:s') : null,
-                'support_verified_at_display' => $supportVerifiedAt,
-                'support_verified_by_id' => $convertedLead->support_verified_by,
-                'academic_document_approved_at' => $convertedLead->leadDetail?->reviewed_at 
-                    ? $convertedLead->leadDetail->reviewed_at->format('Y-m-d H:i:s') 
-                    : null,
-                'academic_document_approved_at_display' => $academicDocumentApprovedAt,
-                'course' => $convertedLead->course ? [
-                    'id' => $convertedLead->course->id,
-                    'title' => $convertedLead->course->title,
-                ] : null,
-                'course_id' => $convertedLead->course_id,
-                'batch' => $convertedLead->batch ? [
-                    'id' => $convertedLead->batch->id,
-                    'title' => $convertedLead->batch->title,
-                ] : null,
-                'batch_id' => $convertedLead->batch_id,
-                'admission_batch' => $convertedLead->admissionBatch ? [
-                    'id' => $convertedLead->admissionBatch->id,
-                    'title' => $convertedLead->admissionBatch->title,
-                ] : null,
-                'admission_batch_id' => $convertedLead->admission_batch_id,
-                'subject' => $convertedLead->subject ? [
-                    'id' => $convertedLead->subject->id,
-                    'title' => $convertedLead->subject->title,
-                ] : null,
-                'subject_id' => $convertedLead->subject_id,
-                'student_details' => $convertedLead->studentDetails ? [
-                    'reg_fee' => $convertedLead->studentDetails->reg_fee,
-                    'exam_fee' => $convertedLead->studentDetails->exam_fee,
-                    'id_card' => $convertedLead->studentDetails->id_card,
-                    'tma' => $convertedLead->studentDetails->tma,
-                    'enroll_no' => $convertedLead->studentDetails->enroll_no,
-                    'converted_date' => $convertedLead->studentDetails->converted_date,
-                ] : null,
-                'academic_assistant' => $convertedLead->academicAssistant ? [
-                    'id' => $convertedLead->academicAssistant->id,
-                    'name' => $convertedLead->academicAssistant->name,
-                ] : null,
-                'academic_assistant_id' => $convertedLead->academic_assistant_id,
-            ];
-        }
-
         return [
             'id' => $lead->id,
             'name' => $lead->title ?? '',
@@ -761,8 +652,6 @@ class LeadsController extends Controller
             'follow_up_date' => $followUpDate,
             'registration_details_status' => $registrationDetailsStatus,
             'can_convert' => $this->canConvertLead($lead),
-            'is_converted' => (bool) $lead->is_converted,
-            'converted_lead' => $convertedLeadData,
             'created_at' => $createdAt->format('d-m-Y H:i:s')
         ];
     }
