@@ -225,8 +225,9 @@ class RegistrationLeadsController extends Controller
                     'university:id,title',
                     'universityCourse:id,title',
                     'reviewedBy:id,name',
-                    'sslcCertificates:id,lead_detail_id,certificate_path,verification_status,verified_by',
+                    'sslcCertificates:id,lead_detail_id,certificate_path,original_filename,file_type,file_size,verification_status,verification_notes,verified_at,verified_by,created_at',
                     'sslcCertificates.verifiedBy:id,name',
+                    'sslcVerifiedBy:id,name',
                     'birthCertificateVerifiedBy:id,name',
                     'passportPhotoVerifiedBy:id,name',
                     'adharFrontVerifiedBy:id,name',
@@ -1140,6 +1141,143 @@ class RegistrationLeadsController extends Controller
     }
 
     /**
+     * Upload/replace non-SSLC registration documents (plustwo, UG, etc.).
+     */
+    public function addDocument(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        if (!$this->canAccessRegistrationData($user)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied.',
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'lead_detail_id' => 'required|exists:leads_details,id',
+            'document_type' => 'required|in:plustwo_certificate,plus_two_certificate,ug_certificate,post_graduation_certificate,birth_certificate,passport_photo,adhar_front,adhar_back,signature,other_document',
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please correct the errors below.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $leadDetail = LeadDetail::with('lead.telecaller')->findOrFail($request->lead_detail_id);
+
+            if (!$leadDetail->lead || !$this->canViewLead($leadDetail->lead, $user)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Access denied for this lead.',
+                ], 403);
+            }
+
+            $documentType = $request->document_type;
+
+            $baseFieldMapping = [
+                'plustwo_certificate' => 'plustwo',
+                'plus_two_certificate' => 'plus_two',
+                'ug_certificate' => 'ug',
+                'post_graduation_certificate' => 'post_graduation_certificate',
+                'birth_certificate' => 'birth_certificate',
+                'passport_photo' => 'passport_photo',
+                'adhar_front' => 'adhar_front',
+                'adhar_back' => 'adhar_back',
+                'signature' => 'signature',
+                'other_document' => 'other_document',
+            ];
+
+            $fileFieldMapping = [
+                'plustwo_certificate' => 'plustwo_certificate',
+                'plus_two_certificate' => 'plus_two_certificate',
+                'ug_certificate' => 'ug_certificate',
+                'post_graduation_certificate' => 'post_graduation_certificate',
+                'birth_certificate' => 'birth_certificate',
+                'passport_photo' => 'passport_photo',
+                'adhar_front' => 'adhar_front',
+                'adhar_back' => 'adhar_back',
+                'signature' => 'signature',
+                'other_document' => 'other_document',
+            ];
+
+            $baseField = $baseFieldMapping[$documentType] ?? null;
+            $fileField = $fileFieldMapping[$documentType] ?? null;
+
+            if (!$baseField || !$fileField) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unsupported document type.',
+                ], 422);
+            }
+
+            $verificationField = $baseField . '_verification_status';
+            $verifiedByField = $baseField . '_verified_by';
+            $verifiedAtField = $baseField . '_verified_at';
+
+            $file = $request->file('file');
+            $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('student-documents', $fileName, 'public');
+
+            $oldPath = $leadDetail->$fileField;
+            if (!empty($oldPath) && Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->delete($oldPath);
+            }
+
+            $leadDetail->update([
+                $fileField => $filePath,
+                $verificationField => 'pending',
+                $verifiedByField => null,
+                $verifiedAtField => null,
+                'status' => 'pending',
+                'reviewed_by' => null,
+                'reviewed_at' => null,
+            ]);
+
+            $documentName = ucfirst(str_replace('_', ' ', $documentType));
+            LeadActivity::create([
+                'lead_id' => $leadDetail->lead_id,
+                'activity_type' => $oldPath ? 'document_change' : 'document_upload',
+                'description' => $oldPath ? ($documentName . ' changed') : ($documentName . ' uploaded'),
+                'reason' => 'Document: ' . $documentName . ' added via API. Status set to pending review.',
+                'created_by' => $user->id,
+            ]);
+
+            $documentUrl = $this->buildFileUrl($filePath);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Document uploaded successfully.',
+                'data' => [
+                    'document_type' => $documentType,
+                    'document_url' => $documentUrl,
+                    'verification_status' => 'pending',
+                    'lead_status' => $leadDetail->status,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('API add document error: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Error uploading document: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Build the base query with eager loaded relationships.
      */
     private function autoGenerateInvoice(ConvertedLead $student, int $courseId, int $userId): ?Invoice
@@ -1339,8 +1477,9 @@ class RegistrationLeadsController extends Controller
                         'subCourse:id,title',
                         'classTime:id,course_id,from_time,to_time',
                         'reviewedBy:id,name',
-                        'sslcCertificates:id,lead_detail_id,certificate_path,verification_status,verified_at,verified_by',
+                        'sslcCertificates:id,lead_detail_id,certificate_path,original_filename,file_type,file_size,verification_status,verification_notes,verified_at,verified_by,created_at',
                         'sslcCertificates.verifiedBy:id,name',
+                        'sslcVerifiedBy:id,name',
                     ]);
                 },
                 'leadActivities' => function ($query) {
@@ -1589,15 +1728,11 @@ class RegistrationLeadsController extends Controller
             ];
         }
 
-        if ($detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
-            $summary['sslc_multiple'] = $detail->sslcCertificates->map(function ($certificate) {
-                return [
-                    'url' => $this->buildFileUrl($certificate->certificate_path ?? $certificate->file_path ?? null),
-                    'status' => $certificate->verification_status ?? 'pending',
-                    'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
-                    'verified_at' => $this->formatDateTimeValue($certificate->verified_at),
-                ];
-            });
+        $formattedSslcCertificates = $this->formatSslcCertificates($detail);
+
+        if (!empty($formattedSslcCertificates)) {
+            $summary['sslc_certificates'] = $formattedSslcCertificates;
+            $summary['sslc_multiple'] = $formattedSslcCertificates;
         }
 
         return $summary;
@@ -1626,28 +1761,30 @@ class RegistrationLeadsController extends Controller
                 $filePath
             );
 
+            $verifiedByName = $this->resolveVerifiedBy(
+                $detail,
+                $verifiedByField,
+                $config['verified_relation'] ?? null
+            );
+
+            if ($field === 'sslc_certificate') {
+                $verifiedByName = $this->resolveSslcVerifiedByName($detail) ?? $verifiedByName;
+            }
+
             $documents[$field] = [
                 'label' => $config['label'],
                 'url' => $this->buildFileUrl($filePath),
                 'status' => $status,
-                'verified_by' => $this->resolveVerifiedBy(
-                    $detail,
-                    $verifiedByField,
-                    $config['verified_relation'] ?? null
-                ),
+                'verified_by' => $verifiedByName,
                 'verified_at' => $verifiedAt,
             ];
         }
 
-        if ($detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
-            $documents['sslc_multiple'] = $detail->sslcCertificates->map(function ($certificate) {
-                return [
-                    'url' => $this->buildFileUrl($certificate->certificate_path ?? $certificate->file_path ?? null),
-                    'status' => $certificate->verification_status,
-                    'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
-                    'verified_at' => $this->formatDateTimeValue($certificate->verified_at),
-                ];
-            });
+        $formattedSslcCertificates = $this->formatSslcCertificates($detail);
+
+        if (!empty($formattedSslcCertificates)) {
+            $documents['sslc_certificates'] = $formattedSslcCertificates;
+            $documents['sslc_multiple'] = $formattedSslcCertificates;
         }
 
         return $documents;
@@ -1876,6 +2013,58 @@ class RegistrationLeadsController extends Controller
                 'verified_relation' => 'otherDocumentVerifiedBy',
             ],
         ];
+    }
+
+    /**
+     * Prepare SSLC certificate payloads (mirrors web view listing).
+     */
+    private function formatSslcCertificates(LeadDetail $detail): array
+    {
+        if (!$detail->sslcCertificates || $detail->sslcCertificates->isEmpty()) {
+            return [];
+        }
+
+        return $detail->sslcCertificates
+            ->map(function ($certificate, $index) {
+                $path = $certificate->certificate_path ?? $certificate->file_path ?? null;
+
+                return [
+                    'id' => $certificate->id,
+                    'label' => 'SSLC Certificate ' . ($index + 1),
+                    'original_filename' => $certificate->original_filename ?? ($path ? basename($path) : null),
+                    'file_type' => $certificate->file_type ?? null,
+                    'file_size' => $certificate->file_size ?? null,
+                    'url' => $this->buildFileUrl($path),
+                    'status' => $certificate->verification_status ?? 'pending',
+                    'status_label' => ($certificate->verification_status ?? 'pending') === 'verified' ? 'Verified' : 'Pending',
+                    'verified_by' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
+                    'verified_at' => $this->formatDateTimeValue($certificate->verified_at),
+                    'verification_notes' => $certificate->verification_notes ?? null,
+                    'uploaded_at' => $this->formatDateTimeValue($certificate->created_at ?? null),
+                ];
+            })
+            ->values()
+            ->toArray();
+    }
+
+    /**
+     * Resolve SSLC verified by name (prioritise certificate verifier data).
+     */
+    private function resolveSslcVerifiedByName(LeadDetail $detail): ?string
+    {
+        if ($detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
+            $verifiedCertificate = $detail->sslcCertificates->firstWhere('verification_status', 'verified');
+
+            if ($verifiedCertificate && $verifiedCertificate->verifiedBy) {
+                return $verifiedCertificate->verifiedBy->name;
+            }
+        }
+
+        if ($detail->relationLoaded('sslcVerifiedBy') && $detail->sslcVerifiedBy) {
+            return $detail->sslcVerifiedBy->name;
+        }
+
+        return null;
     }
 
     /**

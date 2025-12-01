@@ -46,6 +46,7 @@ Route::prefix('v1')->group(function () {
         Route::post('registration-leads/inline-update', [RegistrationLeadsController::class, 'inlineUpdate']);
         Route::post('registration-leads/document-verification', [RegistrationLeadsController::class, 'verifyDocument']);
         Route::post('registration-leads/add-sslc-certificate', [RegistrationLeadsController::class, 'addSSLCCertificates']);
+        Route::post('registration-leads/add-document', [RegistrationLeadsController::class, 'addDocument']);
 
         // Converted Leads APIs
         Route::get('converted-leads', [ConvertedLeadsController::class, 'index']);
