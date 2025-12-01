@@ -4,6 +4,9 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\ConvertedLead;
+use App\Models\LeadActivity;
+use App\Models\ConvertedStudentActivity;
+use App\Services\LeadCallLogService;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
 use App\Helpers\PhoneNumberHelper;
@@ -141,6 +144,293 @@ class ConvertedLeadsController extends Controller
                 'to' => $convertedLeads->lastItem(),
             ]
         ], 200);
+    }
+
+    /**
+     * Get converted lead details (same as web page view)
+     *
+     * @param Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(Request $request, $id)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // Load converted lead with all relationships (same as web controller)
+        $convertedLead = ConvertedLead::with([
+            'lead',
+            'lead.telecaller:id,name',
+            'leadDetail.sslcCertificates.verifiedBy:id,name',
+            'leadDetail.sslcVerifiedBy:id,name',
+            'leadDetail.plustwoVerifiedBy:id,name',
+            'leadDetail.ugVerifiedBy:id,name',
+            'leadDetail.passportPhotoVerifiedBy:id,name',
+            'leadDetail.adharFrontVerifiedBy:id,name',
+            'leadDetail.adharBackVerifiedBy:id,name',
+            'leadDetail.signatureVerifiedBy:id,name',
+            'leadDetail.birthCertificateVerifiedBy:id,name',
+            'leadDetail.otherDocumentVerifiedBy:id,name',
+            'course',
+            'batch',
+            'admissionBatch',
+            'subject',
+            'academicAssistant',
+            'createdBy',
+            'studentDetails.registrationLink'
+        ])->find($id);
+
+        if (!$convertedLead) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Converted lead not found'
+            ], 404);
+        }
+
+        // Check access permissions (same as web controller)
+        if (!$this->canAccessConvertedLead($convertedLead, $user)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied. You do not have permission to view this converted lead.'
+            ], 403);
+        }
+
+        // Get lead activities (exclude pullbacked activities, same as web controller)
+        $leadActivities = LeadActivity::where('lead_id', $convertedLead->lead_id)
+            ->where(function ($query) {
+                $query->whereNull('is_pullbacked')
+                      ->orWhere('is_pullbacked', 0);
+            })
+            ->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id')
+            ->with(['leadStatus:id,title', 'createdBy:id,name'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get converted student activities
+        $convertedStudentActivities = ConvertedStudentActivity::where('converted_lead_id', $convertedLead->id)
+            ->with(['createdBy:id,name'])
+            ->orderBy('activity_date', 'desc')
+            ->orderBy('activity_time', 'desc')
+            ->get();
+
+        // Get call logs
+        $callLogs = LeadCallLogService::forConvertedLead($convertedLead);
+
+        // Format data for API response
+        $appTimezone = config('app.timezone');
+        $formattedData = $this->formatConvertedLeadDetailData($convertedLead, $leadActivities, $convertedStudentActivities, $callLogs, $appTimezone);
+
+        return response()->json([
+            'status' => true,
+            'data' => $formattedData
+        ], 200);
+    }
+
+    /**
+     * Check if user can access the converted lead
+     *
+     * @param ConvertedLead $convertedLead
+     * @param \App\Models\User $user
+     * @return bool
+     */
+    private function canAccessConvertedLead($convertedLead, $user)
+    {
+        $roleId = $user->role_id;
+        $isTeamLead = $user->is_team_lead == 1;
+        $role = \App\Models\UserRole::find($roleId);
+        $roleTitle = $role ? $role->title : '';
+
+        // General Manager, Admin, Admission Counsellor, Academic Assistant: Can see all
+        if ($roleTitle === 'General Manager' || 
+            $roleId == 1 || // Super Admin
+            $roleId == 2 || // Admin
+            $roleTitle === 'Admission Counsellor' || 
+            $roleTitle === 'Academic Assistant') {
+            return true;
+        }
+
+        // Team Lead: Can see converted leads from their team
+        if ($isTeamLead) {
+            $teamId = $user->team_id;
+            if ($teamId) {
+                $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                return in_array($convertedLead->lead->telecaller_id, $teamMemberIds);
+            } else {
+                return $convertedLead->lead->telecaller_id == $user->id;
+            }
+        }
+
+        // Telecaller: Can only see converted leads from leads assigned to them
+        if ($roleId == 3) {
+            return $convertedLead->lead->telecaller_id == $user->id;
+        }
+
+        // Support Team: Can see academically verified leads
+        if ($roleTitle === 'Support Team') {
+            return $convertedLead->is_academic_verified == 1;
+        }
+
+        // Default: deny access
+        return false;
+    }
+
+    /**
+     * Format converted lead detail data for API response
+     *
+     * @param ConvertedLead $convertedLead
+     * @param \Illuminate\Support\Collection $leadActivities
+     * @param \Illuminate\Support\Collection $convertedStudentActivities
+     * @param \Illuminate\Support\Collection $callLogs
+     * @param string $appTimezone
+     * @return array
+     */
+    private function formatConvertedLeadDetailData($convertedLead, $leadActivities, $convertedStudentActivities, $callLogs, $appTimezone)
+    {
+        // Format converted lead data (reuse existing method)
+        $users = collect();
+        $convertedLeadData = $this->formatConvertedLeadData($convertedLead, $appTimezone, $users);
+
+        // Format lead activities
+        $formattedLeadActivities = $leadActivities->map(function ($activity) use ($appTimezone) {
+            return [
+                'id' => $activity->id,
+                'lead_id' => $activity->lead_id,
+                'activity_type' => $activity->activity_type,
+                'description' => $activity->description,
+                'reason' => $activity->reason,
+                'remarks' => $activity->remarks,
+                'rating' => $activity->rating,
+                'followup_date' => $activity->followup_date ? $activity->followup_date->format('Y-m-d') : null,
+                'followup_date_display' => $activity->followup_date ? $activity->followup_date->format('d-m-Y') : null,
+                'created_at' => $activity->created_at ? $activity->created_at->format('Y-m-d H:i:s') : null,
+                'created_at_display' => $activity->created_at ? $activity->created_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A') : null,
+                'lead_status' => $activity->leadStatus ? [
+                    'id' => $activity->leadStatus->id,
+                    'title' => $activity->leadStatus->title,
+                ] : null,
+                'created_by' => $activity->createdBy ? [
+                    'id' => $activity->createdBy->id,
+                    'name' => $activity->createdBy->name,
+                ] : null,
+            ];
+        });
+
+        // Format converted student activities
+        $formattedStudentActivities = $convertedStudentActivities->map(function ($activity) use ($appTimezone) {
+            return [
+                'id' => $activity->id,
+                'converted_lead_id' => $activity->converted_lead_id,
+                'activity_type' => $activity->activity_type,
+                'activity_date' => $activity->activity_date ? $activity->activity_date->format('Y-m-d') : null,
+                'activity_date_display' => $activity->activity_date ? $activity->activity_date->format('d-m-Y') : null,
+                'activity_time' => $activity->activity_time ? $activity->activity_time->format('H:i:s') : null,
+                'activity_time_display' => $activity->activity_time ? $activity->activity_time->format('h:i A') : null,
+                'description' => $activity->description,
+                'remarks' => $activity->remarks,
+                'created_at' => $activity->created_at ? $activity->created_at->format('Y-m-d H:i:s') : null,
+                'created_at_display' => $activity->created_at ? $activity->created_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A') : null,
+                'created_by' => $activity->createdBy ? [
+                    'id' => $activity->createdBy->id,
+                    'name' => $activity->createdBy->name,
+                ] : null,
+            ];
+        });
+
+        // Format call logs
+        $formattedCallLogs = $callLogs->map(function ($callLog) use ($appTimezone) {
+            return [
+                'id' => $callLog->id,
+                'type' => $callLog->type,
+                'call_uuid' => $callLog->call_uuid,
+                'called_number' => $callLog->calledNumber,
+                'caller_number' => $callLog->callerNumber,
+                'agent_number' => $callLog->AgentNumber,
+                'extension_number' => $callLog->extensionNumber,
+                'destination_number' => $callLog->destinationNumber,
+                'callerid' => $callLog->callerid,
+                'duration' => $callLog->duration,
+                'formatted_duration' => $callLog->formatted_duration ?? $this->formatDuration($callLog->duration),
+                'status' => $callLog->status,
+                'date' => $callLog->date ? $callLog->date->format('Y-m-d') : null,
+                'date_display' => $callLog->date ? $callLog->date->format('d-m-Y') : null,
+                'start_time' => $callLog->start_time ? $callLog->start_time->format('H:i:s') : null,
+                'start_time_display' => $callLog->start_time ? $callLog->start_time->format('h:i A') : null,
+                'end_time' => $callLog->end_time ? $callLog->end_time->format('H:i:s') : null,
+                'end_time_display' => $callLog->end_time ? $callLog->end_time->format('h:i A') : null,
+                'recording_url' => $callLog->recording_URL,
+                'telecaller_name' => $callLog->telecaller_name ?? null,
+                'created_at' => $callLog->created_at ? $callLog->created_at->format('Y-m-d H:i:s') : null,
+            ];
+        });
+
+        // Add lead information with more details
+        $leadData = null;
+        if ($convertedLead->lead) {
+            $leadData = [
+                'id' => $convertedLead->lead->id,
+                'title' => $convertedLead->lead->title,
+                'phone' => $convertedLead->lead->phone,
+                'phone_code' => $convertedLead->lead->code,
+                'phone_display' => PhoneNumberHelper::display($convertedLead->lead->code, $convertedLead->lead->phone),
+                'whatsapp' => $convertedLead->lead->whatsapp,
+                'whatsapp_code' => $convertedLead->lead->whatsapp_code,
+                'email' => $convertedLead->lead->email,
+                'telecaller' => $convertedLead->lead->telecaller ? [
+                    'id' => $convertedLead->lead->telecaller->id,
+                    'name' => $convertedLead->lead->telecaller->name,
+                ] : null,
+            ];
+        }
+
+        // Add lead detail information
+        $leadDetailData = null;
+        if ($convertedLead->leadDetail) {
+            $leadDetailData = [
+                'lead_id' => $convertedLead->leadDetail->lead_id,
+                'reviewed_at' => $convertedLead->leadDetail->reviewed_at ? $convertedLead->leadDetail->reviewed_at->format('Y-m-d H:i:s') : null,
+                'reviewed_at_display' => $convertedLead->leadDetail->reviewed_at ? $convertedLead->leadDetail->reviewed_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A') : null,
+                // Add other lead detail fields as needed
+            ];
+        }
+
+        return [
+            'converted_lead' => $convertedLeadData,
+            'lead' => $leadData,
+            'lead_detail' => $leadDetailData,
+            'lead_activities' => $formattedLeadActivities,
+            'converted_student_activities' => $formattedStudentActivities,
+            'call_logs' => $formattedCallLogs,
+        ];
+    }
+
+    /**
+     * Format duration in seconds to readable format
+     *
+     * @param int|null $seconds
+     * @return string
+     */
+    private function formatDuration($seconds)
+    {
+        if (!$seconds) {
+            return 'N/A';
+        }
+
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        $secs = $seconds % 60;
+
+        if ($hours > 0) {
+            return sprintf('%d:%02d:%02d', $hours, $minutes, $secs);
+        }
+
+        return sprintf('%d:%02d', $minutes, $secs);
     }
 
     /**
