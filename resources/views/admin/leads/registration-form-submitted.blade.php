@@ -439,7 +439,7 @@
                                             </div>
                                             <div>
                                                 <h6 class="mb-0 fw-bold f-14">{{ $lead->title }}</h6>
-                                                <small class="text-muted f-11">#{{ $lead->code }}</small>
+                                                <small class="text-muted f-11">#{{ $lead->id }}</small>
                                             </div>
                                         </div>
                                     </td>
@@ -569,7 +569,7 @@
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="mb-0 fw-bold f-14">{{ $lead->title }}</h6>
-                                        <small class="text-muted f-11">#{{ $index + 1 }}</small>
+                                        <small class="text-muted f-11">#{{ $lead->id }}</small>
                                     </div>
                                 </div>
                                 <!-- Action buttons in header -->
