@@ -8,6 +8,7 @@ use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\MarketingLeadsController;
 use App\Http\Controllers\API\FollowupLeadsController;
 use App\Http\Controllers\API\RegistrationLeadsController;
+use App\Http\Controllers\API\ConvertedLeadsController;
 
 Route::prefix('v1')->group(function () {
     Route::post('auth/login', [AuthController::class, 'login']);
@@ -44,5 +45,8 @@ Route::prefix('v1')->group(function () {
         Route::post('registration-leads/{lead}/convert', [RegistrationLeadsController::class, 'convertSubmit'])->whereNumber('lead');
         Route::post('registration-leads/inline-update', [RegistrationLeadsController::class, 'inlineUpdate']);
         Route::post('registration-leads/document-verification', [RegistrationLeadsController::class, 'verifyDocument']);
+
+        // Converted Leads APIs
+        Route::get('converted-leads', [ConvertedLeadsController::class, 'index']);
     });
 });
