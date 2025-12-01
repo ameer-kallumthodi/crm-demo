@@ -1706,9 +1706,17 @@ class RegistrationLeadsController extends Controller
         $documentTypes = $this->documentTypeConfigs();
         $summary = [];
 
+        // Check if SSLC certificates exist in sslc_certificates table
+        $hasSslcCertificates = $detail->sslcCertificates && $detail->sslcCertificates->count() > 0;
+
         foreach ($documentTypes as $field => $config) {
-            $statusField = $field . '_verification_status';
-            $verifiedAtField = $field . '_verified_at';
+            // Skip legacy sslc_certificate entry if certificates exist in sslc_certificates table
+            if ($field === 'sslc_certificate' && $hasSslcCertificates) {
+                continue;
+            }
+
+            $statusField = $config['status_field'] ?? ($field . '_verification_status');
+            $verifiedAtField = $config['verified_at_field'] ?? ($field . '_verified_at');
             $label = $config['label'];
             $filePath = $this->resolveDocumentPath($detail, $field, $config);
             [$uploaded, $status, $verifiedAt] = $this->resolveDocumentStatusMeta(
@@ -1744,14 +1752,20 @@ class RegistrationLeadsController extends Controller
     private function buildDocumentPayload(LeadDetail $detail): array
     {
         $documentTypes = $this->documentTypeConfigs();
-        $documentTypes = $this->documentTypeConfigs();
-
         $documents = [];
 
+        // Check if SSLC certificates exist in sslc_certificates table
+        $hasSslcCertificates = $detail->sslcCertificates && $detail->sslcCertificates->count() > 0;
+
         foreach ($documentTypes as $field => $config) {
-            $statusField = $field . '_verification_status';
-            $verifiedByField = $field . '_verified_by';
-            $verifiedAtField = $field . '_verified_at';
+            // Skip legacy sslc_certificate entry if certificates exist in sslc_certificates table
+            if ($field === 'sslc_certificate' && $hasSslcCertificates) {
+                continue;
+            }
+
+            $statusField = $config['status_field'] ?? ($field . '_verification_status');
+            $verifiedByField = $config['verified_by_field'] ?? ($field . '_verified_by');
+            $verifiedAtField = $config['verified_at_field'] ?? ($field . '_verified_at');
             $filePath = $this->resolveDocumentPath($detail, $field, $config);
             [$uploaded, $status, $verifiedAt] = $this->resolveDocumentStatusMeta(
                 $detail,
@@ -1780,6 +1794,7 @@ class RegistrationLeadsController extends Controller
             ];
         }
 
+        // Add SSLC certificates from sslc_certificates table
         $formattedSslcCertificates = $this->formatSslcCertificates($detail);
 
         if (!empty($formattedSslcCertificates)) {
@@ -1906,14 +1921,7 @@ class RegistrationLeadsController extends Controller
         string $verifiedAtField,
         ?string $filePath
     ): array {
-        $uploaded = !empty($filePath);
-        $status = $detail->$statusField ?? null;
-        $verifiedAt = $this->formatDateTimeValue($detail->$verifiedAtField);
-
-        if ($uploaded) {
-            $status = $status ?? 'pending';
-        }
-
+        // For SSLC, prioritize sslc_certificates table over legacy leads_details fields
         if ($field === 'sslc_certificate' && $detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
             $uploaded = true;
             $hasPending = $detail->sslcCertificates->contains(function ($certificate) {
@@ -1924,9 +1932,21 @@ class RegistrationLeadsController extends Controller
 
             $firstVerified = $detail->sslcCertificates->firstWhere('verification_status', 'verified');
 
+            $verifiedAt = null;
             if ($firstVerified && $firstVerified->verified_at) {
                 $verifiedAt = $this->formatDateTimeValue($firstVerified->verified_at);
             }
+
+            return [$uploaded, $status, $verifiedAt];
+        }
+
+        // For other documents or legacy SSLC (no certificates in sslc_certificates table)
+        $uploaded = !empty($filePath);
+        $status = $detail->$statusField ?? null;
+        $verifiedAt = $this->formatDateTimeValue($detail->$verifiedAtField);
+
+        if ($uploaded) {
+            $status = $status ?? 'pending';
         }
 
         return [$uploaded, $status, $verifiedAt];
@@ -1934,21 +1954,30 @@ class RegistrationLeadsController extends Controller
 
     private function resolveDocumentPath(LeadDetail $detail, string $field, array $config): ?string
     {
-        $pathResolver = $config['path_resolver'] ?? null;
-        $path = $pathResolver ? $pathResolver($detail) : ($detail->$field ?? null);
-
-        if ($field === 'sslc_certificate' && empty($path) && $detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
+        // For SSLC, prioritize sslc_certificates table over legacy leads_details field
+        if ($field === 'sslc_certificate' && $detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
             $firstCertificate = $detail->sslcCertificates->first();
             if ($firstCertificate) {
-                $path = $firstCertificate->certificate_path ?? $firstCertificate->file_path;
+                return $firstCertificate->certificate_path ?? $firstCertificate->file_path ?? null;
             }
         }
 
-        return $path;
+        // For other documents or legacy SSLC (no certificates in sslc_certificates table)
+        $pathResolver = $config['path_resolver'] ?? null;
+        return $pathResolver ? $pathResolver($detail) : ($detail->$field ?? null);
     }
 
     private function resolveVerifiedBy(LeadDetail $detail, string $verifiedByField, ?string $relationName = null)
     {
+        // For SSLC, prioritize sslc_certificates table over legacy leads_details fields
+        if ($verifiedByField === 'sslc_verified_by' && $detail->sslcCertificates && $detail->sslcCertificates->count() > 0) {
+            $verifiedCertificate = $detail->sslcCertificates->firstWhere('verification_status', 'verified');
+            if ($verifiedCertificate && $verifiedCertificate->verifiedBy) {
+                return $verifiedCertificate->verifiedBy->name;
+            }
+        }
+
+        // For other documents or legacy SSLC (no certificates in sslc_certificates table)
         if ($relationName && $detail->relationLoaded($relationName) && $detail->$relationName) {
             return $detail->$relationName->name;
         }
@@ -1966,6 +1995,9 @@ class RegistrationLeadsController extends Controller
                 'label' => 'SSLC Certificate',
                 'path_resolver' => fn ($detail) => $detail->sslc_certificate,
                 'verified_relation' => 'sslcVerifiedBy',
+                'status_field' => 'sslc_verification_status',
+                'verified_by_field' => 'sslc_verified_by',
+                'verified_at_field' => 'sslc_verified_at',
             ],
             'plustwo_certificate' => [
                 'label' => 'Plus Two Certificate',

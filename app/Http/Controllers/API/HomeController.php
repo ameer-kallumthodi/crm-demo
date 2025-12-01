@@ -54,11 +54,16 @@ class HomeController extends Controller
         // Converted leads count (all time) - with role-based filtering
         $convertedLeadsQuery = ConvertedLead::query();
         $this->applyRoleBasedFilterToConvertedLeads($convertedLeadsQuery, $user);
-        $convertedLeads = $convertedLeadsQuery->count();
+        $actualConvertedLeads = $convertedLeadsQuery->count();
+
+        // Not converted leads (active) should be shown in converted_leads count per new requirement
+        $notConvertedLeads = (clone $baseLeadQuery)
+            ->where('is_converted', 0)
+            ->count();
 
         // Conversion rate
         $conversionRate = $totalLead > 0 
-            ? round(($convertedLeads / $totalLead) * 100, 2) 
+            ? round(($actualConvertedLeads / $totalLead) * 100, 2) 
             : 0;
 
         // Today's leads
@@ -67,9 +72,7 @@ class HomeController extends Controller
             ->count();
 
         // Active leads (not converted)
-        $activeLeads = (clone $baseLeadQuery)
-            ->where('is_converted', 0)
-            ->count();
+        $activeLeads = $notConvertedLeads;
 
         // Active leads this week (created this week and not converted)
         // Get all converted lead IDs (not filtered by role) to check conversion status
@@ -83,7 +86,7 @@ class HomeController extends Controller
         $leadStatusOverview = LeadStatus::where('is_active', true)
             ->get()
             ->map(function ($status) use ($user) {
-                $leadsQuery = Lead::where('lead_status_id', $status->id);
+                $leadsQuery = Lead::where('lead_status_id', $status->id)->where('is_converted', 0);
                 $this->applyRoleBasedFilter($leadsQuery, $user);
                 $leadsCount = $leadsQuery->count();
                 
@@ -138,7 +141,7 @@ class HomeController extends Controller
             'count' => [
                 'total_lead' => $totalLead,
                 'this_week_total_lead' => $thisWeekTotalLead,
-                'converted_leads' => $convertedLeads,
+                'converted_leads' => $notConvertedLeads,
                 'convertion_rate' => $conversionRate . '%',
                 'todays_lead' => $todaysLead,
                 'active_leads' => $activeLeads,
@@ -328,13 +331,22 @@ class HomeController extends Controller
                     $whatsapp = $marketingLead->whatsapp;
                 }
 
+                $dateOfVisit = '';
+                if ($marketingLead->date_of_visit) {
+                    try {
+                        $dateOfVisit = Carbon::parse($marketingLead->date_of_visit)->format('d-m-Y');
+                    } catch (\Exception $e) {
+                        $dateOfVisit = '';
+                    }
+                }
+
                 return [
                     'id' => $marketingLead->id,
                     'lead_name' => $marketingLead->lead_name,
                     'phone' => $phone,
                     'whatsapp' => $whatsapp,
                     'location' => $marketingLead->location,
-                    'date_of_visit' => $marketingLead->date_of_visit ? $marketingLead->date_of_visit->format('d-m-Y') : '',
+                    'date_of_visit' => $dateOfVisit,
                     'lead_type' => $marketingLead->lead_type,
                     'is_telecaller_assigned' => $marketingLead->is_telecaller_assigned ? 1 : 0,
                     'marketing_bde' => $marketingLead->marketingBde ? $marketingLead->marketingBde->name : '',
