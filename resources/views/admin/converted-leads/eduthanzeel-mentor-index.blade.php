@@ -456,7 +456,7 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>
+                                <td class="tutor-phone-cell">
                                     <span>{{ $convertedLead->studentDetails?->teacher ? \App\Helpers\PhoneNumberHelper::display($convertedLead->studentDetails->teacher->code, $convertedLead->studentDetails->teacher->phone) : ($convertedLead->mentorDetails?->tutor_phone_number ?: '-') }}</span>
                                 </td>
                                 <td>
@@ -893,7 +893,8 @@
                             container.data('current', value || '');
                             
                             // Always update tutor phone number display - response.tutor_phone should be the formatted phone
-                            const tutorPhoneCell = container.closest('tr').find('td').eq(14); // Tutor Phone Number is 15th column (0-indexed: 14)
+                            // Use class selector to find the correct cell instead of index (which varies based on Support Verified column)
+                            const tutorPhoneCell = container.closest('tr').find('td.tutor-phone-cell');
                             if (tutorPhoneCell.length) {
                                 const phoneDisplay = response.tutor_phone ? String(response.tutor_phone).trim() : '-';
                                 tutorPhoneCell.find('span').text(phoneDisplay);
