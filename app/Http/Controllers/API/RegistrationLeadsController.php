@@ -915,40 +915,51 @@ class RegistrationLeadsController extends Controller
 
             $documentType = $request->document_type;
             $verificationStatus = $request->verification_status;
-            $needToChangeDocument = $request->boolean('need_to_change_document');
+            
+            // Check need_to_change_document - handle both string and boolean values (exact same as web)
+            $needToChangeDocument = false;
+            if ($request->has('need_to_change_document')) {
+                $value = $request->input('need_to_change_document');
+                $needToChangeDocument = ($value == '1' 
+                    || $value === 'true' 
+                    || $value === true
+                    || $value === 1
+                    || $request->boolean('need_to_change_document'));
+            }
 
+            // If need to change document is checked, file upload is required (exact same as web)
             if ($needToChangeDocument && !$request->hasFile('new_file')) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'File upload is required when "Need to change document" is checked.',
-                ], 422);
+                    'message' => 'Please upload a new document file.',
+                ], 400);
             }
 
             /**
              * SPECIAL CASE: SSLC with sslc_certificates table (multi-doc)
-             * When sslc_certificate_id is provided, mirror LeadController::verifySSLCertificate
-             * and update the SSLCertificate row instead of only leads_details.
+             * When sslc_certificate_id is provided, mirror LeadController::verifySSLCertificate exactly
+             * and update the SSLCCertificates row instead of only leads_details.
              */
             if ($documentType === 'sslc_certificate' && $request->filled('sslc_certificate_id')) {
                 /** @var \App\Models\SSLCertificate $sslcCertificate */
                 $sslcCertificate = SSLCertificate::findOrFail($request->sslc_certificate_id);
 
-                // If need to change document, new_file is already validated as required above
+                // Handle new file upload if needed (exact same as web)
                 $isDocumentChange = false;
                 if ($needToChangeDocument && $request->hasFile('new_file')) {
                     $isDocumentChange = true;
-
-                    // Delete old file if exists
-                    if ($sslcCertificate->certificate_path && Storage::disk('public')->exists($sslcCertificate->certificate_path)) {
+                    
+                    // Delete old file
+                    if (Storage::disk('public')->exists($sslcCertificate->certificate_path)) {
                         Storage::disk('public')->delete($sslcCertificate->certificate_path);
                     }
-
+                    
                     // Upload new file
                     $file = $request->file('new_file');
                     $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
                     $filePath = $file->storeAs('student-documents', $fileName, 'public');
-
-                    // Update certificate with new file info
+                    
+                    // Update certificate with new file
                     $sslcCertificate->update([
                         'certificate_path' => $filePath,
                         'original_filename' => $file->getClientOriginalName(),
@@ -957,7 +968,7 @@ class RegistrationLeadsController extends Controller
                     ]);
                 }
 
-                // Update verification status on SSLC certificate row
+                // Update verification status (exact same as web)
                 $updateData = [
                     'verification_status' => $verificationStatus,
                     'verified_by' => $user->id,
@@ -969,13 +980,12 @@ class RegistrationLeadsController extends Controller
                 }
 
                 $sslcCertificate->update($updateData);
-
-                // Ensure we have the latest leadDetail for logging / status
-                $leadDetail->refresh();
-
-                // If status is rejected, automatically change to pending when document is updated
-                // Also reset if need_to_change_document is checked
-                if ($leadDetail->status === 'rejected' || $needToChangeDocument) {
+                
+                // Get lead detail for activity logging (after update, same as web)
+                $leadDetail = LeadDetail::findOrFail($request->lead_detail_id);
+                
+                // If "Need to change document" is checked, update registration status to pending (exact same as web)
+                if ($needToChangeDocument) {
                     $leadDetail->status = 'pending';
                     $leadDetail->reviewed_by = null;
                     $leadDetail->reviewed_at = null;
@@ -983,7 +993,7 @@ class RegistrationLeadsController extends Controller
                     $leadDetail->refresh();
                 }
 
-                // Log activity for SSLC certificate operations (mirror web)
+                // Log activity for SSLC certificate operations (exact same as web)
                 if ($isDocumentChange) {
                     LeadActivity::create([
                         'lead_id' => $leadDetail->lead_id,
@@ -997,8 +1007,8 @@ class RegistrationLeadsController extends Controller
                         'lead_id' => $leadDetail->lead_id,
                         'activity_type' => 'document_verification',
                         'description' => 'SSLC certificate verification updated',
-                        'reason' => 'SSLC certificate verification status: ' . ucfirst($verificationStatus)
-                            . ($request->filled('verification_notes') ? ' | Notes: ' . $request->verification_notes : ''),
+                        'reason' => 'SSLC certificate verification status: ' . ucfirst($verificationStatus) . 
+                                   ($request->filled('verification_notes') ? ' | Notes: ' . $request->verification_notes : ''),
                         'created_by' => $user->id,
                     ]);
                 }
@@ -1015,6 +1025,8 @@ class RegistrationLeadsController extends Controller
                         'need_to_change_document' => $needToChangeDocument,
                         'lead_status' => $leadDetail->status,
                         'document_url' => $documentUrl,
+                        'status_updated' => $needToChangeDocument,
+                        'new_status' => $needToChangeDocument ? 'pending' : null,
                     ],
                 ]);
             }
