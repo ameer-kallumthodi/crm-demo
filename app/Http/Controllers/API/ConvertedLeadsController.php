@@ -324,16 +324,36 @@ class ConvertedLeadsController extends Controller
 
         // Format converted student activities
         $formattedStudentActivities = $convertedStudentActivities->map(function ($activity) use ($appTimezone) {
+            // Handle activity_time - it might be a string or datetime
+            $activityTime = null;
+            $activityTimeDisplay = null;
+            if ($activity->activity_time) {
+                if (is_string($activity->activity_time)) {
+                    try {
+                        $timeObj = Carbon::createFromFormat('H:i:s', $activity->activity_time);
+                        $activityTime = $timeObj->format('H:i:s');
+                        $activityTimeDisplay = $timeObj->format('h:i A');
+                    } catch (\Exception $e) {
+                        // If parsing fails, use as is
+                        $activityTime = $activity->activity_time;
+                        $activityTimeDisplay = $activity->activity_time;
+                    }
+                } else {
+                    $activityTime = $activity->activity_time->format('H:i:s');
+                    $activityTimeDisplay = $activity->activity_time->format('h:i A');
+                }
+            }
+
             return [
                 'id' => $activity->id,
                 'converted_lead_id' => $activity->converted_lead_id,
                 'activity_type' => $activity->activity_type,
                 'activity_date' => $activity->activity_date ? $activity->activity_date->format('Y-m-d') : null,
                 'activity_date_display' => $activity->activity_date ? $activity->activity_date->format('d-m-Y') : null,
-                'activity_time' => $activity->activity_time ? $activity->activity_time->format('H:i:s') : null,
-                'activity_time_display' => $activity->activity_time ? $activity->activity_time->format('h:i A') : null,
+                'activity_time' => $activityTime,
+                'activity_time_display' => $activityTimeDisplay,
                 'description' => $activity->description,
-                'remarks' => $activity->remarks,
+                'remarks' => $activity->remark ?? $activity->remarks ?? null,
                 'created_at' => $activity->created_at ? $activity->created_at->format('Y-m-d H:i:s') : null,
                 'created_at_display' => $activity->created_at ? $activity->created_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A') : null,
                 'created_by' => $activity->createdBy ? [
