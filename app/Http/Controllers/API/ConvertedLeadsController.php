@@ -401,16 +401,8 @@ class ConvertedLeadsController extends Controller
             ];
         }
 
-        // Add lead detail information
-        $leadDetailData = null;
-        if ($convertedLead->leadDetail) {
-            $leadDetailData = [
-                'lead_id' => $convertedLead->leadDetail->lead_id,
-                'reviewed_at' => $convertedLead->leadDetail->reviewed_at ? $convertedLead->leadDetail->reviewed_at->format('Y-m-d H:i:s') : null,
-                'reviewed_at_display' => $convertedLead->leadDetail->reviewed_at ? $convertedLead->leadDetail->reviewed_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A') : null,
-                // Add other lead detail fields as needed
-            ];
-        }
+        // Add lead detail information with documents
+        $leadDetailData = $this->formatLeadDetailDocuments($convertedLead->leadDetail, $appTimezone);
 
         return [
             'converted_lead' => $convertedLeadData,
@@ -420,6 +412,104 @@ class ConvertedLeadsController extends Controller
             'converted_student_activities' => $formattedStudentActivities,
             'call_logs' => $formattedCallLogs,
         ];
+    }
+
+    /**
+     * Format lead detail documents for API response
+     *
+     * @param \App\Models\LeadDetail|null $leadDetail
+     * @param string $appTimezone
+     * @return array
+     */
+    private function formatLeadDetailDocuments($leadDetail, $appTimezone)
+    {
+        // Helper function to get document URL
+        $getDocumentUrl = function($path) {
+            if (!$path) return '';
+            $exists = \Illuminate\Support\Facades\Storage::disk('public')->exists($path);
+            return $exists ? asset('storage/' . $path) : '';
+        };
+        
+        if (!$leadDetail) {
+            return [
+                'lead_id' => null,
+                'reviewed_at' => null,
+                'reviewed_at_display' => null,
+                'passport_photo_url' => '',
+                'passport_photo_verified_at' => null,
+                'passport_photo_by_name' => null,
+                'adhar_front_url' => '',
+                'adhar_front_verified_at' => null,
+                'adhar_front_by_name' => null,
+                'adhar_back_url' => '',
+                'adhar_back_verified_at' => null,
+                'adhar_back_by_name' => null,
+                'signature_url' => '',
+                'signature_verified_at' => null,
+                'signature_by_name' => null,
+                'birth_certificate_url' => '',
+                'birth_certificate_verified_at' => null,
+                'birth_certificate_by_name' => null,
+                'plustwo_certificate_url' => '',
+                'plustwo_certificate_verified_at' => null,
+                'plustwo_certificate_by_name' => null,
+                'other_document_url' => '',
+                'other_document_verified_at' => null,
+                'other_document_by_name' => null,
+                'sslc_certificate_url' => '',
+                'sslc_certificate_verified_at' => null,
+                'sslc_certificate_by_name' => null,
+                'ug_certificate_url' => '',
+                'ug_certificate_verified_at' => null,
+                'ug_certificate_by_name' => null,
+                'sslc_certificates' => [],
+            ];
+        }
+        
+        $doc = $leadDetail;
+        
+        // Format single document fields
+        $formatDocumentFields = function($field, $verifiedByField, $verifiedAtField, $verifiedByRelation) use ($doc, $getDocumentUrl, $appTimezone) {
+            $path = $doc->$field ?? '';
+            $verifiedAt = $doc->$verifiedAtField ?? null;
+            $verifiedByName = $doc->$verifiedByRelation ? $doc->$verifiedByRelation->name : null;
+            
+            return [
+                $field . '_url' => $getDocumentUrl($path),
+                $field . '_verified_at' => $verifiedAt ? $verifiedAt->format('d-m-Y h:i A') : null,
+                $field . '_by_name' => $verifiedByName ?? null,
+            ];
+        };
+        
+        $result = [
+            'lead_id' => $doc->lead_id,
+            'reviewed_at' => $doc->reviewed_at ? $doc->reviewed_at->format('Y-m-d H:i:s') : null,
+            'reviewed_at_display' => $doc->reviewed_at ? $doc->reviewed_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A') : null,
+        ];
+        
+        // Add document fields (flattened)
+        $result = array_merge($result, $formatDocumentFields('passport_photo', 'passport_photo_verified_by', 'passport_photo_verified_at', 'passportPhotoVerifiedBy'));
+        $result = array_merge($result, $formatDocumentFields('adhar_front', 'adhar_front_verified_by', 'adhar_front_verified_at', 'adharFrontVerifiedBy'));
+        $result = array_merge($result, $formatDocumentFields('adhar_back', 'adhar_back_verified_by', 'adhar_back_verified_at', 'adharBackVerifiedBy'));
+        $result = array_merge($result, $formatDocumentFields('signature', 'signature_verified_by', 'signature_verified_at', 'signatureVerifiedBy'));
+        $result = array_merge($result, $formatDocumentFields('birth_certificate', 'birth_certificate_verified_by', 'birth_certificate_verified_at', 'birthCertificateVerifiedBy'));
+        $result = array_merge($result, $formatDocumentFields('plustwo_certificate', 'plustwo_verified_by', 'plustwo_verified_at', 'plustwoVerifiedBy'));
+        $result = array_merge($result, $formatDocumentFields('other_document', 'other_document_verified_by', 'other_document_verified_at', 'otherDocumentVerifiedBy'));
+        $result = array_merge($result, $formatDocumentFields('sslc_certificate', 'sslc_verified_by', 'sslc_verified_at', 'sslcVerifiedBy'));
+        $result = array_merge($result, $formatDocumentFields('ug_certificate', 'ug_verified_by', 'ug_verified_at', 'ugVerifiedBy'));
+        
+        // SSLC Certificates from separate table (keep as array since there can be multiple)
+        $result['sslc_certificates'] = $doc->sslcCertificates ? $doc->sslcCertificates->map(function($certificate) use ($getDocumentUrl, $appTimezone) {
+            $path = $certificate->certificate_path ?? '';
+            return [
+                'id' => $certificate->id,
+                'certificate_url' => $getDocumentUrl($path),
+                'verified_at' => $certificate->verified_at ? $certificate->verified_at->format('d-m-Y h:i A') : null,
+                'by_name' => $certificate->verifiedBy ? $certificate->verifiedBy->name : null,
+            ];
+        })->toArray() : [];
+        
+        return $result;
     }
 
     /**
