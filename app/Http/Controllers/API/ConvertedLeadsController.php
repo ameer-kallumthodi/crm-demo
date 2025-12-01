@@ -111,26 +111,8 @@ class ConvertedLeadsController extends Controller
         // Order by created_at desc
         $query->orderBy('created_at', 'desc');
 
-        // Calculate counts before pagination
-        $today = \Carbon\Carbon::today();
-        
-        // Converted leads count (all time)
+        // Get count of converted leads (filtered data count) before pagination
         $convertedLeadsCount = (clone $query)->count();
-        
-        // Today's converted leads count
-        $todaysConvertedLeadsCount = (clone $query)
-            ->whereDate('created_at', $today)
-            ->count();
-        
-        // Active leads count (not converted leads)
-        $activeLeadsQuery = \App\Models\Lead::query()->where('is_converted', 0);
-        $this->applyRoleBasedFilterToLeads($activeLeadsQuery, $user);
-        $activeLeadsCount = $activeLeadsQuery->count();
-        
-        // Today's active leads count
-        $todaysActiveLeadsCount = (clone $activeLeadsQuery)
-            ->whereDate('created_at', $today)
-            ->count();
 
         // Pagination - lazy loading
         $page = max(1, (int) $request->get('page', 1));
@@ -156,11 +138,7 @@ class ConvertedLeadsController extends Controller
         return response()->json([
             'status' => true,
             'data' => $formattedLeads,
-            'counts' => [
-                'active_leads' => $activeLeadsCount,
-                'todays_lead' => $todaysActiveLeadsCount,
-                'converted_leads' => $convertedLeadsCount,
-            ],
+            'converted_leads_count' => $convertedLeadsCount,
             'pagination' => [
                 'current_page' => $convertedLeads->currentPage(),
                 'per_page' => $convertedLeads->perPage(),

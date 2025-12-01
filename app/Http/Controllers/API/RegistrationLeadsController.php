@@ -81,12 +81,16 @@ class RegistrationLeadsController extends Controller
         }
 
         $counts = $this->calculateRegistrationCounts($user, $request);
+        
+        // Get count of registration leads (filtered data count)
+        $registrationLeadsCount = $allLeads->count();
 
         return response()->json([
             'status' => true,
             'data' => [
                 'leads' => $groupedLeads,
                 'counts' => $counts,
+                'registration_leads_count' => $registrationLeadsCount,
                 'pagination' => [
                     'current_page' => 1,
                     'per_page' => $allLeads->count(),
