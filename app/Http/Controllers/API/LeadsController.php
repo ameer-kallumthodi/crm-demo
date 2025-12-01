@@ -647,12 +647,13 @@ class LeadsController extends Controller
             'show_lead_reg_form_link' => $showLeadRegFormLink,
             'reg_form_link' => $regFormLink,
             'remarks' => $this->stripHtmlContent($lead->remarks ?? ''),
+            'marketing_remarks' => $this->stripHtmlContent($lead->marketing_remarks ?? ''),
             'date' => $date,
             'time' => $time,
             'follow_up_date' => $followUpDate,
             'registration_details_status' => $registrationDetailsStatus,
             'can_convert' => $this->canConvertLead($lead),
-            'created_at' => $createdAt->format('d-m-Y H:i:s')
+            'created_at' => $createdAt->format('d-m-Y h:i A')
         ];
     }
 
