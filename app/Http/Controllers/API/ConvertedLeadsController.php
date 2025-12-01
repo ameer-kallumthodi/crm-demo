@@ -144,6 +144,110 @@ class ConvertedLeadsController extends Controller
     }
 
     /**
+     * Get converted leads filter data (courses, batches, admission batches, status options, etc.)
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function filters(Request $request)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // Get courses (active only, same as web page)
+        $courses = \App\Models\Course::where('is_active', 1)
+            ->select('id', 'title')
+            ->orderBy('title')
+            ->get()
+            ->map(function ($course) {
+                return [
+                    'id' => $course->id,
+                    'title' => $course->title,
+                ];
+            });
+
+        // Get batches (active only, same as web page)
+        $batches = \App\Models\Batch::where('is_active', 1)
+            ->select('id', 'title', 'course_id')
+            ->orderBy('title')
+            ->get()
+            ->map(function ($batch) {
+                return [
+                    'id' => $batch->id,
+                    'title' => $batch->title,
+                    'course_id' => $batch->course_id,
+                ];
+            });
+
+        // Get admission batches (active only, same as web page)
+        $admissionBatches = \App\Models\AdmissionBatch::where('is_active', 1)
+            ->select('id', 'title', 'batch_id')
+            ->orderBy('title')
+            ->get()
+            ->map(function ($admissionBatch) {
+                return [
+                    'id' => $admissionBatch->id,
+                    'title' => $admissionBatch->title,
+                    'batch_id' => $admissionBatch->batch_id,
+                ];
+            });
+
+        // Status options (same as web page)
+        $statusOptions = [
+            ['value' => 'Paid', 'label' => 'Paid'],
+            ['value' => 'Admission cancel', 'label' => 'Admission cancel'],
+            ['value' => 'Active', 'label' => 'Active'],
+            ['value' => 'Inactive', 'label' => 'Inactive'],
+        ];
+
+        // Reg Fee options (same as web page)
+        $regFeeOptions = [
+            ['value' => 'Received', 'label' => 'Received'],
+            ['value' => 'Not Received', 'label' => 'Not Received'],
+        ];
+
+        // Exam Fee options (same as web page)
+        $examFeeOptions = [
+            ['value' => 'Pending', 'label' => 'Pending'],
+            ['value' => 'Not Paid', 'label' => 'Not Paid'],
+            ['value' => 'Paid', 'label' => 'Paid'],
+        ];
+
+        // ID Card options (same as web page)
+        $idCardOptions = [
+            ['value' => 'processing', 'label' => 'processing'],
+            ['value' => 'download', 'label' => 'download'],
+            ['value' => 'not downloaded', 'label' => 'not downloaded'],
+        ];
+
+        // TMA options (same as web page)
+        $tmaOptions = [
+            ['value' => 'Uploaded', 'label' => 'Uploaded'],
+            ['value' => 'Not Upload', 'label' => 'Not Upload'],
+        ];
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'courses' => $courses,
+                'batches' => $batches,
+                'admission_batches' => $admissionBatches,
+                'status_options' => $statusOptions,
+                'reg_fee_options' => $regFeeOptions,
+                'exam_fee_options' => $examFeeOptions,
+                'id_card_options' => $idCardOptions,
+                'tma_options' => $tmaOptions,
+            ]
+        ], 200);
+    }
+
+    /**
      * Apply role-based filtering to the query
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
@@ -152,14 +256,20 @@ class ConvertedLeadsController extends Controller
      */
     private function applyRoleBasedFilter($query, $user)
     {
-        // Set current user for role helpers
-        AuthHelper::setCurrentUser($user);
+        // Get user role to determine access
+        $roleId = $user->role_id;
+        $isTeamLead = $user->is_team_lead == 1;
+        $isSeniorManager = $user->is_senior_manager == 1;
+        
+        // Get role title for specific role checks
+        $role = \App\Models\UserRole::find($roleId);
+        $roleTitle = $role ? $role->title : '';
 
         // General Manager: Can see ALL converted leads (no filter)
-        if (RoleHelper::is_general_manager()) {
+        if ($roleTitle === 'General Manager') {
             // No filtering
         // Check team lead next
-        } elseif (RoleHelper::is_team_lead()) {
+        } elseif ($isTeamLead) {
             // Team Lead: Can see converted leads from their team
             $teamId = $user->team_id;
             if ($teamId) {
@@ -173,21 +283,21 @@ class ConvertedLeadsController extends Controller
                     $q->where('telecaller_id', $user->id);
                 });
             }
-        } elseif (RoleHelper::is_admission_counsellor()) {
+        } elseif ($roleTitle === 'Admission Counsellor') {
             // Admission Counsellor: Can see ALL converted leads
             // No additional filtering needed - show all
-        } elseif (RoleHelper::is_academic_assistant()) {
+        } elseif ($roleTitle === 'Academic Assistant') {
             // Academic Assistant: Can see ALL converted leads
             // No additional filtering needed - show all
-        } elseif (RoleHelper::is_telecaller()) {
+        } elseif ($roleId == 3) {
             // Telecaller: Can only see converted leads from leads assigned to them
             $query->whereHas('lead', function($q) use ($user) {
                 $q->where('telecaller_id', $user->id);
             });
-        } elseif (RoleHelper::is_support_team()) {
+        } elseif ($roleTitle === 'Support Team') {
             // Support Team: Only see academically verified leads
             $query->where('is_academic_verified', 1);
-        } elseif (RoleHelper::is_mentor()) {
+        } elseif ($roleTitle === 'Mentor') {
             // Mentor: Filter by admission_batch_id where mentor_id matches
             // Currently commented out in web controller, so no filtering for now
         }

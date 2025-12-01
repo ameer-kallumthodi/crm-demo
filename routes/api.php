@@ -48,5 +48,6 @@ Route::prefix('v1')->group(function () {
 
         // Converted Leads APIs
         Route::get('converted-leads', [ConvertedLeadsController::class, 'index']);
+        Route::get('converted-leads/filters', [ConvertedLeadsController::class, 'filters']);
     });
 });
