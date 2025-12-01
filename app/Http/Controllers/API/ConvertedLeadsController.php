@@ -311,14 +311,10 @@ class ConvertedLeadsController extends Controller
                 'followup_date_display' => $activity->followup_date ? $activity->followup_date->format('d-m-Y') : null,
                 'created_at' => $activity->created_at ? $activity->created_at->format('Y-m-d H:i:s') : null,
                 'created_at_display' => $activity->created_at ? $activity->created_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A') : null,
-                'lead_status' => $activity->leadStatus ? [
-                    'id' => $activity->leadStatus->id,
-                    'title' => $activity->leadStatus->title,
-                ] : null,
-                'created_by' => $activity->createdBy ? [
-                    'id' => $activity->createdBy->id,
-                    'name' => $activity->createdBy->name,
-                ] : null,
+                'lead_status_id' => $activity->lead_status_id,
+                'lead_status_name' => $activity->leadStatus ? $activity->leadStatus->title : null,
+                'created_by_id' => $activity->created_by,
+                'created_by_name' => $activity->createdBy ? $activity->createdBy->name : null,
             ];
         });
 
@@ -356,10 +352,8 @@ class ConvertedLeadsController extends Controller
                 'remarks' => $activity->remark ?? $activity->remarks ?? null,
                 'created_at' => $activity->created_at ? $activity->created_at->format('Y-m-d H:i:s') : null,
                 'created_at_display' => $activity->created_at ? $activity->created_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A') : null,
-                'created_by' => $activity->createdBy ? [
-                    'id' => $activity->createdBy->id,
-                    'name' => $activity->createdBy->name,
-                ] : null,
+                'created_by_id' => $activity->created_by,
+                'created_by_name' => $activity->createdBy ? $activity->createdBy->name : null,
             ];
         });
 
@@ -402,10 +396,8 @@ class ConvertedLeadsController extends Controller
                 'whatsapp' => $convertedLead->lead->whatsapp,
                 'whatsapp_code' => $convertedLead->lead->whatsapp_code,
                 'email' => $convertedLead->lead->email,
-                'telecaller' => $convertedLead->lead->telecaller ? [
-                    'id' => $convertedLead->lead->telecaller->id,
-                    'name' => $convertedLead->lead->telecaller->name,
-                ] : null,
+                'telecaller_id' => $convertedLead->lead->telecaller_id,
+                'telecaller_name' => $convertedLead->lead->telecaller ? $convertedLead->lead->telecaller->name : null,
             ];
         }
 
@@ -670,18 +662,18 @@ class ConvertedLeadsController extends Controller
             'academic_verified_at' => $convertedLead->academic_verified_at ? $convertedLead->academic_verified_at->format('Y-m-d H:i:s') : null,
             'academic_verified_at_display' => $academicVerifiedAt,
             'academic_verified_by_id' => $convertedLead->academic_verified_by,
-            'academic_verified_by' => $convertedLead->academic_verified_by && $users 
-                ? ($users->get($convertedLead->academic_verified_by)?->only(['id', 'name']) ?? null)
-                : ($convertedLead->academic_verified_by ? \App\Models\User::find($convertedLead->academic_verified_by)?->only(['id', 'name']) : null),
+            'academic_verified_by_name' => $convertedLead->academic_verified_by && $users 
+                ? ($users->get($convertedLead->academic_verified_by)?->name ?? null)
+                : ($convertedLead->academic_verified_by ? \App\Models\User::find($convertedLead->academic_verified_by)?->name : null),
             
             // Support verification
             'is_support_verified' => (bool) ($convertedLead->is_support_verified ?? false),
             'support_verified_at' => $convertedLead->support_verified_at ? $convertedLead->support_verified_at->format('Y-m-d H:i:s') : null,
             'support_verified_at_display' => $supportVerifiedAt,
             'support_verified_by_id' => $convertedLead->support_verified_by,
-            'support_verified_by' => $convertedLead->support_verified_by && $users 
-                ? ($users->get($convertedLead->support_verified_by)?->only(['id', 'name']) ?? null)
-                : ($convertedLead->support_verified_by ? \App\Models\User::find($convertedLead->support_verified_by)?->only(['id', 'name']) : null),
+            'support_verified_by_name' => $convertedLead->support_verified_by && $users 
+                ? ($users->get($convertedLead->support_verified_by)?->name ?? null)
+                : ($convertedLead->support_verified_by ? \App\Models\User::find($convertedLead->support_verified_by)?->name : null),
             
             // Academic document approval
             'academic_document_approved_at' => $convertedLead->leadDetail?->reviewed_at 
@@ -690,32 +682,20 @@ class ConvertedLeadsController extends Controller
             'academic_document_approved_at_display' => $academicDocumentApprovedAt,
             
             // Course information
-            'course' => $convertedLead->course ? [
-                'id' => $convertedLead->course->id,
-                'title' => $convertedLead->course->title,
-            ] : null,
             'course_id' => $convertedLead->course_id,
+            'course_name' => $convertedLead->course ? $convertedLead->course->title : null,
             
             // Batch information
-            'batch' => $convertedLead->batch ? [
-                'id' => $convertedLead->batch->id,
-                'title' => $convertedLead->batch->title,
-            ] : null,
             'batch_id' => $convertedLead->batch_id,
+            'batch_name' => $convertedLead->batch ? $convertedLead->batch->title : null,
             
             // Admission batch information
-            'admission_batch' => $convertedLead->admissionBatch ? [
-                'id' => $convertedLead->admissionBatch->id,
-                'title' => $convertedLead->admissionBatch->title,
-            ] : null,
             'admission_batch_id' => $convertedLead->admission_batch_id,
+            'admission_batch_name' => $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : null,
             
             // Subject information
-            'subject' => $convertedLead->subject ? [
-                'id' => $convertedLead->subject->id,
-                'title' => $convertedLead->subject->title,
-            ] : null,
             'subject_id' => $convertedLead->subject_id,
+            'subject_name' => $convertedLead->subject ? $convertedLead->subject->title : null,
             
             // Student details
             'student_details' => $convertedLead->studentDetails ? [
@@ -728,18 +708,12 @@ class ConvertedLeadsController extends Controller
             ] : null,
             
             // Academic assistant
-            'academic_assistant' => $convertedLead->academicAssistant ? [
-                'id' => $convertedLead->academicAssistant->id,
-                'name' => $convertedLead->academicAssistant->name,
-            ] : null,
             'academic_assistant_id' => $convertedLead->academic_assistant_id,
+            'academic_assistant_name' => $convertedLead->academicAssistant ? $convertedLead->academicAssistant->name : null,
             
             // Created by
-            'created_by' => $convertedLead->createdBy ? [
-                'id' => $convertedLead->createdBy->id,
-                'name' => $convertedLead->createdBy->name,
-            ] : null,
             'created_by_id' => $convertedLead->created_by,
+            'created_by_name' => $convertedLead->createdBy ? $convertedLead->createdBy->name : null,
         ];
     }
 }
