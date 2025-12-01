@@ -60,6 +60,19 @@ class FollowupLeadsController extends Controller
             ->take($perPage)
             ->get();
 
+        // Calculate counts
+        $today = Carbon::today();
+        
+        // Active leads count (not converted leads)
+        $activeLeadsQuery = Lead::where('is_converted', 0);
+        $this->applyRoleBasedFilter($activeLeadsQuery, $user);
+        $activeLeadsCount = $activeLeadsQuery->count();
+        
+        // Today's active leads count
+        $todaysActiveLeadsCount = (clone $activeLeadsQuery)
+            ->whereDate('created_at', $today)
+            ->count();
+
         $data = $leads->map(function ($lead) {
             $phone = '';
             if ($lead->code && $lead->phone) {
@@ -111,6 +124,10 @@ class FollowupLeadsController extends Controller
             'status' => true,
             'data' => [
                 'leads' => $data,
+                'counts' => [
+                    'active_leads' => $activeLeadsCount,
+                    'todays_lead' => $todaysActiveLeadsCount,
+                ],
                 'pagination' => [
                     'current_page' => $page,
                     'per_page' => $perPage,

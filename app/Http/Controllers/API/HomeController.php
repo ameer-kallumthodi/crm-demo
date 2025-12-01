@@ -56,7 +56,7 @@ class HomeController extends Controller
         $this->applyRoleBasedFilterToConvertedLeads($convertedLeadsQuery, $user);
         $actualConvertedLeads = $convertedLeadsQuery->count();
 
-        // Not converted leads (active) should be shown in converted_leads count per new requirement
+        // Not converted leads (active)
         $notConvertedLeads = (clone $baseLeadQuery)
             ->where('is_converted', 0)
             ->count();
@@ -94,6 +94,7 @@ class HomeController extends Controller
                     'id' => $status->id,
                     'title' => $status->title,
                     'leads_count' => $leadsCount,
+                    'not_converted_leads_count' => $leadsCount, // Same as leads_count for not converted
                     'color' => $status->color ?? null
                 ];
             });
@@ -141,7 +142,7 @@ class HomeController extends Controller
             'count' => [
                 'total_lead' => $totalLead,
                 'this_week_total_lead' => $thisWeekTotalLead,
-                'converted_leads' => $notConvertedLeads,
+                'converted_leads' => $actualConvertedLeads,
                 'convertion_rate' => $conversionRate . '%',
                 'todays_lead' => $todaysLead,
                 'active_leads' => $activeLeads,

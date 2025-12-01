@@ -111,6 +111,27 @@ class ConvertedLeadsController extends Controller
         // Order by created_at desc
         $query->orderBy('created_at', 'desc');
 
+        // Calculate counts before pagination
+        $today = \Carbon\Carbon::today();
+        
+        // Converted leads count (all time)
+        $convertedLeadsCount = (clone $query)->count();
+        
+        // Today's converted leads count
+        $todaysConvertedLeadsCount = (clone $query)
+            ->whereDate('created_at', $today)
+            ->count();
+        
+        // Active leads count (not converted leads)
+        $activeLeadsQuery = \App\Models\Lead::query()->where('is_converted', 0);
+        $this->applyRoleBasedFilterToLeads($activeLeadsQuery, $user);
+        $activeLeadsCount = $activeLeadsQuery->count();
+        
+        // Today's active leads count
+        $todaysActiveLeadsCount = (clone $activeLeadsQuery)
+            ->whereDate('created_at', $today)
+            ->count();
+
         // Pagination - lazy loading
         $page = max(1, (int) $request->get('page', 1));
         $perPage = max(1, min(100, (int) $request->get('per_page', 25)));
@@ -135,6 +156,11 @@ class ConvertedLeadsController extends Controller
         return response()->json([
             'status' => true,
             'data' => $formattedLeads,
+            'counts' => [
+                'active_leads' => $activeLeadsCount,
+                'todays_lead' => $todaysActiveLeadsCount,
+                'converted_leads' => $convertedLeadsCount,
+            ],
             'pagination' => [
                 'current_page' => $convertedLeads->currentPage(),
                 'per_page' => $convertedLeads->perPage(),
@@ -692,6 +718,45 @@ class ConvertedLeadsController extends Controller
         } elseif ($roleTitle === 'Mentor') {
             // Mentor: Filter by admission_batch_id where mentor_id matches
             // Currently commented out in web controller, so no filtering for now
+        }
+    }
+
+    /**
+     * Apply role-based filtering to leads queries (for active leads count)
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param \App\Models\User $user
+     * @return void
+     */
+    private function applyRoleBasedFilterToLeads($query, $user)
+    {
+        // Roles that can see all leads (admin, super admin, managers, etc.)
+        if ($user->role_id == 1 || // Super Admin
+            $user->role_id == 2 || // Admin
+            $user->is_senior_manager ||
+            in_array($user->role_id, [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])) {
+            // Can see all leads
+            return;
+        }
+
+        if ($user->is_team_lead) {
+            // Team Lead: Can see their own leads + their team members' leads
+            $teamId = $user->team_id;
+            if ($teamId) {
+                $teamMemberIds = \App\Models\User::where('team_id', $teamId)
+                    ->where('role_id', 3)
+                    ->whereNull('deleted_at')
+                    ->pluck('id')
+                    ->toArray();
+                $teamMemberIds[] = $user->id;
+                $query->whereIn('telecaller_id', $teamMemberIds);
+            } else {
+                // If no team assigned, only show their own leads
+                $query->where('telecaller_id', $user->id);
+            }
+        } elseif ($user->role_id == 3) {
+            // Telecaller: Can only see their own leads
+            $query->where('telecaller_id', $user->id);
         }
     }
 

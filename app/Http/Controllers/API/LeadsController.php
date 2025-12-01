@@ -91,6 +91,9 @@ class LeadsController extends Controller
         // Order by created_at desc
         $query->orderBy('created_at', 'desc');
 
+        // Get total count before pagination
+        $leadsCount = (clone $query)->count();
+
         // Pagination - lazy loading
         $perPage = $request->get('per_page', 15);
         $leads = $query->paginate($perPage);
@@ -103,6 +106,7 @@ class LeadsController extends Controller
         return response()->json([
             'status' => true,
             'data' => $formattedLeads,
+            'leads_count' => $leadsCount,
             'pagination' => [
                 'current_page' => $leads->currentPage(),
                 'per_page' => $leads->perPage(),
