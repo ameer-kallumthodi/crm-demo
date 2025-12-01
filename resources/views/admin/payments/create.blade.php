@@ -27,15 +27,15 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Total Amount:</strong></td>
-                                    <td>₹{{ number_format($invoice->total_amount, 2) }}</td>
+                                    <td>₹{{ number_format(round($invoice->total_amount)) }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Paid Amount:</strong></td>
-                                    <td>₹{{ number_format($invoice->paid_amount, 2) }}</td>
+                                    <td>₹{{ number_format(round($invoice->paid_amount)) }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Pending Amount:</strong></td>
-                                    <td>₹{{ number_format($invoice->pending_amount, 2) }}</td>
+                                    <td>₹{{ number_format(round($invoice->pending_amount)) }}</td>
                                 </tr>
                             </table>
                         </div>
@@ -79,7 +79,7 @@
                                     <input type="number" class="form-control @error('amount_paid') is-invalid @enderror" 
                                            name="amount_paid" id="amount_paid" step="0.01" min="0.01" 
                                            max="{{ $invoice->pending_amount }}" value="{{ old('amount_paid') }}" required>
-                                    <div class="form-text">Maximum amount: ₹{{ number_format($invoice->pending_amount, 2) }}</div>
+                                    <div class="form-text">Maximum amount: ₹{{ number_format(round($invoice->pending_amount)) }}</div>
                                     @error('amount_paid')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror

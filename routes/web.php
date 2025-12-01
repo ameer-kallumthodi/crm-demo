@@ -557,6 +557,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/reports/post-sales-month-ways', [App\Http\Controllers\PostSalesReportController::class, 'postSalesMonthWaysReport'])->name('reports.post-sales-month-ways');
         Route::get('/reports/total-monthly', [App\Http\Controllers\PostSalesReportController::class, 'totalMonthlyReport'])->name('reports.total-monthly');
         Route::get('/reports/bde-collected-amount-course-ways', [App\Http\Controllers\PostSalesReportController::class, 'bdeCollectedAmountCourseWaysReport'])->name('reports.bde-collected-amount-course-ways');
+        
+        // Finance Reports routes
+        Route::get('/reports/telecallers-sales', [App\Http\Controllers\PostSalesReportController::class, 'telecallersSalesReport'])->name('reports.telecallers-sales');
 
         // Export routes
         Route::get('/reports/lead-status/export/excel', [App\Http\Controllers\LeadReportController::class, 'exportLeadStatusExcel'])->name('reports.lead-status.excel');

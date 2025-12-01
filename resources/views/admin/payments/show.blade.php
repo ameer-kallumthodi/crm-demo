@@ -47,7 +47,7 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Amount:</strong></td>
-                                    <td>₹{{ number_format($payment->amount_paid, 2) }}</td>
+                                    <td>₹{{ number_format(round($payment->amount_paid)) }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Payment Type:</strong></td>
@@ -139,15 +139,15 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Total Amount:</strong></td>
-                                    <td>₹{{ number_format($payment->invoice->total_amount, 2) }}</td>
+                                    <td>₹{{ number_format(round($payment->invoice->total_amount)) }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Paid Amount:</strong></td>
-                                    <td>₹{{ number_format($payment->invoice->paid_amount, 2) }}</td>
+                                    <td>₹{{ number_format(round($payment->invoice->paid_amount)) }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Pending Amount:</strong></td>
-                                    <td>₹{{ number_format($payment->invoice->pending_amount, 2) }}</td>
+                                    <td>₹{{ number_format(round($payment->invoice->pending_amount)) }}</td>
                                 </tr>
                             </table>
                         </div>

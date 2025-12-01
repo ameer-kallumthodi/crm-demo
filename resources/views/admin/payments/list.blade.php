@@ -160,7 +160,7 @@
                                                 @endif
                                             </td>
                                             <td class="text-end">
-                                                <span class="fw-bold text-success">₹{{ number_format($payment->amount_paid, 2) }}</span>
+                                                <span class="fw-bold text-success">₹{{ number_format(round($payment->amount_paid)) }}</span>
                                             </td>
                                             <td>{{ $payment->payment_type }}</td>
                                             <td>
@@ -270,7 +270,7 @@
                                                 @endif
                                             </td>
                                             <td class="text-end">
-                                                <span class="fw-bold text-success">₹{{ number_format($payment->amount_paid, 2) }}</span>
+                                                <span class="fw-bold text-success">₹{{ number_format(round($payment->amount_paid)) }}</span>
                                             </td>
                                             <td>{{ $payment->payment_type }}</td>
                                             <td>
@@ -362,7 +362,7 @@
                                                 @endif
                                             </td>
                                             <td class="text-end">
-                                                <span class="fw-bold text-danger">₹{{ number_format($payment->amount_paid, 2) }}</span>
+                                                <span class="fw-bold text-danger">₹{{ number_format(round($payment->amount_paid)) }}</span>
                                             </td>
                                             <td>{{ $payment->payment_type }}</td>
                                             <td>

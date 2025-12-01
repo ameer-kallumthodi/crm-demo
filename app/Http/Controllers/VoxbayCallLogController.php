@@ -223,6 +223,61 @@ class VoxbayCallLogController extends Controller
     }
 
     /**
+     * API endpoint for call history with lead_id
+     * Returns call logs for a specific lead in JSON format
+     */
+    public function callHistory(Request $request, $leadId): JsonResponse
+    {
+        $lead = Lead::with('studentDetails')->findOrFail($leadId);
+
+        $query = VoxbayCallLog::where(function ($q) use ($lead) {
+            $fullPhone = $lead->code . $lead->phone;
+            $q->where('destinationNumber', $fullPhone)
+              ->orWhere('calledNumber', $fullPhone);
+        });
+
+        // Apply additional filters
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        $callLogs = $query->orderBy('created_at', 'desc')->get();
+
+        // Add telecaller names to each call log
+        $callLogs->transform(function ($callLog) {
+            $callLog->telecaller_name = $callLog->getTelecallerName();
+            return $callLog;
+        });
+
+        // Get lead name - prefer student_name from studentDetails, fallback to title
+        $leadName = $lead->studentDetails && $lead->studentDetails->student_name 
+            ? $lead->studentDetails->student_name 
+            : ($lead->title ?? null);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $callLogs,
+            'lead' => [
+                'id' => $lead->id,
+                'name' => $leadName,
+                'phone' => $lead->code . $lead->phone,
+            ]
+        ]);
+    }
+
+    /**
      * Remove the specified call log
      */
     public function destroy(VoxbayCallLog $callLog): JsonResponse

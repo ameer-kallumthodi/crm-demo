@@ -65,15 +65,15 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Total Amount:</strong></td>
-                                    <td>₹{{ number_format($invoice->total_amount, 2) }}</td>
+                                    <td>₹{{ number_format(round($invoice->total_amount)) }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Paid Amount:</strong></td>
-                                    <td>₹{{ number_format($invoice->paid_amount, 2) }}</td>
+                                    <td>₹{{ number_format(round($invoice->paid_amount)) }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Pending Amount:</strong></td>
-                                    <td>₹{{ number_format($invoice->pending_amount, 2) }}</td>
+                                    <td>₹{{ number_format(round($invoice->pending_amount)) }}</td>
                                 </tr>
                             </table>
                         </div>
@@ -159,7 +159,7 @@
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $payment->created_at->format('M d, Y h:i A') }}</td>
-                                            <td>₹{{ number_format($payment->amount_paid, 2) }}</td>
+                                            <td>₹{{ number_format(round($payment->amount_paid)) }}</td>
                                             <td>{{ $payment->payment_type }}</td>
                                             <td>{{ $payment->transaction_id ?? 'N/A' }}</td>
                                             <td>

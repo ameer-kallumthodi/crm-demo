@@ -66,7 +66,7 @@
                             <div class="card bg-info text-white">
                                 <div class="card-body">
                                     <h5 class="card-title">Total Amount</h5>
-                                    <h3>₹{{ number_format($summary['total_amount'], 2) }}</h3>
+                                    <h3>₹{{ number_format(round($summary['total_amount'])) }}</h3>
                                 </div>
                             </div>
                         </div>
@@ -74,7 +74,7 @@
                             <div class="card bg-success text-white">
                                 <div class="card-body">
                                     <h5 class="card-title">Total Paid</h5>
-                                    <h3>₹{{ number_format($summary['total_paid'], 2) }}</h3>
+                                    <h3>₹{{ number_format(round($summary['total_paid'])) }}</h3>
                                 </div>
                             </div>
                         </div>
@@ -82,7 +82,7 @@
                             <div class="card bg-warning text-white">
                                 <div class="card-body">
                                     <h5 class="card-title">Total Pending</h5>
-                                    <h3>₹{{ number_format($summary['total_pending'], 2) }}</h3>
+                                    <h3>₹{{ number_format(round($summary['total_pending'])) }}</h3>
                                 </div>
                             </div>
                         </div>
@@ -143,9 +143,9 @@
                                             {{ $invoice->batch->title ?? 'N/A' }} ({{ $invoice->batch->course->title ?? 'N/A' }})
                                         @endif
                                     </td>
-                                    <td>₹{{ number_format($invoice->total_amount, 2) }}</td>
-                                    <td>₹{{ number_format($invoice->paid_amount, 2) }}</td>
-                                    <td>₹{{ number_format($invoice->pending_amount, 2) }}</td>
+                                    <td>₹{{ number_format(round($invoice->total_amount)) }}</td>
+                                    <td>₹{{ number_format(round($invoice->paid_amount)) }}</td>
+                                    <td>₹{{ number_format(round($invoice->pending_amount)) }}</td>
                                     <td>
                                         @if($invoice->status == 'Not Paid')
                                             <span class="badge bg-danger">Not Paid</span>

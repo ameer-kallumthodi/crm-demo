@@ -32,7 +32,7 @@
                     </h6>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-light text-dark">
-                            Pending: ₹{{ number_format($invoice->pending_amount, 2) }}
+                            Pending: ₹{{ number_format(round($invoice->pending_amount)) }}
                         </span>
                         <button class="btn btn-light btn-sm {{ ($invoice->pending_amount <= 0 || !$razorpayConfigured) ? 'disabled' : '' }}"
                             data-bs-toggle="modal" data-bs-target="#paymentLinkModal"
@@ -82,7 +82,7 @@
                                             @endphp
                                             <tr id="payment-link-row-{{ $link->id }}">
                                                 <td>{{ $index + 1 }}</td>
-                                                <td class="fw-semibold text-success">₹{{ number_format($link->amount, 2) }}</td>
+                                                <td class="fw-semibold text-success">₹{{ number_format(round($link->amount)) }}</td>
                                                 <td>
                                                     <span class="badge {{ $statusClass }}">
                                                         {{ ucfirst(str_replace('_', ' ', $link->status ?? 'created')) }}
@@ -258,7 +258,7 @@
                                         <i class="fas fa-rupee-sign text-info fs-4"></i>
                                     </div>
                                     <h6 class="text-muted mb-2">Total Amount</h6>
-                                    <h3 class="text-info mb-0">₹{{ number_format($invoice->total_amount, 2) }}</h3>
+                                    <h3 class="text-info mb-0">₹{{ number_format(round($invoice->total_amount)) }}</h3>
                                 </div>
                             </div>
                         </div>
@@ -269,7 +269,7 @@
                                         <i class="fas fa-check-circle text-success fs-4"></i>
                                     </div>
                                     <h6 class="text-muted mb-2">Paid Amount</h6>
-                                    <h3 class="text-success mb-0">₹{{ number_format($invoice->paid_amount, 2) }}</h3>
+                                    <h3 class="text-success mb-0">₹{{ number_format(round($invoice->paid_amount)) }}</h3>
                                 </div>
                             </div>
                         </div>
@@ -280,7 +280,7 @@
                                         <i class="fas fa-clock text-warning fs-4"></i>
                                     </div>
                                     <h6 class="text-muted mb-2">Pending Amount</h6>
-                                    <h3 class="text-warning mb-0">₹{{ number_format($invoice->pending_amount, 2) }}</h3>
+                                    <h3 class="text-warning mb-0">₹{{ number_format(round($invoice->pending_amount)) }}</h3>
                                 </div>
                             </div>
                         </div>
@@ -331,7 +331,7 @@
                                             <div class="bg-success bg-opacity-10 rounded-circle p-1 me-2">
                                                 <i class="fas fa-rupee-sign text-success" style="font-size: 12px;"></i>
                                             </div>
-                                            <span class="fw-bold text-success">₹{{ number_format($payment->amount_paid, 2) }}</span>
+                                            <span class="fw-bold text-success">₹{{ number_format(round($payment->amount_paid)) }}</span>
                                         </div>
                                     </td>
                                     <td>
@@ -339,7 +339,7 @@
                                             <div class="bg-info bg-opacity-10 rounded-circle p-1 me-2">
                                                 <i class="fas fa-balance-scale text-info" style="font-size: 12px;"></i>
                                             </div>
-                                            <span class="fw-semibold">₹{{ number_format($payment->invoice->total_amount - $payment->previous_balance, 2) }}</span>
+                                            <span class="fw-semibold">₹{{ number_format(round($payment->invoice->total_amount - $payment->previous_balance)) }}</span>
                                         </div>
                                     </td>
                                     <td>
@@ -734,7 +734,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             max="{{ max($invoice->pending_amount, 0) }}"
                             class="form-control" id="payment-link-amount" name="amount"
                             value="{{ number_format(max($invoice->pending_amount, 0), 2, '.', '') }}" required>
-                        <small class="text-muted">Pending balance: ₹{{ number_format($invoice->pending_amount, 2) }}</small>
+                        <small class="text-muted">Pending balance: ₹{{ number_format(round($invoice->pending_amount)) }}</small>
                     </div>
                     <div class="mb-3">
                         <label for="payment-link-description" class="form-label">Description</label>

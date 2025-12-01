@@ -394,6 +394,25 @@
                 </li>
                 @endif
                 
+                {{-- Finance Reports Section --}}
+                @php
+                    $canAccessFinanceReports = \App\Helpers\RoleHelper::is_finance() || 
+                                                \App\Helpers\RoleHelper::is_admin_or_super_admin();
+                @endphp
+                @if($canAccessFinanceReports)
+                <li class="pc-item pc-caption">
+                    <label>Finance Reports</label>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.reports.telecallers-sales*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.telecallers-sales') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-report-analytics"></i>
+                        </span>
+                        <span class="pc-mtext">Telecallers Sales Report</span>
+                    </a>
+                </li>
+                @endif
+                
                 {{-- Notifications Section --}}
                 @if(has_permission('admin/notifications/index'))
                 <li class="pc-item pc-caption">
