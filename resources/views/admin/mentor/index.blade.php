@@ -46,6 +46,7 @@
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
+                                <th>Is Head</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -57,6 +58,13 @@
                                 <td>{{ $mentorUser->name }}</td>
                                 <td>{{ $mentorUser->email }}</td>
                                 <td>{{ $mentorUser->phone ?? '-' }}</td>
+                                <td>
+                                    @if($mentorUser->is_head)
+                                        <span class="badge bg-primary">Yes</span>
+                                    @else
+                                        <span class="badge bg-secondary">No</span>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($mentorUser->is_active)
                                         <span class="badge bg-success">Active</span>

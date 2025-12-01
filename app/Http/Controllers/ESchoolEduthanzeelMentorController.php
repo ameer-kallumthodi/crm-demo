@@ -70,8 +70,11 @@ class ESchoolEduthanzeelMentorController extends Controller
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
         if ($currentUser) {
-            if (RoleHelper::is_mentor()) {
-                // Mentor: Filter by admission_batch_id where mentor_id matches
+            if (RoleHelper::is_mentor_head()) {
+                // Mentor Head: Can see all support verified leads
+                // No additional filtering needed
+            } elseif (RoleHelper::is_mentor()) {
+                // Regular Mentor: Filter by admission_batch_id where mentor_id matches
                 $mentorAdmissionBatchIds = AdmissionBatch::where('mentor_id', AuthHelper::getCurrentUserId())
                     ->pluck('id')
                     ->toArray();

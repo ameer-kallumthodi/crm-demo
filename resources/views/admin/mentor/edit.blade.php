@@ -41,6 +41,17 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_head" id="is_head" value="1" {{ (old('is_head', $mentorUser->is_head) == 1) ? 'checked' : '' }}>
+                        <label class="form-check-label" for="is_head">
+                            <i class="ti ti-check me-1"></i>Is Head
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="is_active" id="is_active" value="1" {{ (old('is_active', $mentorUser->is_active) == 1) ? 'checked' : '' }}>
                         <label class="form-check-label" for="is_active">
                             <i class="ti ti-check me-1"></i>Is Active

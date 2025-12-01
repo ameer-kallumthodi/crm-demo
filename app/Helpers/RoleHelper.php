@@ -172,6 +172,24 @@ class RoleHelper
     }
 
     /**
+     * Check if current user is Mentor Head (mentor with is_head = 1)
+     */
+    public static function is_mentor_head()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        // Must be mentor (role_id == 9) and is_head == 1
+        return $user->role_id == 9 && $user->is_head == 1;
+    }
+
+    /**
      * Check if current user is Post Sales
      */
     public static function is_post_sales()

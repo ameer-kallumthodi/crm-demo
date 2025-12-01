@@ -548,8 +548,11 @@ class ConvertedLeadController extends Controller
                         $q->where('telecaller_id', AuthHelper::getCurrentUserId());
                     });
                 }
+            } elseif (RoleHelper::is_mentor_head()) {
+                // Mentor Head: Can see all leads
+                // No additional filtering needed
             } elseif (RoleHelper::is_mentor()) {
-                // Mentor: Filter by admission_batch_id where mentor_id matches
+                // Regular Mentor: Filter by admission_batch_id where mentor_id matches
                 $mentorAdmissionBatchIds = \App\Models\AdmissionBatch::where('mentor_id', AuthHelper::getCurrentUserId())
                     ->pluck('id')
                     ->toArray();

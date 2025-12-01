@@ -109,6 +109,7 @@ class MentorController extends Controller
             'code' => 'nullable|string|max:10',
             'ext_no' => 'nullable|string|max:20',
             'password' => 'required|string|min:6',
+            'is_head' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -125,6 +126,7 @@ class MentorController extends Controller
             'ext_no' => $request->ext_no,
             'password' => Hash::make($request->password),
             'role_id' => 9, // Static role for Mentor
+            'is_head' => $request->has('is_head') ? 1 : 0,
             'is_active' => $request->has('is_active') ? 1 : 0,
         ]);
 
@@ -157,6 +159,7 @@ class MentorController extends Controller
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:10',
             'ext_no' => 'nullable|string|max:20',
+            'is_head' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -171,6 +174,7 @@ class MentorController extends Controller
             'phone' => $request->phone,
             'code' => $request->code,
             'ext_no' => $request->ext_no,
+            'is_head' => $request->has('is_head') ? 1 : 0,
             'is_active' => $request->has('is_active') ? 1 : 0,
         ]);
 

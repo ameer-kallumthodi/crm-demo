@@ -1042,6 +1042,104 @@ class RegistrationLeadsController extends Controller
     }
 
     /**
+     * Add one or more SSLC certificates (mirrors the web add flow).
+     */
+    public function addSSLCCertificates(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized',
+                ], 401);
+            }
+
+            if (!$this->canAccessRegistrationData($user)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Access denied.',
+                ], 403);
+            }
+
+            $request->validate([
+                'lead_detail_id' => 'required|exists:leads_details,id',
+                'certificates' => 'required|array|min:1',
+                'certificates.*' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            ]);
+
+            $leadDetail = LeadDetail::with('lead')->findOrFail($request->lead_detail_id);
+            $lead = $leadDetail->lead;
+
+            if (!$lead || !$this->canViewLead($lead, $user)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'You do not have permission to upload documents for this lead.',
+                ], 403);
+            }
+
+            $certificateIds = [];
+            $uploadedFiles = [];
+
+            foreach ($request->file('certificates') as $file) {
+                $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('student-documents', $fileName, 'public');
+
+                $sslcCertificate = SSLCertificate::create([
+                    'lead_detail_id' => $leadDetail->id,
+                    'certificate_path' => $filePath,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_type' => $file->getClientOriginalExtension(),
+                    'file_size' => $file->getSize(),
+                    'verification_status' => 'pending',
+                ]);
+
+                $certificateIds[] = $sslcCertificate->id;
+                $uploadedFiles[] = $sslcCertificate->original_filename;
+            }
+
+            $fileCount = count($uploadedFiles);
+
+            LeadActivity::create([
+                'lead_id' => $leadDetail->lead_id,
+                'activity_type' => 'document_upload',
+                'description' => $fileCount . ' SSLC certificate(s) uploaded',
+                'reason' => 'SSLC certificate(s) uploaded: ' . implode(', ', $uploadedFiles),
+                'created_by' => $user->id,
+            ]);
+
+            $certificatesPayload = SSLCertificate::whereIn('id', $certificateIds)
+                ->get()
+                ->map(function (SSLCertificate $certificate) {
+                    return [
+                        'id' => $certificate->id,
+                        'url' => $this->buildFileUrl($certificate->certificate_path),
+                        'original_filename' => $certificate->original_filename,
+                        'status' => $certificate->verification_status ?? 'pending',
+                        'uploaded_at' => optional($certificate->created_at)->format('d-m-Y h:i A'),
+                    ];
+                });
+
+            return response()->json([
+                'status' => true,
+                'message' => 'SSLC certificate(s) added successfully.',
+                'data' => [
+                    'certificate_ids' => $certificateIds,
+                    'certificates' => $certificatesPayload,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('API add SSLC certificate error: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Error adding SSLC certificate: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Build the base query with eager loaded relationships.
      */
     private function autoGenerateInvoice(ConvertedLead $student, int $courseId, int $userId): ?Invoice
