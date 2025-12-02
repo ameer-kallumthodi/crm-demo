@@ -19,8 +19,36 @@ class MailService
         // Get attachments
         $attachments = self::getStudentAttachments($student);
         
+        // CRITICAL: Use email from LeadDetail (form submission), NOT from Lead table
+        // The email must come from the leads_details table (form submission)
+        // Do NOT use $student->lead->email as that would be from the leads table
+        $studentEmail = $student->getAttribute('email'); // Explicitly get from LeadDetail
+        
+        // Log both emails for debugging
+        $leadEmail = $student->lead ? $student->lead->email : null;
+        \Log::info('Email source check in MailService::sendStudentRegistrationEmail', [
+            'lead_detail_id' => $student->id ?? null,
+            'lead_id' => $student->lead_id ?? null,
+            'email_from_lead_detail' => $studentEmail, // This is what we should use
+            'email_from_lead_table' => $leadEmail, // This should NOT be used
+            'student_name' => $student->student_name ?? 'N/A',
+            'course_type' => $courseType,
+        ]);
+        
+        // Validate email format - must be from LeadDetail, not Lead
+        if (empty($studentEmail) || !filter_var($studentEmail, FILTER_VALIDATE_EMAIL)) {
+            \Log::error('Invalid or empty student email in MailService::sendStudentRegistrationEmail', [
+                'lead_detail_id' => $student->id ?? null,
+                'lead_id' => $student->lead_id ?? null,
+                'email_from_lead_detail' => $studentEmail,
+                'email_from_lead_table' => $leadEmail,
+            ]);
+            return; // Don't send email if email is invalid
+        }
+        
         // Send to student with full content including terms and conditions
-        send_email($student->email, $student->name, $subject, $studentBody, $attachments, 'Support Team');
+        // IMPORTANT: This email MUST come from leads_details table (form submission), not leads table
+        send_email($studentEmail, $student->student_name ?? 'Student', $subject, $studentBody, $attachments, 'Support Team');
         
         // Send to CAO with only details and files, no terms and conditions
         send_email('cao@natdemy.com', 'CAO', $subject, $caoBody, $attachments, 'Support Team');
@@ -28,7 +56,7 @@ class MailService
     
     public static function sendNiosStudentVerificationEmail($student, $verifier)
     {
-        $subject = "🎓 NIOS Student Verified: {$student->name}";
+        $subject = "🎓 NIOS Student Verified: " . ($student->student_name ?? 'Student');
         
         $body = self::buildVerificationEmailBody($student, $verifier);
         

@@ -223,6 +223,20 @@ class LeadGraphicDesigningRegistrationController extends Controller
                 \Log::error('Email sending failed for Graphic Designing registration: ' . $e->getMessage());
             }
             
+            // Log lead activity for form submission
+            try {
+                \App\Models\LeadActivity::create([
+                    'lead_id' => $request->lead_id,
+                    'activity_type' => 'registration_submitted',
+                    'description' => 'Registration form submitted',
+                    'remarks' => 'Registration form submitted on ' . now()->format('d-m-Y') . ' at ' . now()->format('h:i A'),
+                    'created_by' => $lead->telecaller_id, // Use telecaller_id from lead
+                ]);
+            } catch (\Exception $e) {
+                // Log error but don't fail the registration
+                \Log::error('Failed to create lead activity for Graphic Designing registration: ' . $e->getMessage());
+            }
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Registration submitted successfully! We will review your application and get back to you soon.',

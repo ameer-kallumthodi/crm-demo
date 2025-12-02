@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Lead;
 use App\Models\LeadDetail;
+use App\Models\LeadActivity;
 use App\Models\Subject;
 use App\Models\Batch;
 use App\Services\MailService;
@@ -227,11 +228,27 @@ class LeadRegistrationController extends Controller
             }
             
             // Send registration confirmation email
+            // Refresh from database to ensure we have the latest data including email
+            $studentDetail->refresh();
             try {
                 MailService::sendStudentRegistrationEmail($studentDetail, 'NIOS');
             } catch (\Exception $e) {
                 // Log error but don't fail the registration
                 \Log::error('Email sending failed for NIOS registration: ' . $e->getMessage());
+            }
+            
+            // Log lead activity for form submission
+            try {
+                LeadActivity::create([
+                    'lead_id' => $request->lead_id,
+                    'activity_type' => 'registration_submitted',
+                    'description' => 'Registration form submitted',
+                    'remarks' => 'Registration form submitted on ' . now()->format('d-m-Y') . ' at ' . now()->format('h:i A'),
+                    'created_by' => $lead->telecaller_id, // Use telecaller_id from lead
+                ]);
+            } catch (\Exception $e) {
+                // Log error but don't fail the registration
+                \Log::error('Failed to create lead activity for NIOS registration: ' . $e->getMessage());
             }
             
             return response()->json([

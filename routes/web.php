@@ -555,8 +555,11 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
 
         // Post Sales Reports routes
         Route::get('/reports/post-sales-month-ways', [App\Http\Controllers\PostSalesReportController::class, 'postSalesMonthWaysReport'])->name('reports.post-sales-month-ways');
+        Route::get('/reports/post-sales-month-ways/export/pdf', [App\Http\Controllers\PostSalesReportController::class, 'exportPostSalesMonthWaysPdf'])->name('reports.post-sales-month-ways.export.pdf');
         Route::get('/reports/total-monthly', [App\Http\Controllers\PostSalesReportController::class, 'totalMonthlyReport'])->name('reports.total-monthly');
+        Route::get('/reports/total-monthly/export/pdf', [App\Http\Controllers\PostSalesReportController::class, 'exportTotalMonthlyPdf'])->name('reports.total-monthly.export.pdf');
         Route::get('/reports/bde-collected-amount-course-ways', [App\Http\Controllers\PostSalesReportController::class, 'bdeCollectedAmountCourseWaysReport'])->name('reports.bde-collected-amount-course-ways');
+        Route::get('/reports/bde-collected-amount-course-ways/export/pdf', [App\Http\Controllers\PostSalesReportController::class, 'exportBdeCollectedAmountCourseWaysPdf'])->name('reports.bde-collected-amount-course-ways.export.pdf');
         
         // Finance Reports routes
         Route::get('/reports/telecallers-sales', [App\Http\Controllers\PostSalesReportController::class, 'telecallersSalesReport'])->name('reports.telecallers-sales');

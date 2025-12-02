@@ -62,6 +62,11 @@
                                 <a href="{{ route('admin.reports.bde-collected-amount-course-ways') }}" class="btn btn-outline-secondary">
                                     <i class="ti ti-refresh"></i> Reset
                                 </a>
+                                @if($selectedPostSalesId && count($reportData) > 0)
+                                    <a href="{{ route('admin.reports.bde-collected-amount-course-ways.export.pdf', request()->query()) }}" class="btn btn-outline-danger">
+                                        <i class="ti ti-file-pdf"></i> Export PDF
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>

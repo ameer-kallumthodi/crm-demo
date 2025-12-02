@@ -50,6 +50,11 @@
                                 <a href="{{ route('admin.reports.total-monthly') }}" class="btn btn-outline-secondary">
                                     <i class="ti ti-refresh"></i> Reset
                                 </a>
+                                @if(count($reportData) > 0)
+                                    <a href="{{ route('admin.reports.total-monthly.export.pdf', request()->query()) }}" class="btn btn-outline-danger">
+                                        <i class="ti ti-file-pdf"></i> Export PDF
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>
