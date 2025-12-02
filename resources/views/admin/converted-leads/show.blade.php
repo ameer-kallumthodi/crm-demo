@@ -39,10 +39,15 @@
 <!-- [ Main Content ] start -->
 <div class="row">
     <div class="col-12">
-        <div class="card">
+        <div class="card {{ $convertedLead->is_cancelled ? 'cancelled-card' : '' }}">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <h5 class="mb-0 d-flex align-items-center gap-2"><i class="ti ti-user-check text-primary"></i> Converted Lead Information</h5>
-                <span class="badge bg-light-primary text-primary">ID #{{ $convertedLead->id }}</span>
+                <div class="d-flex align-items-center gap-2">
+                    @if($convertedLead->is_cancelled)
+                        <span class="badge bg-danger">Cancelled</span>
+                    @endif
+                    <span class="badge bg-light-primary text-primary">ID #{{ $convertedLead->id }}</span>
+                </div>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -58,6 +63,9 @@
                                     <div>
                                         <h4 class="mb-1">{{ $convertedLead->name }}</h4>
                                         <p class="text-muted mb-0">Converted Lead</p>
+                                        @if($convertedLead->is_cancelled)
+                                            <span class="badge bg-danger mt-1">Cancelled</span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -824,6 +832,14 @@
 
 @push('styles')
 <style>
+.cancelled-card {
+    border: 1px solid #f5c2c7;
+    background-color: #fff5f5;
+}
+.cancelled-card .card-header {
+    background-color: #fff1f0;
+    border-bottom: 1px solid #f5c2c7;
+}
 .timeline {
     position: relative;
     padding-left: 30px;
