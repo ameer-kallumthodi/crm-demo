@@ -22,6 +22,13 @@
         max-width: 150px;
         display: inline-block;
     }
+    .cancelled-row > td {
+        background-color: #fff1f0 !important;
+    }
+    .cancelled-card {
+        border: 1px solid #f5c2c7;
+        background-color: #fff5f5;
+    }
 </style>
 <!-- [ breadcrumb ] start -->
 <div class="page-header">
@@ -325,8 +332,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($convertedLeads as $index => $convertedLead)
-                                <tr>
+                            @forelse($convertedLeads as $index => $convertedLead)
+                            <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
                                     @php
                                         $academicVerifiedAt = $convertedLead->academic_verified_at
                                             ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
@@ -373,6 +380,9 @@
                                             <div>
                                                 <h6 class="mb-0">{{ $convertedLead->name }}</h6>
                                                 <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
+                                                @if($convertedLead->is_cancelled)
+                                                    <div><span class="badge bg-danger mt-1">Cancelled</span></div>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>

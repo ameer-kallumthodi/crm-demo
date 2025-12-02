@@ -21,6 +21,13 @@
         max-width: 150px;
         display: inline-block;
     }
+    .cancelled-row > td {
+        background-color: #fff1f0 !important;
+    }
+    .cancelled-card {
+        border: 1px solid #f5c2c7;
+        background-color: #fff5f5;
+    }
 </style>
 <!-- [ breadcrumb ] start -->
 <div class="page-header">
@@ -353,7 +360,7 @@
                         </thead>
                         <tbody>
                             @forelse($convertedLeads as $index => $convertedLead)
-                            <tr>
+                            <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
                                 @php
                                     $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
                                     $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
@@ -400,7 +407,12 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>{{ $convertedLead->name }}</td>
+                                <td>
+                                    {{ $convertedLead->name }}
+                                    @if($convertedLead->is_cancelled)
+                                        <span class="badge bg-danger ms-2">Cancelled</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <div class="inline-edit" data-field="phone" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->phone }}" data-code="{{ $convertedLead->code }}">
                                         <span class="display-value">

@@ -21,6 +21,13 @@
         max-width: 150px;
         display: inline-block;
     }
+    .cancelled-row > td {
+        background-color: #fff1f0 !important;
+    }
+    .cancelled-card {
+        border: 1px solid #f5c2c7;
+        background-color: #fff5f5;
+    }
 </style>
 <!-- [ breadcrumb ] start -->
 <div class="page-header">
@@ -368,7 +375,7 @@
                             </thead>
                             <tbody>
                                 @forelse($convertedLeads as $index => $convertedLead)
-                                <tr>
+                                <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                     <td>
                                         <input type="checkbox" class="row-checkbox" value="{{ $convertedLead->id }}">
@@ -445,6 +452,9 @@
                                             <div>
                                                 <h6 class="mb-0">{{ $convertedLead->name }}</h6>
                                                 <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
+                                                @if($convertedLead->is_cancelled)
+                                                    <div><span class="badge bg-danger mt-1">Cancelled</span></div>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>
@@ -649,7 +659,7 @@
                 <!-- Mobile Card View -->
                 <div class="d-lg-none">
                     @forelse($convertedLeads as $index => $convertedLead)
-                    <div class="card mb-3">
+                    <div class="card mb-3 {{ $convertedLead->is_cancelled ? 'cancelled-card' : '' }}">
                         <div class="card-body">
                             <!-- Lead Header -->
                             <div class="d-flex align-items-center mb-3">
@@ -659,6 +669,9 @@
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1 fw-bold">{{ $convertedLead->name }}</h6>
                                     <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
+                                    @if($convertedLead->is_cancelled)
+                                        <span class="badge bg-danger ms-2">Cancelled</span>
+                                    @endif
                                 </div>
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">

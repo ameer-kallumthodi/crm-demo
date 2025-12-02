@@ -22,6 +22,13 @@
         max-width: 150px;
         display: inline-block;
     }
+    .cancelled-row > td {
+        background-color: #fff1f0 !important;
+    }
+    .cancelled-card {
+        border: 1px solid #f5c2c7;
+        background-color: #fff5f5;
+    }
 </style>
 <!-- [ breadcrumb ] start -->
 <div class="page-header">
@@ -374,7 +381,7 @@
                             </thead>
                             <tbody>
                                 @forelse($convertedLeads as $index => $convertedLead)
-                                <tr>
+                                <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
                                     @php
                                         $academicVerifiedAt = $convertedLead->academic_verified_at
                                             ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
@@ -400,7 +407,12 @@
                                         @endif
                                     </td>
                                     <td>{{ $convertedLead->register_number ?? '-' }}</td>
-                                    <td>{{ $convertedLead->name }}</td>
+                                    <td>
+                                    {{ $convertedLead->name }}
+                                    @if($convertedLead->is_cancelled)
+                                        <span class="badge bg-danger ms-2">Cancelled</span>
+                                    @endif
+                                </td>
                                     <td>{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</td>
                                     @if(!\App\Helpers\RoleHelper::is_mentor())
                                     <td>{{ $convertedLead->studentDetails?->enroll_no ?? '-' }}</td>
@@ -846,9 +858,12 @@
                     <div class="row" id="mobileCards">
                         @forelse($convertedLeads as $index => $convertedLead)
                         <div class="col-12 mb-3">
-                            <div class="card">
+                            <div class="card {{ $convertedLead->is_cancelled ? 'cancelled-card' : '' }}">
                                 <div class="card-header">
                                     <h6 class="mb-0">{{ $convertedLead->name }}</h6>
+                                    @if($convertedLead->is_cancelled)
+                                        <span class="badge bg-danger ms-2">Cancelled</span>
+                                    @endif
                                 </div>
                                 <div class="card-body">
                                     @php
