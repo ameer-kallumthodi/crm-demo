@@ -43,11 +43,16 @@
                                    value="{{ $toDate ?? '' }}" required>
                         </div>
                         <div class="col-12 col-sm-6 col-md-3">
-                            <label for="course_id" class="form-label">Course</label>
-                            <select class="form-select" id="course_id" name="course_id">
-                                <option value="">All Courses</option>
+                            <label for="course_ids" class="form-label">Courses</label>
+                            <select
+                                class="form-select select2-multiple"
+                                id="course_ids"
+                                name="course_ids[]"
+                                multiple
+                                data-placeholder="Select courses..."
+                            >
                                 @foreach($courses as $course)
-                                    <option value="{{ $course->id }}" {{ $selectedCourseId == $course->id ? 'selected' : '' }}>
+                                    <option value="{{ $course->id }}" {{ !empty($selectedCourseIds) && in_array($course->id, $selectedCourseIds) ? 'selected' : '' }}>
                                         {{ $course->title }}
                                     </option>
                                 @endforeach

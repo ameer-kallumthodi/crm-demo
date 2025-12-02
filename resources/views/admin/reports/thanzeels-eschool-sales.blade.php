@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'Telecallers Sales Report')
+@section('title', 'Thanzeels and Eschool Report')
 
 @section('content')
 <!-- [ breadcrumb ] start -->
@@ -9,7 +9,7 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Telecallers Sales Report</h5>
+                    <h5 class="m-b-10">Thanzeels and Eschool Report</h5>
                 </div>
             </div>
             <div class="col-md-6">
@@ -17,7 +17,7 @@
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item">Reports</li>
                     <li class="breadcrumb-item">Finance Reports</li>
-                    <li class="breadcrumb-item">Telecallers Sales Report</li>
+                    <li class="breadcrumb-item">Thanzeels and Eschool Report</li>
                 </ul>
             </div>
         </div>
@@ -30,7 +30,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.reports.telecallers-sales') }}" id="reportFilterForm">
+                <form method="GET" action="{{ route('admin.reports.thanzeels-eschool-sales') }}" id="reportFilterForm">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-3">
                             <label for="from_date" class="form-label">From Date</label>
@@ -58,11 +58,11 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="ti ti-filter"></i> Generate Report
                                 </button>
-                                <a href="{{ route('admin.reports.telecallers-sales') }}" class="btn btn-outline-secondary">
+                                <a href="{{ route('admin.reports.thanzeels-eschool-sales') }}" class="btn btn-outline-secondary">
                                     <i class="ti ti-refresh"></i> Reset
                                 </a>
                                 @if(count($reports) > 0)
-                                    <a href="{{ route('admin.reports.telecallers-sales.export.pdf', request()->query()) }}" class="btn btn-outline-danger">
+                                    <a href="{{ route('admin.reports.thanzeels-eschool-sales.export.pdf', request()->query()) }}" class="btn btn-outline-danger">
                                         <i class="ti ti-file-pdf"></i> Export PDF
                                     </a>
                                 @endif
@@ -149,7 +149,7 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="ti ti-chart-line me-2"></i>Telecallers Sales Report
+                        <i class="ti ti-chart-line me-2"></i>Thanzeels and Eschool Report
                         @if($fromDate && $toDate)
                             <small class="text-muted">({{ \Carbon\Carbon::parse($fromDate)->format('d M Y') }} - {{ \Carbon\Carbon::parse($toDate)->format('d M Y') }})</small>
                         @endif
@@ -172,7 +172,7 @@
                                     <tr>
                                         <td class="text-center">{{ $index + 1 }}</td>
                                         <td>
-                                            <a href="{{ route('admin.reports.telecallers-sales.converted-leads', ['from_date' => $fromDate, 'to_date' => $toDate, 'telecaller_id' => $report['telecaller']->id]) }}">
+                                            <a href="{{ route('admin.reports.thanzeels-eschool-sales.converted-leads', ['from_date' => $fromDate, 'to_date' => $toDate, 'telecaller_id' => $report['telecaller']->id]) }}">
                                                 <strong>{{ $report['telecaller']->name }}</strong>
                                             </a>
                                             @if($report['telecaller']->email)

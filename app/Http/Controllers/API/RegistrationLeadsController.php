@@ -154,7 +154,11 @@ class RegistrationLeadsController extends Controller
                 ];
             });
 
-        $telecallersQuery = User::nonMarketingTelecallers()
+        // Only load telecallers who belong to non-marketing teams (marketing_team = 0)
+        $telecallersQuery = User::where('role_id', 3)
+            ->whereHas('team', function ($q) {
+                $q->where('marketing_team', false);
+            })
             ->select('id', 'name', 'team_id')
             ->orderBy('name');
 

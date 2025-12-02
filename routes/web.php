@@ -561,6 +561,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // Finance Reports routes
         Route::get('/reports/telecallers-sales', [App\Http\Controllers\PostSalesReportController::class, 'telecallersSalesReport'])->name('reports.telecallers-sales');
         Route::get('/reports/telecallers-sales/export/pdf', [App\Http\Controllers\PostSalesReportController::class, 'exportTelecallersSalesPdf'])->name('reports.telecallers-sales.export.pdf');
+        Route::get('/reports/thanzeels-eschool-sales', [App\Http\Controllers\PostSalesReportController::class, 'thanzeelsEschoolSalesReport'])->name('reports.thanzeels-eschool-sales');
+        Route::get('/reports/thanzeels-eschool-sales/export/pdf', [App\Http\Controllers\PostSalesReportController::class, 'exportThanzeelsEschoolSalesPdf'])->name('reports.thanzeels-eschool-sales.export.pdf');
+        Route::get('/reports/telecallers-sales/converted-leads', [App\Http\Controllers\PostSalesReportController::class, 'telecallersSalesConvertedLeads'])->name('reports.telecallers-sales.converted-leads');
+        Route::get('/reports/thanzeels-eschool-sales/converted-leads', [App\Http\Controllers\PostSalesReportController::class, 'thanzeelsEschoolConvertedLeads'])->name('reports.thanzeels-eschool-sales.converted-leads');
         Route::get('/reports/course-wise-sales', [App\Http\Controllers\PostSalesReportController::class, 'courseWiseSalesReport'])->name('reports.course-wise-sales');
         Route::get('/reports/course-wise-sales/export/pdf', [App\Http\Controllers\PostSalesReportController::class, 'exportCourseWiseSalesPdf'])->name('reports.course-wise-sales.export.pdf');
 
