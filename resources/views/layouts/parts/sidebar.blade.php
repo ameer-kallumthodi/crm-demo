@@ -411,6 +411,14 @@
                         <span class="pc-mtext">Telecallers Sales Report</span>
                     </a>
                 </li>
+                <li class="pc-item {{ request()->routeIs('admin.reports.course-wise-sales*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.course-wise-sales') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-book"></i>
+                        </span>
+                        <span class="pc-mtext">Course Wise Sales Report</span>
+                    </a>
+                </li>
                 @endif
                 
                 {{-- Notifications Section --}}

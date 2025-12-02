@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'Telecallers Sales Report')
+@section('title', 'Course Wise Sales Report')
 
 @section('content')
 <!-- [ breadcrumb ] start -->
@@ -9,7 +9,7 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Telecallers Sales Report</h5>
+                    <h5 class="m-b-10">Course Wise Sales Report</h5>
                 </div>
             </div>
             <div class="col-md-6">
@@ -17,7 +17,7 @@
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item">Reports</li>
                     <li class="breadcrumb-item">Finance Reports</li>
-                    <li class="breadcrumb-item">Telecallers Sales Report</li>
+                    <li class="breadcrumb-item">Course Wise Sales Report</li>
                 </ul>
             </div>
         </div>
@@ -30,7 +30,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.reports.telecallers-sales') }}" id="reportFilterForm">
+                <form method="GET" action="{{ route('admin.reports.course-wise-sales') }}" id="reportFilterForm">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-3">
                             <label for="from_date" class="form-label">From Date</label>
@@ -43,12 +43,12 @@
                                    value="{{ $toDate ?? '' }}" required>
                         </div>
                         <div class="col-12 col-sm-6 col-md-3">
-                            <label for="telecaller_id" class="form-label">Telecaller</label>
-                            <select class="form-select" id="telecaller_id" name="telecaller_id">
-                                <option value="">All Telecallers</option>
-                                @foreach($telecallers as $telecaller)
-                                    <option value="{{ $telecaller->id }}" {{ $selectedTelecallerId == $telecaller->id ? 'selected' : '' }}>
-                                        {{ $telecaller->name }}
+                            <label for="course_id" class="form-label">Course</label>
+                            <select class="form-select" id="course_id" name="course_id">
+                                <option value="">All Courses</option>
+                                @foreach($courses as $course)
+                                    <option value="{{ $course->id }}" {{ $selectedCourseId == $course->id ? 'selected' : '' }}>
+                                        {{ $course->title }}
                                     </option>
                                 @endforeach
                             </select>
@@ -58,11 +58,11 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="ti ti-filter"></i> Generate Report
                                 </button>
-                                <a href="{{ route('admin.reports.telecallers-sales') }}" class="btn btn-outline-secondary">
+                                <a href="{{ route('admin.reports.course-wise-sales') }}" class="btn btn-outline-secondary">
                                     <i class="ti ti-refresh"></i> Reset
                                 </a>
                                 @if(count($reports) > 0)
-                                    <a href="{{ route('admin.reports.telecallers-sales.export.pdf', request()->query()) }}" class="btn btn-outline-danger">
+                                    <a href="{{ route('admin.reports.course-wise-sales.export.pdf', request()->query()) }}" class="btn btn-outline-danger">
                                         <i class="ti ti-file-pdf"></i> Export PDF
                                     </a>
                                 @endif
@@ -81,7 +81,7 @@
     @php
         $totalSalesCount = collect($reports)->sum('sales_count');
         $totalSaleAmount = collect($reports)->sum('total_sale_amount');
-        $totalReceivedAtSale = collect($reports)->sum('received_at_sale');
+        $totalReceivedAmount = collect($reports)->sum('received_amount');
     @endphp
     <div class="row mb-4">
         <div class="col-xl-4 col-md-6">
@@ -130,8 +130,8 @@
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-1">Received at Sale (DP)</h6>
-                            <h4 class="mb-0">₹{{ number_format(round($totalReceivedAtSale)) }}</h4>
+                            <h6 class="mb-1">Received Amount</h6>
+                            <h4 class="mb-0">₹{{ number_format(round($totalReceivedAmount)) }}</h4>
                             <small class="text-muted">Payments Collected & Approved</small>
                         </div>
                     </div>
@@ -149,7 +149,7 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="ti ti-chart-line me-2"></i>Telecallers Sales Report
+                        <i class="ti ti-chart-line me-2"></i>Course Wise Sales Report
                         @if($fromDate && $toDate)
                             <small class="text-muted">({{ \Carbon\Carbon::parse($fromDate)->format('d M Y') }} - {{ \Carbon\Carbon::parse($toDate)->format('d M Y') }})</small>
                         @endif
@@ -161,10 +161,10 @@
                             <thead class="table-light">
                                 <tr>
                                     <th class="text-center">Sl No</th>
-                                    <th>Telecaller Name</th>
-                                    <th class="text-end">Sales Count<br><small class="text-muted">(Converted Leads)</small></th>
+                                    <th>Course Name</th>
+                                    <th class="text-end">Total Sales Count<br><small class="text-muted">(Converted Leads)</small></th>
                                     <th class="text-end">Total Sale Amount<br><small class="text-muted">(Invoice Total)</small></th>
-                                    <th class="text-end">Received at Sale (DP)<br><small class="text-muted">(Payments Collected & Approved)</small></th>
+                                    <th class="text-end">Received Amount<br><small class="text-muted">(Payments Collected & Approved)</small></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -172,9 +172,9 @@
                                     <tr>
                                         <td class="text-center">{{ $index + 1 }}</td>
                                         <td>
-                                            <strong>{{ $report['telecaller']->name }}</strong>
-                                            @if($report['telecaller']->email)
-                                                <br><small class="text-muted">{{ $report['telecaller']->email }}</small>
+                                            <strong>{{ $report['course']->title }}</strong>
+                                            @if($report['course']->code)
+                                                <br><small class="text-muted">Code: {{ $report['course']->code }}</small>
                                             @endif
                                         </td>
                                         <td class="text-end">
@@ -184,7 +184,7 @@
                                             <strong>₹{{ number_format(round($report['total_sale_amount'])) }}</strong>
                                         </td>
                                         <td class="text-end">
-                                            <strong class="text-success">₹{{ number_format(round($report['received_at_sale'])) }}</strong>
+                                            <strong class="text-success">₹{{ number_format(round($report['received_amount'])) }}</strong>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -200,7 +200,7 @@
                                         <strong>₹{{ number_format(round(collect($reports)->sum('total_sale_amount'))) }}</strong>
                                     </th>
                                     <th class="text-end">
-                                        <strong class="text-success">₹{{ number_format(round(collect($reports)->sum('received_at_sale'))) }}</strong>
+                                        <strong class="text-success">₹{{ number_format(round(collect($reports)->sum('received_amount'))) }}</strong>
                                     </th>
                                 </tr>
                             </tfoot>
