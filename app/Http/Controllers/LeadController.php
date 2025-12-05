@@ -182,6 +182,27 @@ class LeadController extends Controller
             $query->where('rating', $request->rating);
         }
 
+        // Lead Type filter (only for Admin/Super Admin, Senior Manager, General Manager)
+        $currentUser = AuthHelper::getCurrentUser();
+        $isAdminOrSuperAdmin = RoleHelper::is_admin_or_super_admin();
+        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+        $isGeneralManager = RoleHelper::is_general_manager();
+        
+        if (($isAdminOrSuperAdmin || $isSeniorManager || $isGeneralManager) && $request->filled('lead_type')) {
+            $leadType = $request->lead_type;
+            if ($leadType === 'pullback') {
+                // Remove global scope to show pullbacked leads
+                $query->withoutGlobalScope('exclude_pullbacked');
+                $query->where('is_pullbacked', 1);
+            } elseif ($leadType === 'normal') {
+                // Explicitly filter for normal leads (is_pullbacked = 0 or null)
+                $query->where(function($q) {
+                    $q->whereNull('is_pullbacked')
+                      ->orWhere('is_pullbacked', 0);
+                });
+            }
+        }
+
         // Add search functionality
         if ($request->filled('search_key')) {
             $searchKey = $request->search_key;
@@ -192,10 +213,6 @@ class LeadController extends Controller
             });
         }
 
-        $currentUser = AuthHelper::getCurrentUser();
-        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
-        $isGeneralManager = RoleHelper::is_general_manager();
-        
         // Role-based lead filtering
         if ($currentUser) {
             // Senior Manager and General Manager: Can see all leads (no filtering)
@@ -1319,26 +1336,29 @@ class LeadController extends Controller
         $countries = Country::where('is_active', true)->get();
         $courses = Course::where('is_active', true)->get();
         
-        // Filter teams based on role
-        if ($isTeamLead) {
-            // Team Lead: Show only their team
+        // Filter teams based on role (same logic as bulk upload)
+        if ($isTeamLead && !$isSeniorManager) {
+            // Team Lead (not senior manager): Show only their team
             $teamId = $currentUser->team_id;
             if ($teamId) {
-                $teams = Team::where('id', $teamId)->get();
+                $teams = Team::where('id', $teamId)->where('is_active', true)->get();
             } else {
                 $teams = collect(); // No teams if not assigned to any team
             }
-        } elseif ($isTelecaller && !$isSeniorManager) {
+        } elseif ($isSeniorManager || RoleHelper::is_admin_or_super_admin() || $isGeneralManager) {
+            // Senior Manager/General Manager/Admin/Super Admin: Show all teams (excluding marketing teams)
+            $teams = Team::where('is_active', true)->nonMarketing()->get();
+        } elseif ($isTelecaller) {
             // Regular Telecaller: Show only their team
             $teamId = $currentUser->team_id;
             if ($teamId) {
-                $teams = Team::where('id', $teamId)->get();
+                $teams = Team::where('id', $teamId)->where('is_active', true)->get();
             } else {
                 $teams = collect(); // No teams if not assigned to any team
             }
         } else {
-            // Admin/Super Admin/Senior Manager/General Manager: Show all teams (excluding marketing teams)
-            $teams = Team::nonMarketing()->get();
+            // Default: Show all teams (excluding marketing teams)
+            $teams = Team::where('is_active', true)->nonMarketing()->get();
         }
         
         $country_codes = get_country_code();

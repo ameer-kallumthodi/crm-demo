@@ -127,6 +127,18 @@
                         </div>
                         @endif
 
+                        <!-- Lead Type (only for Admin/Super Admin, Senior Manager, General Manager) -->
+                        @if($isAdminOrSuperAdmin || $isSeniorManager || $isGeneralManager)
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <label for="lead_type" class="form-label">Lead Type</label>
+                            <select class="form-select form-select-sm" name="lead_type" id="lead_type">
+                                <option value="">All Leads</option>
+                                <option value="normal" {{ request('lead_type') == 'normal' ? 'selected' : '' }}>Normal Leads</option>
+                                <option value="pullback" {{ request('lead_type') == 'pullback' ? 'selected' : '' }}>Pullback Lead</option>
+                            </select>
+                        </div>
+                        @endif
+
                         <!-- Action Buttons -->
                         <div class="col-12 col-lg-2">
                             <div class="d-flex gap-2 flex-wrap">
@@ -550,7 +562,7 @@ $columns = array_merge($columns, [
             
             // Get filter values from form
             function getFilterParams() {
-                return {
+                var params = {
                     date_from: $('#date_from').val() || '',
                     date_to: $('#date_to').val() || '',
                     lead_status_id: $('#filter_lead_status_id').val() || '',
@@ -560,6 +572,13 @@ $columns = array_merge($columns, [
                     telecaller_id: $('#telecaller_id_filter').val() || '',
                     search_key: getUrlParameter('search_key') || '{{ request('search_key') }}' || ''
                 };
+                
+                // Add lead_type if the field exists (only for admin/super admin, senior manager, general manager)
+                if ($('#lead_type').length > 0) {
+                    params.lead_type = $('#lead_type').val() || '';
+                }
+                
+                return params;
             }
             
             function buildQueryString(params) {
@@ -726,7 +745,7 @@ $columns = array_merge($columns, [
             });
             
             // Reload on filter change
-            $('#filter_lead_status_id, #filter_lead_source_id, #course_id, #rating, #telecaller_id_filter').on('change', function() {
+            $('#filter_lead_status_id, #filter_lead_source_id, #course_id, #rating, #telecaller_id_filter, #lead_type').on('change', function() {
                 updateUrlWithFilters();
                 // Reset mobile view state
                 mobileViewState.allData = [];
