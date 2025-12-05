@@ -56,7 +56,8 @@ class PostSalesConvertedLeadController extends Controller
                 'batch.postponeBatch',
                 'admissionBatch',
                 'subject',
-                'lead.telecaller:id,name'
+                'lead.telecaller:id,name',
+                'invoices.payments' // For checking pending payments
             ]);
 
             // Apply filters
@@ -168,6 +169,7 @@ class PostSalesConvertedLeadController extends Controller
                     'called_time' => $this->renderCalledTime($convertedLead),
                     'postsale_followup' => $this->renderPostsaleFollowup($convertedLead),
                     'post_sales_remarks' => $this->renderPostSalesRemarks($convertedLead),
+                    'pending_payment' => $this->renderPendingPayment($convertedLead),
             'actions' => $this->renderActions($convertedLead),
             'DT_RowClass' => $this->getRowClass($convertedLead),
                     // Mobile view data
@@ -333,6 +335,30 @@ class PostSalesConvertedLeadController extends Controller
     }
 
     /**
+     * Check if converted lead has pending payment
+     */
+    private function hasPendingPayment($convertedLead)
+    {
+        foreach ($convertedLead->invoices as $invoice) {
+            if ($invoice->payments->where('status', 'Pending Approval')->count() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Render pending payment column HTML
+     */
+    private function renderPendingPayment($convertedLead)
+    {
+        if ($this->hasPendingPayment($convertedLead)) {
+            return '<span class="badge bg-warning">Pending</span>';
+        }
+        return '<span class="text-muted">No</span>';
+    }
+
+    /**
      * Render actions column HTML
      */
     private function renderActions($convertedLead)
@@ -405,6 +431,7 @@ class PostSalesConvertedLeadController extends Controller
             'subject' => $convertedLead->subject?->title ?? 'N/A',
             'called_date' => $convertedLead->called_date ? $convertedLead->called_date->format('d M Y') : null,
             'called_time' => $convertedLead->called_time ? $convertedLead->called_time->format('h:i A') : null,
+            'pending_payment' => $this->hasPendingPayment($convertedLead),
             'routes' => [
                 'view' => route('admin.post-sales.converted-leads.show', $convertedLead->id),
                 'status_update' => route('admin.post-sales.converted-leads.status-update', $convertedLead->id),

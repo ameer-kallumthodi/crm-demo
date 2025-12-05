@@ -10,8 +10,11 @@ use App\Models\Country;
 use App\Models\Team;
 use App\Models\LeadSource;
 use App\Models\ConvertedLead;
+use App\Models\Invoice;
+use App\Models\Payment;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -48,6 +51,8 @@ class DashboardController extends Controller
             'recentActivities' => $this->getRecentActivities(),
             'weeklyStats' => $this->getWeeklyStats(),
             'todaysLeads' => $this->getTodaysLeads(),
+            'saleCount' => $this->getSaleCount(),
+            'weeklySaleCount' => $this->getWeeklySaleCount(),
         ];
 
         return view('dashboard', $data);
@@ -421,20 +426,26 @@ class DashboardController extends Controller
         }
         
         if (AuthHelper::isTeamLead()) {
-            // Team Lead: Can see converted leads they created + their team members' converted leads
+            // Team Lead: Can see converted leads from leads assigned to them or their team members
             $teamId = $currentUser->team_id;
             if ($teamId) {
                 $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
                 // Include current user's ID in the team member IDs
                 $teamMemberIds[] = AuthHelper::getCurrentUserId();
-                $query->whereIn('created_by', $teamMemberIds);
+                $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                    $q->whereIn('telecaller_id', $teamMemberIds);
+                });
             } else {
-                // If no team assigned, only show their own converted leads
-                $query->where('created_by', AuthHelper::getCurrentUserId());
+                // If no team assigned, only show converted leads from their own leads
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
             }
         } elseif (AuthHelper::isTelecaller()) {
-            // Telecaller: Can only see converted leads they created
-            $query->where('created_by', AuthHelper::getCurrentUserId());
+            // Telecaller: Can only see converted leads from leads assigned to them
+            $query->whereHas('lead', function($q) {
+                $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+            });
         }
         
         return $query;
@@ -724,5 +735,74 @@ class DashboardController extends Controller
             'top_telecallers' => $topTelecallersChart,
             'lead_sources' => $leadSourcesChart,
         ];
+    }
+
+    /**
+     * Get sale count - converted leads where the first payment is approved
+     * A sale is counted when a converted lead has at least one invoice with an approved first payment
+     * First payment = oldest approved payment by created_at for each invoice
+     */
+    private function getSaleCount()
+    {
+        // Get all converted leads with role-based filtering
+        $convertedLeadsQuery = ConvertedLead::query();
+        $this->applyRoleBasedFilterToConvertedLeads($convertedLeadsQuery);
+        
+        // Count converted leads that have at least one invoice with a first approved payment
+        // Using a subquery to find the first (oldest) approved payment for each invoice
+        $saleCount = $convertedLeadsQuery
+            ->whereHas('invoices', function ($invoiceQuery) {
+                $invoiceQuery->whereHas('payments', function ($paymentQuery) {
+                    // This payment must be the first (oldest) approved payment for its invoice
+                    $paymentQuery->where('status', 'Approved')
+                        ->whereRaw('payments.created_at = (
+                            SELECT MIN(p2.created_at)
+                            FROM payments p2
+                            WHERE p2.invoice_id = payments.invoice_id
+                            AND p2.status = "Approved"
+                        )');
+                });
+            })
+            ->count();
+        
+        return $saleCount;
+    }
+
+    /**
+     * Get weekly sale count - converted leads where the first payment is approved (this week)
+     * A sale is counted when a converted lead has at least one invoice with an approved first payment
+     * First payment = oldest approved payment by created_at for each invoice
+     * Only counts sales where the first payment was approved this week
+     */
+    private function getWeeklySaleCount()
+    {
+        $weekStart = now()->startOfWeek();
+        $weekEnd = now()->endOfWeek();
+        
+        // Get all converted leads with role-based filtering
+        $convertedLeadsQuery = ConvertedLead::query();
+        $this->applyRoleBasedFilterToConvertedLeads($convertedLeadsQuery);
+        
+        // Count converted leads that have at least one invoice with a first approved payment this week
+        // Using a subquery to find the first (oldest) approved payment for each invoice
+        $weeklySaleCount = $convertedLeadsQuery
+            ->whereHas('invoices', function ($invoiceQuery) use ($weekStart, $weekEnd) {
+                $invoiceQuery->whereHas('payments', function ($paymentQuery) use ($weekStart, $weekEnd) {
+                    // This payment must be the first (oldest by created_at) approved payment for its invoice
+                    // And it must have been approved this week
+                    $paymentQuery->where('status', 'Approved')
+                        ->whereNotNull('approved_date')
+                        ->whereBetween('approved_date', [$weekStart, $weekEnd])
+                        ->whereRaw('payments.created_at = (
+                            SELECT MIN(p2.created_at)
+                            FROM payments p2
+                            WHERE p2.invoice_id = payments.invoice_id
+                            AND p2.status = "Approved"
+                        )');
+                });
+            })
+            ->count();
+        
+        return $weeklySaleCount;
     }
 }

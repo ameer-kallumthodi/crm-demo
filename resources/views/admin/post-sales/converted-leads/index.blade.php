@@ -158,6 +158,7 @@
                                     <th>Call Time</th>
                                     <th>Followup Date</th>
                                     <th>Remark</th>
+                                    <th>Pending Payment</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -203,6 +204,7 @@ $columns = [
     ['data' => 'called_time', 'name' => 'called_time', 'orderable' => false, 'searchable' => false],
     ['data' => 'postsale_followup', 'name' => 'postsale_followup', 'orderable' => false, 'searchable' => false],
     ['data' => 'post_sales_remarks', 'name' => 'post_sales_remarks', 'orderable' => false, 'searchable' => false],
+    ['data' => 'pending_payment', 'name' => 'pending_payment', 'orderable' => false, 'searchable' => false],
     ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
 ];
 @endphp
@@ -864,6 +866,11 @@ $columns = [
                 if (data.subject && data.subject !== 'N/A') {
                     cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-bookmark f-12 text-muted me-1"></i><small class="text-muted f-11">Subject: ' + escapeHtml(data.subject) + '</small></div></div>';
                 }
+                // Pending Payment
+                const pendingPaymentBadge = (data.pending_payment === true) 
+                    ? '<span class="badge bg-warning">Pending</span>' 
+                    : '<span class="text-muted">No</span>';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-currency-rupee f-12 text-muted me-1"></i><small class="text-muted f-11">Pending Payment: ' + pendingPaymentBadge + '</small></div></div>';
                 if (statusValue === 'cancel') {
                     const cancelStateLabel = isCancelledFlag ? 'Confirmed' : 'Cancelled';
                     const cancelStateClass = isCancelledFlag ? 'bg-danger' : 'bg-secondary';

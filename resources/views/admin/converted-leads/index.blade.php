@@ -352,6 +352,7 @@
                                     <th>Status</th>
                                     <th>REG. FEE</th>
                                     <th>Mail</th>
+                                    <th>Pending Payment</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -459,6 +460,22 @@
                                     </td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>
+                                        @php
+                                            $hasPendingPayment = false;
+                                            foreach ($convertedLead->invoices as $invoice) {
+                                                if ($invoice->payments->where('status', 'Pending Approval')->count() > 0) {
+                                                    $hasPendingPayment = true;
+                                                    break;
+                                                }
+                                            }
+                                        @endphp
+                                        @if($hasPendingPayment)
+                                            <span class="badge bg-warning">Pending</span>
+                                        @else
+                                            <span class="text-muted">No</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         <div class="" role="group">
                                             <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
                                                 <i class="ti ti-eye"></i>
@@ -504,7 +521,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="17" class="text-center">No converted leads found</td>
+                                    <td colspan="18" class="text-center">No converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -643,6 +660,23 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Reg. Fee</small>
                                     <span class="fw-medium">{{ $convertedLead->studentDetails?->reg_fee ?? 'N/A' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Pending Payment</small>
+                                    @php
+                                        $hasPendingPaymentMobile = false;
+                                        foreach ($convertedLead->invoices as $invoice) {
+                                            if ($invoice->payments->where('status', 'Pending Approval')->count() > 0) {
+                                                $hasPendingPaymentMobile = true;
+                                                break;
+                                            }
+                                        }
+                                    @endphp
+                                    @if($hasPendingPaymentMobile)
+                                        <span class="badge bg-warning">Pending</span>
+                                    @else
+                                        <span class="text-muted">No</span>
+                                    @endif
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Academic</small>

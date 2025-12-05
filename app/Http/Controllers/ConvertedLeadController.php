@@ -39,6 +39,7 @@ class ConvertedLeadController extends Controller
             'subject',
             'studentDetails',
             'leadDetail', // For Academic Document Approved (leads_details.reviewed_at)
+            'invoices.payments', // For checking pending payments
         ]);
 
         // Apply role-based filtering
