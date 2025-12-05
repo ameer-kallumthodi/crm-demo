@@ -47,11 +47,11 @@
                 </div>
                 <div class="mt-3 mt-md-0">
                     @if($mode === 'thanzeels-eschool-sales')
-                        <a href="{{ route('admin.reports.thanzeels-eschool-sales', ['from_date' => $fromDate, 'to_date' => $toDate, 'telecaller_id' => $telecaller->id]) }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('admin.reports.thanzeels-eschool-sales', ['from_date' => $fromDate, 'to_date' => $toDate]) }}" class="btn btn-outline-secondary">
                             <i class="ti ti-arrow-left"></i> Back to Thanzeels & E-School Report
                         </a>
                     @else
-                        <a href="{{ route('admin.reports.telecallers-sales', ['from_date' => $fromDate, 'to_date' => $toDate, 'telecaller_id' => $telecaller->id]) }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('admin.reports.telecallers-sales', ['from_date' => $fromDate, 'to_date' => $toDate]) }}" class="btn btn-outline-secondary">
                             <i class="ti ti-arrow-left"></i> Back to Telecallers Sales Report
                         </a>
                     @endif
@@ -69,7 +69,6 @@
             <div class="card-header">
                 <h5 class="mb-0">
                     Converted Leads List
-                    <small class="text-muted">(No additional filters applied)</small>
                 </h5>
             </div>
             <div class="card-body">

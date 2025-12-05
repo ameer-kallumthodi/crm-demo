@@ -170,6 +170,8 @@ class PaymentController extends Controller
             $invoice = Invoice::findOrFail($invoiceId);
             
             // Check if there's any pending payment
+            // COMMENTED OUT: Not needed currently
+            /*
             $pendingPayment = Payment::where('invoice_id', $invoiceId)
                 ->where('status', 'Pending Approval')
                 ->first();
@@ -186,6 +188,7 @@ class PaymentController extends Controller
                     ->with('message_danger', 'Cannot add new payment. There is already a pending payment waiting for approval.')
                     ->withInput();
             }
+            */
             
             // Check if payment amount doesn't exceed remaining balance
             $remainingBalance = $invoice->total_amount - $invoice->paid_amount;
