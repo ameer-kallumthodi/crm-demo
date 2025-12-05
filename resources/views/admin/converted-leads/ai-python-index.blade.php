@@ -170,9 +170,6 @@
                     <a href="{{ route('admin.support-gmvss-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> GMVSS Converted Support List
                     </a>
-                    <a href="{{ route('admin.support-ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Diploma in Data Science Converted Support List
-                    </a>
                     <a href="{{ route('admin.support-digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Digital Marketing Converted Support List
                     </a>

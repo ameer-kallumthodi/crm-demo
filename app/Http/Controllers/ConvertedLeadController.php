@@ -752,7 +752,7 @@ class ConvertedLeadController extends Controller
      */
     public function digitalMarketingIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails', 'leadDetail'])
             ->where('course_id', 11);
 
         // Apply role-based filtering
@@ -838,6 +838,12 @@ class ConvertedLeadController extends Controller
             $query->where('batch_id', $request->batch_id);
         }
 
+        if ($request->filled('programme_type')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('programme_type', $request->programme_type);
+            });
+        }
+
         // Get all results for DataTable
         $convertedLeads = $query->orderBy('created_at', 'desc')->get();
 
@@ -855,7 +861,7 @@ class ConvertedLeadController extends Controller
      */
     public function aiAutomationIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails', 'leadDetail'])
             ->where('course_id', 12);
 
         // Apply role-based filtering
@@ -941,6 +947,12 @@ class ConvertedLeadController extends Controller
             $query->where('batch_id', $request->batch_id);
         }
 
+        if ($request->filled('programme_type')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('programme_type', $request->programme_type);
+            });
+        }
+
         // Get all results for DataTable
         $convertedLeads = $query->orderBy('created_at', 'desc')->get();
 
@@ -958,7 +970,7 @@ class ConvertedLeadController extends Controller
      */
     public function webDevIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails', 'leadDetail'])
             ->where('course_id', 13);
 
         // Apply role-based filtering
@@ -1048,6 +1060,12 @@ class ConvertedLeadController extends Controller
             $query->where('admission_batch_id', $request->admission_batch_id);
         }
 
+        if ($request->filled('programme_type')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('programme_type', $request->programme_type);
+            });
+        }
+
         // Get all results for DataTable
         $convertedLeads = $query->orderBy('created_at', 'desc')->get();
 
@@ -1065,7 +1083,7 @@ class ConvertedLeadController extends Controller
      */
     public function vibeCodingIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails', 'leadDetail'])
             ->where('course_id', 14);
 
         // Apply role-based filtering
@@ -1155,6 +1173,12 @@ class ConvertedLeadController extends Controller
             $query->where('admission_batch_id', $request->admission_batch_id);
         }
 
+        if ($request->filled('programme_type')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('programme_type', $request->programme_type);
+            });
+        }
+
         // Get all results for DataTable
         $convertedLeads = $query->orderBy('created_at', 'desc')->get();
 
@@ -1172,7 +1196,7 @@ class ConvertedLeadController extends Controller
      */
     public function graphicDesigningIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails', 'leadDetail'])
             ->where('course_id', 15);
 
         // Apply role-based filtering
@@ -1262,6 +1286,12 @@ class ConvertedLeadController extends Controller
             $query->where('admission_batch_id', $request->admission_batch_id);
         }
 
+        if ($request->filled('programme_type')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('programme_type', $request->programme_type);
+            });
+        }
+
         // Get all results for DataTable
         $convertedLeads = $query->orderBy('created_at', 'desc')->get();
 
@@ -1279,7 +1309,7 @@ class ConvertedLeadController extends Controller
      */
     public function machineLearningIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails', 'leadDetail'])
             ->where('course_id', 20);
 
         // Apply role-based filtering
@@ -1369,6 +1399,12 @@ class ConvertedLeadController extends Controller
             $query->where('admission_batch_id', $request->admission_batch_id);
         }
 
+        if ($request->filled('programme_type')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('programme_type', $request->programme_type);
+            });
+        }
+
         // Get all results for DataTable
         $convertedLeads = $query->orderBy('created_at', 'desc')->get();
 
@@ -1386,7 +1422,7 @@ class ConvertedLeadController extends Controller
      */
     public function flutterIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails', 'leadDetail'])
             ->where('course_id', 21);
 
         // Apply role-based filtering
@@ -1474,6 +1510,12 @@ class ConvertedLeadController extends Controller
 
         if ($request->filled('admission_batch_id')) {
             $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('programme_type')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('programme_type', $request->programme_type);
+            });
         }
 
         // Get all results for DataTable
@@ -2512,6 +2554,8 @@ class ConvertedLeadController extends Controller
             'course_type' => 'nullable|string|in:UG,PG',
             'university_course_id' => 'nullable|exists:university_courses,id',
             'passed_year' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'programme_type' => 'nullable|string|in:online,offline',
+            'location' => 'nullable|string|in:Ernakulam,Malappuram',
         ];
 
         if (!array_key_exists($field, $allowedFields)) {
@@ -2576,7 +2620,7 @@ class ConvertedLeadController extends Controller
         }
 
         // Handle fields that are in LeadDetail (for UG/PG course)
-        $leadDetailFields = ['whatsapp_number', 'whatsapp_code', 'university_id', 'course_type', 'university_course_id', 'passed_year', 'date_of_birth', 'dob'];
+        $leadDetailFields = ['whatsapp_number', 'whatsapp_code', 'university_id', 'course_type', 'university_course_id', 'passed_year', 'date_of_birth', 'dob', 'programme_type', 'location'];
 
         // Handle fields that are now in ConvertedStudentDetail
         $studentDetailFields = ['reg_fee', 'exam_fee', 'enroll_no', 'internship_id', 'id_card', 'tma', 'registration_number', 'enrollment_number', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks', 'continuing_studies', 'reason', 'application_number', 'board_registration_number', 'st', 'phy', 'che', 'bio', 'app', 'group', 'interview', 'howmany_interview', 'call_status', 'class_information', 'orientation_class_status', 'class_starting_date', 'class_ending_date', 'whatsapp_group_status', 'class_time', 'class_status', 'complete_cancel_date', 'teacher_id', 'screening'];
@@ -2600,6 +2644,14 @@ class ConvertedLeadController extends Controller
             // Special handling for date_of_birth (DOB in lead_details)
             if ($field === 'dob') {
                 $leadDetail->date_of_birth = $value;
+            } elseif ($field === 'programme_type') {
+                // If changing to online, clear location
+                if ($value === 'online') {
+                    $leadDetail->programme_type = $value;
+                    $leadDetail->location = null;
+                } else {
+                    $leadDetail->programme_type = $value;
+                }
             } else {
                 $leadDetail->{$field} = $value;
             }

@@ -538,8 +538,8 @@
                                     <input type="text" class="form-control" value="{{ $convertedLead->admissionBatch?->title ?? '-' }}" disabled>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">മെന്റർ നാമം (Teacher)</label>
-                                    <input type="text" class="form-control" value="{{ $convertedLead->academicAssistant?->name ?? '-' }}" disabled>
+                                    <label class="form-label">മെന്റർ നാമം (Mentor Name)</label>
+                                    <input type="text" class="form-control" value="{{ $convertedLead->admissionBatch?->mentor?->name ?? '-' }}" disabled>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">ബന്ധപ്പെടാനുള്ള നമ്പർ (Phone)</label>

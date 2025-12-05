@@ -76,9 +76,6 @@
                     <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
                         <i class="ti ti-certificate"></i> GMVSS Converted Leads
                     </a>
-                    <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-code"></i> AI with Python Converted Leads
-                    </a>
                     <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
                     </a>
@@ -174,9 +171,6 @@
                     </a>
                     <a href="{{ route('admin.support-gmvss-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> GMVSS Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> AI with Python Converted Support List
                     </a>
                     <a href="{{ route('admin.support-digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Digital Marketing Converted Support List

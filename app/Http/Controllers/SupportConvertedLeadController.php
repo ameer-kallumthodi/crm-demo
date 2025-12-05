@@ -212,7 +212,7 @@ class SupportConvertedLeadController extends Controller
             'supportFeedbackHistory.createdBy',
             'subject',
             'batch',
-            'admissionBatch'
+            'admissionBatch.mentor'
         ])->findOrFail($id);
 
         return view('admin.converted-leads.support-show', compact('convertedLead'));
