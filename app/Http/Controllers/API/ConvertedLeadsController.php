@@ -43,6 +43,7 @@ class ConvertedLeadsController extends Controller
             'leadDetail:lead_id,reviewed_at',
             'batch:id,title',
             'admissionBatch:id,title',
+            'invoices.payments', // For checking pending payments
         ]);
 
         // Apply role-based filtering (same as web controller)
@@ -188,7 +189,8 @@ class ConvertedLeadsController extends Controller
             'subject',
             'academicAssistant',
             'createdBy',
-            'studentDetails.registrationLink'
+            'studentDetails.registrationLink',
+            'invoices.payments' // For checking pending payments
         ])->find($id);
 
         if (!$convertedLead) {
@@ -847,7 +849,26 @@ class ConvertedLeadsController extends Controller
             // Created by
             'created_by_id' => $convertedLead->created_by,
             'created_by_name' => $convertedLead->createdBy ? $convertedLead->createdBy->name : null,
+            
+            // Pending payment
+            'pending_payment' => $this->hasPendingPayment($convertedLead),
         ];
+    }
+
+    /**
+     * Check if converted lead has pending payment
+     *
+     * @param ConvertedLead $convertedLead
+     * @return bool
+     */
+    private function hasPendingPayment($convertedLead)
+    {
+        foreach ($convertedLead->invoices as $invoice) {
+            if ($invoice->payments->where('status', 'Pending Approval')->count() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
