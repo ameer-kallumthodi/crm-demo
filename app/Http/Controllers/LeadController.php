@@ -3416,7 +3416,7 @@ class LeadController extends Controller
         $fromDate = date('Y-m-d H:i:s', strtotime($request->from_date . ' 00:00:00'));
         $toDate = date('Y-m-d H:i:s', strtotime($request->to_date . ' 23:59:59'));
         
-        $leads = Lead::select([
+        $query = Lead::select([
             'id', 'title', 'code', 'phone', 'email', 'lead_status_id', 'lead_source_id', 
             'course_id', 'telecaller_id', 'place', 'rating', 'interest_status', 
             'followup_date', 'remarks', 'is_converted', 'created_at'
@@ -3425,8 +3425,14 @@ class LeadController extends Controller
         ->where('telecaller_id', $request->tele_caller_id)
         ->where('lead_status_id', $request->lead_status_id)
         ->where('created_at', '>=', $fromDate)
-        ->where('created_at', '<=', $toDate)
-        ->with([
+        ->where('created_at', '<=', $toDate);
+        
+        // Optional course filter - only apply if course_id is provided
+        if ($request->filled('course_id')) {
+            $query->where('course_id', $request->course_id);
+        }
+        
+        $leads = $query->with([
             'leadStatus:id,title', 
             'leadSource:id,title', 
             'telecaller:id,name', 

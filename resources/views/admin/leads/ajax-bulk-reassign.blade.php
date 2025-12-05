@@ -1,7 +1,7 @@
 <form action="{{ route('admin.leads.bulk-reassign.submit') }}" method="post" enctype="multipart/form-data">
     @csrf
     <div class="row g-3">
-        <div class="col-lg-2">
+        <div class="col-lg-3 col-md-4">
             <div class="p-1">
                 <label for="telecaller_id" class="form-label">Re-assign To</label>
                 <select class="form-control" name="telecaller_id" id="telecaller_id" required>
@@ -13,7 +13,7 @@
             </div>
         </div>
 
-        <div class="col-lg-2">
+        <div class="col-lg-3 col-md-4">
             <div class="p-1">
                 <label for="lead_source_id" class="form-label">Lead Source</label>
                 <select class="form-control" name="lead_source_id" id="lead_source_id" required>
@@ -25,7 +25,7 @@
             </div>
         </div>
 
-        <div class="col-lg-2">
+        <div class="col-lg-3 col-md-4">
             <div class="p-1">
                 <label for="lead_status_id" class="form-label">Lead Status</label>
                 <select class="form-control" name="lead_status_id" id="lead_status_id" required>
@@ -37,7 +37,19 @@
             </div>
         </div>
 
-        <div class="col-lg-2">
+        <div class="col-lg-3 col-md-4">
+            <div class="p-1">
+                <label for="course_id" class="form-label">Course <small class="text-muted">(Optional)</small></label>
+                <select class="form-control" name="course_id" id="reassign_course_id">
+                    <option value="">All Courses</option>
+                    @foreach ($courses as $course)
+                    <option value="{{ $course->id }}">{{ $course->title }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4">
             <div class="p-1">
                 <label for="from_telecaller_id" class="form-label">Re-assign From</label>
                 <select class="form-control" name="from_telecaller_id" id="from_telecaller_id" required>
@@ -49,14 +61,14 @@
             </div>
         </div>
 
-        <div class="col-lg-2">
+        <div class="col-lg-3 col-md-4">
             <div class="p-1">
                 <label for="lead_from_date" class="form-label">From Date</label>
                 <input type="date" id="lead_from_date" name="lead_from_date" class="form-control" required>
             </div>
         </div>
 
-        <div class="col-lg-2">
+        <div class="col-lg-3 col-md-4">
             <div class="p-1">
                 <label for="lead_to_date" class="form-label">To Date</label>
                 <input type="date" id="lead_to_date" name="lead_to_date" class="form-control" required>
@@ -140,12 +152,13 @@ $(document).ready(function() {
     // Team selection removed - senior managers can see all telecallers directly
     
     // AJAX to fetch leads
-    $('#from_telecaller_id, #lead_source_id, #lead_from_date, #lead_to_date, #lead_status_id').on('change', function() {
+    $('#from_telecaller_id, #lead_source_id, #lead_from_date, #lead_to_date, #lead_status_id, #reassign_course_id').on('change', function() {
         var leadSourceId = $('#lead_source_id').val();
         var leadStatusId = $('#lead_status_id').val();
         var teleCallerId = $('#from_telecaller_id').val();
         var leadFromDate = $('#lead_from_date').val();
         var leadToDate = $('#lead_to_date').val();
+        var courseId = $('#reassign_course_id').val();
 
         if (leadSourceId && teleCallerId && leadFromDate && leadToDate && leadStatusId) {
             $.ajax({
@@ -156,7 +169,8 @@ $(document).ready(function() {
                     tele_caller_id: teleCallerId, 
                     from_date: leadFromDate, 
                     to_date: leadToDate, 
-                    lead_status_id: leadStatusId 
+                    lead_status_id: leadStatusId,
+                    course_id: courseId || ''
                 },
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
