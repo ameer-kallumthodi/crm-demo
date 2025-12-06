@@ -129,6 +129,7 @@ class PermissionHelper
             'admin/subjects/index',
             'admin/class-times/index',
             'admin/offline-places/index',
+            'admin/hod/index',
             'admin/sub-courses/index',
             'admin/course-documents/index',
             'admin/universities/index',
