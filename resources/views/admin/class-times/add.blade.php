@@ -17,6 +17,18 @@
 
             <div class="col-md-6">
                 <div class="mb-3">
+                    <label class="form-label" for="class_type">Class Type <span class="text-danger">*</span></label>
+                    <select name="class_type" class="form-select" id="class_type" required>
+                        <option value="">Select Class Type</option>
+                        <option value="online">Online</option>
+                        <option value="offline">Offline</option>
+                    </select>
+                    <small class="form-text text-muted">Select whether this class time is for online or offline</small>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
                     <label class="form-label" for="from_time">From Time <span class="text-danger">*</span></label>
                     <input type="time" name="from_time" class="form-control" id="from_time" required>
                     <small class="form-text text-muted">Select start time</small>

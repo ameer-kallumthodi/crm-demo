@@ -27,6 +27,7 @@ class ClassTimeController extends Controller
 
         $request->validate([
             'course_id' => 'required|exists:courses,id',
+            'class_type' => 'required|in:online,offline',
             'from_time' => 'required|date_format:H:i',
             'to_time' => 'required|date_format:H:i|after:from_time',
             'is_active' => 'boolean',
@@ -34,6 +35,7 @@ class ClassTimeController extends Controller
 
         $classTime = ClassTime::create([
             'course_id' => $request->course_id,
+            'class_type' => $request->class_type,
             'from_time' => $request->from_time,
             'to_time' => $request->to_time,
             'is_active' => $request->input('is_active', 0) == 1,
@@ -89,6 +91,7 @@ class ClassTimeController extends Controller
         try {
             $request->validate([
                 'course_id' => 'required|exists:courses,id',
+                'class_type' => 'required|in:online,offline',
                 'from_time' => 'required|date_format:H:i',
                 'to_time' => 'required|date_format:H:i|after:from_time',
                 'is_active' => 'nullable|boolean',
@@ -105,6 +108,7 @@ class ClassTimeController extends Controller
 
             $classTime = ClassTime::create([
                 'course_id' => $request->course_id,
+                'class_type' => $request->class_type,
                 'from_time' => $request->from_time,
                 'to_time' => $request->to_time,
                 'is_active' => $request->boolean('is_active'),
@@ -170,6 +174,7 @@ class ClassTimeController extends Controller
         try {
             $request->validate([
                 'course_id' => 'required|exists:courses,id',
+                'class_type' => 'required|in:online,offline',
                 'from_time' => 'required|date_format:H:i',
                 'to_time' => 'required|date_format:H:i|after:from_time',
                 'is_active' => 'nullable|boolean',
@@ -187,6 +192,7 @@ class ClassTimeController extends Controller
             $classTime = ClassTime::findOrFail($id);
             $classTime->update([
                 'course_id' => $request->course_id,
+                'class_type' => $request->class_type,
                 'from_time' => $request->from_time,
                 'to_time' => $request->to_time,
                 'is_active' => $request->boolean('is_active'),

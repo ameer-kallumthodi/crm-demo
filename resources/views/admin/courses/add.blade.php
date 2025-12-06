@@ -71,6 +71,30 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <div class="form-check mt-4">
+                        <input type="hidden" name="is_online" value="0">
+                        <input class="form-check-input" type="checkbox" id="is_online" name="is_online" value="1">
+                        <label class="form-check-label" for="is_online">
+                            Online
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <div class="form-check mt-4">
+                        <input type="hidden" name="is_offline" value="0">
+                        <input class="form-check-input" type="checkbox" id="is_offline" name="is_offline" value="1">
+                        <label class="form-check-label" for="is_offline">
+                            Offline
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <button type="submit" class="btn btn-success float-end">Submit</button>

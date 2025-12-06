@@ -31,6 +31,8 @@ class CourseController extends Controller
             'hod_number' => 'nullable|string|max:20',
             'is_active' => 'nullable|boolean',
             'needs_time' => 'nullable|boolean',
+            'is_online' => 'nullable|boolean',
+            'is_offline' => 'nullable|boolean',
         ]);
 
         $course = Course::create([
@@ -40,6 +42,8 @@ class CourseController extends Controller
             'hod_number' => $request->hod_number,
             'is_active' => $request->has('is_active') ? 1 : 0,
             'needs_time' => $request->has('needs_time') ? 1 : 0,
+            'is_online' => $request->has('is_online') ? 1 : 0,
+            'is_offline' => $request->has('is_offline') ? 1 : 0,
         ]);
 
         return response()->json([
@@ -103,6 +107,8 @@ class CourseController extends Controller
                 'hod_number' => 'nullable|string|max:20',
                 'is_active' => 'nullable|boolean',
                 'needs_time' => 'nullable|boolean',
+                'is_online' => 'nullable|boolean',
+                'is_offline' => 'nullable|boolean',
             ]);
 
             $course = Course::create([
@@ -112,6 +118,8 @@ class CourseController extends Controller
                 'hod_number' => $request->hod_number,
                 'is_active' => $request->boolean('is_active'),
                 'needs_time' => $request->boolean('needs_time'),
+                'is_online' => $request->boolean('is_online'),
+                'is_offline' => $request->boolean('is_offline'),
             ]);
 
             // For AJAX requests, return JSON response
@@ -177,6 +185,8 @@ class CourseController extends Controller
                 'hod_number' => 'nullable|string|max:20',
                 'is_active' => 'nullable|boolean',
                 'needs_time' => 'nullable|boolean',
+                'is_online' => 'nullable|boolean',
+                'is_offline' => 'nullable|boolean',
             ]);
 
             $course = Course::findOrFail($id);
@@ -187,6 +197,8 @@ class CourseController extends Controller
                 'hod_number' => $request->hod_number,
                 'is_active' => $request->boolean('is_active'),
                 'needs_time' => $request->boolean('needs_time'),
+                'is_online' => $request->boolean('is_online'),
+                'is_offline' => $request->boolean('is_offline'),
             ]);
 
             // For AJAX requests, return JSON response

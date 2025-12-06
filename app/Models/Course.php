@@ -17,11 +17,15 @@ class Course extends Model
         'hod_number',
         'is_active',
         'needs_time',
+        'is_online',
+        'is_offline',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'needs_time' => 'boolean',
+        'is_online' => 'boolean',
+        'is_offline' => 'boolean',
         'amount' => 'double',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

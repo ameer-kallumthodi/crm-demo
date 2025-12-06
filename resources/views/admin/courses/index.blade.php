@@ -47,6 +47,8 @@
                                 <th>Code</th>
                                 <th>Amount</th>
                                 <th>HOD Number</th>
+                                <th>Online</th>
+                                <th>Offline</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -59,6 +61,16 @@
                                 <td>{{ $course->code ?? 'N/A' }}</td>
                                 <td>{{ $course->amount ? '₹' . number_format($course->amount, 2) : '-' }}</td>
                                 <td>{{ $course->hod_number ?? 'N/A' }}</td>
+                                <td>
+                                    <span class="badge {{ $course->is_online ? 'bg-success' : 'bg-secondary' }}">
+                                        {{ $course->is_online ? 'Yes' : 'No' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {{ $course->is_offline ? 'bg-success' : 'bg-secondary' }}">
+                                        {{ $course->is_offline ? 'Yes' : 'No' }}
+                                    </span>
+                                </td>
                                 <td>
                                     <span class="badge {{ $course->is_active ? 'bg-success' : 'bg-danger' }}">
                                         {{ $course->is_active ? 'Active' : 'Inactive' }}

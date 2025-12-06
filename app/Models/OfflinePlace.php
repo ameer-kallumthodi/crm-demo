@@ -6,15 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ClassTime extends Model
+class OfflinePlace extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'course_id',
-        'class_type',
-        'from_time',
-        'to_time',
+        'name',
         'is_active',
     ];
 
@@ -25,18 +22,9 @@ class ClassTime extends Model
         'deleted_at' => 'datetime',
     ];
 
-    public function course()
-    {
-        return $this->belongsTo(Course::class);
-    }
-
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
-
-    public function scopeByCourse($query, $courseId)
-    {
-        return $query->where('course_id', $courseId);
-    }
 }
+

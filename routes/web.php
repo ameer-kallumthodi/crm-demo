@@ -394,6 +394,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::put('/class-times-update/{id}', [App\Http\Controllers\ClassTimeController::class, 'update'])->name('class-times.update');
         Route::delete('/class-times-delete/{id}', [App\Http\Controllers\ClassTimeController::class, 'delete'])->name('class-times.delete');
 
+        // Offline Places Routes
+        Route::resource('offline-places', App\Http\Controllers\OfflinePlaceController::class)->except(['create', 'edit']);
+        Route::get('/offline-places-add', [App\Http\Controllers\OfflinePlaceController::class, 'ajax_add'])->name('offline-places.add');
+        Route::get('/offline-places-edit/{id}', [App\Http\Controllers\OfflinePlaceController::class, 'ajax_edit'])->name('offline-places.edit');
+        Route::post('/offline-places-submit', [App\Http\Controllers\OfflinePlaceController::class, 'submit'])->name('offline-places.submit');
+        Route::put('/offline-places-update/{id}', [App\Http\Controllers\OfflinePlaceController::class, 'update'])->name('offline-places.update');
+        Route::delete('/offline-places-delete/{id}', [App\Http\Controllers\OfflinePlaceController::class, 'delete'])->name('offline-places.delete');
+
         Route::resource('teams', TeamController::class)->except(['create', 'edit']);
         Route::get('/teams-add', [TeamController::class, 'ajax_add'])->name('teams.add');
         Route::get('/teams-edit/{id}', [TeamController::class, 'ajax_edit'])->name('teams.edit');
