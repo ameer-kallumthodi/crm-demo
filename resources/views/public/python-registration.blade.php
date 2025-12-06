@@ -577,20 +577,29 @@
                     
                     <div class="row">
                         <div class="col-md-6">
+                            @if($course && ($course->is_online || $course->is_offline))
                             <div class="form-group">
                                 <label class="form-label">Course Type <span class="required">*</span></label>
                                 <select class="form-control" name="programme_type" id="programme_type" required>
                                     <option value="">Select Course Type</option>
-                                    @if($course && $course->is_online)
+                                    @if($course->is_online)
                                         <option value="online">Online</option>
                                     @endif
-                                    @if($course && $course->is_offline)
+                                    @if($course->is_offline)
                                         <option value="offline">Offline</option>
                                     @endif
                                 </select>
                             </div>
+                            @else
+                            <div class="form-group">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Not Have Active Course Type
+                                </div>
+                            </div>
+                            @endif
                         </div>
                         <div class="col-md-6">
+                            @if($course && $course->is_offline && $offlinePlaces && $offlinePlaces->count() > 0)
                             <div class="form-group" id="location_group" style="display: none;">
                                 <label class="form-label">Choose Please <span class="required">*</span></label>
                                 <select class="form-control" name="location" id="location">
@@ -600,15 +609,16 @@
                                     @endforeach
                                 </select>
                             </div>
+                            @endif
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6">
                             @if($course && $course->needs_time)
-                            <div class="form-group">
+                            <div class="form-group" id="class_time_group" style="display: none;">
                                 <label class="form-label">Class Time <span class="required">*</span></label>
-                                <select class="form-control" name="class_time_id" id="class_time_id" required>
+                                <select class="form-control" name="class_time_id" id="class_time_id">
                                     <option value="">Select Class Time</option>
                                 </select>
                             </div>
@@ -917,13 +927,15 @@
                     const programmeType = this.value;
                     
                     // Show/hide location field
-                    if (programmeType === 'offline') {
-                        locationGroup.style.display = 'block';
-                        locationSelect.setAttribute('required', 'required');
-                    } else {
-                        locationGroup.style.display = 'none';
-                        locationSelect.removeAttribute('required');
-                        locationSelect.value = '';
+                    if (locationGroup && locationSelect) {
+                        if (programmeType === 'offline') {
+                            locationGroup.style.display = 'block';
+                            locationSelect.setAttribute('required', 'required');
+                        } else {
+                            locationGroup.style.display = 'none';
+                            locationSelect.removeAttribute('required');
+                            locationSelect.value = '';
+                        }
                     }
                     
                     // Fetch and filter class times by class_type
@@ -937,12 +949,15 @@
         // Function to fetch class times filtered by class_type
         function fetchClassTimes(courseId, classType) {
             const classTimeSelect = document.getElementById('class_time_id');
-            if (!classTimeSelect) return;
+            const classTimeGroup = document.getElementById('class_time_group');
+            if (!classTimeSelect || !classTimeGroup) return;
             
             // Clear existing options except the first one
             classTimeSelect.innerHTML = '<option value="">Select Class Time</option>';
             
             if (!classType) {
+                classTimeGroup.style.display = 'none';
+                classTimeSelect.removeAttribute('required');
                 return;
             }
             
@@ -951,6 +966,8 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.length > 0) {
+                        classTimeGroup.style.display = 'block';
+                        classTimeSelect.setAttribute('required', 'required');
                         data.forEach(classTime => {
                             const option = document.createElement('option');
                             option.value = classTime.id;
@@ -959,10 +976,15 @@
                             option.textContent = `${fromTime} - ${toTime}`;
                             classTimeSelect.appendChild(option);
                         });
+                    } else {
+                        classTimeGroup.style.display = 'none';
+                        classTimeSelect.removeAttribute('required');
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching class times:', error);
+                    classTimeGroup.style.display = 'none';
+                    classTimeSelect.removeAttribute('required');
                 });
         }
         
