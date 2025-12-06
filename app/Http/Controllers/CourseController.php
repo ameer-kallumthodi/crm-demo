@@ -28,6 +28,7 @@ class CourseController extends Controller
             'title' => 'required|string|max:255',
             'code' => 'nullable|string|max:50',
             'amount' => 'required|numeric|min:0',
+            'hod_id' => 'nullable|exists:users,id',
             'hod_number' => 'nullable|string|max:20',
             'is_active' => 'nullable|boolean',
             'needs_time' => 'nullable|boolean',
@@ -39,6 +40,7 @@ class CourseController extends Controller
             'title' => $request->title,
             'code' => $request->code,
             'amount' => $request->amount,
+            'hod_id' => $request->hod_id,
             'hod_number' => $request->hod_number,
             'is_active' => $request->has('is_active') ? 1 : 0,
             'needs_time' => $request->has('needs_time') ? 1 : 0,
@@ -90,7 +92,8 @@ class CourseController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        return view('admin.courses.add');
+        $hodUsers = \App\Models\User::where('role_id', 14)->where('is_active', true)->get();
+        return view('admin.courses.add', compact('hodUsers'));
     }
 
     public function submit(Request $request)
@@ -104,6 +107,7 @@ class CourseController extends Controller
                 'title' => 'required|string|max:255',
                 'code' => 'nullable|string|max:50',
                 'amount' => 'required|numeric|min:0',
+                'hod_id' => 'nullable|exists:users,id',
                 'hod_number' => 'nullable|string|max:20',
                 'is_active' => 'nullable|boolean',
                 'needs_time' => 'nullable|boolean',
@@ -115,6 +119,7 @@ class CourseController extends Controller
                 'title' => $request->title,
                 'code' => $request->code,
                 'amount' => $request->amount,
+                'hod_id' => $request->hod_id,
                 'hod_number' => $request->hod_number,
                 'is_active' => $request->boolean('is_active'),
                 'needs_time' => $request->boolean('needs_time'),
@@ -168,7 +173,9 @@ class CourseController extends Controller
         }
 
         $edit_data = Course::findOrFail($id);
-        return view('admin.courses.edit', compact('edit_data'));
+        $hodUsers = \App\Models\User::where('role_id', 14)->where('is_active', true)->get();
+        
+        return view('admin.courses.edit', compact('edit_data', 'hodUsers'));
     }
 
     public function update(Request $request, $id)
@@ -182,6 +189,7 @@ class CourseController extends Controller
                 'title' => 'required|string|max:255',
                 'code' => 'nullable|string|max:50',
                 'amount' => 'required|numeric|min:0',
+                'hod_id' => 'nullable|exists:users,id',
                 'hod_number' => 'nullable|string|max:20',
                 'is_active' => 'nullable|boolean',
                 'needs_time' => 'nullable|boolean',
@@ -194,6 +202,7 @@ class CourseController extends Controller
                 'title' => $request->title,
                 'code' => $request->code,
                 'amount' => $request->amount,
+                'hod_id' => $request->hod_id,
                 'hod_number' => $request->hod_number,
                 'is_active' => $request->boolean('is_active'),
                 'needs_time' => $request->boolean('needs_time'),

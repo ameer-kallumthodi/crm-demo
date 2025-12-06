@@ -92,6 +92,12 @@ class UserRoleSeeder extends Seeder
                 'description' => 'Marketing team access for marketing activities',
                 'is_active' => true,
             ],
+            [
+                'id' => 14,
+                'title' => 'HOD',
+                'description' => 'Head of Department access',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($roles as $role) {

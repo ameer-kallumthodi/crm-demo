@@ -41,10 +41,28 @@
 
             <div class="col-md-6">
                 <div class="mb-3">
+                    <label class="form-label" for="hod_id">Select HOD</label>
+                    <select class="form-select" id="hod_id" name="hod_id">
+                        <option value="">Select HOD</option>
+                        @foreach($hodUsers as $hod)
+                            <option value="{{ $hod->id }}" 
+                                    data-code="{{ $hod->code ?? '' }}" 
+                                    data-phone="{{ $hod->phone ?? '' }}">
+                                {{ $hod->name }} ({{ $hod->email }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="invalid-feedback" id="hod_id-error"></div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
                     <label class="form-label" for="hod_number">HOD Number</label>
                     <input type="text" name="hod_number" class="form-control" 
-                           id="hod_number" placeholder="Enter HOD Number">
+                           id="hod_number" placeholder="Enter HOD Number or select HOD above" readonly>
                     <div class="invalid-feedback" id="hod_number-error"></div>
+                    <small class="form-text text-muted">Auto-filled when HOD is selected</small>
                 </div>
             </div>
 
@@ -102,6 +120,26 @@
 
     <script>
     $(document).ready(function() {
+        // Handle HOD selection change
+        $('#hod_id').on('change', function() {
+            const selectedOption = $(this).find('option:selected');
+            const code = selectedOption.data('code');
+            const phone = selectedOption.data('phone');
+            
+            if (code && phone) {
+                $('#hod_number').val('+' + code + ' ' + phone);
+            } else if (phone) {
+                $('#hod_number').val(phone);
+            } else {
+                $('#hod_number').val('');
+            }
+        });
+
+        // Allow manual editing of HOD number
+        $('#hod_number').on('focus', function() {
+            $(this).prop('readonly', false);
+        });
+
         $('#courseAddForm').on('submit', function(e) {
             e.preventDefault();
             

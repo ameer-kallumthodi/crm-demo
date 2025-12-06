@@ -501,6 +501,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/finance-change-password/{id}', [App\Http\Controllers\FinanceController::class, 'changePassword'])->name('finance.change-password');
         Route::post('/finance-update-password/{id}', [App\Http\Controllers\FinanceController::class, 'updatePassword'])->name('finance.update-password');
 
+        // HOD routes (role_id = 14)
+        Route::resource('hod', App\Http\Controllers\HODController::class)->except(['create', 'edit']);
+        Route::get('/hod-add', [App\Http\Controllers\HODController::class, 'ajax_add'])->name('hod.add');
+        Route::get('/hod-edit/{id}', [App\Http\Controllers\HODController::class, 'ajax_edit'])->name('hod.edit');
+        Route::post('/hod-submit', [App\Http\Controllers\HODController::class, 'submit'])->name('hod.submit');
+        Route::put('/hod-update/{id}', [App\Http\Controllers\HODController::class, 'update'])->name('hod.update');
+        Route::delete('/hod-delete/{id}', [App\Http\Controllers\HODController::class, 'delete'])->name('hod.delete');
+
         // Support Team routes (role_id = 8)
         Route::resource('support-team', App\Http\Controllers\SupportTeamController::class)->except(['create', 'edit']);
         Route::get('/support-team-add', [App\Http\Controllers\SupportTeamController::class, 'ajax_add'])->name('support-team.add');

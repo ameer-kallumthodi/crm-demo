@@ -127,7 +127,7 @@
                 @endif
 
                 {{-- User Management Section --}}
-                @if(has_permission('admin/telecallers/index') || has_permission('admin/marketing/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index') || has_permission('admin/teachers/index') || has_permission('admin/support-team/index') || has_permission('admin/mentor/index'))
+                @if(has_permission('admin/telecallers/index') || has_permission('admin/marketing/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index') || has_permission('admin/teachers/index') || has_permission('admin/support-team/index') || has_permission('admin/mentor/index') || has_permission('admin/finance/index') || has_permission('admin/hod/index'))
                 <li class="pc-item pc-caption">
                     <label>User Management</label>
                 </li>
@@ -208,6 +208,16 @@
                             <i class="ti ti-currency-dollar"></i>
                         </span>
                         <span class="pc-mtext">Finance</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/hod/index'))
+                <li class="pc-item {{ request()->routeIs('admin.hod.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.hod.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-user-star"></i>
+                        </span>
+                        <span class="pc-mtext">HOD</span>
                     </a>
                 </li>
                 @endif

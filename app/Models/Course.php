@@ -15,6 +15,7 @@ class Course extends Model
         'code',
         'amount',
         'hod_number',
+        'hod_id',
         'is_active',
         'needs_time',
         'is_online',
@@ -47,6 +48,10 @@ class Course extends Model
         return $this->hasMany(ClassTime::class);
     }
 
+    public function hod()
+    {
+        return $this->belongsTo(User::class, 'hod_id');
+    }
 
     public function scopeActive($query)
     {
