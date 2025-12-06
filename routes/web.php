@@ -508,6 +508,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/hod-submit', [App\Http\Controllers\HODController::class, 'submit'])->name('hod.submit');
         Route::put('/hod-update/{id}', [App\Http\Controllers\HODController::class, 'update'])->name('hod.update');
         Route::delete('/hod-delete/{id}', [App\Http\Controllers\HODController::class, 'delete'])->name('hod.delete');
+        Route::get('/hod-change-password/{id}', [App\Http\Controllers\HODController::class, 'changePassword'])->name('hod.change-password');
+        Route::post('/hod-update-password/{id}', [App\Http\Controllers\HODController::class, 'updatePassword'])->name('hod.update-password');
 
         // Support Team routes (role_id = 8)
         Route::resource('support-team', App\Http\Controllers\SupportTeamController::class)->except(['create', 'edit']);
@@ -698,7 +700,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/post-sales-converted-students/{id}/cancel-flag', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'cancelFlagSubmit'])->name('post-sales.converted-leads.cancel-flag-submit');
         Route::get('/post-sales-converted-students/{id}/details-pdf', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'generateDetailsPdf'])->name('post-sales.converted-leads.details-pdf');
         Route::get('/digital-marketing-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'digitalMarketingIndex'])->name('digital-marketing-converted-leads.index');
-        Route::get('/ai-automation-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'aiAutomationIndex'])->name('ai-automation-converted-leads.index');
+        Route::get('/diploma-in-data-science-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'aiAutomationIndex'])->name('diploma-in-data-science-converted-leads.index');
         Route::get('/web-development-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'webDevIndex'])->name('web-development-converted-leads.index');
         Route::get('/vibe-coding-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'vibeCodingIndex'])->name('vibe-coding-converted-leads.index');
         Route::get('/graphic-designing-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'graphicDesigningIndex'])->name('graphic-designing-converted-leads.index');
@@ -761,8 +763,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/support-digital-marketing-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-digital-marketing-converted-leads.update-support-details');
 
         // AI Automation Support Converted Leads Routes
-        Route::get('/support-ai-automation-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'aiAutomationIndex'])->name('support-ai-automation-converted-leads.index');
-        Route::post('/support-ai-automation-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-ai-automation-converted-leads.update-support-details');
+        Route::get('/support-diploma-in-data-science-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'aiAutomationIndex'])->name('support-diploma-in-data-science-converted-leads.index');
+        Route::post('/support-diploma-in-data-science-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-diploma-in-data-science-converted-leads.update-support-details');
 
         // Web Development Support Converted Leads Routes
         Route::get('/support-web-development-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'webDevelopmentIndex'])->name('support-web-development-converted-leads.index');

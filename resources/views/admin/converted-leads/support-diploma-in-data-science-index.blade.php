@@ -85,8 +85,8 @@
                     <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
                     </a>
-                    <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-robot"></i> AI Automation Converted Leads
+                    <a href="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-database"></i> Diploma in Data Science Converted Leads
                     </a>
                     <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-world"></i> Web Development & Designing Converted Leads
@@ -176,7 +176,7 @@
                     <a href="{{ route('admin.support-digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Digital Marketing Converted Support List
                     </a>
-                    <a href="{{ route('admin.support-ai-automation-converted-leads.index') }}" class="btn btn-outline-primary active">
+                    <a href="{{ route('admin.support-diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary active">
                         <i class="ti ti-headphones"></i> Diploma in Data Science Converted Support List
                     </a>
                     <a href="{{ route('admin.support-web-development-converted-leads.index') }}" class="btn btn-outline-primary">
@@ -213,7 +213,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.support-ai-automation-converted-leads.index') }}" id="filterForm">
+                <form method="GET" action="{{ route('admin.support-diploma-in-data-science-converted-leads.index') }}" id="filterForm">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
@@ -263,7 +263,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.support-ai-automation-converted-leads.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.support-diploma-in-data-science-converted-leads.index') }}" class="btn btn-secondary">
                                 <i class="ti ti-refresh"></i> Clear
                             </a>
                         </div>
@@ -726,7 +726,7 @@
             btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
             
             $.ajax({
-                url: `/admin/support-ai-automation-converted-leads/${id}/update-support-details`,
+                url: `/admin/support-diploma-in-data-science-converted-leads/${id}/update-support-details`,
                 method: 'POST',
                 data: {
                     field: field,

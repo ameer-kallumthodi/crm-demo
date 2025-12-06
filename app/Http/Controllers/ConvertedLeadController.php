@@ -69,6 +69,9 @@ class ConvertedLeadController extends Controller
             } elseif (RoleHelper::is_academic_assistant()) {
                 // Academic Assistant: Can see ALL converted leads
                 // No additional filtering needed - show all
+            } elseif (RoleHelper::is_hod()) {
+                // HOD: Can see ALL converted leads
+                // No additional filtering needed - show all
             } elseif (RoleHelper::is_telecaller()) {
                 // Telecaller: Can only see converted leads from leads assigned to them
                 $query->whereHas('lead', function($q) {
@@ -962,7 +965,7 @@ class ConvertedLeadController extends Controller
         $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
         $country_codes = get_country_code();
 
-        return view('admin.converted-leads.ai-automation-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
+        return view('admin.converted-leads.diploma-in-data-science-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
     }
 
     /**

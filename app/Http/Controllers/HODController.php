@@ -217,5 +217,54 @@ class HODController extends Controller
 
         return redirect()->route('admin.hod.index')->with('message_success', 'HOD user deleted successfully!');
     }
+
+    public function changePassword($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
+        }
+
+        $hodUser = User::where('id', $id)->where('role_id', 14)->firstOrFail();
+        
+        return view('admin.hod.change-password', compact('hodUser'));
+    }
+
+    public function updatePassword(Request $request, $id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please correct the errors below.',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            $firstError = $validator->errors()->first();
+            return redirect()->back()->with('message_danger', $firstError)->withInput();
+        }
+
+        $hodUser = User::where('id', $id)->where('role_id', 14)->firstOrFail();
+        
+        $hodUser->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Password updated successfully!'
+            ]);
+        }
+
+        return redirect()->route('admin.hod.index')->with('message_success', 'Password updated successfully!');
+    }
 }
 

@@ -81,10 +81,19 @@ document.getElementById('hodEditForm').addEventListener('submit', function(e) {
         }
     })
     .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => Promise.reject(data));
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            alert(data.message);
-            window.location.href = '{{ route("admin.hod.index") }}';
+            toast_success(data.message);
+            setTimeout(function() {
+                $('#small_modal').modal('hide');
+                location.reload();
+            }, 1000);
         } else {
             if (data.errors) {
                 Object.keys(data.errors).forEach(field => {
@@ -98,12 +107,14 @@ document.getElementById('hodEditForm').addEventListener('submit', function(e) {
                     }
                 });
             }
-            alert(data.message || 'Please correct the errors and try again.');
+            const errorMessage = data.message || 'Please correct the errors and try again.';
+            toast_danger(errorMessage);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        const errorMessage = error.message || 'An error occurred. Please try again.';
+        toast_danger(errorMessage);
     })
     .finally(() => {
         submitButton.disabled = false;

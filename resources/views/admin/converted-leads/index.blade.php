@@ -79,8 +79,8 @@
                     <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
                     </a>
-                    <a href="{{ route('admin.ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-robot"></i> AI Automation Converted Leads
+                    <a href="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-database"></i> Diploma in Data Science Converted Leads
                     </a>
                     <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-world"></i> Web Development & Designing Converted Leads
@@ -111,8 +111,8 @@
 @endif
 <!-- [ Course Filter Buttons ] end -->
 
-<!-- [ Course Filter Buttons ] start -->
-@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager())
+<!-- [ Mentor List ] start -->
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
 <div class="row mb-3">
     <div class="col-12">
         <div class="card">
@@ -145,7 +145,7 @@
     </div>
 </div>
 @endif
-<!-- [ Course Filter Buttons ] end -->
+<!-- [ Mentor List ] end -->
 
 <!-- [ Support List ] start -->
 @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
@@ -175,7 +175,7 @@
                     <a href="{{ route('admin.support-digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Digital Marketing Converted Support List
                     </a>
-                    <a href="{{ route('admin.support-ai-automation-converted-leads.index') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.support-diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Diploma in Data Science Converted Support List
                     </a>
                     <a href="{{ route('admin.support-web-development-converted-leads.index') }}" class="btn btn-outline-primary">

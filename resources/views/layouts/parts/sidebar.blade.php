@@ -69,7 +69,7 @@
                 @endif
 
                 {{-- Converted Leads Section --}}
-                @if(has_permission('admin/converted-leads/index') || \App\Helpers\RoleHelper::is_support_team())
+                @if(has_permission('admin/converted-leads/index') || \App\Helpers\RoleHelper::is_support_team() || \App\Helpers\RoleHelper::is_hod())
                 <li class="pc-item {{ request()->routeIs('admin.converted-leads.*') || request()->routeIs('admin.support-*-converted-leads.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.converted-leads.index') }}" class="pc-link">
                         <span class="pc-micon">

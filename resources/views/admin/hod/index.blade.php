@@ -70,6 +70,10 @@
                                         title="Edit">
                                         <i class="ti ti-edit"></i> Edit
                                     </a>
+                                    <a href="javascript:void(0);" class="btn btn-info btn-sm shadow-sm px-3"
+                                        onclick="show_small_modal('{{ route('admin.hod.change-password', $hodUser->id) }}', 'Change Password')" title="Change Password">
+                                        <i class="ti ti-key"></i> Password
+                                    </a>
                                     <a href="javascript:void(0);" class="btn btn-danger btn-sm shadow-sm px-3"
                                         onclick="delete_modal('{{ route('admin.hod.delete', $hodUser->id) }}')" title="Delete">
                                         <i class="ti ti-trash"></i> Delete

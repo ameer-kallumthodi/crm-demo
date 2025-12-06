@@ -517,7 +517,7 @@ class SupportConvertedLeadController extends Controller
      */
     public function aiAutomationIndex(Request $request)
     {
-        return $this->getCourseSupportIndex($request, 12, 'Diploma in Data Science Converted Support List', 'admin.converted-leads.support-ai-automation-index');
+        return $this->getCourseSupportIndex($request, 12, 'Diploma in Data Science Converted Support List', 'admin.converted-leads.support-diploma-in-data-science-index');
     }
 
     /**

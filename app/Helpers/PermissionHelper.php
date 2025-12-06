@@ -38,6 +38,8 @@ class PermissionHelper
             return self::has_permission_auditor($permission);
         } elseif (RoleHelper::is_marketing()) {
             return self::has_permission_marketing($permission);
+        } elseif (RoleHelper::is_hod()) {
+            return self::has_permission_hod($permission);
         }
         
         return false;
@@ -311,6 +313,24 @@ class PermissionHelper
             'admin/marketing/d2d-form', // D2D Form access
             'admin/marketing/marketing-leads', // Marketing Leads listing
             'profile/index',
+        ];
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * HOD permissions - only main converted leads index and mentor list pages
+     */
+    public static function has_permission_hod($permission = '')
+    {
+        $permissions = [
+            'dashboard/index',
+            'profile/index',
+            'admin/converted-leads/index',
+            'admin/mentor-bosse-converted-leads/index',
+            'admin/mentor-nios-converted-leads/index',
+            'admin/mentor-eschool-converted-leads/index',
+            'admin/mentor-eduthanzeel-converted-leads/index',
+            'admin/gmvss-mentor-converted-leads/index',
         ];
         return in_array($permission, $permissions);
     }
