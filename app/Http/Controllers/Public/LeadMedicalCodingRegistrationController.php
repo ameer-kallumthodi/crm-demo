@@ -8,6 +8,8 @@ use App\Models\Lead;
 use App\Models\LeadDetail;
 use App\Models\Subject;
 use App\Models\Batch;
+use App\Models\ClassTime;
+use App\Models\OfflinePlace;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Services\MailService;
@@ -33,10 +35,22 @@ class LeadMedicalCodingRegistrationController extends Controller
         // Get Medical Coding course batches (course_id = 3)
         $batches = Batch::where('course_id', 3)->where('is_active', true)->get();
         
+        // Get course data
+        $course = \App\Models\Course::find(3);
+        
+        // Get class times for course_id = 3 (Medical Coding) if course needs_time
+        $classTimes = collect();
+        if ($course && $course->needs_time) {
+            $classTimes = ClassTime::where('course_id', 3)->where('is_active', true)->get();
+        }
+        
+        // Get active offline places
+        $offlinePlaces = OfflinePlace::active()->get();
+        
         // Get country codes
         $countryCodes = \App\Helpers\CountriesHelper::get_country_code();
         
-        return view('public.medical-coding-registration', compact('subjects', 'batches', 'lead', 'countryCodes'));
+        return view('public.medical-coding-registration', compact('subjects', 'batches', 'lead', 'countryCodes', 'course', 'classTimes', 'offlinePlaces'));
     }
     
     public function store(Request $request)

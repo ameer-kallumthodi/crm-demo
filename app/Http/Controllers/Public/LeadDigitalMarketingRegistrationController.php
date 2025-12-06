@@ -9,6 +9,7 @@ use App\Models\LeadDetail;
 use App\Models\Subject;
 use App\Models\Batch;
 use App\Models\ClassTime;
+use App\Models\OfflinePlace;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Services\MailService;
@@ -41,17 +42,22 @@ class LeadDigitalMarketingRegistrationController extends Controller
         // Get Digital Marketing course batches (course_id = 11)
         $batches = Batch::where('course_id', 11)->where('is_active', true)->get();
         
+        // Get course data
+        $course = \App\Models\Course::find(11);
+        
         // Get class times for course_id = 11 (Digital Marketing) if course needs_time
         $classTimes = collect();
-        $course = \App\Models\Course::find(11);
         if ($course && $course->needs_time) {
             $classTimes = ClassTime::where('course_id', 11)->where('is_active', true)->get();
         }
         
+        // Get active offline places
+        $offlinePlaces = OfflinePlace::active()->get();
+        
         // Get country codes
         $countryCodes = \App\Helpers\CountriesHelper::get_country_code();
         
-        return view('public.digital-marketing-registration', compact('subjects', 'batches', 'lead', 'countryCodes', 'classTimes'));
+        return view('public.digital-marketing-registration', compact('subjects', 'batches', 'lead', 'countryCodes', 'classTimes', 'course', 'offlinePlaces'));
     }
     
     public function store(Request $request)

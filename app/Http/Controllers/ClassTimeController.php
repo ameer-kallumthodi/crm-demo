@@ -263,7 +263,7 @@ class ClassTimeController extends Controller
         }
     }
 
-    public function getByCourse($courseId)
+    public function getByCourse($courseId, Request $request)
     {
         // Check if course needs time
         $course = Course::find($courseId);
@@ -271,9 +271,15 @@ class ClassTimeController extends Controller
             return response()->json([]);
         }
 
-        $classTimes = ClassTime::where('course_id', $courseId)
-            ->where('is_active', true)
-            ->get(['id', 'from_time', 'to_time']);
+        $query = ClassTime::where('course_id', $courseId)
+            ->where('is_active', true);
+
+        // Filter by class_type if provided
+        if ($request->has('class_type') && in_array($request->class_type, ['online', 'offline'])) {
+            $query->where('class_type', $request->class_type);
+        }
+
+        $classTimes = $query->get(['id', 'class_type', 'from_time', 'to_time']);
 
         return response()->json($classTimes);
     }

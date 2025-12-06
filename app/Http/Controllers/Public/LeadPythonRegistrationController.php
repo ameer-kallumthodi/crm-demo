@@ -9,6 +9,7 @@ use App\Models\LeadDetail;
 use App\Models\Subject;
 use App\Models\Batch;
 use App\Models\ClassTime;
+use App\Models\OfflinePlace;
 use App\Services\MailService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -40,17 +41,22 @@ class LeadPythonRegistrationController extends Controller
         // Get Python course batches (course_id = 10)
         $batches = Batch::where('course_id', 10)->where('is_active', true)->get();
         
+        // Get course data
+        $course = \App\Models\Course::find(10);
+        
         // Get class times for course_id = 10 (Python) if course needs_time
         $classTimes = collect();
-        $course = \App\Models\Course::find(10);
         if ($course && $course->needs_time) {
             $classTimes = ClassTime::where('course_id', 10)->where('is_active', true)->get();
         }
         
+        // Get active offline places
+        $offlinePlaces = OfflinePlace::active()->get();
+        
         // Get country codes
         $countryCodes = \App\Helpers\CountriesHelper::get_country_code();
         
-        return view('public.python-registration', compact('subjects', 'batches', 'lead', 'countryCodes', 'classTimes'));
+        return view('public.python-registration', compact('subjects', 'batches', 'lead', 'countryCodes', 'classTimes', 'course', 'offlinePlaces'));
     }
     
     public function store(Request $request)

@@ -581,8 +581,12 @@
                                 <label class="form-label">Course Type <span class="required">*</span></label>
                                 <select class="form-control" name="programme_type" id="programme_type" required>
                                     <option value="">Select Course Type</option>
-                                    <option value="online">Online</option>
-                                    <option value="offline">Offline</option>
+                                    @if($course && $course->is_online)
+                                        <option value="online">Online</option>
+                                    @endif
+                                    @if($course && $course->is_offline)
+                                        <option value="offline">Offline</option>
+                                    @endif
                                 </select>
                             </div>
                         </div>
@@ -591,8 +595,9 @@
                                 <label class="form-label">Choose Please <span class="required">*</span></label>
                                 <select class="form-control" name="location" id="location">
                                     <option value="">Select Location</option>
-                                    <option value="Ernakulam">Ernakulam</option>
-                                    <option value="Malappuram">Malappuram</option>
+                                    @foreach($offlinePlaces as $place)
+                                        <option value="{{ $place->id }}">{{ $place->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -600,16 +605,11 @@
                     
                     <div class="row">
                         <div class="col-md-6">
-                            @if($classTimes && $classTimes->count() > 0)
+                            @if($course && $course->needs_time)
                             <div class="form-group">
                                 <label class="form-label">Class Time <span class="required">*</span></label>
                                 <select class="form-control" name="class_time_id" id="class_time_id" required>
                                     <option value="">Select Class Time</option>
-                                    @foreach($classTimes as $classTime)
-                                        <option value="{{ $classTime->id }}">
-                                            {{ date('h:i A', strtotime($classTime->from_time)) }} - {{ date('h:i A', strtotime($classTime->to_time)) }}
-                                        </option>
-                                    @endforeach
                                 </select>
                             </div>
                             @endif
@@ -909,10 +909,15 @@
             const programmeTypeSelect = document.getElementById('programme_type');
             const locationGroup = document.getElementById('location_group');
             const locationSelect = document.getElementById('location');
+            const classTimeSelect = document.getElementById('class_time_id');
+            const courseId = {{ $course ? $course->id : 'null' }};
             
             if (programmeTypeSelect) {
                 programmeTypeSelect.addEventListener('change', function() {
-                    if (this.value === 'offline') {
+                    const programmeType = this.value;
+                    
+                    // Show/hide location field
+                    if (programmeType === 'offline') {
                         locationGroup.style.display = 'block';
                         locationSelect.setAttribute('required', 'required');
                     } else {
@@ -920,8 +925,45 @@
                         locationSelect.removeAttribute('required');
                         locationSelect.value = '';
                     }
+                    
+                    // Fetch and filter class times by class_type
+                    if (classTimeSelect && courseId) {
+                        fetchClassTimes(courseId, programmeType);
+                    }
                 });
             }
+        }
+        
+        // Function to fetch class times filtered by class_type
+        function fetchClassTimes(courseId, classType) {
+            const classTimeSelect = document.getElementById('class_time_id');
+            if (!classTimeSelect) return;
+            
+            // Clear existing options except the first one
+            classTimeSelect.innerHTML = '<option value="">Select Class Time</option>';
+            
+            if (!classType) {
+                return;
+            }
+            
+            // Fetch class times from API
+            fetch(`/api/class-times/by-course/${courseId}?class_type=${classType}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        data.forEach(classTime => {
+                            const option = document.createElement('option');
+                            option.value = classTime.id;
+                            const fromTime = new Date('2000-01-01 ' + classTime.from_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                            const toTime = new Date('2000-01-01 ' + classTime.to_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                            option.textContent = `${fromTime} - ${toTime}`;
+                            classTimeSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching class times:', error);
+                });
         }
         
         // Function to setup file upload handlers for all file inputs

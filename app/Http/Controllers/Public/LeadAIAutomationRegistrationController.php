@@ -9,6 +9,7 @@ use App\Models\LeadDetail;
 use App\Models\Subject;
 use App\Models\Batch;
 use App\Models\ClassTime;
+use App\Models\OfflinePlace;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Services\MailService;
@@ -40,13 +41,22 @@ class LeadAIAutomationRegistrationController extends Controller
         // Get Diploma in Data Science course batches (course_id = 12)
         $batches = Batch::where('course_id', 12)->where('is_active', true)->get();
         
+        // Get course data
+        $course = \App\Models\Course::find(12);
+        
         // Get class times for course_id = 12 (Diploma in Data Science)
-        $classTimes = ClassTime::where('course_id', 12)->where('is_active', true)->get();
+        $classTimes = collect();
+        if ($course && $course->needs_time) {
+            $classTimes = ClassTime::where('course_id', 12)->where('is_active', true)->get();
+        }
+        
+        // Get active offline places
+        $offlinePlaces = OfflinePlace::active()->get();
         
         // Get country codes
         $countryCodes = \App\Helpers\CountriesHelper::get_country_code();
         
-        return view('public.diploma-in-data-science-registration', compact('subjects', 'batches', 'lead', 'countryCodes', 'classTimes'));
+        return view('public.diploma-in-data-science-registration', compact('subjects', 'batches', 'lead', 'countryCodes', 'classTimes', 'course', 'offlinePlaces'));
     }
     
     public function store(Request $request)

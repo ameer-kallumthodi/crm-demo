@@ -9,6 +9,7 @@ use App\Models\LeadDetail;
 use App\Models\Subject;
 use App\Models\Batch;
 use App\Models\ClassTime;
+use App\Models\OfflinePlace;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Services\MailService;
@@ -40,17 +41,22 @@ class LeadGraphicDesigningRegistrationController extends Controller
         // Get Graphic Designing course batches (course_id = 15)
         $batches = Batch::where('course_id', 15)->where('is_active', true)->get();
         
+        // Get course data
+        $course = \App\Models\Course::find(15);
+        
         // Get class times for course_id = 15 (Graphic Designing) if course needs_time
         $classTimes = collect();
-        $course = \App\Models\Course::find(15);
         if ($course && $course->needs_time) {
             $classTimes = ClassTime::where('course_id', 15)->where('is_active', true)->get();
         }
         
+        // Get active offline places
+        $offlinePlaces = OfflinePlace::active()->get();
+        
         // Get country codes
         $countryCodes = \App\Helpers\CountriesHelper::get_country_code();
         
-        return view('public.graphic-designing-registration', compact('subjects', 'batches', 'lead', 'countryCodes', 'classTimes'));
+        return view('public.graphic-designing-registration', compact('subjects', 'batches', 'lead', 'countryCodes', 'classTimes', 'course', 'offlinePlaces'));
     }
     
     public function store(Request $request)
