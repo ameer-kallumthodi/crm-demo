@@ -606,7 +606,7 @@
                                 <select class="form-control" name="location" id="location">
                                     <option value="">Select Location</option>
                                     @foreach($offlinePlaces as $place)
-                                        <option value="{{ $place->id }}">{{ $place->name }}</option>
+                                        <option value="{{ $place->name }}">{{ $place->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
