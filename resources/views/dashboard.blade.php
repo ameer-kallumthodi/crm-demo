@@ -207,8 +207,8 @@
                                     <td>{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</td>
                                     <td>
                                         <span class="d-flex align-items-center gap-2">
-                                            <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus->id) }} f-10 m-r-5"></i>
-                                            {{ $lead->leadStatus->title }}
+                                            <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus?->id ?? null) }} f-10 m-r-5"></i>
+                                            {{ $lead->leadStatus?->title ?? 'N/A' }}
                                         </span>
                                     </td>
                                     <td>{{ $lead->leadSource->title ?? 'N/A' }}</td>
@@ -233,8 +233,8 @@
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1 fw-bold">{{ $lead->title }}</h6>
                                     <div class="d-flex align-items-center gap-2 mb-1">
-                                        <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus->id) }} f-10"></i>
-                                        <small class="text-muted">{{ $lead->leadStatus->title }}</small>
+                                        <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus?->id ?? null) }} f-10"></i>
+                                        <small class="text-muted">{{ $lead->leadStatus?->title ?? 'N/A' }}</small>
                                     </div>
                                     <small class="text-muted">{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</small>
                                 </div>
@@ -286,8 +286,8 @@
                                     <td>{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</td>
                                     <td>
                                         <span class="d-flex align-items-center gap-2">
-                                            <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus->id) }} f-10 m-r-5"></i>
-                                            {{ $lead->leadStatus->title }}
+                                            <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus?->id ?? null) }} f-10 m-r-5"></i>
+                                            {{ $lead->leadStatus?->title ?? 'N/A' }}
                                         </span>
                                     </td>
                                     <td>{{ $lead->leadSource->title ?? 'N/A' }}</td>
@@ -328,8 +328,8 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Status</small>
                                     <span class="d-flex align-items-center gap-1">
-                                        <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus->id) }} f-10"></i>
-                                        <span class="fw-medium">{{ $lead->leadStatus->title }}</span>
+                                        <i class="fas fa-circle text-{{ \App\Helpers\StatusHelper::getLeadStatusColor($lead->leadStatus?->id ?? null) }} f-10"></i>
+                                        <span class="fw-medium">{{ $lead->leadStatus?->title ?? 'N/A' }}</span>
                                     </span>
                                 </div>
                                 <div class="col-6">
