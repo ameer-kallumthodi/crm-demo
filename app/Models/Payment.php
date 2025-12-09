@@ -22,6 +22,7 @@ class Payment extends Model
         'approved_by',
         'rejected_date',
         'rejected_by',
+        'rejection_remarks',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -111,12 +112,15 @@ class Payment extends Model
         $this->invoice->updateStatus();
     }
 
-    public function reject()
+    public function reject($remarks = null)
     {
         $this->status = 'Rejected';
         $this->rejected_date = now();
         $this->rejected_by = \App\Helpers\AuthHelper::getCurrentUserId();
         $this->updated_by = \App\Helpers\AuthHelper::getCurrentUserId();
+        if ($remarks) {
+            $this->rejection_remarks = $remarks;
+        }
         $this->save();
 
         // Recalculate invoice paid amount from all approved payments

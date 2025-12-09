@@ -475,6 +475,14 @@
                     <strong>Payment Type:</strong>
                     <div id="rejectPaymentType">-</div>
                 </div>
+                <hr>
+                <div class="mb-3">
+                    <label for="rejectionRemarks" class="form-label">
+                        <strong>Remarks <span class="text-danger">*</span></strong>
+                    </label>
+                    <textarea class="form-control" id="rejectionRemarks" name="rejection_remarks" rows="3" placeholder="Enter rejection remarks..." required></textarea>
+                    <small class="form-text text-muted">Please provide a reason for rejecting this payment.</small>
+                </div>
                 <p class="text-muted mt-3 mb-0">
                     <i class="ti ti-info-circle me-1"></i>Rejected payments will not affect the invoice totals.
                 </p>
@@ -483,6 +491,7 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form id="rejectPaymentForm" method="POST" class="d-inline">
                     @csrf
+                    <input type="hidden" name="rejection_remarks" id="rejectionRemarksInput">
                     <button type="submit" class="btn btn-danger">
                         <i class="ti ti-x me-1"></i>Reject Payment
                     </button>
@@ -541,6 +550,9 @@
         document.getElementById('rejectAmount').textContent = formatCurrency(amount);
         document.getElementById('rejectPaymentType').textContent = paymentType || 'N/A';
         document.getElementById('rejectPaymentForm').action = '{{ route("admin.payments.reject", ":id") }}'.replace(':id', paymentId);
+        
+        // Clear remarks field
+        document.getElementById('rejectionRemarks').value = '';
 
         const modal = new bootstrap.Modal(document.getElementById('rejectPaymentModal'), {
             backdrop: 'static',
@@ -548,6 +560,18 @@
         });
         modal.show();
     }
+    
+    // Handle form submission to include remarks
+    document.getElementById('rejectPaymentForm').addEventListener('submit', function(e) {
+        const remarks = document.getElementById('rejectionRemarks').value.trim();
+        if (!remarks) {
+            e.preventDefault();
+            alert('Please enter rejection remarks.');
+            document.getElementById('rejectionRemarks').focus();
+            return false;
+        }
+        document.getElementById('rejectionRemarksInput').value = remarks;
+    });
 
     document.addEventListener('DOMContentLoaded', function () {
         const paymentTabs = document.getElementById('paymentTabs');

@@ -280,7 +280,7 @@ class PaymentController extends Controller
     /**
      * Reject a payment
      */
-    public function reject($id)
+    public function reject($id, Request $request)
     {
         try {
             $payment = Payment::findOrFail($id);
@@ -288,7 +288,11 @@ class PaymentController extends Controller
             // Check permissions
             $this->checkInvoiceAccess($payment->invoice);
             
-            $payment->reject();
+            $request->validate([
+                'rejection_remarks' => 'nullable|string|max:1000',
+            ]);
+            
+            $payment->reject($request->input('rejection_remarks'));
 
             return redirect()->back()
                 ->with('message_success', 'Payment rejected successfully!');

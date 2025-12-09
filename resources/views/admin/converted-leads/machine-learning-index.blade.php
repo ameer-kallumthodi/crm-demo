@@ -339,6 +339,8 @@
                                 <th>Name</th>
                                 <th>Phone</th>
                                 <th>Course Type</th>
+                                <th>Location</th>
+                                <th>Class Time</th>
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
                                 <th>Internship ID</th>
@@ -421,6 +423,44 @@
                                         </button>
                                         @endif
                                     </div>
+                                </td>
+                                <td>
+                                    @if($convertedLead->leadDetail?->programme_type === 'offline')
+                                    <div class="inline-edit" data-field="location" data-id="{{ $convertedLead->id }}" data-field-type="select" data-options='{!! json_encode($offlinePlaces->pluck('name', 'name')->toArray()) !!}' data-current="{{ $convertedLead->leadDetail?->location }}">
+                                        <span class="display-value">{{ $convertedLead->leadDetail?->location ?? '-' }}</span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($course && $course->needs_time)
+                                    <div class="inline-edit" data-field="class_time_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-programme-type="{{ $convertedLead->leadDetail?->programme_type }}" data-current-id="{{ $convertedLead->leadDetail?->class_time_id }}">
+                                        <span class="display-value">
+                                            @if($convertedLead->leadDetail?->classTime)
+                                                @php
+                                                    $fromTime = \Carbon\Carbon::parse($convertedLead->leadDetail->classTime->from_time)->format('h:i A');
+                                                    $toTime = \Carbon\Carbon::parse($convertedLead->leadDetail->classTime->to_time)->format('h:i A');
+                                                @endphp
+                                                {{ $fromTime }} - {{ $toTime }}
+                                            @else
+                                                -
+                                            @endif
+                                        </span>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endif
+                                    </div>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
                                 </td>
                                 <td>
                                     <div class="inline-edit" data-field="batch_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->batch_id }}">
@@ -911,6 +951,15 @@
                 const batchId = container.data('batch-id');
                 const currentId = container.data('current-id');
                 editForm = createAdmissionBatchField(batchId, currentId);
+            } else if (field === 'class_time_id') {
+                const courseId = container.data('course-id');
+                const programmeType = container.data('programme-type');
+                const currentId = container.data('current-id');
+                editForm = createClassTimeSelect(courseId, programmeType, currentId);
+            } else if (container.data('field-type') === 'select') {
+                // Handle fields with data-field-type="select" using data-options
+                const options = container.data('options');
+                editForm = createSelectFieldFromOptions(field, currentValue, options);
             } else {
                 editForm = createInputField(field, currentValue);
             }
@@ -929,6 +978,12 @@
                 const currentId = container.data('current-id');
                 const $select = container.find('select');
                 loadAdmissionBatchesForEdit($select, batchId, currentId);
+            } else if (field === 'class_time_id') {
+                const courseId = container.data('course-id');
+                const programmeType = container.data('programme-type');
+                const currentId = container.data('current-id');
+                const $select = container.find('select');
+                loadClassTimesForEdit($select, courseId, programmeType, currentId);
             } else {
                 container.find('input, select').first().focus();
             }
@@ -975,8 +1030,13 @@
                         // Update the data-current attribute with the new display value
                         container.data('current', displayValue);
                         // Update data-current-id for fields that use it (store the ID, not the display value)
-                        if (field === 'batch_id' || field === 'admission_batch_id') {
+                        if (field === 'batch_id' || field === 'admission_batch_id' || field === 'class_time_id') {
                             container.data('current-id', value || '');
+                        }
+                        // Handle class_time_id display update
+                        if (field === 'class_time_id' && response.value) {
+                            // The response.value should contain the formatted time string
+                            displayValue = response.value;
                         }
                         // If batch_id changed, update admission_batch_id field's data-batch-id
                         if (field === 'batch_id') {
@@ -988,6 +1048,12 @@
                                 admissionBatchContainer.data('current-id', '');
                                 admissionBatchContainer.find('.display-value').text('N/A');
                             }
+                        }
+                        // If programme_type changed, reload page to update location and class_time_id visibility
+                        if (field === 'programme_type') {
+                            setTimeout(() => {
+                                location.reload();
+                            }, 500);
                         }
                         if (field === 'phone') {
                             const codeVal = extra.code || '';
@@ -1145,6 +1211,45 @@
                 })
                 .fail(function() {
                     $select.html('<option value="">Error loading admission batches</option>');
+                });
+        }
+
+        function createClassTimeSelect(courseId, programmeType, currentId) {
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm" data-course-id="${courseId}" data-programme-type="${programmeType}">
+                        <option value="">Loading...</option>
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadClassTimesForEdit($select, courseId, programmeType, currentId) {
+            if (!courseId || !programmeType) {
+                $select.html('<option value="">No course or programme type selected</option>');
+                return;
+            }
+            
+            $.get(`/api/class-times/by-course/${courseId}?class_type=${programmeType}`)
+                .done(function(list) {
+                    let options = '<option value="">Select Class Time</option>';
+                    if (list && list.length > 0) {
+                        list.forEach(function(classTime) {
+                            const fromTime = new Date('2000-01-01 ' + classTime.from_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                            const toTime = new Date('2000-01-01 ' + classTime.to_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                            const isSelected = (currentId && String(currentId) === String(classTime.id)) ? 'selected' : '';
+                            options += `<option value="${classTime.id}" ${isSelected}>${fromTime} - ${toTime}</option>`;
+                        });
+                    }
+                    $select.html(options);
+                    $select.focus();
+                })
+                .fail(function() {
+                    $select.html('<option value="">Error loading class times</option>');
                 });
         }
 

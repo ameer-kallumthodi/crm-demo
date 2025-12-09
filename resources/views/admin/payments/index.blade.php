@@ -888,6 +888,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <hr>
+                <div class="mb-3">
+                    <label for="rejectionRemarks" class="form-label">
+                        <strong>Remarks <span class="text-danger">*</span></strong>
+                    </label>
+                    <textarea class="form-control" id="rejectionRemarks" name="rejection_remarks" rows="3" placeholder="Enter rejection remarks..." required></textarea>
+                    <small class="form-text text-muted">Please provide a reason for rejecting this payment.</small>
+                </div>
                 <p class="text-muted">
                     <i class="fas fa-info-circle me-2"></i>
                     Rejected payments will not be added to the invoice total.
@@ -897,6 +904,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form id="rejectPaymentForm" method="POST" class="d-inline">
                     @csrf
+                    <input type="hidden" name="rejection_remarks" id="rejectionRemarksInput">
                     <button type="submit" class="btn btn-danger">
                         <i class="fas fa-times me-2"></i>Reject Payment
                     </button>
@@ -949,6 +957,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         document.getElementById('rejectPaymentType').textContent = paymentType;
         document.getElementById('rejectPaymentForm').action = '{{ route("admin.payments.reject", ":id") }}'.replace(':id', paymentId);
+        
+        // Clear remarks field
+        document.getElementById('rejectionRemarks').value = '';
 
         const modal = new bootstrap.Modal(document.getElementById('rejectPaymentModal'), {
             backdrop: 'static',
@@ -956,6 +967,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         modal.show();
     }
+    
+    // Handle form submission to include remarks
+    document.getElementById('rejectPaymentForm').addEventListener('submit', function(e) {
+        const remarks = document.getElementById('rejectionRemarks').value.trim();
+        if (!remarks) {
+            e.preventDefault();
+            alert('Please enter rejection remarks.');
+            document.getElementById('rejectionRemarks').focus();
+            return false;
+        }
+        document.getElementById('rejectionRemarksInput').value = remarks;
+    });
 
     // Custom DataTable configuration for payments table
     $(document).ready(function() {

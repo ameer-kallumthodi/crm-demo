@@ -855,8 +855,18 @@ class ConvertedLeadController extends Controller
         $batches = \App\Models\Batch::where('course_id', 11)->where('is_active', 1)->get();
         $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
         $country_codes = get_country_code();
+        
+        // Get offline places for location dropdown
+        $offlinePlaces = \App\Models\OfflinePlace::active()->get();
+        
+        // Get class times for course_id = 11 (Digital Marketing)
+        $classTimes = collect();
+        $course = \App\Models\Course::find(11);
+        if ($course && $course->needs_time) {
+            $classTimes = \App\Models\ClassTime::where('course_id', 11)->where('is_active', true)->get();
+        }
 
-        return view('admin.converted-leads.digital-marketing-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
+        return view('admin.converted-leads.digital-marketing-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
     }
 
     /**
@@ -964,8 +974,18 @@ class ConvertedLeadController extends Controller
         $batches = \App\Models\Batch::where('course_id', 12)->where('is_active', 1)->get();
         $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
         $country_codes = get_country_code();
+        
+        // Get offline places for location dropdown
+        $offlinePlaces = \App\Models\OfflinePlace::active()->get();
+        
+        // Get class times for course_id = 12 (Diploma in Data Science)
+        $classTimes = collect();
+        $course = \App\Models\Course::find(12);
+        if ($course && $course->needs_time) {
+            $classTimes = \App\Models\ClassTime::where('course_id', 12)->where('is_active', true)->get();
+        }
 
-        return view('admin.converted-leads.diploma-in-data-science-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
+        return view('admin.converted-leads.diploma-in-data-science-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
     }
 
     /**
@@ -1077,8 +1097,18 @@ class ConvertedLeadController extends Controller
         $batches = \App\Models\Batch::where('course_id', 13)->where('is_active', 1)->get();
         $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
         $country_codes = get_country_code();
+        
+        // Get offline places for location dropdown
+        $offlinePlaces = \App\Models\OfflinePlace::active()->get();
+        
+        // Get class times for course_id = 13 (Web Development)
+        $classTimes = collect();
+        $course = \App\Models\Course::find(13);
+        if ($course && $course->needs_time) {
+            $classTimes = \App\Models\ClassTime::where('course_id', 13)->where('is_active', true)->get();
+        }
 
-        return view('admin.converted-leads.web-development-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
+        return view('admin.converted-leads.web-development-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
     }
 
     /**
@@ -1190,8 +1220,18 @@ class ConvertedLeadController extends Controller
         $batches = \App\Models\Batch::where('course_id', 14)->where('is_active', 1)->get();
         $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
         $country_codes = get_country_code();
+        
+        // Get offline places for location dropdown
+        $offlinePlaces = \App\Models\OfflinePlace::active()->get();
+        
+        // Get class times for course_id = 14 (Vibe Coding)
+        $classTimes = collect();
+        $course = \App\Models\Course::find(14);
+        if ($course && $course->needs_time) {
+            $classTimes = \App\Models\ClassTime::where('course_id', 14)->where('is_active', true)->get();
+        }
 
-        return view('admin.converted-leads.vibe-coding-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
+        return view('admin.converted-leads.vibe-coding-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
     }
 
     /**
@@ -1303,8 +1343,18 @@ class ConvertedLeadController extends Controller
         $batches = \App\Models\Batch::where('course_id', 15)->where('is_active', 1)->get();
         $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
         $country_codes = get_country_code();
+        
+        // Get offline places for location dropdown
+        $offlinePlaces = \App\Models\OfflinePlace::active()->get();
+        
+        // Get class times for course_id = 15 (Graphic Designing)
+        $classTimes = collect();
+        $course = \App\Models\Course::find(15);
+        if ($course && $course->needs_time) {
+            $classTimes = \App\Models\ClassTime::where('course_id', 15)->where('is_active', true)->get();
+        }
 
-        return view('admin.converted-leads.graphic-designing-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
+        return view('admin.converted-leads.graphic-designing-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
     }
 
     /**
@@ -1416,8 +1466,18 @@ class ConvertedLeadController extends Controller
         $batches = \App\Models\Batch::where('course_id', 20)->where('is_active', 1)->get();
         $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
         $country_codes = get_country_code();
+        
+        // Get offline places for location dropdown
+        $offlinePlaces = \App\Models\OfflinePlace::active()->get();
+        
+        // Get class times for course_id = 20 (Machine Learning)
+        $classTimes = collect();
+        $course = \App\Models\Course::find(20);
+        if ($course && $course->needs_time) {
+            $classTimes = \App\Models\ClassTime::where('course_id', 20)->where('is_active', true)->get();
+        }
 
-        return view('admin.converted-leads.machine-learning-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
+        return view('admin.converted-leads.machine-learning-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
     }
 
     /**
@@ -1529,8 +1589,18 @@ class ConvertedLeadController extends Controller
         $batches = \App\Models\Batch::where('course_id', 21)->where('is_active', 1)->get();
         $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
         $country_codes = get_country_code();
+        
+        // Get offline places for location dropdown
+        $offlinePlaces = \App\Models\OfflinePlace::active()->get();
+        
+        // Get class times for course_id = 21 (Flutter)
+        $classTimes = collect();
+        $course = \App\Models\Course::find(21);
+        if ($course && $course->needs_time) {
+            $classTimes = \App\Models\ClassTime::where('course_id', 21)->where('is_active', true)->get();
+        }
 
-        return view('admin.converted-leads.flutter-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
+        return view('admin.converted-leads.flutter-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
     }
 
     public function eduthanzeelIndex(Request $request)
@@ -2559,6 +2629,7 @@ class ConvertedLeadController extends Controller
             'passed_year' => 'nullable|integer|min:1900|max:' . date('Y'),
             'programme_type' => 'nullable|string|in:online,offline',
             'location' => 'nullable|string|in:Ernakulam,Malappuram',
+            'class_time_id' => 'nullable|exists:class_times,id',
         ];
 
         if (!array_key_exists($field, $allowedFields)) {
@@ -2623,7 +2694,7 @@ class ConvertedLeadController extends Controller
         }
 
         // Handle fields that are in LeadDetail (for UG/PG course)
-        $leadDetailFields = ['whatsapp_number', 'whatsapp_code', 'university_id', 'course_type', 'university_course_id', 'passed_year', 'date_of_birth', 'dob', 'programme_type', 'location'];
+        $leadDetailFields = ['whatsapp_number', 'whatsapp_code', 'university_id', 'course_type', 'university_course_id', 'passed_year', 'date_of_birth', 'dob', 'programme_type', 'location', 'class_time_id'];
 
         // Handle fields that are now in ConvertedStudentDetail
         $studentDetailFields = ['reg_fee', 'exam_fee', 'enroll_no', 'internship_id', 'id_card', 'tma', 'registration_number', 'enrollment_number', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks', 'continuing_studies', 'reason', 'application_number', 'board_registration_number', 'st', 'phy', 'che', 'bio', 'app', 'group', 'interview', 'howmany_interview', 'call_status', 'class_information', 'orientation_class_status', 'class_starting_date', 'class_ending_date', 'whatsapp_group_status', 'class_time', 'class_status', 'complete_cancel_date', 'teacher_id', 'screening'];
@@ -2769,6 +2840,17 @@ class ConvertedLeadController extends Controller
                 // Keep original value if parsing fails
             }
         } elseif ($field === 'passed_year' && !$updatedValue) {
+            $updatedValue = '-';
+        } elseif ($field === 'class_time_id' && $updatedValue) {
+            $classTime = \App\Models\ClassTime::find($updatedValue);
+            if ($classTime) {
+                $fromTime = \Carbon\Carbon::parse($classTime->from_time)->format('h:i A');
+                $toTime = \Carbon\Carbon::parse($classTime->to_time)->format('h:i A');
+                $updatedValue = $fromTime . ' - ' . $toTime;
+            } else {
+                $updatedValue = '-';
+            }
+        } elseif ($field === 'class_time_id' && !$updatedValue) {
             $updatedValue = '-';
         }
 
