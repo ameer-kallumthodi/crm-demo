@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'Data Science Course Mentor List')
+@section('title', 'Machine Learning Course Mentor List')
 
 @section('content')
 <style>
@@ -40,14 +40,14 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Data Science Course Mentor List</h5>
+                    <h5 class="m-b-10">Machine Learning Course Mentor List</h5>
                 </div>
             </div>
             <div class="col-md-6">
                 <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                    <li class="breadcrumb-item">Data Science Mentor</li>
+                    <li class="breadcrumb-item">Machine Learning Mentor</li>
                 </ul>
             </div>
         </div>
@@ -147,10 +147,10 @@
                     <a href="{{ route('admin.digital-marketing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Digital Marketing Mentor List
                     </a>
-                    <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary active">
+                    <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Data Science Course Mentor List
                     </a>
-                    <a href="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" class="btn btn-outline-primary active">
                         <i class="ti ti-user-star"></i> Machine Learning Mentor List
                     </a>
                 </div>
@@ -221,7 +221,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.data-science-mentor-converted-leads.index') }}" id="filterForm">
+                <form method="GET" action="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" id="filterForm">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
@@ -325,7 +325,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" class="btn btn-secondary">
                                 <i class="ti ti-refresh"></i> Clear
                             </a>
                         </div>
@@ -342,13 +342,13 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5>Data Science Course Mentor List</h5>
+                <h5>Machine Learning Course Mentor List</h5>
             </div>
             <div class="card-body">
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover data_table_basic" id="dataScienceMentorTable">
+                        <table class="table table-hover data_table_basic" id="machineLearningMentorTable">
                             <thead>
                                 <tr>
                                     <th>SL No</th>
@@ -375,16 +375,10 @@
                                     <th>2nd Month Marks</th>
                                     <th>2nd Month Feedback</th>
                                     <th>AI Workshop Attendance</th>
-                                    <th>3rd Month Exam Date</th>
-                                    <th>3rd Month Marks</th>
-                                    <th>3rd Month Feedback</th>
                                     <th>Initial Project Start Date</th>
                                     <th>Initial Project End Date</th>
                                     <th>Initial Project Marks</th>
                                     <th>Initial Project Feedback</th>
-                                    <th>4th Month Exam Date</th>
-                                    <th>4th Month Marks</th>
-                                    <th>4th Month Feedback</th>
                                     <th>Mock Test Date</th>
                                     <th>Mock Test Marks</th>
                                     <th>Mock Test Feedback</th>
@@ -395,7 +389,7 @@
                                     <th>Final Project End Date</th>
                                     <th>Final Project Marks</th>
                                     <th>Final Project Feedback</th>
-                                    <th>Data Science Workshop Attendance</th>
+                                    <th>Deep Learning Workshop Attendance</th>
                                     <th>Total Class</th>
                                     <th>Total Present</th>
                                     <th>Total Absent</th>
@@ -405,7 +399,7 @@
                                     <th>Interview Marks</th>
                                     <th>Certificate Distribution Date</th>
                                     <th>Experience Certificate Distribution Date</th>
-                                    <th>Cancelled Date</th>
+                                    <th>Completed / Cancelled Date</th>
                                     <th>Remarks</th>
                                 </tr>
                             </thead>
@@ -579,7 +573,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="location" data-id="{{ $convertedLead->id }}" data-field-type="select" data-options='{!! json_encode($offlinePlaces->pluck(' name', 'name' )->toArray()) !!}' data-current="{{ $convertedLead->leadDetail?->location }}">
+                                        <div class="inline-edit" data-field="location" data-id="{{ $convertedLead->id }}" data-field-type="select" data-options='{"MLP":"MLP","EKM":"EKM","Online":"Online"}' data-current="{{ $convertedLead->leadDetail?->location }}">
                                             <span class="display-value">{{ $convertedLead->leadDetail?->location ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
@@ -659,36 +653,6 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="third_month_exam_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->third_month_exam_date)->format('d-m-Y') : '' }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->third_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->third_month_exam_date)->format('d-m-Y') : '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="third_month_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_month_marks }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->third_month_marks ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="third_month_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_month_feedback }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->third_month_feedback ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
                                         <div class="inline-edit" data-field="initial_project_start_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->initial_project_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->initial_project_start_date)->format('d-m-Y') : '' }}">
                                             <span class="display-value">{{ $convertedLead->mentorDetails?->initial_project_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->initial_project_start_date)->format('d-m-Y') : '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
@@ -721,36 +685,6 @@
                                     <td>
                                         <div class="inline-edit" data-field="initial_project_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->initial_project_feedback }}">
                                             <span class="display-value">{{ $convertedLead->mentorDetails?->initial_project_feedback ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="fourth_month_exam_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->fourth_month_exam_date)->format('d-m-Y') : '' }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->fourth_month_exam_date)->format('d-m-Y') : '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="fourth_month_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_marks }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_marks ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="fourth_month_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_feedback }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_feedback ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -859,8 +793,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="data_science_workshop_attendance" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->data_science_workshop_attendance }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->data_science_workshop_attendance ?? '-' }}</span>
+                                        <div class="inline-edit" data-field="deep_learning_workshop_attendance" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->deep_learning_workshop_attendance }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->deep_learning_workshop_attendance ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -959,8 +893,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="cancelled_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->cancelled_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->cancelled_date)->format('d-m-Y') : '' }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->cancelled_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->cancelled_date)->format('d-m-Y') : '-' }}</span>
+                                        <div class="inline-edit" data-field="completed_cancelled_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->completed_cancelled_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->completed_cancelled_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->completed_cancelled_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->completed_cancelled_date)->format('d-m-Y') : '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -981,7 +915,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="57" class="text-center">No Data Science Course mentor records found</td>
+                                    <td colspan="49" class="text-center">No Machine Learning Course mentor records found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -1103,7 +1037,7 @@
                     <div class="text-center py-5">
                         <div class="text-muted">
                             <i class="ti ti-marketing f-48 mb-3 d-block"></i>
-                            <h5>No Data Science Course mentor records found</h5>
+                            <h5>No Machine Learning Course mentor records found</h5>
                             <p>Try adjusting your filters or check back later.</p>
                         </div>
                     </div>
@@ -1192,12 +1126,12 @@
         font-size: 11px;
     }
 
-    #dataScienceMentorTable thead th,
-    #dataScienceMentorTable tbody td {
+    #machineLearningMentorTable thead th,
+    #machineLearningMentorTable tbody td {
         white-space: nowrap;
     }
 
-    #dataScienceMentorTable thead th {
+    #machineLearningMentorTable thead th {
         position: sticky;
         top: 0;
         z-index: 5;
@@ -1205,11 +1139,11 @@
         box-shadow: inset 0 -1px 0 #e9ecef;
     }
 
-    #dataScienceMentorTable tbody tr:hover {
+    #machineLearningMentorTable tbody tr:hover {
         background: #fafbff;
     }
 
-    #dataScienceMentorTable td .display-value {
+    #machineLearningMentorTable td .display-value {
         display: inline-block;
         max-width: 220px;
         overflow: hidden;
@@ -1218,11 +1152,11 @@
         vertical-align: middle;
     }
 
-    #dataScienceMentorTable .btn-group .btn {
+    #machineLearningMentorTable .btn-group .btn {
         margin-right: 4px;
     }
 
-    #dataScienceMentorTable .btn-group .btn:last-child {
+    #machineLearningMentorTable .btn-group .btn:last-child {
         margin-right: 0;
     }
 </style>
@@ -1298,9 +1232,9 @@
                 // Handle fields with data-field-type="select" using data-options
                 const options = container.data('options');
                 editForm = createSelectFieldFromOptions(field, currentValue, options);
-            } else if (['call_status', 'class_information', 'orientation_class_status', 'whatsapp_group_status', 'class_status', 'programme_type', 'whatsapp_group_status', 'ai_workshop_attendance', 'data_science_workshop_attendance'].includes(field)) {
+            } else if (['call_status', 'class_information', 'orientation_class_status', 'whatsapp_group_status', 'class_status', 'programme_type', 'whatsapp_group_status', 'ai_workshop_attendance', 'deep_learning_workshop_attendance'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
-            } else if (['class_starting_date', 'class_ending_date', 'complete_cancel_date', 'orientation_class_date', 'class_start_date', 'class_end_date', 'first_month_exam_date', 'second_month_exam_date', 'third_month_exam_date', 'initial_project_start_date', 'initial_project_end_date', 'fourth_month_exam_date', 'mock_test_date', 'mock_interview_date', 'final_project_start_date', 'final_project_end_date', 'final_certificate_examination_date', 'final_interview_date', 'certificate_distribution_date', 'experience_certificate_distribution_date', 'cancelled_date'].includes(field)) {
+            } else if (['orientation_class_date', 'class_start_date', 'class_end_date', 'first_month_exam_date', 'second_month_exam_date', 'initial_project_start_date', 'initial_project_end_date', 'mock_test_date', 'mock_interview_date', 'final_project_start_date', 'final_project_end_date', 'final_certificate_examination_date', 'final_interview_date', 'certificate_distribution_date', 'experience_certificate_distribution_date', 'completed_cancelled_date'].includes(field)) {
                 editForm = createDateField(field, currentValue);
             } else if (field === 'class_time') {
                 editForm = createTimeField(field, currentValue);
@@ -1378,7 +1312,7 @@
             const isConvertedLeadField = ['phone', 'register_number', 'email', 'batch_id', 'admission_batch_id', 'internship_id', 'call_status', 'class_time_id', 'programme_type', 'location'].includes(field);
             const updateUrl = isConvertedLeadField ?
                 `/admin/converted-leads/${id}/inline-update` :
-                `/admin/data-science-mentor-converted-leads/${id}/update-mentor-details`;
+                `/admin/machine-learning-mentor-converted-leads/${id}/update-mentor-details`;
 
             $.ajax({
                 url: updateUrl,
@@ -1723,9 +1657,9 @@
                     <option value="Attended" ${currentValue === 'Attended' ? 'selected' : ''}>Attended</option>
                     <option value="Not Attended" ${currentValue === 'Not Attended' ? 'selected' : ''}>Not Attended</option>
                 `;
-            } else if (field === 'data_science_workshop_attendance') {
+            } else if (field === 'deep_learning_workshop_attendance') {
                 options = `
-                    <option value="">Select Data Science Workshop Attendance</option>
+                    <option value="">Select Deep Learning Workshop Attendance</option>
                     <option value="Attended" ${currentValue === 'Attended' ? 'selected' : ''}>Attended</option>
                     <option value="Not Attended" ${currentValue === 'Not Attended' ? 'selected' : ''}>Not Attended</option>
                 `;

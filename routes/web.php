@@ -733,6 +733,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/data-science-mentor-converted-leads', [App\Http\Controllers\DataScienceMentorController::class, 'index'])->name('data-science-mentor-converted-leads.index');
         Route::post('/data-science-mentor-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\DataScienceMentorController::class, 'updateMentorDetails'])->name('data-science-mentor-converted-leads.update-mentor-details');
 
+        // Machine Learning Mentor Converted Leads Routes
+        Route::get('/machine-learning-mentor-converted-leads', [App\Http\Controllers\MachineLearningMentorController::class, 'index'])->name('machine-learning-mentor-converted-leads.index');
+        Route::post('/machine-learning-mentor-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\MachineLearningMentorController::class, 'updateMentorDetails'])->name('machine-learning-mentor-converted-leads.update-mentor-details');
+
         // Digital Marketing Mentor Converted Leads Routes
         Route::get('/digital-marketing-mentor-converted-leads', [App\Http\Controllers\DigitalMarketingMentorController::class, 'index'])->name('digital-marketing-mentor-converted-leads.index');
         Route::post('/digital-marketing-mentor-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\DigitalMarketingMentorController::class, 'updateMentorDetails'])->name('digital-marketing-mentor-converted-leads.update-mentor-details');
