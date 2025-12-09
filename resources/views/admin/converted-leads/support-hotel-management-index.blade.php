@@ -140,6 +140,9 @@
                     <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> GMVSS Mentor List
                     </a>
+                    <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Data Science Course Mentor List
+                    </a>
                 </div>
             </div>
         </div>
