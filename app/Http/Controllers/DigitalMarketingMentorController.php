@@ -22,7 +22,7 @@ class DigitalMarketingMentorController extends Controller
     public function index(Request $request)
     {
         // Check permissions
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor() && !RoleHelper::is_telecaller() && !RoleHelper::is_team_lead() && !RoleHelper::is_senior_manager() && !RoleHelper::is_general_manager()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor() && !RoleHelper::is_telecaller() && !RoleHelper::is_team_lead() && !RoleHelper::is_senior_manager() && !RoleHelper::is_general_manager() && !RoleHelper::is_hod()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -44,6 +44,19 @@ class DigitalMarketingMentorController extends Controller
         if ($currentUser) {
             if (RoleHelper::is_admin_or_super_admin()) {
                 // Admins can see all support verified leads
+            } elseif (RoleHelper::is_hod()) {
+                // HOD: Only see leads for courses where they are assigned as HOD
+                $hodCourseIds = \App\Models\Course::where('hod_id', AuthHelper::getCurrentUserId())
+                    ->pluck('id')
+                    ->toArray();
+                
+                // Check if current course (11) is in HOD's assigned courses
+                if (!empty($hodCourseIds) && in_array(11, $hodCourseIds)) {
+                    // HOD is assigned to this course, show data
+                } else {
+                    // HOD is not assigned to this course, return empty results
+                    $query->whereRaw('1 = 0');
+                }
             } elseif (RoleHelper::is_mentor_head()) {
                 // Mentor Head: Can see all support verified leads
             } elseif (RoleHelper::is_mentor()) {
@@ -149,6 +162,42 @@ class DigitalMarketingMentorController extends Controller
     public function updateMentorDetails(Request $request, $id)
     {
         try {
+            $restrictedFields = [
+                'phone',
+                'batch_id',
+                'admission_batch_id',
+                'internship_id',
+                'email',
+                'call_status',
+                'orientation_class_date',
+                'class_start_date',
+                'class_end_date',
+                'whatsapp_group_status',
+                'class_time_id',
+                'programme_type',
+                'location',
+                'total_class',
+                'total_present',
+                'total_absent',
+                'final_certificate_examination_date',
+                'certificate_examination_marks',
+                'final_interview_date',
+                'interview_marks',
+                'certificate_distribution_date',
+                'experience_certificate_distribution_date',
+                'completed_cancelled_date',
+                'remarks',
+            ];
+
+            $isRestricted = in_array($request->field, $restrictedFields, true);
+            $canEditRestricted = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_hod() || RoleHelper::is_admission_counsellor();
+            if ($isRestricted && !$canEditRestricted) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Access denied'
+                ], 403);
+            }
+
             $convertedLead = ConvertedLead::findOrFail($id);
             $field = $request->field;
             $value = $request->value;
