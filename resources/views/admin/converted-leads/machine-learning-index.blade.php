@@ -351,7 +351,6 @@
                                 <th>Class Starting Date</th>
                                 <th>Class Ending Date</th>
                                 <th>WhatsApp Group Status</th>
-                                <th>Class Time</th>
                                 <th>Class Status</th>
                                 <th>Complete/Cancel Date</th>
                                 <th>Remarks</th>
@@ -546,16 +545,6 @@
                                 <td>
                                     <div class="inline-edit" data-field="whatsapp_group_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->whatsapp_group_status }}">
                                         <span class="display-value">{{ $convertedLead->studentDetails?->whatsapp_group_status ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="class_time" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_time }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->class_time ? \Carbon\Carbon::parse($convertedLead->studentDetails->class_time)->format('h:i A') : '-' }}</span>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                         <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                             <i class="ti ti-edit"></i>
