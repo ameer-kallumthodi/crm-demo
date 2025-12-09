@@ -8,12 +8,15 @@
         white-space: nowrap;
         vertical-align: middle;
     }
+
     .table td .btn-group {
         white-space: nowrap;
     }
+
     .table td .inline-edit {
         white-space: nowrap;
     }
+
     .table td .display-value {
         white-space: nowrap;
         overflow: hidden;
@@ -21,9 +24,11 @@
         max-width: 150px;
         display: inline-block;
     }
-    .cancelled-row > td {
+
+    .cancelled-row>td {
         background-color: #fff1f0 !important;
     }
+
     .cancelled-card {
         border: 1px solid #f5c2c7;
         background-color: #fff5f5;
@@ -138,6 +143,9 @@
                     </a>
                     <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> GMVSS Mentor List
+                    </a>
+                    <a href="{{ route('admin.digital-marketing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Digital Marketing Mentor List
                     </a>
                     <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary active">
                         <i class="ti ti-user-star"></i> Data Science Course Mentor List
@@ -338,654 +346,654 @@
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
                         <table class="table table-hover data_table_basic" id="dataScienceMentorTable">
-                        <thead>
-                            <tr>
-                                <th>SL No</th>
-                                <th>Academic</th>
-                                <th>Support</th>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Batch</th>
-                                <th>Admission Batch</th>
-                                <th>Internship Id</th>
-                                <th>Email Id</th>
-                                <th>Call Status</th>
-                                <th>Orientation Class Date</th>
-                                <th>Class Start Date</th>
-                                <th>Class End Date</th>
-                                <th>Whatsapp Group Status</th>
-                                <th>Class Time</th>
-                                <th>Platform</th>
-                                <th>Place</th>
-                                <th>1st Month Exam Date</th>
-                                <th>1st Month Marks</th>
-                                <th>1st Month Feedback</th>
-                                <th>2nd Month Exam Date</th>
-                                <th>2nd Month Marks</th>
-                                <th>2nd Month Feedback</th>
-                                <th>AI Workshop Attendance</th>
-                                <th>3rd Month Exam Date</th>
-                                <th>3rd Month Marks</th>
-                                <th>3rd Month Feedback</th>
-                                <th>Initial Project Start Date</th>
-                                <th>Initial Project End Date</th>
-                                <th>Initial Project Marks</th>
-                                <th>Initial Project Feedback</th>
-                                <th>4th Month Exam Date</th>
-                                <th>4th Month Marks</th>
-                                <th>4th Month Feedback</th>
-                                <th>Mock Test Date</th>
-                                <th>Mock Test Marks</th>
-                                <th>Mock Test Feedback</th>
-                                <th>Mock Interview Date</th>
-                                <th>Mock Interview Marks</th>
-                                <th>Mock Interview Feedback</th>
-                                <th>Final Project Start Date</th>
-                                <th>Final Project End Date</th>
-                                <th>Final Project Marks</th>
-                                <th>Final Project Feedback</th>
-                                <th>Data Science Workshop Attendance</th>
-                                <th>Total Class</th>
-                                <th>Total Present</th>
-                                <th>Total Absent</th>
-                                <th>Final Certificate Examination Date</th>
-                                <th>Certificate Examination Marks</th>
-                                <th>Final Interview Date</th>
-                                <th>Interview Marks</th>
-                                <th>Certificate Distribution Date</th>
-                                <th>Experience Certificate Distribution Date</th>
-                                <th>Cancelled Date</th>
-                                <th>Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($convertedLeads as $index => $convertedLead)
-                            <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
-                                @php
+                            <thead>
+                                <tr>
+                                    <th>SL No</th>
+                                    <th>Academic</th>
+                                    <th>Support</th>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Batch</th>
+                                    <th>Admission Batch</th>
+                                    <th>Internship Id</th>
+                                    <th>Email Id</th>
+                                    <th>Call Status</th>
+                                    <th>Orientation Class Date</th>
+                                    <th>Class Start Date</th>
+                                    <th>Class End Date</th>
+                                    <th>Whatsapp Group Status</th>
+                                    <th>Class Time</th>
+                                    <th>Platform</th>
+                                    <th>Place</th>
+                                    <th>1st Month Exam Date</th>
+                                    <th>1st Month Marks</th>
+                                    <th>1st Month Feedback</th>
+                                    <th>2nd Month Exam Date</th>
+                                    <th>2nd Month Marks</th>
+                                    <th>2nd Month Feedback</th>
+                                    <th>AI Workshop Attendance</th>
+                                    <th>3rd Month Exam Date</th>
+                                    <th>3rd Month Marks</th>
+                                    <th>3rd Month Feedback</th>
+                                    <th>Initial Project Start Date</th>
+                                    <th>Initial Project End Date</th>
+                                    <th>Initial Project Marks</th>
+                                    <th>Initial Project Feedback</th>
+                                    <th>4th Month Exam Date</th>
+                                    <th>4th Month Marks</th>
+                                    <th>4th Month Feedback</th>
+                                    <th>Mock Test Date</th>
+                                    <th>Mock Test Marks</th>
+                                    <th>Mock Test Feedback</th>
+                                    <th>Mock Interview Date</th>
+                                    <th>Mock Interview Marks</th>
+                                    <th>Mock Interview Feedback</th>
+                                    <th>Final Project Start Date</th>
+                                    <th>Final Project End Date</th>
+                                    <th>Final Project Marks</th>
+                                    <th>Final Project Feedback</th>
+                                    <th>Data Science Workshop Attendance</th>
+                                    <th>Total Class</th>
+                                    <th>Total Present</th>
+                                    <th>Total Absent</th>
+                                    <th>Final Certificate Examination Date</th>
+                                    <th>Certificate Examination Marks</th>
+                                    <th>Final Interview Date</th>
+                                    <th>Interview Marks</th>
+                                    <th>Certificate Distribution Date</th>
+                                    <th>Experience Certificate Distribution Date</th>
+                                    <th>Cancelled Date</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($convertedLeads as $index => $convertedLead)
+                                <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
+                                    @php
                                     $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
                                     $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
-                                @endphp
-                                <td>{{ $index + 1 }}</td>
-                                <td>
-                                    @include('admin.converted-leads.partials.status-badge', [
+                                    @endphp
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
                                         'convertedLead' => $convertedLead,
                                         'type' => 'academic',
                                         'showToggle' => $canToggleAcademic,
                                         'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null,
                                         'title' => 'academic',
                                         'useModal' => true
-                                    ])
-                                </td>
-                                <td>
-                                    @include('admin.converted-leads.partials.status-badge', [
+                                        ])
+                                    </td>
+                                    <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
                                         'convertedLead' => $convertedLead,
                                         'type' => 'support',
                                         'showToggle' => $canToggleSupport,
                                         'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null,
                                         'title' => 'support',
                                         'useModal' => true
-                                    ])
-                                </td>
-                                <td>
-                                    {{ $convertedLead->name }}
-                                    @if($convertedLead->is_cancelled)
+                                        ])
+                                    </td>
+                                    <td>
+                                        {{ $convertedLead->name }}
+                                        @if($convertedLead->is_cancelled)
                                         <span class="badge bg-danger ms-2">Cancelled</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="phone" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->phone }}">
-                                        <span class="display-value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
                                         @endif
-                                    </div>
-                                    <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}"></div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="batch_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->batch_id }}">
-                                        <span class="display-value">{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
-                                        <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="internship_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->internship_id }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->internship_id ?? 'N/A' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="email" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->email }}">
-                                        <span class="display-value">{{ $convertedLead->email ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="call_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->call_status }}">
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->call_status ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="orientation_class_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->orientation_class_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->orientation_class_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->orientation_class_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->orientation_class_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="class_start_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->class_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_start_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->class_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_start_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="class_end_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->class_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_end_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->class_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_end_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="whatsapp_group_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->whatsapp_group_status }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->whatsapp_group_status ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    @if($course && $course->needs_time)
-                                    <div class="inline-edit" data-field="class_time_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-programme-type="{{ $convertedLead->leadDetail?->programme_type }}" data-current-id="{{ $convertedLead->leadDetail?->class_time_id }}">
-                                        <span class="display-value">
-                                            @if($convertedLead->leadDetail?->classTime)
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="phone" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->phone }}">
+                                            <span class="display-value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                        <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}"></div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="batch_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->batch_id }}">
+                                            <span class="display-value">{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
+                                            <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="internship_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->internship_id }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->internship_id ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="email" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->email }}">
+                                            <span class="display-value">{{ $convertedLead->email ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="call_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->call_status }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->call_status ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="orientation_class_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->orientation_class_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->orientation_class_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->orientation_class_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->orientation_class_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="class_start_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->class_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_start_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->class_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_start_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="class_end_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->class_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_end_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->class_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_end_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="whatsapp_group_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->whatsapp_group_status }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->whatsapp_group_status ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($course && $course->needs_time)
+                                        <div class="inline-edit" data-field="class_time_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-programme-type="{{ $convertedLead->leadDetail?->programme_type }}" data-current-id="{{ $convertedLead->leadDetail?->class_time_id }}">
+                                            <span class="display-value">
+                                                @if($convertedLead->leadDetail?->classTime)
                                                 @php
-                                                    $fromTime = \Carbon\Carbon::parse($convertedLead->leadDetail->classTime->from_time)->format('h:i A');
-                                                    $toTime = \Carbon\Carbon::parse($convertedLead->leadDetail->classTime->to_time)->format('h:i A');
+                                                $fromTime = \Carbon\Carbon::parse($convertedLead->leadDetail->classTime->from_time)->format('h:i A');
+                                                $toTime = \Carbon\Carbon::parse($convertedLead->leadDetail->classTime->to_time)->format('h:i A');
                                                 @endphp
                                                 {{ $fromTime }} - {{ $toTime }}
-                                            @else
+                                                @else
                                                 -
+                                                @endif
+                                            </span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
                                             @endif
-                                        </span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
+                                        </div>
+                                        @else
+                                        <span class="text-muted">-</span>
                                         @endif
-                                    </div>
-                                    @else
-                                    <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="programme_type" data-id="{{ $convertedLead->id }}" data-field-type="select" data-options='{"online":"Online","offline":"Offline"}' data-current="{{ $convertedLead->leadDetail?->programme_type }}">
-                                        <span class="display-value">{{ $convertedLead->leadDetail?->programme_type ? ucfirst($convertedLead->leadDetail->programme_type) : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="location" data-id="{{ $convertedLead->id }}" data-field-type="select" data-options='{!! json_encode($offlinePlaces->pluck('name', 'name')->toArray()) !!}' data-current="{{ $convertedLead->leadDetail?->location }}">
-                                        <span class="display-value">{{ $convertedLead->leadDetail?->location ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="first_month_exam_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->first_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->first_month_exam_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->first_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->first_month_exam_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="first_month_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->first_month_marks }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->first_month_marks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="first_month_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->first_month_feedback }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->first_month_feedback ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="second_month_exam_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->second_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->second_month_exam_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->second_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->second_month_exam_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="second_month_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->second_month_marks }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->second_month_marks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="second_month_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->second_month_feedback }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->second_month_feedback ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="ai_workshop_attendance" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->ai_workshop_attendance }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->ai_workshop_attendance ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="third_month_exam_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->third_month_exam_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->third_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->third_month_exam_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="third_month_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_month_marks }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->third_month_marks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="third_month_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_month_feedback }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->third_month_feedback ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="initial_project_start_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->initial_project_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->initial_project_start_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->initial_project_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->initial_project_start_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="initial_project_end_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->initial_project_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->initial_project_end_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->initial_project_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->initial_project_end_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="initial_project_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->initial_project_marks }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->initial_project_marks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="initial_project_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->initial_project_feedback }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->initial_project_feedback ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="fourth_month_exam_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->fourth_month_exam_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->fourth_month_exam_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="fourth_month_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_marks }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_marks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="fourth_month_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_feedback }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_feedback ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="mock_test_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_test_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->mock_test_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->mock_test_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->mock_test_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="mock_test_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_test_marks }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->mock_test_marks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="mock_test_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_test_feedback }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->mock_test_feedback ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="mock_interview_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_interview_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->mock_interview_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->mock_interview_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->mock_interview_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="mock_interview_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_interview_marks }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->mock_interview_marks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="mock_interview_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_interview_feedback }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->mock_interview_feedback ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="final_project_start_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_project_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_project_start_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->final_project_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_project_start_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="final_project_end_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_project_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_project_end_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->final_project_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_project_end_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="final_project_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_project_marks }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->final_project_marks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="final_project_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_project_feedback }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->final_project_feedback ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="data_science_workshop_attendance" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->data_science_workshop_attendance }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->data_science_workshop_attendance ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="total_class" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->total_class }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->total_class ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="total_present" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->total_present }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->total_present ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="total_absent" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->total_absent }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->total_absent ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="final_certificate_examination_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_certificate_examination_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_certificate_examination_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->final_certificate_examination_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_certificate_examination_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="certificate_examination_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->certificate_examination_marks }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->certificate_examination_marks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="final_interview_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_interview_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_interview_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->final_interview_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_interview_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="interview_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->interview_marks }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->interview_marks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="certificate_distribution_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->certificate_distribution_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->certificate_distribution_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->certificate_distribution_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->certificate_distribution_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="experience_certificate_distribution_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->experience_certificate_distribution_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->experience_certificate_distribution_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->experience_certificate_distribution_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->experience_certificate_distribution_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="cancelled_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->cancelled_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->cancelled_date)->format('d-m-Y') : '' }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->cancelled_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->cancelled_date)->format('d-m-Y') : '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->remarks }}">
-                                        <span class="display-value">{{ $convertedLead->mentorDetails?->remarks ?? '-' }}</span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
-                                        <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="57" class="text-center">No Data Science Course mentor records found</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="programme_type" data-id="{{ $convertedLead->id }}" data-field-type="select" data-options='{"online":"Online","offline":"Offline"}' data-current="{{ $convertedLead->leadDetail?->programme_type }}">
+                                            <span class="display-value">{{ $convertedLead->leadDetail?->programme_type ? ucfirst($convertedLead->leadDetail->programme_type) : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="location" data-id="{{ $convertedLead->id }}" data-field-type="select" data-options='{!! json_encode($offlinePlaces->pluck(' name', 'name' )->toArray()) !!}' data-current="{{ $convertedLead->leadDetail?->location }}">
+                                            <span class="display-value">{{ $convertedLead->leadDetail?->location ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="first_month_exam_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->first_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->first_month_exam_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->first_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->first_month_exam_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="first_month_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->first_month_marks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->first_month_marks ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="first_month_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->first_month_feedback }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->first_month_feedback ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="second_month_exam_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->second_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->second_month_exam_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->second_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->second_month_exam_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="second_month_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->second_month_marks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->second_month_marks ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="second_month_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->second_month_feedback }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->second_month_feedback ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="ai_workshop_attendance" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->ai_workshop_attendance }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->ai_workshop_attendance ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="third_month_exam_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->third_month_exam_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->third_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->third_month_exam_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="third_month_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_month_marks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->third_month_marks ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="third_month_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->third_month_feedback }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->third_month_feedback ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="initial_project_start_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->initial_project_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->initial_project_start_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->initial_project_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->initial_project_start_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="initial_project_end_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->initial_project_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->initial_project_end_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->initial_project_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->initial_project_end_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="initial_project_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->initial_project_marks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->initial_project_marks ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="initial_project_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->initial_project_feedback }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->initial_project_feedback ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="fourth_month_exam_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->fourth_month_exam_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->fourth_month_exam_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="fourth_month_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_marks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_marks ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="fourth_month_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_feedback }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_feedback ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="mock_test_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_test_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->mock_test_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->mock_test_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->mock_test_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="mock_test_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_test_marks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->mock_test_marks ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="mock_test_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_test_feedback }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->mock_test_feedback ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="mock_interview_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_interview_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->mock_interview_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->mock_interview_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->mock_interview_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="mock_interview_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_interview_marks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->mock_interview_marks ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="mock_interview_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_interview_feedback }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->mock_interview_feedback ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="final_project_start_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_project_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_project_start_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->final_project_start_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_project_start_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="final_project_end_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_project_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_project_end_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->final_project_end_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_project_end_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="final_project_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_project_marks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->final_project_marks ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="final_project_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_project_feedback }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->final_project_feedback ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="data_science_workshop_attendance" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->data_science_workshop_attendance }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->data_science_workshop_attendance ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="total_class" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->total_class }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->total_class ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="total_present" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->total_present }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->total_present ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="total_absent" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->total_absent }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->total_absent ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="final_certificate_examination_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_certificate_examination_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_certificate_examination_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->final_certificate_examination_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_certificate_examination_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="certificate_examination_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->certificate_examination_marks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->certificate_examination_marks ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="final_interview_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_interview_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_interview_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->final_interview_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->final_interview_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="interview_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->interview_marks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->interview_marks ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="certificate_distribution_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->certificate_distribution_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->certificate_distribution_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->certificate_distribution_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->certificate_distribution_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="experience_certificate_distribution_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->experience_certificate_distribution_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->experience_certificate_distribution_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->experience_certificate_distribution_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->experience_certificate_distribution_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="cancelled_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->cancelled_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->cancelled_date)->format('d-m-Y') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->cancelled_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->cancelled_date)->format('d-m-Y') : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->remarks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->remarks ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="57" class="text-center">No Data Science Course mentor records found</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
                         </table>
                     </div>
                 </div>
-                
+
                 <!-- Mobile Card View -->
                 <div class="d-lg-none">
                     @forelse($convertedLeads as $index => $convertedLead)
                     <div class="card mb-3 {{ $convertedLead->is_cancelled ? 'cancelled-card' : '' }}">
                         <div class="card-body">
                             @php
-                                $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
-                                $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                            $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                            $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
                             @endphp
                             <!-- Lead Header -->
                             <div class="d-flex align-items-center mb-3">
@@ -996,7 +1004,7 @@
                                     <h6 class="mb-1 fw-bold">{{ $convertedLead->name }}</h6>
                                     <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
                                     @if($convertedLead->is_cancelled)
-                                        <span class="badge bg-danger ms-2">Cancelled</span>
+                                    <span class="badge bg-danger ms-2">Cancelled</span>
                                     @endif
                                 </div>
                                 <div class="dropdown">
@@ -1017,7 +1025,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            
+
                             <!-- Lead Details -->
                             <div class="row g-2 mb-3">
                                 <div class="col-6">
@@ -1047,26 +1055,26 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Academic</small>
                                     @include('admin.converted-leads.partials.status-badge', [
-                                        'convertedLead' => $convertedLead,
-                                        'type' => 'academic',
-                                        'showToggle' => $canToggleAcademic,
-                                        'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null
+                                    'convertedLead' => $convertedLead,
+                                    'type' => 'academic',
+                                    'showToggle' => $canToggleAcademic,
+                                    'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null
                                     ])
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Support</small>
                                     @include('admin.converted-leads.partials.status-badge', [
-                                        'convertedLead' => $convertedLead,
-                                        'type' => 'support',
-                                        'showToggle' => $canToggleSupport,
-                                        'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null
+                                    'convertedLead' => $convertedLead,
+                                    'type' => 'support',
+                                    'showToggle' => $canToggleSupport,
+                                    'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null
                                     ])
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Academic</small>
                                     @include('admin.converted-leads.partials.status-badge', [
-                                        'convertedLead' => $convertedLead,
-                                        'type' => 'academic'
+                                    'convertedLead' => $convertedLead,
+                                    'type' => 'academic'
                                     ])
                                 </div>
                                 <div class="col-6">
@@ -1074,7 +1082,7 @@
                                     <span class="fw-medium">{{ $convertedLead->created_at->format('d-m-Y') }}</span>
                                 </div>
                             </div>
-                            
+
                             <!-- Action Buttons -->
                             <div class="d-flex gap-2 flex-wrap">
                                 <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}"
@@ -1106,99 +1114,114 @@
 
 @endsection
 
-<script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+<script id="country-codes-json" type="application/json">
+    {
+        !!json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!
+    }
+</script>
 
 @push('styles')
 <style>
-.spin {
-    animation: spin 1s linear infinite;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+    .spin {
+        animation: spin 1s linear infinite;
+    }
 
-.inline-edit {
-    position: relative;
-    overflow: visible;
-}
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
 
-.inline-edit .edit-form {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: -8px;
-    z-index: 10;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 10px;
-    min-width: 320px;
-    max-width: 440px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-}
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 
-.inline-edit.editing .edit-form {
-    display: block;
-}
+    .inline-edit {
+        position: relative;
+        overflow: visible;
+    }
 
-.inline-edit.editing .display-value {
-    display: none;
-}
+    .inline-edit .edit-form {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: -8px;
+        z-index: 10;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        min-width: 320px;
+        max-width: 440px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
 
-.inline-edit .edit-form input,
-.inline-edit .edit-form select {
-    width: 100%;
-    padding: 4px 8px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    font-size: 12px;
-}
+    .inline-edit.editing .edit-form {
+        display: block;
+    }
 
-.inline-edit .edit-form input:focus,
-.inline-edit .edit-form select:focus {
-    border-color: #7366ff;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(115,102,255,0.15);
-}
+    .inline-edit.editing .display-value {
+        display: none;
+    }
 
-.inline-edit .edit-form .btn-group {
-    margin-top: 5px;
-}
+    .inline-edit .edit-form input,
+    .inline-edit .edit-form select {
+        width: 100%;
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 12px;
+    }
 
-.inline-edit .edit-form .btn {
-    padding: 2px 8px;
-    font-size: 11px;
-}
+    .inline-edit .edit-form input:focus,
+    .inline-edit .edit-form select:focus {
+        border-color: #7366ff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(115, 102, 255, 0.15);
+    }
 
-#dataScienceMentorTable thead th,
-#dataScienceMentorTable tbody td {
-    white-space: nowrap;
-}
+    .inline-edit .edit-form .btn-group {
+        margin-top: 5px;
+    }
 
-#dataScienceMentorTable thead th {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background: #fff;
-    box-shadow: inset 0 -1px 0 #e9ecef;
-}
+    .inline-edit .edit-form .btn {
+        padding: 2px 8px;
+        font-size: 11px;
+    }
 
-#dataScienceMentorTable tbody tr:hover {
-    background: #fafbff;
-}
+    #dataScienceMentorTable thead th,
+    #dataScienceMentorTable tbody td {
+        white-space: nowrap;
+    }
 
-#dataScienceMentorTable td .display-value {
-    display: inline-block;
-    max-width: 220px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    vertical-align: middle;
-}
+    #dataScienceMentorTable thead th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: #fff;
+        box-shadow: inset 0 -1px 0 #e9ecef;
+    }
 
-#dataScienceMentorTable .btn-group .btn { margin-right: 4px; }
-#dataScienceMentorTable .btn-group .btn:last-child { margin-right: 0; }
+    #dataScienceMentorTable tbody tr:hover {
+        background: #fafbff;
+    }
+
+    #dataScienceMentorTable td .display-value {
+        display: inline-block;
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    #dataScienceMentorTable .btn-group .btn {
+        margin-right: 4px;
+    }
+
+    #dataScienceMentorTable .btn-group .btn:last-child {
+        margin-right: 0;
+    }
 </style>
 @endpush
 
@@ -1248,23 +1271,23 @@
         $(document).on('click', '.edit-btn', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const container = $(this).closest('.inline-edit');
             const field = container.data('field');
             const id = container.data('id');
             const currentValue = container.data('current') !== undefined ? String(container.data('current')).trim() : container.find('.display-value').text().trim();
-            
+
             if (container.hasClass('editing')) {
                 return;
             }
-            
+
             $('.inline-edit.editing').not(container).each(function() {
                 $(this).removeClass('editing');
                 $(this).find('.edit-form').remove();
             });
 
             let editForm = '';
-            
+
             if (field === 'phone') {
                 const currentCode = container.siblings('.inline-code-value').data('current') || '';
                 editForm = createPhoneField(currentCode, currentValue);
@@ -1294,10 +1317,10 @@
             } else {
                 editForm = createInputField(field, currentValue);
             }
-            
+
             container.addClass('editing');
             container.append(editForm);
-            
+
             // Load options for select fields that need dynamic loading
             if (field === 'batch_id') {
                 const courseId = container.data('course-id');
@@ -1319,12 +1342,12 @@
                 container.find('input, select').first().focus();
             }
         });
-        
+
         // Save inline edit
         $(document).off('click.saveInline').on('click.saveInline', '.save-edit', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const container = $(this).closest('.inline-edit');
             const field = container.data('field');
             const id = container.data('id');
@@ -1337,21 +1360,23 @@
             let extra = {};
             if (field === 'phone') {
                 const codeVal = container.find('select[name="code"]').val();
-                extra = { code: codeVal };
+                extra = {
+                    code: codeVal
+                };
             }
-            
+
             const btn = $(this);
             if (btn.data('busy')) return;
             btn.data('busy', true);
             btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
-            
+
             // Use converted-leads endpoint for register number, phone, email, batch_id, admission_batch_id, internship_id, call_status
             // Use mentor endpoint for all other mentor detail fields
             const isConvertedLeadField = ['phone', 'register_number', 'email', 'batch_id', 'admission_batch_id', 'internship_id', 'call_status', 'class_time_id', 'programme_type', 'location'].includes(field);
-            const updateUrl = isConvertedLeadField
-                ? `/admin/converted-leads/${id}/inline-update`
-                : `/admin/data-science-mentor-converted-leads/${id}/update-mentor-details`;
-            
+            const updateUrl = isConvertedLeadField ?
+                `/admin/converted-leads/${id}/inline-update` :
+                `/admin/data-science-mentor-converted-leads/${id}/update-mentor-details`;
+
             $.ajax({
                 url: updateUrl,
                 method: 'POST',
@@ -1423,12 +1448,12 @@
                 }
             });
         });
-        
+
         // Cancel edit
         $(document).on('click', '.cancel-edit', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const container = $(this).closest('.inline-edit');
             container.removeClass('editing');
             container.find('.edit-form').remove();
@@ -1455,7 +1480,7 @@
             // For class starting and ending dates, allow future dates
             const maxDate = (field === 'class_starting_date' || field === 'class_ending_date') ? '' : new Date().toISOString().split('T')[0];
             const maxAttr = maxDate ? `max="${maxDate}"` : '';
-            
+
             return `
                 <div class="edit-form">
                     <input type="date" ${maxAttr} value="${value}" class="form-control form-control-sm">
@@ -1513,7 +1538,7 @@
                 $select.html('<option value="">No course selected</option>');
                 return;
             }
-            
+
             $.get(`/api/batches/by-course/${courseId}`)
                 .done(function(response) {
                     let options = '<option value="">Select Batch</option>';
@@ -1536,7 +1561,7 @@
                 $select.html('<option value="">No batch selected</option>');
                 return;
             }
-            
+
             $.get(`/api/admission-batches/by-batch/${batchId}`)
                 .done(function(list) {
                     let options = '<option value="">Select Admission Batch</option>';
@@ -1571,14 +1596,22 @@
                 $select.html('<option value="">No course or programme type selected</option>');
                 return;
             }
-            
+
             $.get(`/api/class-times/by-course/${courseId}?class_type=${programmeType}`)
                 .done(function(list) {
                     let options = '<option value="">Select Class Time</option>';
                     if (list && list.length > 0) {
                         list.forEach(function(classTime) {
-                            const fromTime = new Date('2000-01-01 ' + classTime.from_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                            const toTime = new Date('2000-01-01 ' + classTime.to_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                            const fromTime = new Date('2000-01-01 ' + classTime.from_time).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true
+                            });
+                            const toTime = new Date('2000-01-01 ' + classTime.to_time).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true
+                            });
                             const isSelected = (currentId && String(currentId) === String(classTime.id)) ? 'selected' : '';
                             options += `<option value="${classTime.id}" ${isSelected}>${fromTime} - ${toTime}</option>`;
                         });
@@ -1630,7 +1663,7 @@
 
         function createSelectField(field, currentValue) {
             let options = '';
-            
+
             if (field === 'call_status') {
                 options = `
                     <option value="">Select Call Status</option>
@@ -1694,7 +1727,7 @@
                     <option value="Not Attended" ${currentValue === 'Not Attended' ? 'selected' : ''}>Not Attended</option>
                 `;
             }
-            
+
             return `
                 <div class="edit-form">
                     <select class="form-select form-select-sm">
@@ -1710,14 +1743,14 @@
 
         function createSelectFieldFromOptions(field, currentValue, options) {
             let optionsHtml = '<option value="">Select ' + field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</option>';
-            
+
             if (options && typeof options === 'object') {
                 for (const [value, label] of Object.entries(options)) {
                     const selected = (currentValue && String(currentValue).toLowerCase() === String(value).toLowerCase()) ? 'selected' : '';
                     optionsHtml += `<option value="${value}" ${selected}>${label}</option>`;
                 }
             }
-            
+
             return `
                 <div class="edit-form">
                     <select class="form-select form-select-sm">
@@ -1735,14 +1768,14 @@
         $(document).off('submit', '.id-card-generate-form').on('submit', '.id-card-generate-form', function(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            
+
             const $form = $(this);
             const $button = $form.find('button[type="submit"]');
             const originalText = $button.text();
             const loadingText = $button.data('loading-text') || 'Generating...';
-            
+
             $button.prop('disabled', true).text(loadingText);
-            
+
             $.ajax({
                 url: $form.attr('action'),
                 method: 'POST',
@@ -1796,24 +1829,28 @@
         const $confirmBtn = $(this);
         const originalHtml = $confirmBtn.html();
         $confirmBtn.prop('disabled', true).addClass('disabled');
-        $.post(academicVerifyUrl, {_token: '{{ csrf_token() }}'})
+        $.post(academicVerifyUrl, {
+                _token: '{{ csrf_token() }}'
+            })
             .done(function(res) {
                 if (res && res.success) {
                     show_alert('success', res.message || 'Updated');
                     $('#academicVerifyModal').modal('hide');
-                    setTimeout(() => { location.reload(); }, 600);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 600);
                 } else {
                     show_alert('error', (res && res.message) ? res.message : 'Failed to update');
                 }
             })
-            .fail(function(xhr){
+            .fail(function(xhr) {
                 let msg = 'Failed to update';
                 if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
                     msg = xhr.responseJSON.message;
                 }
                 show_alert('error', msg);
             })
-            .always(function(){
+            .always(function() {
                 $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
                 academicVerifyUrl = null;
             });
@@ -1843,27 +1880,31 @@
         const $confirmBtn = $(this);
         const originalHtml = $confirmBtn.html();
         $confirmBtn.prop('disabled', true).addClass('disabled');
-        $.post(supportVerifyUrl, {_token: '{{ csrf_token() }}'})
+        $.post(supportVerifyUrl, {
+                _token: '{{ csrf_token() }}'
+            })
             .done(function(res) {
                 if (res && res.success) {
                     show_alert('success', res.message || 'Updated');
                     $('#supportVerifyModal').modal('hide');
-                    setTimeout(() => { location.reload(); }, 600);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 600);
                 } else {
                     show_alert('error', (res && res.message) ? res.message : 'Failed to update');
                 }
             })
-            .fail(function(xhr){
+            .fail(function(xhr) {
                 let msg = 'Failed to update';
                 if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
                     msg = xhr.responseJSON.message;
                 }
                 show_alert('error', msg);
             })
-            .always(function(){
+            .always(function() {
                 $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
                 supportVerifyUrl = null;
-        });
+            });
     });
 </script>
 @endpush
