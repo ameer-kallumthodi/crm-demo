@@ -406,6 +406,14 @@
                                             <div>
                                                 <div class="fw-semibold">{{ $payment->rejected_date->format('M d, Y') }}</div>
                                                 <small class="text-muted">{{ $payment->rejected_date->format('h:i A') }}</small>
+                                                @if($payment->rejection_remarks)
+                                                    <div class="mt-1">
+                                                        <small class="text-danger">
+                                                            <i class="fas fa-comment-alt me-1"></i>
+                                                            <strong>Remarks:</strong> {{ $payment->rejection_remarks }}
+                                                        </small>
+                                                    </div>
+                                                @endif
                                             </div>
                                         @else
                                             <span class="text-muted">N/A</span>

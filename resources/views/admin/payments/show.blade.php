@@ -69,6 +69,34 @@
                                         @endif
                                     </td>
                                 </tr>
+                                @if($payment->status == 'Rejected' && $payment->rejection_remarks)
+                                <tr>
+                                    <td><strong>Rejection Remarks:</strong></td>
+                                    <td>
+                                        <div class="alert alert-danger mb-0 py-2">
+                                            <i class="fas fa-comment-alt me-2"></i>
+                                            {{ $payment->rejection_remarks }}
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endif
+                                @if($payment->status == 'Rejected' && $payment->rejected_date)
+                                <tr>
+                                    <td><strong>Rejected Date:</strong></td>
+                                    <td>
+                                        <div>
+                                            <div class="fw-semibold">{{ $payment->rejected_date->format('M d, Y') }}</div>
+                                            <small class="text-muted">{{ $payment->rejected_date->format('h:i A') }}</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endif
+                                @if($payment->status == 'Rejected' && $payment->rejectedBy)
+                                <tr>
+                                    <td><strong>Rejected By:</strong></td>
+                                    <td>{{ $payment->rejectedBy->name }}</td>
+                                </tr>
+                                @endif
                                 <tr>
                                     <td><strong>Payment Date:</strong></td>
                                     <td>{{ $payment->created_at->format('M d, Y h:i A') }}</td>

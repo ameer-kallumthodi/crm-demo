@@ -969,6 +969,12 @@
                 const currentId = container.data('current-id');
                 const $select = container.find('select');
                 loadAdmissionBatchesForEdit($select, batchId, currentId);
+            } else if (field === 'class_time_id') {
+                const courseId = container.data('course-id');
+                const programmeType = container.data('programme-type');
+                const currentId = container.data('current-id');
+                const $select = container.find('select');
+                loadClassTimesForEdit($select, courseId, programmeType, currentId);
             } else {
                 container.find('input, select').first().focus();
             }

@@ -329,6 +329,7 @@
                                             <th>Payment Type</th>
                                             <th>Transaction ID</th>
                                             <th>Rejected By</th>
+                                            <th>Remarks</th>
                                             <th class="text-center">Actions</th>
                                         </tr>
                                     </thead>
@@ -341,6 +342,14 @@
                                                     <span class="fw-semibold">{{ optional($payment->rejected_date)->format('M d, Y') ?? 'N/A' }}</span>
                                                     @if($payment->rejected_date)
                                                     <small class="text-muted">{{ $payment->rejected_date->format('h:i A') }}</small>
+                                                    @endif
+                                                    @if($payment->rejection_remarks)
+                                                    <div class="mt-1">
+                                                        <small class="text-danger">
+                                                            <i class="ti ti-message-circle me-1"></i>
+                                                            <strong>Remarks:</strong> {{ $payment->rejection_remarks }}
+                                                        </small>
+                                                    </div>
                                                     @endif
                                                 </div>
                                             </td>
@@ -373,6 +382,16 @@
                                                 @endif
                                             </td>
                                             <td>{{ $payment->rejectedBy->name ?? 'N/A' }}</td>
+                                            <td>
+                                                @if($payment->rejection_remarks)
+                                                    <div class="text-danger small">
+                                                        <i class="ti ti-message-circle me-1"></i>
+                                                        {{ \Illuminate\Support\Str::limit($payment->rejection_remarks, 50) }}
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm">
                                                     <a href="{{ route('admin.payments.show', $payment->id) }}" class="btn btn-outline-info" title="View Payment">
