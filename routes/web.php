@@ -733,6 +733,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/data-science-mentor-converted-leads', [App\Http\Controllers\DataScienceMentorController::class, 'index'])->name('data-science-mentor-converted-leads.index');
         Route::post('/data-science-mentor-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\DataScienceMentorController::class, 'updateMentorDetails'])->name('data-science-mentor-converted-leads.update-mentor-details');
 
+        // Digital Marketing Mentor Converted Leads Routes
+        Route::get('/digital-marketing-mentor-converted-leads', [App\Http\Controllers\DigitalMarketingMentorController::class, 'index'])->name('digital-marketing-mentor-converted-leads.index');
+        Route::post('/digital-marketing-mentor-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\DigitalMarketingMentorController::class, 'updateMentorDetails'])->name('digital-marketing-mentor-converted-leads.update-mentor-details');
+
         // Support Converted Lead Details Route (Unified)
         Route::get('/support-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-converted-leads.details');
         Route::post('/support-converted-leads/{id}/feedback', [App\Http\Controllers\SupportConvertedLeadController::class, 'submitFeedback'])->name('support-converted-leads.feedback');
