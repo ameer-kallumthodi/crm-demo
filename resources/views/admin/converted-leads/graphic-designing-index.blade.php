@@ -448,7 +448,7 @@
                                     </td>
                                     <td>
                                         @if($convertedLead->leadDetail?->programme_type === 'offline')
-                                        <div class="inline-edit" data-field="location" data-id="{{ $convertedLead->id }}" data-field-type="select" data-options='{!! json_encode($offlinePlaces->pluck(' name', 'name' )->toArray()) !!}' data-current="{{ $convertedLead->leadDetail?->location }}">
+                                        <div class="inline-edit" data-field="location" data-id="{{ $convertedLead->id }}" data-field-type="select" data-options='{!! json_encode($offlinePlaces->pluck('name', 'name')->toArray()) !!}' data-current="{{ $convertedLead->leadDetail?->location }}">
                                             <span class="display-value">{{ $convertedLead->leadDetail?->location ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
@@ -1301,7 +1301,7 @@
             const buildOptions = (selected) => {
                 let opts = '<option value="">Select Country</option>';
                 for (const c in codeOptions) {
-                    const isSel = String(selected) === String(c) ? 'selected' : '';
+                    const isSel = String(selected || '').trim() === String(c || '').trim() ? 'selected' : '';
                     opts += `<option value="${c}" ${isSel}>${c} - ${codeOptions[c]}</option>`;
                 }
                 return opts;
@@ -1319,6 +1319,29 @@
                             <input type="text" value="${safePhone}" class="form-control form-control-sm" placeholder="Phone number">
                         </div>
                     </div>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createSelectFieldFromOptions(field, currentValue, options) {
+            let optionsHtml = '<option value="">Select ' + field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</option>';
+
+            if (options && typeof options === 'object') {
+                for (const [value, label] of Object.entries(options)) {
+                    const selected = (currentValue && String(currentValue).toLowerCase().trim() === String(value).toLowerCase().trim()) ? 'selected' : '';
+                    optionsHtml += `<option value="${value}" ${selected}>${label}</option>`;
+                }
+            }
+
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm">
+                        ${optionsHtml}
+                    </select>
                     <div class="btn-group mt-1">
                         <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
                         <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
