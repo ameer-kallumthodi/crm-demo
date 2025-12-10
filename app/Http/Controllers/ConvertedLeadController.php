@@ -2519,7 +2519,8 @@ class ConvertedLeadController extends Controller
         // Check if user has permission to update
         $isMentor = RoleHelper::is_mentor();
         $isFinance = RoleHelper::is_finance();
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_admission_counsellor() && !$isMentor && !$isFinance) {
+        $isHod = RoleHelper::is_hod();
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_admission_counsellor() && !$isMentor && !$isFinance && !$isHod) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
         
@@ -2541,12 +2542,52 @@ class ConvertedLeadController extends Controller
         $field = $request->input('field');
         $value = $request->input('value');
 
-        // If mentor, check if field is allowed
+        // If mentor, check if field is allowed (check this first before restricted fields check)
         if ($isMentor && !in_array($field, $mentorAllowedFields)) {
             return response()->json(['error' => 'You do not have permission to edit this field.'], 403);
         }
         if ($isFinance && !in_array($field, $financeAllowedFields)) {
             return response()->json(['error' => 'You do not have permission to edit this field.'], 403);
+        }
+
+        // Define restricted fields that require special permissions (same as mentor controllers)
+        // Note: These checks apply to users who are not mentors/finance (who have their own allowed fields above)
+        $restrictedFields = [
+            'phone',
+            'batch_id',
+            'admission_batch_id',
+            'internship_id',
+            'email',
+            'call_status',
+            'orientation_class_date',
+            'class_start_date',
+            'class_end_date',
+            'whatsapp_group_status',
+            'class_time_id',
+            'programme_type',
+            'location',
+            'total_class',
+            'total_present',
+            'total_absent',
+            'final_certificate_examination_date',
+            'certificate_examination_marks',
+            'final_interview_date',
+            'interview_marks',
+            'certificate_distribution_date',
+            'experience_certificate_distribution_date',
+            'completed_cancelled_date',
+            'cancelled_date',
+            'remarks',
+        ];
+
+        // Check if field is restricted and user has permission to edit restricted fields
+        // Skip this check for mentors and finance as they have their own allowed fields list
+        if (!$isMentor && !$isFinance) {
+            $isRestricted = in_array($field, $restrictedFields, true);
+            $canEditRestricted = RoleHelper::is_admin_or_super_admin() || $isHod || RoleHelper::is_admission_counsellor();
+            if ($isRestricted && !$canEditRestricted) {
+                return response()->json(['error' => 'Access denied.'], 403);
+            }
         }
 
         // Special case: if updating phone and code together, allow updating code via same request

@@ -127,8 +127,8 @@
             <div class="card-body">
                 <h6 class="mb-3">Mentor List</h6>
                 <div class="d-flex gap-2 flex-wrap">
-                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager())
-                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary active">
+                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-list"></i> All Converted Leads
                     </a>
                     @endif
@@ -152,6 +152,9 @@
                     </a>
                     <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Data Science Course Mentor List
+                    </a>
+                    <a href="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Machine Learning Mentor List
                     </a>
                 </div>
             </div>

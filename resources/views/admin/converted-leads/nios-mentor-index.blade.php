@@ -9,12 +9,15 @@
         white-space: nowrap;
         vertical-align: middle;
     }
+
     .table td .btn-group {
         white-space: nowrap;
     }
+
     .table td .inline-edit {
         white-space: nowrap;
     }
+
     .table td .display-value {
         white-space: nowrap;
         overflow: hidden;
@@ -22,9 +25,11 @@
         max-width: 150px;
         display: inline-block;
     }
-    .cancelled-row > td {
+
+    .cancelled-row>td {
         background-color: #fff1f0 !important;
     }
+
     .cancelled-card {
         border: 1px solid #f5c2c7;
         background-color: #fff5f5;
@@ -118,14 +123,14 @@
 <!-- [ Course Filter Buttons ] end -->
 
 <!-- [ Mentor List ] start -->
-@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_general_manager())
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
 <div class="row mb-3">
     <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <h6 class="mb-3">Mentor List</h6>
                 <div class="d-flex gap-2 flex-wrap">
-                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_general_manager())
+                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
                     <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-list"></i> All Converted Leads
                     </a>
@@ -145,10 +150,14 @@
                     <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> GMVSS Mentor List
                     </a>
-                                                            <a href="{{ route('admin.digital-marketing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.digital-marketing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Digital Marketing Mentor List
-                    </a><a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                    </a>
+                    <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Data Science Course Mentor List
+                    </a>
+                    <a href="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Machine Learning Mentor List
                     </a>
                 </div>
             </div>
@@ -241,14 +250,14 @@
                             <select class="form-select" id="admission_batch_id" name="admission_batch_id">
                                 <option value="">All Admission Batches</option>
                                 @if(request('batch_id'))
-                                    @php
-                                        $admissionBatches = \App\Models\AdmissionBatch::where('batch_id', request('batch_id'))->get();
-                                    @endphp
-                                    @foreach($admissionBatches as $admissionBatch)
-                                    <option value="{{ $admissionBatch->id }}" {{ request('admission_batch_id') == $admissionBatch->id ? 'selected' : '' }}>
-                                        {{ $admissionBatch->title }}
-                                    </option>
-                                    @endforeach
+                                @php
+                                $admissionBatches = \App\Models\AdmissionBatch::where('batch_id', request('batch_id'))->get();
+                                @endphp
+                                @foreach($admissionBatches as $admissionBatch)
+                                <option value="{{ $admissionBatch->id }}" {{ request('admission_batch_id') == $admissionBatch->id ? 'selected' : '' }}>
+                                    {{ $admissionBatch->title }}
+                                </option>
+                                @endforeach
                                 @endif
                             </select>
                         </div>
@@ -329,7 +338,7 @@
                                     <th>Name</th>
                                     <th>DOB</th>
                                     @if(!\App\Helpers\RoleHelper::is_mentor())
-                                        <th>Enrolment Number</th>
+                                    <th>Enrolment Number</th>
                                     @endif
                                     <th>Phone</th>
                                     <th>Subject</th>
@@ -382,36 +391,36 @@
                                 @forelse($convertedLeads as $index => $convertedLead)
                                 <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
                                     @php
-                                        $academicVerifiedAt = $convertedLead->academic_verified_at
-                                            ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                                            : null;
-                                        $supportVerifiedAt = $convertedLead->support_verified_at
-                                            ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                                            : null;
+                                    $academicVerifiedAt = $convertedLead->academic_verified_at
+                                    ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                    : null;
+                                    $supportVerifiedAt = $convertedLead->support_verified_at
+                                    ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                    : null;
                                     @endphp
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>
                                         @if($academicVerifiedAt)
-                                            {{ $academicVerifiedAt }}
+                                        {{ $academicVerifiedAt }}
                                         @else
-                                            <span class="text-muted">N/A</span>
+                                        <span class="text-muted">N/A</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($supportVerifiedAt)
-                                            {{ $supportVerifiedAt }}
+                                        {{ $supportVerifiedAt }}
                                         @else
-                                            <span class="text-muted">N/A</span>
+                                        <span class="text-muted">N/A</span>
                                         @endif
                                     </td>
                                     <td>{{ $convertedLead->register_number ?? '-' }}</td>
                                     <td>
-                                    {{ $convertedLead->name }}
-                                    @if($convertedLead->is_cancelled)
+                                        {{ $convertedLead->name }}
+                                        @if($convertedLead->is_cancelled)
                                         <span class="badge bg-danger ms-2">Cancelled</span>
-                                    @endif
-                                </td>
+                                        @endif
+                                    </td>
                                     <td>{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</td>
                                     @if(!\App\Helpers\RoleHelper::is_mentor())
                                     <td>{{ $convertedLead->studentDetails?->enroll_no ?? '-' }}</td>
@@ -861,17 +870,17 @@
                                 <div class="card-header">
                                     <h6 class="mb-0">{{ $convertedLead->name }}</h6>
                                     @if($convertedLead->is_cancelled)
-                                        <span class="badge bg-danger ms-2">Cancelled</span>
+                                    <span class="badge bg-danger ms-2">Cancelled</span>
                                     @endif
                                 </div>
                                 <div class="card-body">
                                     @php
-                                        $academicVerifiedAtMobile = $convertedLead->academic_verified_at
-                                            ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                                            : null;
-                                        $supportVerifiedAtMobile = $convertedLead->support_verified_at
-                                            ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                                            : null;
+                                    $academicVerifiedAtMobile = $convertedLead->academic_verified_at
+                                    ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                    : null;
+                                    $supportVerifiedAtMobile = $convertedLead->support_verified_at
+                                    ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                    : null;
                                     @endphp
                                     <div class="row g-2 mb-3">
                                         <div class="col-6">
@@ -929,204 +938,210 @@
 
 @push('styles')
 <style>
-.spin {
-    animation: spin 1s linear infinite;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+    .spin {
+        animation: spin 1s linear infinite;
+    }
 
-.inline-edit {
-    position: relative;
-    overflow: visible;
-}
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
 
-.inline-edit .edit-form {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: -8px;
-    z-index: 10;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 10px;
-    min-width: 320px;
-    max-width: 440px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-}
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 
-.inline-edit.editing .edit-form {
-    display: block;
-}
+    .inline-edit {
+        position: relative;
+        overflow: visible;
+    }
 
-.inline-edit.editing .display-value {
-    display: none;
-}
+    .inline-edit .edit-form {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: -8px;
+        z-index: 10;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        min-width: 320px;
+        max-width: 440px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
 
-.inline-edit .edit-form input,
-.inline-edit .edit-form select {
-    width: 100%;
-    padding: 4px 8px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    font-size: 12px;
-}
+    .inline-edit.editing .edit-form {
+        display: block;
+    }
 
-.inline-edit .edit-form input:focus,
-.inline-edit .edit-form select:focus {
-    border-color: #7366ff;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(115,102,255,0.15);
-}
+    .inline-edit.editing .display-value {
+        display: none;
+    }
 
-.inline-edit .edit-form .btn-group {
-    margin-top: 5px;
-}
+    .inline-edit .edit-form input,
+    .inline-edit .edit-form select {
+        width: 100%;
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 12px;
+    }
 
-.inline-edit .edit-form .btn {
-    padding: 2px 8px;
-    font-size: 11px;
-}
+    .inline-edit .edit-form input:focus,
+    .inline-edit .edit-form select:focus {
+        border-color: #7366ff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(115, 102, 255, 0.15);
+    }
+
+    .inline-edit .edit-form .btn-group {
+        margin-top: 5px;
+    }
+
+    .inline-edit .edit-form .btn {
+        padding: 2px 8px;
+        font-size: 11px;
+    }
 </style>
 @endpush
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    // Dependent filters: admission batches by batch
-    function loadAdmissionBatchesByBatch(batchId, selectedId) {
-        const $admission = $('#admission_batch_id');
-        $admission.html('<option value="">Loading...</option>');
-        if (!batchId) {
-            $admission.html('<option value="">All Admission Batches</option>');
-            return;
-        }
-        $.get(`/api/admission-batches/by-batch/${batchId}`).done(function(list) {
-            let opts = '<option value=\"\">All Admission Batches</option>';
-            list.forEach(function(i) {
-                const sel = String(selectedId) === String(i.id) ? 'selected' : '';
-                opts += `<option value="${i.id}" ${sel}>${i.title}</option>`;
-            });
-            $admission.html(opts);
-        }).fail(function() {
-            $admission.html('<option value="">All Admission Batches</option>');
-        });
-    }
-
-    loadAdmissionBatchesByBatch($('#batch_id').val(), $('#admission_batch_id').data('selected'));
-    $('#batch_id').on('change', function() {
-        loadAdmissionBatchesByBatch($(this).val(), '');
-    });
-
-    // Inline editing aligned with BOSSE mentor page
-    $(document).on('click', '.edit-btn', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const container = $(this).closest('.inline-edit');
-        const field = container.data('field');
-        const id = container.data('id');
-        const currentValue = container.data('current') !== undefined ? String(container.data('current')).trim() : container.find('.display-value').text().trim();
-
-        if (container.hasClass('editing')) return;
-
-        $('.inline-edit.editing').not(container).each(function() {
-            $(this).removeClass('editing');
-            $(this).find('.edit-form').remove();
-        });
-
-        let editForm = '';
-        if (field === 'subject_id') {
-            editForm = createSubjectField(field, currentValue);
-        } else if (field === 'problems') {
-            editForm = createTextareaField(field, currentValue);
-        } else if (['registration_status', 'technology_side', 'student_status', 'call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'call_10', 'app', 'whatsapp_group', 'telegram_group', 'mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5', 'first_live', 'first_exam', 'second_live', 'second_exam', 'model_exam_live', 'model_exam', 'assignment', 'exam_fees', 'pcp_class', 'id_card', 'practical_hall_ticket', 'particle_exam', 'theory_hall_ticket', 'practical_record', 'admit_card', 'exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6', 'status'].includes(field)) {
-            editForm = createSelectField(field, currentValue);
-        } else {
-            editForm = createInputField(field, currentValue);
-        }
-
-        container.addClass('editing');
-        container.append(editForm);
-
-        if (field === 'subject_id') {
-            const $select = container.find('select');
-            loadSubjectsForEdit($select, currentValue);
-        }
-
-        container.find('input, select, textarea').first().focus();
-    });
-
-    // Save inline edit
-    $(document).off('click.saveInline').on('click.saveInline', '.save-edit', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const container = $(this).closest('.inline-edit');
-        const field = container.data('field');
-        const id = container.data('id');
-        const value = container.find('input, select, textarea').val();
-
-        const btn = $(this);
-        if (btn.data('busy')) return;
-        btn.data('busy', true);
-        btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
-
-        $.ajax({
-            url: `/admin/mentor-nios-converted-leads/${id}/update-mentor-details`,
-            method: 'POST',
-            data: {
-                field: field,
-                value: value,
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    container.find('.display-value').text(response.value || value || '-');
-                    container.data('current', response.value || value);
-                    if (typeof toast_success === 'function') toast_success(response.message || 'Updated successfully');
-                } else {
-                    if (typeof toast_error === 'function') toast_error(response.error || 'Update failed');
-                }
-            },
-            error: function(xhr) {
-                let errorMessage = 'Update failed';
-                if (xhr.responseJSON) {
-                    if (xhr.responseJSON.error) {
-                        errorMessage = xhr.responseJSON.error;
-                    } else if (xhr.responseJSON.errors) {
-                        const errors = xhr.responseJSON.errors;
-                        const fieldErrors = Object.values(errors).flat();
-                        errorMessage = fieldErrors.join(', ');
-                    }
-                }
-                if (typeof toast_error === 'function') toast_error(errorMessage);
-            },
-            complete: function() {
-                btn.data('busy', false);
-                container.removeClass('editing');
-                container.find('.edit-form').remove();
+    $(document).ready(function() {
+        // Dependent filters: admission batches by batch
+        function loadAdmissionBatchesByBatch(batchId, selectedId) {
+            const $admission = $('#admission_batch_id');
+            $admission.html('<option value="">Loading...</option>');
+            if (!batchId) {
+                $admission.html('<option value="">All Admission Batches</option>');
+                return;
             }
+            $.get(`/api/admission-batches/by-batch/${batchId}`).done(function(list) {
+                let opts = '<option value=\"\">All Admission Batches</option>';
+                list.forEach(function(i) {
+                    const sel = String(selectedId) === String(i.id) ? 'selected' : '';
+                    opts += `<option value="${i.id}" ${sel}>${i.title}</option>`;
+                });
+                $admission.html(opts);
+            }).fail(function() {
+                $admission.html('<option value="">All Admission Batches</option>');
+            });
+        }
+
+        loadAdmissionBatchesByBatch($('#batch_id').val(), $('#admission_batch_id').data('selected'));
+        $('#batch_id').on('change', function() {
+            loadAdmissionBatchesByBatch($(this).val(), '');
         });
-    });
 
-    // Cancel edit
-    $(document).on('click', '.cancel-edit', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const container = $(this).closest('.inline-edit');
-        container.removeClass('editing');
-        container.find('.edit-form').remove();
-        container.find('.display-value').show();
-        container.find('.edit-btn').show();
-    });
+        // Inline editing aligned with BOSSE mentor page
+        $(document).on('click', '.edit-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-    // Helpers
-    function createInputField(field, currentValue) {
-        const displayValue = currentValue === '-' ? '' : currentValue;
-        return `
+            const container = $(this).closest('.inline-edit');
+            const field = container.data('field');
+            const id = container.data('id');
+            const currentValue = container.data('current') !== undefined ? String(container.data('current')).trim() : container.find('.display-value').text().trim();
+
+            if (container.hasClass('editing')) return;
+
+            $('.inline-edit.editing').not(container).each(function() {
+                $(this).removeClass('editing');
+                $(this).find('.edit-form').remove();
+            });
+
+            let editForm = '';
+            if (field === 'subject_id') {
+                editForm = createSubjectField(field, currentValue);
+            } else if (field === 'problems') {
+                editForm = createTextareaField(field, currentValue);
+            } else if (['registration_status', 'technology_side', 'student_status', 'call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'call_10', 'app', 'whatsapp_group', 'telegram_group', 'mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5', 'first_live', 'first_exam', 'second_live', 'second_exam', 'model_exam_live', 'model_exam', 'assignment', 'exam_fees', 'pcp_class', 'id_card', 'practical_hall_ticket', 'particle_exam', 'theory_hall_ticket', 'practical_record', 'admit_card', 'exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6', 'status'].includes(field)) {
+                editForm = createSelectField(field, currentValue);
+            } else {
+                editForm = createInputField(field, currentValue);
+            }
+
+            container.addClass('editing');
+            container.append(editForm);
+
+            if (field === 'subject_id') {
+                const $select = container.find('select');
+                loadSubjectsForEdit($select, currentValue);
+            }
+
+            container.find('input, select, textarea').first().focus();
+        });
+
+        // Save inline edit
+        $(document).off('click.saveInline').on('click.saveInline', '.save-edit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const container = $(this).closest('.inline-edit');
+            const field = container.data('field');
+            const id = container.data('id');
+            const value = container.find('input, select, textarea').val();
+
+            const btn = $(this);
+            if (btn.data('busy')) return;
+            btn.data('busy', true);
+            btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
+
+            $.ajax({
+                url: `/admin/mentor-nios-converted-leads/${id}/update-mentor-details`,
+                method: 'POST',
+                data: {
+                    field: field,
+                    value: value,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        container.find('.display-value').text(response.value || value || '-');
+                        container.data('current', response.value || value);
+                        if (typeof toast_success === 'function') toast_success(response.message || 'Updated successfully');
+                    } else {
+                        if (typeof toast_error === 'function') toast_error(response.error || 'Update failed');
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Update failed';
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.error) {
+                            errorMessage = xhr.responseJSON.error;
+                        } else if (xhr.responseJSON.errors) {
+                            const errors = xhr.responseJSON.errors;
+                            const fieldErrors = Object.values(errors).flat();
+                            errorMessage = fieldErrors.join(', ');
+                        }
+                    }
+                    if (typeof toast_error === 'function') toast_error(errorMessage);
+                },
+                complete: function() {
+                    btn.data('busy', false);
+                    container.removeClass('editing');
+                    container.find('.edit-form').remove();
+                }
+            });
+        });
+
+        // Cancel edit
+        $(document).on('click', '.cancel-edit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const container = $(this).closest('.inline-edit');
+            container.removeClass('editing');
+            container.find('.edit-form').remove();
+            container.find('.display-value').show();
+            container.find('.edit-btn').show();
+        });
+
+        // Helpers
+        function createInputField(field, currentValue) {
+            const displayValue = currentValue === '-' ? '' : currentValue;
+            return `
             <div class=\"edit-form\">
                 <input type=\"text\" value=\"${displayValue}\" class=\"form-control form-control-sm\" autocomplete=\"off\" autocapitalize=\"off\" spellcheck=\"false\">
                 <div class=\"btn-group mt-1\">
@@ -1135,11 +1150,11 @@ $(document).ready(function() {
                 </div>
             </div>
         `;
-    }
+        }
 
-    function createTextareaField(field, currentValue) {
-        const displayValue = currentValue === '-' ? '' : currentValue;
-        return `
+        function createTextareaField(field, currentValue) {
+            const displayValue = currentValue === '-' ? '' : currentValue;
+            return `
             <div class=\"edit-form\">
                 <textarea rows=\"3\" class=\"form-control form-control-sm\" autocomplete=\"off\" autocapitalize=\"off\" spellcheck=\"false\">${displayValue}</textarea>
                 <div class=\"btn-group mt-1\">
@@ -1148,10 +1163,10 @@ $(document).ready(function() {
                 </div>
             </div>
         `;
-    }
+        }
 
-    function createSubjectField(field, currentValue) {
-        return `
+        function createSubjectField(field, currentValue) {
+            return `
             <div class=\"edit-form\">
                 <select class=\"form-select form-select-sm\">
                     <option value=\"\">Select Subject</option>
@@ -1162,48 +1177,48 @@ $(document).ready(function() {
                 </div>
             </div>
         `;
-    }
+        }
 
-    function loadSubjectsForEdit($select, currentValue) {
-        $.get('/api/subjects/by-course/1').done(function(list) {
-            let options = '<option value=\"\">Select Subject</option>';
-            list.forEach(function(item) {
-                const selected = String(currentValue) === String(item.id) ? 'selected' : '';
-                options += `<option value="${item.id}" ${selected}>${item.title}</option>`;
+        function loadSubjectsForEdit($select, currentValue) {
+            $.get('/api/subjects/by-course/1').done(function(list) {
+                let options = '<option value=\"\">Select Subject</option>';
+                list.forEach(function(item) {
+                    const selected = String(currentValue) === String(item.id) ? 'selected' : '';
+                    options += `<option value="${item.id}" ${selected}>${item.title}</option>`;
+                });
+                $select.html(options);
+            }).fail(function() {
+                $select.html('<option value="">Error loading subjects</option>');
             });
-            $select.html(options);
-        }).fail(function() {
-            $select.html('<option value="">Error loading subjects</option>');
-        });
-    }
+        }
 
-    function createSelectField(field, currentValue) {
-        let options = '';
+        function createSelectField(field, currentValue) {
+            let options = '';
 
-        if (field === 'registration_status') {
-            options = `
+            if (field === 'registration_status') {
+                options = `
                 <option value=\"\">Select Registration Status</option>
                 <option value=\"Paid\" ${currentValue === 'Paid' ? 'selected' : ''}>Paid</option>
                 <option value=\"Not Paid\" ${currentValue === 'Not Paid' ? 'selected' : ''}>Not Paid</option>
             `;
-        } else if (field === 'technology_side') {
-            options = `
+            } else if (field === 'technology_side') {
+                options = `
                 <option value=\"\">Select Technology Side</option>
                 <option value=\"No Knowledge\" ${currentValue === 'No Knowledge' ? 'selected' : ''}>No Knowledge</option>
                 <option value=\"Limited Knowledge\" ${currentValue === 'Limited Knowledge' ? 'selected' : ''}>Limited Knowledge</option>
                 <option value=\"Moderate Knowledge\" ${currentValue === 'Moderate Knowledge' ? 'selected' : ''}>Moderate Knowledge</option>
                 <option value=\"High Knowledge\" ${currentValue === 'High Knowledge' ? 'selected' : ''}>High Knowledge</option>
             `;
-        } else if (field === 'student_status') {
-            options = `
+            } else if (field === 'student_status') {
+                options = `
                 <option value=\"\">Select Student Status</option>
                 <option value=\"Low Level\" ${currentValue === 'Low Level' ? 'selected' : ''}>Low Level</option>
                 <option value=\"Below Medium\" ${currentValue === 'Below Medium' ? 'selected' : ''}>Below Medium</option>
                 <option value=\"Medium Level\" ${currentValue === 'Medium Level' ? 'selected' : ''}>Medium Level</option>
                 <option value=\"Advanced Level\" ${currentValue === 'Advanced Level' ? 'selected' : ''}>Advanced Level</option>
             `;
-        } else if (['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'call_10'].includes(field)) {
-            options = `
+            } else if (['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'call_10'].includes(field)) {
+                options = `
                 <option value=\"\">Select Call Status</option>
                 <option value=\"Call Not Answered\" ${currentValue === 'Call Not Answered' ? 'selected' : ''}>Call Not Answered</option>
                 <option value=\"Switched Off\" ${currentValue === 'Switched Off' ? 'selected' : ''}>Switched Off</option>
@@ -1214,30 +1229,30 @@ $(document).ready(function() {
                 <option value=\"Inconsistent Responses\" ${currentValue === 'Inconsistent Responses' ? 'selected' : ''}>Inconsistent Responses</option>
                 <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
             `;
-        } else if (field === 'app') {
-            options = `
+            } else if (field === 'app') {
+                options = `
                 <option value=\"\">Select APP Status</option>
                 <option value=\"Provided app\" ${currentValue === 'Provided app' ? 'selected' : ''}>Provided app</option>
                 <option value=\"OTP Problem\" ${currentValue === 'OTP Problem' ? 'selected' : ''}>OTP Problem</option>
                 <option value=\"Task Completed\" ${currentValue === 'Task Completed' ? 'selected' : ''}>Task Completed</option>
                 <option value=\"Not Respond\" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
             `;
-        } else if (field === 'whatsapp_group') {
-            options = `
+            } else if (field === 'whatsapp_group') {
+                options = `
                 <option value=\"\">Select WhatsApp Group Status</option>
                 <option value=\"Sent link\" ${currentValue === 'Sent link' ? 'selected' : ''}>Sent link</option>
                 <option value=\"Task Completed\" ${currentValue === 'Task Completed' ? 'selected' : ''}>Task Completed</option>
                 <option value=\"Not Responding\" ${currentValue === 'Not Responding' ? 'selected' : ''}>Not Responding</option>
                 <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
             `;
-        } else if (field === 'telegram_group') {
-            options = `
+            } else if (field === 'telegram_group') {
+                options = `
                 <option value=\"\">Select Telegram Group Status</option>
                 <option value=\"Sent link\" ${currentValue === 'Sent link' ? 'selected' : ''}>Sent link</option>
                 <option value=\"task complete\" ${currentValue === 'task complete' ? 'selected' : ''}>Task complete</option>
             `;
-        } else if (field === 'first_live' || field === 'second_live' || field === 'model_exam_live') {
-            options = `
+            } else if (field === 'first_live' || field === 'second_live' || field === 'model_exam_live') {
+                options = `
                 <option value=\"\">Select Live Status</option>
                 <option value=\"Not Respond\" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
                 <option value=\"1 subject attend\" ${currentValue === '1 subject attend' ? 'selected' : ''}>1 subject attend</option>
@@ -1248,8 +1263,8 @@ $(document).ready(function() {
                 <option value=\"6 subject attend\" ${currentValue === '6 subject attend' ? 'selected' : ''}>6 subject attend</option>
                 <option value=\"Task complete\" ${currentValue === 'Task complete' ? 'selected' : ''}>Task complete</option>
             `;
-        } else if (field === 'first_exam' || field === 'second_exam' || field === 'model_exam' || field === 'assignment') {
-            options = `
+            } else if (field === 'first_exam' || field === 'second_exam' || field === 'model_exam' || field === 'assignment') {
+                options = `
                 <option value=\"\">Select Exam Status</option>
                 <option value=\"not respond\" ${currentValue === 'not respond' ? 'selected' : ''}>not respond</option>
                 <option value=\"1 subject attend\" ${currentValue === '1 subject attend' ? 'selected' : ''}>1 subject attend</option>
@@ -1260,28 +1275,28 @@ $(document).ready(function() {
                 <option value=\"6 subject attend\" ${currentValue === '6 subject attend' ? 'selected' : ''}>6 subject attend</option>
                 <option value=\"task complete\" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
             `;
-        } else if (field === 'exam_fees' || field === 'pcp_class') {
-            options = `
+            } else if (field === 'exam_fees' || field === 'pcp_class') {
+                options = `
                 <option value=\"\">Select Status</option>
                 <option value=\"Not Respond\" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
                 <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
             `;
-        } else if (['mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5'].includes(field)) {
-            options = `
+            } else if (['mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5'].includes(field)) {
+                options = `
                 <option value=\"\">Select Mentor Live Status</option>
                 <option value=\"Not Respond\" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
                 <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
             `;
-        } else if (['first_exam', 'second_exam', 'model_exam', 'particle_exam'].includes(field)) {
-            options = `
+            } else if (['first_exam', 'second_exam', 'model_exam', 'particle_exam'].includes(field)) {
+                options = `
                 <option value=\"\">Select Exam Status</option>
                 <option value=\"Did not log in on time\" ${currentValue === 'Did not log in on time' ? 'selected' : ''}>Did not log in on time</option>
                 <option value=\"missed the exam\" ${currentValue === 'missed the exam' ? 'selected' : ''}>missed the exam</option>
                 <option value=\"technical issue\" ${currentValue === 'technical issue' ? 'selected' : ''}>technical issue</option>
                 <option value=\"task complete\" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
             `;
-        } else if (field === 'practical_record') {
-            options = `
+            } else if (field === 'practical_record') {
+                options = `
                 <option value=\"\">Select Practical Record Status</option>
                 <option value=\"Not Respond\" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
                 <option value=\"1 Subject Attend\" ${currentValue === '1 Subject Attend' ? 'selected' : ''}>1 Subject Attend</option>
@@ -1292,31 +1307,31 @@ $(document).ready(function() {
                 <option value=\"6 Subject Attend\" ${currentValue === '6 Subject Attend' ? 'selected' : ''}>6 Subject Attend</option>
                 <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
             `;
-        } else if (['id_card', 'practical_hall_ticket', 'theory_hall_ticket', 'admit_card'].includes(field)) {
-            options = `
+            } else if (['id_card', 'practical_hall_ticket', 'theory_hall_ticket', 'admit_card'].includes(field)) {
+                options = `
                 <option value=\"\">Select Status</option>
                 <option value=\"Did Not\" ${currentValue === 'Did Not' ? 'selected' : ''}>Did Not</option>
                 <option value=\"Task Complete\" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
             `;
-        } else if (['exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6'].includes(field)) {
-            options = `
+            } else if (['exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6'].includes(field)) {
+                options = `
                 <option value=\"\">Select Exam Subject Status</option>
                 <option value=\"Did not log in on time\" ${currentValue === 'Did not log in on time' ? 'selected' : ''}>Did not log in on time</option>
                 <option value=\"missed the exam\" ${currentValue === 'missed the exam' ? 'selected' : ''}>missed the exam</option>
                 <option value=\"technical issue\" ${currentValue === 'technical issue' ? 'selected' : ''}>technical issue</option>
                 <option value=\"task complete\" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
             `;
-        } else if (field === 'status') {
-            options = `
+            } else if (field === 'status') {
+                options = `
                 <option value=\"\">Select Status</option>
                 <option value=\"Paid\" ${currentValue === 'Paid' ? 'selected' : ''}>Paid</option>
                 <option value=\"Admission cancel\" ${currentValue === 'Admission cancel' ? 'selected' : ''}>Admission cancel</option>
                 <option value=\"Active\" ${currentValue === 'Active' ? 'selected' : ''}>Active</option>
                 <option value=\"Inactive\" ${currentValue === 'Inactive' ? 'selected' : ''}>Inactive</option>
             `;
-        }
+            }
 
-        return `
+            return `
             <div class=\"edit-form\">
                 <select class=\"form-select form-select-sm\">${options}</select>
                 <div class=\"btn-group mt-1\">
@@ -1325,9 +1340,7 @@ $(document).ready(function() {
                 </div>
             </div>
         `;
-    }
-});
+        }
+    });
 </script>
 @endpush
-
-

@@ -4,33 +4,33 @@
 
 @section('content')
 @php
-    $canEditRestricted = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_hod() || \App\Helpers\RoleHelper::is_admission_counsellor();
-    $restrictedFieldsServer = [
-        'phone',
-        'batch_id',
-        'admission_batch_id',
-        'internship_id',
-        'email',
-        'call_status',
-        'orientation_class_date',
-        'class_start_date',
-        'class_end_date',
-        'whatsapp_group_status',
-        'class_time_id',
-        'programme_type',
-        'location',
-        'total_class',
-        'total_present',
-        'total_absent',
-        'final_certificate_examination_date',
-        'certificate_examination_marks',
-        'final_interview_date',
-        'interview_marks',
-        'certificate_distribution_date',
-        'experience_certificate_distribution_date',
-        'cancelled_date',
-        'remarks',
-    ];
+$canEditRestricted = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_hod() || \App\Helpers\RoleHelper::is_admission_counsellor();
+$restrictedFieldsServer = [
+'phone',
+'batch_id',
+'admission_batch_id',
+'internship_id',
+'email',
+'call_status',
+'orientation_class_date',
+'class_start_date',
+'class_end_date',
+'whatsapp_group_status',
+'class_time_id',
+'programme_type',
+'location',
+'total_class',
+'total_present',
+'total_absent',
+'final_certificate_examination_date',
+'certificate_examination_marks',
+'final_interview_date',
+'interview_marks',
+'certificate_distribution_date',
+'experience_certificate_distribution_date',
+'cancelled_date',
+'remarks',
+];
 @endphp
 <style>
     .table td {
@@ -66,21 +66,21 @@
 @endphp
 <div id="can-edit-restricted-flag" data-value="{{ $canEditRestricted ? 'true' : 'false' }}" style="display:none;"></div>
 @php
-    $restrictedSelectorCss = collect($restrictedFieldsServer)
-        ->map(function ($field) {
-            return ".inline-edit[data-field='{$field}'] .edit-btn";
-        })
-        ->implode(",\n");
+$restrictedSelectorCss = collect($restrictedFieldsServer)
+->map(function ($field) {
+return ".inline-edit[data-field='{$field}'] .edit-btn";
+})
+->implode(",\n");
 @endphp
 @if(!$canEditRestricted && $restrictedSelectorCss)
 @push('scripts')
 <script>
-(function() {
-    const css = `{!! addslashes($restrictedSelectorCss) !!} { display: none !important; }`;
-    const style = document.createElement('style');
-    style.textContent = css;
-    document.head.appendChild(style);
-})();
+    (function() {
+        const css = `{!! addslashes($restrictedSelectorCss) !!} { display: none !important; }`;
+        const style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
+    })();
 </script>
 @endpush
 @endif
@@ -174,7 +174,7 @@
             <div class="card-body">
                 <h6 class="mb-3">Mentor List</h6>
                 <div class="d-flex gap-2 flex-wrap">
-                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
                     <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-list"></i> All Converted Leads
                     </a>

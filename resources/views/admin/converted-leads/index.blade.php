@@ -9,12 +9,15 @@
         white-space: nowrap;
         vertical-align: middle;
     }
+
     .table td .btn-group {
         white-space: nowrap;
     }
+
     .table td .inline-edit {
         white-space: nowrap;
     }
+
     .table td .display-value {
         white-space: nowrap;
         overflow: hidden;
@@ -22,9 +25,11 @@
         max-width: 150px;
         display: inline-block;
     }
-    .cancelled-row > td {
+
+    .cancelled-row>td {
         background-color: #fff1f0 !important;
     }
+
     .cancelled-card {
         border: 1px solid #f5c2c7;
         background-color: #fff5f5;
@@ -119,7 +124,7 @@
             <div class="card-body">
                 <h6 class="mb-3">Mentor List</h6>
                 <div class="d-flex gap-2 flex-wrap">
-                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager())
+                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
                     <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary active">
                         <i class="ti ti-list"></i> All Converted Leads
                     </a>
@@ -139,10 +144,14 @@
                     <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> GMVSS Mentor List
                     </a>
-                                                            <a href="{{ route('admin.digital-marketing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.digital-marketing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Digital Marketing Mentor List
-                    </a><a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                    </a>
+                    <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Data Science Course Mentor List
+                    </a>
+                    <a href="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Machine Learning Mentor List
                     </a>
                 </div>
             </div>
@@ -218,7 +227,7 @@
                             <input type="text" class="form-control" id="search" name="search"
                                 value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
                         </div>
-@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance() || \App\Helpers\RoleHelper::is_mentor())
+                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance() || \App\Helpers\RoleHelper::is_mentor())
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="course_id" class="form-label">Course</label>
                             <select class="form-select" id="course_id" name="course_id">
@@ -360,65 +369,65 @@
                                 <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
                                     <td>{{ $index + 1 }}</td>
                                     @php
-                                        $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
-                                        $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                                    $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                    $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
                                     @endphp
                                     <td>
                                         @include('admin.converted-leads.partials.status-badge', [
-                                            'convertedLead' => $convertedLead,
-                                            'type' => 'academic',
-                                            'showToggle' => $canToggleAcademic,
-                                            'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null,
-                                            'title' => 'academic',
-                                            'useModal' => true
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'academic',
+                                        'showToggle' => $canToggleAcademic,
+                                        'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null,
+                                        'title' => 'academic',
+                                        'useModal' => true
                                         ])
                                     </td>
                                     <td>
                                         @include('admin.converted-leads.partials.status-badge', [
-                                            'convertedLead' => $convertedLead,
-                                            'type' => 'support',
-                                            'showToggle' => $canToggleSupport,
-                                            'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null,
-                                            'title' => 'support',
-                                            'useModal' => true
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'support',
+                                        'showToggle' => $canToggleSupport,
+                                        'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null,
+                                        'title' => 'support',
+                                        'useModal' => true
                                         ])
                                     </td>
                                     @php
-                                        $academicVerifiedAt = $convertedLead->academic_verified_at
-                                            ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                                            : null;
-                                        $supportVerifiedAt = $convertedLead->support_verified_at
-                                            ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                                            : null;
-                                        $convertedDate = $convertedLead->studentDetails?->converted_date 
-                                            ? \Carbon\Carbon::parse($convertedLead->studentDetails->converted_date)->format('d-m-Y')
-                                            : $convertedLead->created_at->format('d-m-Y');
+                                    $academicVerifiedAt = $convertedLead->academic_verified_at
+                                    ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                    : null;
+                                    $supportVerifiedAt = $convertedLead->support_verified_at
+                                    ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                    : null;
+                                    $convertedDate = $convertedLead->studentDetails?->converted_date
+                                    ? \Carbon\Carbon::parse($convertedLead->studentDetails->converted_date)->format('d-m-Y')
+                                    : $convertedLead->created_at->format('d-m-Y');
                                     @endphp
                                     @php
-                                        $academicDocumentApprovedAt = $convertedLead->leadDetail?->reviewed_at
-                                            ? $convertedLead->leadDetail->reviewed_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                                            : null;
+                                    $academicDocumentApprovedAt = $convertedLead->leadDetail?->reviewed_at
+                                    ? $convertedLead->leadDetail->reviewed_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                    : null;
                                     @endphp
                                     <td>
                                         @if($academicDocumentApprovedAt)
-                                            {{ $academicDocumentApprovedAt }}
+                                        {{ $academicDocumentApprovedAt }}
                                         @else
-                                            <span class="text-muted">N/A</span>
+                                        <span class="text-muted">N/A</span>
                                         @endif
                                     </td>
                                     <td>{{ $convertedDate }}</td>
                                     <td>
                                         @if($academicVerifiedAt)
-                                            {{ $academicVerifiedAt }}
+                                        {{ $academicVerifiedAt }}
                                         @else
-                                            <span class="text-muted">N/A</span>
+                                        <span class="text-muted">N/A</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($supportVerifiedAt)
-                                            {{ $supportVerifiedAt }}
+                                        {{ $supportVerifiedAt }}
                                         @else
-                                            <span class="text-muted">N/A</span>
+                                        <span class="text-muted">N/A</span>
                                         @endif
                                     </td>
                                     <td>
@@ -430,7 +439,7 @@
                                     </td>
                                     <td>
                                         @php
-                                            $dobDisplay = $convertedLead->dob ? (strtotime($convertedLead->dob) ? date('d-m-Y', strtotime($convertedLead->dob)) : $convertedLead->dob) : 'N/A';
+                                        $dobDisplay = $convertedLead->dob ? (strtotime($convertedLead->dob) ? date('d-m-Y', strtotime($convertedLead->dob)) : $convertedLead->dob) : 'N/A';
                                         @endphp
                                         {{ $dobDisplay }}
                                     </td>
@@ -443,7 +452,7 @@
                                                 <h6 class="mb-0">{{ $convertedLead->name }}</h6>
                                                 <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
                                                 @if($convertedLead->is_cancelled)
-                                                    <div><span class="badge bg-danger mt-1">Cancelled</span></div>
+                                                <div><span class="badge bg-danger mt-1">Cancelled</span></div>
                                                 @endif
                                             </div>
                                         </div>
@@ -460,18 +469,18 @@
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>
                                         @php
-                                            $hasPendingPayment = false;
-                                            foreach ($convertedLead->invoices as $invoice) {
-                                                if ($invoice->payments->where('status', 'Pending Approval')->count() > 0) {
-                                                    $hasPendingPayment = true;
-                                                    break;
-                                                }
-                                            }
+                                        $hasPendingPayment = false;
+                                        foreach ($convertedLead->invoices as $invoice) {
+                                        if ($invoice->payments->where('status', 'Pending Approval')->count() > 0) {
+                                        $hasPendingPayment = true;
+                                        break;
+                                        }
+                                        }
                                         @endphp
                                         @if($hasPendingPayment)
-                                            <span class="badge bg-warning">Pending</span>
+                                        <span class="badge bg-warning">Pending</span>
                                         @else
-                                            <span class="text-muted">No</span>
+                                        <span class="text-muted">No</span>
                                         @endif
                                     </td>
                                     <td>
@@ -490,28 +499,28 @@
                                             </button>
                                             @php $courseChanged = (bool) ($convertedLead->is_course_changed ?? false); @endphp
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                                <button type="button" class="btn btn-sm {{ $courseChanged ? 'btn-success' : 'btn-danger' }} js-change-course-modal"
-                                                    title="Change Course"
-                                                    data-modal-url="{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}"
-                                                    data-modal-title="Change Course">
-                                                    <i class="ti ti-exchange"></i>
-                                                </button>
+                                            <button type="button" class="btn btn-sm {{ $courseChanged ? 'btn-success' : 'btn-danger' }} js-change-course-modal"
+                                                title="Change Course"
+                                                data-modal-url="{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}"
+                                                data-modal-title="Change Course">
+                                                <i class="ti ti-exchange"></i>
+                                            </button>
                                             @endif
                                             @if($convertedLead->register_number)
-                                                @php
-                                                    $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
-                                                @endphp
-                                                @if($idCard)
-                                                    <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View ID Card" target="_blank">
-                                                        <i class="ti ti-id"></i>
-                                                    </a>
-                                                @else
-                                                    <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
-                                                            <i class="ti ti-id"></i>
-                                                        </button>
-                                                    </form>
+                                            @php
+                                            $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                            @endphp
+                                            @if($idCard)
+                                            <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View ID Card" target="_blank">
+                                                <i class="ti ti-id"></i>
+                                            </a>
+                                            @else
+                                            <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
+                                                    <i class="ti ti-id"></i>
+                                                </button>
+                                            </form>
                                             @endif
                                             @endif
                                             @endif
@@ -527,7 +536,7 @@
                         </table>
                     </div>
                 </div>
-                
+
                 <!-- Mobile Card View -->
                 <div class="d-lg-none">
                     @forelse($convertedLeads as $index => $convertedLead)
@@ -542,7 +551,7 @@
                                     <h6 class="mb-1 fw-bold">
                                         {{ $convertedLead->name }}
                                         @if($convertedLead->is_cancelled)
-                                            <span class="badge bg-danger ms-2">Cancelled</span>
+                                        <span class="badge bg-danger ms-2">Cancelled</span>
                                         @endif
                                     </h6>
                                     <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
@@ -564,7 +573,7 @@
                                         </li>
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                         <li>
-                                            <button type="button" class="dropdown-item update-register-btn" 
+                                            <button type="button" class="dropdown-item update-register-btn"
                                                 data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
                                                 data-title="Update Register Number">
                                                 <i class="ti ti-edit me-2"></i>Update Register Number
@@ -581,31 +590,31 @@
                                         </li>
                                         @endif
                                         @if($convertedLead->register_number)
-                                            @php
-                                                $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
-                                            @endphp
-                                            @if($idCard)
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" target="_blank">
-                                                        <i class="ti ti-id me-2"></i>View ID Card
-                                                    </a>
-                                                </li>
-                                            @else
-                                                <li>
-                                                    <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
-                                                        @csrf
-                                                        <button type="submit" class="dropdown-item" data-loading-text="Generating...">
-                                                            <i class="ti ti-id me-2"></i>Generate ID Card
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                            @endif
+                                        @php
+                                        $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                        @endphp
+                                        @if($idCard)
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" target="_blank">
+                                                <i class="ti ti-id me-2"></i>View ID Card
+                                            </a>
+                                        </li>
+                                        @else
+                                        <li>
+                                            <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item" data-loading-text="Generating...">
+                                                    <i class="ti ti-id me-2"></i>Generate ID Card
+                                                </button>
+                                            </form>
+                                        </li>
+                                        @endif
                                         @endif
                                         @endif
                                     </ul>
                                 </div>
                             </div>
-                            
+
                             <!-- Lead Details -->
                             <div class="row g-2 mb-3">
                                 <div class="col-6">
@@ -635,9 +644,9 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Academic Document Approved</small>
                                     @php
-                                        $academicDocumentApprovedAtMobile = $convertedLead->leadDetail?->reviewed_at
-                                            ? $convertedLead->leadDetail->reviewed_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                                            : null;
+                                    $academicDocumentApprovedAtMobile = $convertedLead->leadDetail?->reviewed_at
+                                    ? $convertedLead->leadDetail->reviewed_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                    : null;
                                     @endphp
                                     <span class="fw-medium">{{ $academicDocumentApprovedAtMobile ?? 'N/A' }}</span>
                                 </div>
@@ -645,9 +654,9 @@
                                     <small class="text-muted d-block">Converted Date</small>
                                     <span class="fw-medium">
                                         @php
-                                            $convertedDateMobile = $convertedLead->studentDetails?->converted_date 
-                                                ? \Carbon\Carbon::parse($convertedLead->studentDetails->converted_date)->format('d-m-Y')
-                                                : $convertedLead->created_at->format('d-m-Y');
+                                        $convertedDateMobile = $convertedLead->studentDetails?->converted_date
+                                        ? \Carbon\Carbon::parse($convertedLead->studentDetails->converted_date)->format('d-m-Y')
+                                        : $convertedLead->created_at->format('d-m-Y');
                                         @endphp
                                         {{ $convertedDateMobile }}
                                     </span>
@@ -663,18 +672,18 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Pending Payment</small>
                                     @php
-                                        $hasPendingPaymentMobile = false;
-                                        foreach ($convertedLead->invoices as $invoice) {
-                                            if ($invoice->payments->where('status', 'Pending Approval')->count() > 0) {
-                                                $hasPendingPaymentMobile = true;
-                                                break;
-                                            }
-                                        }
+                                    $hasPendingPaymentMobile = false;
+                                    foreach ($convertedLead->invoices as $invoice) {
+                                    if ($invoice->payments->where('status', 'Pending Approval')->count() > 0) {
+                                    $hasPendingPaymentMobile = true;
+                                    break;
+                                    }
+                                    }
                                     @endphp
                                     @if($hasPendingPaymentMobile)
-                                        <span class="badge bg-warning">Pending</span>
+                                    <span class="badge bg-warning">Pending</span>
                                     @else
-                                        <span class="text-muted">No</span>
+                                    <span class="text-muted">No</span>
                                     @endif
                                 </div>
                                 <div class="col-6">
@@ -682,9 +691,9 @@
                                     @php $isVerified = (bool) ($convertedLead->is_academic_verified ?? false); @endphp
                                     <span class="badge {{ $isVerified ? 'bg-success' : 'bg-secondary' }}">{{ $isVerified ? 'Verified' : 'Not Verified' }}</span>
                                     @php
-                                        $academicVerifiedAtMobile = $convertedLead->academic_verified_at
-                                            ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                                            : null;
+                                    $academicVerifiedAtMobile = $convertedLead->academic_verified_at
+                                    ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                    : null;
                                     @endphp
                                     <div class="small text-muted">{{ $academicVerifiedAtMobile ?? 'N/A' }}</div>
                                 </div>
@@ -693,14 +702,14 @@
                                     @php $isSupportVerified = (bool) ($convertedLead->is_support_verified ?? false); @endphp
                                     <span class="badge {{ $isSupportVerified ? 'bg-success' : 'bg-secondary' }}">{{ $isSupportVerified ? 'Verified' : 'Not Verified' }}</span>
                                     @php
-                                        $supportVerifiedAtMobile = $convertedLead->support_verified_at
-                                            ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-                                            : null;
+                                    $supportVerifiedAtMobile = $convertedLead->support_verified_at
+                                    ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
+                                    : null;
                                     @endphp
                                     <div class="small text-muted">{{ $supportVerifiedAtMobile ?? 'N/A' }}</div>
                                 </div>
                             </div>
-                            
+
                             <!-- Action Buttons -->
                             <div class="d-flex gap-2 flex-wrap">
                                 <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}"
@@ -732,20 +741,20 @@
                                     <i class="ti {{ $isSupportVerified ? 'ti-x' : 'ti-check' }} me-1"></i>{{ $isSupportVerified ? 'Unverify Support' : 'Verify Support' }}
                                 </button>
                                 @if($convertedLead->register_number)
-                                    @php
-                                        $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
-                                    @endphp
-                                    @if($idCard)
-                                        <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View ID Card" target="_blank">
-                                            <i class="ti ti-id me-1"></i>View ID Card
-                                        </a>
-                                    @else
-                                        <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
-                                                <i class="ti ti-id me-1"></i>Generate ID Card
-                                            </button>
-                                        </form>
+                                @php
+                                $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
+                                @endphp
+                                @if($idCard)
+                                <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View ID Card" target="_blank">
+                                    <i class="ti ti-id me-1"></i>View ID Card
+                                </a>
+                                @else
+                                <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
+                                        <i class="ti ti-id me-1"></i>Generate ID Card
+                                    </button>
+                                </form>
                                 @endif
                                 @endif
                                 @endif
@@ -809,141 +818,196 @@
             </div>
         </div>
     </div>
-    </div>
+</div>
 
-<script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+<script id="country-codes-json" type="application/json">
+    {
+        !!json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!
+    }
+</script>
 
 @push('styles')
 <style>
-.spin {
-    animation: spin 1s linear infinite;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 
 
-.inline-edit {
-    position: relative;
-    overflow: visible;
-}
+    .inline-edit {
+        position: relative;
+        overflow: visible;
+    }
 
-.inline-edit .edit-form {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: -8px; /* allow a bit wider than the cell */
-    z-index: 10;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 10px;
-    min-width: 320px; /* wider edit area */
-    max-width: 440px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-}
+    .inline-edit .edit-form {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: -8px;
+        /* allow a bit wider than the cell */
+        z-index: 10;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        min-width: 320px;
+        /* wider edit area */
+        max-width: 440px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
 
-.inline-edit.editing .edit-form {
-    display: block;
-}
+    .inline-edit.editing .edit-form {
+        display: block;
+    }
 
-.inline-edit.editing .display-value {
-    display: none;
-}
+    .inline-edit.editing .display-value {
+        display: none;
+    }
 
-.inline-edit .edit-form input,
-.inline-edit .edit-form select {
-    width: 100%;
-    padding: 4px 8px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    font-size: 12px;
-}
+    .inline-edit .edit-form input,
+    .inline-edit .edit-form select {
+        width: 100%;
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 12px;
+    }
 
-.inline-edit .edit-form input:focus,
-.inline-edit .edit-form select:focus {
-    border-color: #7366ff;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(115,102,255,0.15);
-}
+    .inline-edit .edit-form input:focus,
+    .inline-edit .edit-form select:focus {
+        border-color: #7366ff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(115, 102, 255, 0.15);
+    }
 
-.inline-edit .edit-form .btn-group {
-    margin-top: 5px;
-}
+    .inline-edit .edit-form .btn-group {
+        margin-top: 5px;
+    }
 
-.inline-edit .edit-form .btn {
-    padding: 2px 8px;
-    font-size: 11px;
-}
+    .inline-edit .edit-form .btn {
+        padding: 2px 8px;
+        font-size: 11px;
+    }
 
-/* Increase table column widths for readability */
-#convertedLeadsTable thead th,
-#convertedLeadsTable tbody td {
-    white-space: nowrap;
-}
+    /* Increase table column widths for readability */
+    #convertedLeadsTable thead th,
+    #convertedLeadsTable tbody td {
+        white-space: nowrap;
+    }
 
-/* Sticky header */
-#convertedLeadsTable thead th {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background: #fff;
-    box-shadow: inset 0 -1px 0 #e9ecef;
-}
+    /* Sticky header */
+    #convertedLeadsTable thead th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: #fff;
+        box-shadow: inset 0 -1px 0 #e9ecef;
+    }
 
-/* Hover state */
-#convertedLeadsTable tbody tr:hover {
-    background: #fafbff;
-}
+    /* Hover state */
+    #convertedLeadsTable tbody tr:hover {
+        background: #fafbff;
+    }
 
-/* Truncate long text */
-#convertedLeadsTable td .display-value {
-    display: inline-block;
-    max-width: 220px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    vertical-align: middle;
-}
+    /* Truncate long text */
+    #convertedLeadsTable td .display-value {
+        display: inline-block;
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
 
-/* Action buttons spacing */
-#convertedLeadsTable .btn-group .btn { margin-right: 4px; }
-#convertedLeadsTable .btn-group .btn:last-child { margin-right: 0; }
+    /* Action buttons spacing */
+    #convertedLeadsTable .btn-group .btn {
+        margin-right: 4px;
+    }
 
-/* Filter form separation */
-.card .card-body #filterForm {
-    border-bottom: 1px dashed #e9ecef;
-    padding-bottom: 8px;
-}
+    #convertedLeadsTable .btn-group .btn:last-child {
+        margin-right: 0;
+    }
 
-/* Column-specific min-widths by position */
-#convertedLeadsTable thead th:nth-child(1),
-#convertedLeadsTable tbody td:nth-child(1) { min-width: 60px; }
-#convertedLeadsTable thead th:nth-child(2),
-#convertedLeadsTable tbody td:nth-child(2) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(3),
-#convertedLeadsTable tbody td:nth-child(3) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(4),
-#convertedLeadsTable tbody td:nth-child(4) { min-width: 160px; }
-#convertedLeadsTable thead th:nth-child(5),
-#convertedLeadsTable tbody td:nth-child(5) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(6),
-#convertedLeadsTable tbody td:nth-child(6) { min-width: 140px; }
-#convertedLeadsTable thead th:nth-child(7),
-#convertedLeadsTable tbody td:nth-child(7) { min-width: 220px; }
-#convertedLeadsTable thead th:nth-child(8),
-#convertedLeadsTable tbody td:nth-child(8) { min-width: 160px; }
-#convertedLeadsTable thead th:nth-child(9),
-#convertedLeadsTable tbody td:nth-child(9) { min-width: 200px; }
-#convertedLeadsTable thead th:nth-child(10),
-#convertedLeadsTable tbody td:nth-child(10) { min-width: 200px; }
-#convertedLeadsTable thead th:nth-child(11),
-#convertedLeadsTable tbody td:nth-child(11) { min-width: 220px; }
-#convertedLeadsTable thead th:nth-child(12),
-#convertedLeadsTable tbody td:nth-child(12) { min-width: 220px; }
-#convertedLeadsTable thead th:nth-child(13),
-#convertedLeadsTable tbody td:nth-child(13) { min-width: 200px; }
+    /* Filter form separation */
+    .card .card-body #filterForm {
+        border-bottom: 1px dashed #e9ecef;
+        padding-bottom: 8px;
+    }
+
+    /* Column-specific min-widths by position */
+    #convertedLeadsTable thead th:nth-child(1),
+    #convertedLeadsTable tbody td:nth-child(1) {
+        min-width: 60px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(2),
+    #convertedLeadsTable tbody td:nth-child(2) {
+        min-width: 140px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(3),
+    #convertedLeadsTable tbody td:nth-child(3) {
+        min-width: 140px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(4),
+    #convertedLeadsTable tbody td:nth-child(4) {
+        min-width: 160px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(5),
+    #convertedLeadsTable tbody td:nth-child(5) {
+        min-width: 140px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(6),
+    #convertedLeadsTable tbody td:nth-child(6) {
+        min-width: 140px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(7),
+    #convertedLeadsTable tbody td:nth-child(7) {
+        min-width: 220px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(8),
+    #convertedLeadsTable tbody td:nth-child(8) {
+        min-width: 160px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(9),
+    #convertedLeadsTable tbody td:nth-child(9) {
+        min-width: 200px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(10),
+    #convertedLeadsTable tbody td:nth-child(10) {
+        min-width: 200px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(11),
+    #convertedLeadsTable tbody td:nth-child(11) {
+        min-width: 220px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(12),
+    #convertedLeadsTable tbody td:nth-child(12) {
+        min-width: 220px;
+    }
+
+    #convertedLeadsTable thead th:nth-child(13),
+    #convertedLeadsTable tbody td:nth-child(13) {
+        min-width: 200px;
+    }
 </style>
 @endpush
 
@@ -1058,14 +1122,14 @@
         $(document).off('submit', '.id-card-generate-form').on('submit', '.id-card-generate-form', function(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            
+
             const $form = $(this);
             const $button = $form.find('button[type="submit"]');
             const originalText = $button.text();
             const loadingText = $button.data('loading-text') || 'Generating...';
-            
+
             $button.prop('disabled', true).text(loadingText);
-            
+
             $.ajax({
                 url: $form.attr('action'),
                 method: 'POST',
@@ -1118,24 +1182,28 @@
             const $confirmBtn = $(this);
             const originalHtml = $confirmBtn.html();
             $confirmBtn.prop('disabled', true).addClass('disabled');
-            $.post(academicVerifyUrl, {_token: '{{ csrf_token() }}'})
+            $.post(academicVerifyUrl, {
+                    _token: '{{ csrf_token() }}'
+                })
                 .done(function(res) {
                     if (res && res.success) {
                         show_alert('success', res.message || 'Updated');
                         $('#academicVerifyModal').modal('hide');
-                        setTimeout(() => { location.reload(); }, 600);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 600);
                     } else {
                         show_alert('error', (res && res.message) ? res.message : 'Failed to update');
                     }
                 })
-                .fail(function(xhr){
+                .fail(function(xhr) {
                     let msg = 'Failed to update';
                     if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
                         msg = xhr.responseJSON.message;
                     }
                     show_alert('error', msg);
                 })
-                .always(function(){
+                .always(function() {
                     $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
                     academicVerifyUrl = null;
                 });
@@ -1165,24 +1233,28 @@
             const $confirmBtn = $(this);
             const originalHtml = $confirmBtn.html();
             $confirmBtn.prop('disabled', true).addClass('disabled');
-            $.post(supportVerifyUrl, {_token: '{{ csrf_token() }}'})
+            $.post(supportVerifyUrl, {
+                    _token: '{{ csrf_token() }}'
+                })
                 .done(function(res) {
                     if (res && res.success) {
                         show_alert('success', res.message || 'Updated');
                         $('#supportVerifyModal').modal('hide');
-                        setTimeout(() => { location.reload(); }, 600);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 600);
                     } else {
                         show_alert('error', (res && res.message) ? res.message : 'Failed to update');
                     }
                 })
-                .fail(function(xhr){
+                .fail(function(xhr) {
                     let msg = 'Failed to update';
                     if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
                         msg = xhr.responseJSON.message;
                     }
                     show_alert('error', msg);
                 })
-                .always(function(){
+                .always(function() {
                     $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
                     supportVerifyUrl = null;
                 });
@@ -1192,24 +1264,24 @@
         $(document).on('click', '.edit-btn', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const container = $(this).closest('.inline-edit');
             const field = container.data('field');
             const id = container.data('id');
             const currentValue = container.data('current') !== undefined ? String(container.data('current')).trim() : container.find('.display-value').text().trim();
             const currentId = container.data('current-id') !== undefined ? String(container.data('current-id')).trim() : '';
-            
+
             if (container.hasClass('editing')) {
                 return;
             }
-            
+
             $('.inline-edit.editing').not(container).each(function() {
                 $(this).removeClass('editing');
                 $(this).find('.edit-form').remove();
             });
 
             let editForm = '';
-            
+
             if (field === 'batch_id') {
                 const courseId = container.data('course-id');
                 editForm = createBatchSelect(courseId, currentId);
@@ -1223,10 +1295,10 @@
             } else {
                 editForm = createInputField(field, currentValue);
             }
-            
+
             container.addClass('editing');
             container.append(editForm);
-            
+
             // Load options for select fields that need dynamic loading
             if (field === 'batch_id') {
                 const courseId = container.data('course-id');
@@ -1245,17 +1317,17 @@
         $(document).off('click.saveInline').on('click.saveInline', '.save-edit', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const container = $(this).closest('.inline-edit');
             const field = container.data('field');
             const id = container.data('id');
             const value = container.find('input, select').val();
-            
+
             const btn = $(this);
             if (btn.data('busy')) return;
             btn.data('busy', true);
             btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
-            
+
             $.ajax({
                 url: `/admin/converted-leads/${id}/inline-update`,
                 method: 'POST',
@@ -1275,7 +1347,7 @@
                         if (field === 'batch_id' || field === 'admission_batch_id') {
                             container.data('current-id', value || '');
                         }
-                        
+
                         // If batch_id changed, update the admission_batch_id container's data-batch-id
                         if (field === 'batch_id') {
                             const row = container.closest('tr');
@@ -1287,7 +1359,7 @@
                                 admissionBatchContainer.data('current-id', '');
                             }
                         }
-                        
+
                         toast_success(response.message);
                     } else {
                         toast_error(response.error || 'Update failed');
@@ -1318,7 +1390,7 @@
         $(document).on('click', '.cancel-edit', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const container = $(this).closest('.inline-edit');
             container.removeClass('editing');
             container.find('.edit-form').remove();
@@ -1370,9 +1442,14 @@
         }
 
         function createRegFeeSelect(currentValue) {
-            const options = [
-                { value: 'Received', label: 'Received' },
-                { value: 'Not Received', label: 'Not Received' }
+            const options = [{
+                    value: 'Received',
+                    label: 'Received'
+                },
+                {
+                    value: 'Not Received',
+                    label: 'Not Received'
+                }
             ];
             const selected = currentValue === 'N/A' ? '' : currentValue;
             const optionTags = ['<option value="">Select Reg. Fee</option>']
@@ -1396,11 +1473,22 @@
         }
 
         function createStatusSelect(currentValue) {
-            const options = [
-                { value: 'Paid', label: 'Paid' },
-                { value: 'Admission cancel', label: 'Admission cancel' },
-                { value: 'Active', label: 'Active' },
-                { value: 'Inactive', label: 'Inactive' },
+            const options = [{
+                    value: 'Paid',
+                    label: 'Paid'
+                },
+                {
+                    value: 'Admission cancel',
+                    label: 'Admission cancel'
+                },
+                {
+                    value: 'Active',
+                    label: 'Active'
+                },
+                {
+                    value: 'Inactive',
+                    label: 'Inactive'
+                },
             ];
             const selected = currentValue === 'N/A' ? '' : currentValue;
             const optionTags = ['<option value="">Select Status</option>']
@@ -1428,7 +1516,7 @@
                 select.html('<option value="">No course selected</option>');
                 return;
             }
-            
+
             $.get(`/api/batches/by-course/${courseId}`)
                 .done(function(response) {
                     let options = '<option value="">Select Batch</option>';
@@ -1452,7 +1540,7 @@
                 select.html('<option value="">No batch selected</option>');
                 return;
             }
-            
+
             $.get(`/api/admission-batches/by-batch/${batchId}`)
                 .done(function(batches) {
                     let options = '<option value="">Select Admission Batch</option>';
@@ -1471,4 +1559,3 @@
     });
 </script>
 @endpush
-

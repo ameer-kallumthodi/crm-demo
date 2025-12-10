@@ -8,12 +8,15 @@
         white-space: nowrap;
         vertical-align: middle;
     }
+
     .table td .btn-group {
         white-space: nowrap;
     }
+
     .table td .inline-edit {
         white-space: nowrap;
     }
+
     .table td .display-value {
         white-space: nowrap;
         overflow: hidden;
@@ -21,9 +24,11 @@
         max-width: 150px;
         display: inline-block;
     }
-    .cancelled-row > td {
+
+    .cancelled-row>td {
         background-color: #fff1f0 !important;
     }
+
     .cancelled-card {
         border: 1px solid #f5c2c7;
         background-color: #fff5f5;
@@ -119,8 +124,8 @@
             <div class="card-body">
                 <h6 class="mb-3">Mentor List</h6>
                 <div class="d-flex gap-2 flex-wrap">
-                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager())
-                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary active">
+                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-list"></i> All Converted Leads
                     </a>
                     @endif
@@ -139,10 +144,14 @@
                     <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> GMVSS Mentor List
                     </a>
-                                                            <a href="{{ route('admin.digital-marketing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.digital-marketing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Digital Marketing Mentor List
-                    </a><a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                    </a>
+                    <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Data Science Course Mentor List
+                    </a>
+                    <a href="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Machine Learning Mentor List
                     </a>
                 </div>
             </div>
@@ -281,15 +290,15 @@
                             <thead>
                                 <tr>
                                     <th>SL No</th>
-                                <th>Academic</th>
-                                <th>Support</th>
+                                    <th>Academic</th>
+                                    <th>Support</th>
                                     <th>Converted Date</th>
                                     <th>Register Number</th>
                                     <th>Name</th>
                                     <th>DOB</th>
                                     <th>Phone</th>
-                                <th>WhatsApp Number</th>
-                                <th>Email</th>
+                                    <th>WhatsApp Number</th>
+                                    <th>Email</th>
                                     <th>Board/University</th>
                                     <th>Course Type</th>
                                     <th>Course Name</th>
@@ -301,28 +310,28 @@
                                 @forelse($convertedLeads as $index => $convertedLead)
                                 <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
                                     @php
-                                        $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
-                                        $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                                    $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                    $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
                                     @endphp
                                     <td>{{ $index + 1 }}</td>
                                     <td>
                                         @include('admin.converted-leads.partials.status-badge', [
-                                            'convertedLead' => $convertedLead,
-                                            'type' => 'academic',
-                                            'showToggle' => $canToggleAcademic,
-                                            'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null,
-                                            'title' => 'academic',
-                                            'useModal' => true
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'academic',
+                                        'showToggle' => $canToggleAcademic,
+                                        'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null,
+                                        'title' => 'academic',
+                                        'useModal' => true
                                         ])
                                     </td>
                                     <td>
                                         @include('admin.converted-leads.partials.status-badge', [
-                                            'convertedLead' => $convertedLead,
-                                            'type' => 'support',
-                                            'showToggle' => $canToggleSupport,
-                                            'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null,
-                                            'title' => 'support',
-                                            'useModal' => true
+                                        'convertedLead' => $convertedLead,
+                                        'type' => 'support',
+                                        'showToggle' => $canToggleSupport,
+                                        'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null,
+                                        'title' => 'support',
+                                        'useModal' => true
                                         ])
                                     </td>
                                     <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
@@ -349,7 +358,7 @@
                                                 <h6 class="mb-0">{{ $convertedLead->name }}</h6>
                                                 <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
                                                 @if($convertedLead->is_cancelled)
-                                                    <div><span class="badge bg-danger mt-1">Cancelled</span></div>
+                                                <div><span class="badge bg-danger mt-1">Cancelled</span></div>
                                                 @endif
                                             </div>
                                         </div>
@@ -357,12 +366,12 @@
                                     <td>
                                         <div class="inline-edit" data-field="dob" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->leadDetail?->date_of_birth ? $convertedLead->leadDetail->date_of_birth->format('Y-m-d') : ($convertedLead->dob ?: '') }}">
                                             @php
-                                                $dobDisplay = '-';
-                                                if ($convertedLead->leadDetail && $convertedLead->leadDetail->date_of_birth) {
-                                                    $dobDisplay = $convertedLead->leadDetail->date_of_birth->format('d-m-Y');
-                                                } elseif ($convertedLead->dob) {
-                                                    $dobDisplay = strtotime($convertedLead->dob) ? date('d-m-Y', strtotime($convertedLead->dob)) : $convertedLead->dob;
-                                                }
+                                            $dobDisplay = '-';
+                                            if ($convertedLead->leadDetail && $convertedLead->leadDetail->date_of_birth) {
+                                            $dobDisplay = $convertedLead->leadDetail->date_of_birth->format('d-m-Y');
+                                            } elseif ($convertedLead->dob) {
+                                            $dobDisplay = strtotime($convertedLead->dob) ? date('d-m-Y', strtotime($convertedLead->dob)) : $convertedLead->dob;
+                                            }
                                             @endphp
                                             <span class="display-value">{{ $dobDisplay }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
@@ -445,7 +454,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                <td colspan="15" class="text-center">No UG/PG converted leads found</td>
+                                    <td colspan="15" class="text-center">No UG/PG converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -459,96 +468,106 @@
 <!-- [ Main Content ] end -->
 @endsection
 
-<script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+<script id="country-codes-json" type="application/json">
+    {
+        !!json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!
+    }
+</script>
 
 @push('styles')
 <style>
-.spin {
-    animation: spin 1s linear infinite;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+    .spin {
+        animation: spin 1s linear infinite;
+    }
 
-.inline-edit {
-    position: relative;
-    overflow: visible;
-}
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
 
-.inline-edit .edit-form {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: -8px;
-    z-index: 10;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 10px;
-    min-width: 320px;
-    max-width: 440px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-}
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 
-.inline-edit.editing .edit-form {
-    display: block;
-}
+    .inline-edit {
+        position: relative;
+        overflow: visible;
+    }
 
-.inline-edit.editing .display-value {
-    display: none;
-}
+    .inline-edit .edit-form {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: -8px;
+        z-index: 10;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        min-width: 320px;
+        max-width: 440px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
 
-.inline-edit .edit-form input,
-.inline-edit .edit-form select {
-    width: 100%;
-    padding: 4px 8px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    font-size: 12px;
-}
+    .inline-edit.editing .edit-form {
+        display: block;
+    }
 
-.inline-edit .edit-form input:focus,
-.inline-edit .edit-form select:focus {
-    border-color: #7366ff;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(115,102,255,0.15);
-}
+    .inline-edit.editing .display-value {
+        display: none;
+    }
 
-.inline-edit .edit-form .btn-group {
-    margin-top: 5px;
-}
+    .inline-edit .edit-form input,
+    .inline-edit .edit-form select {
+        width: 100%;
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 12px;
+    }
 
-.inline-edit .edit-form .btn {
-    padding: 2px 8px;
-    font-size: 11px;
-}
+    .inline-edit .edit-form input:focus,
+    .inline-edit .edit-form select:focus {
+        border-color: #7366ff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(115, 102, 255, 0.15);
+    }
 
-#ugpgTable thead th,
-#ugpgTable tbody td {
-    white-space: nowrap;
-}
+    .inline-edit .edit-form .btn-group {
+        margin-top: 5px;
+    }
 
-#ugpgTable thead th {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background: #fff;
-    box-shadow: inset 0 -1px 0 #e9ecef;
-}
+    .inline-edit .edit-form .btn {
+        padding: 2px 8px;
+        font-size: 11px;
+    }
 
-#ugpgTable tbody tr:hover {
-    background: #fafbff;
-}
+    #ugpgTable thead th,
+    #ugpgTable tbody td {
+        white-space: nowrap;
+    }
 
-#ugpgTable td .display-value {
-    display: inline-block;
-    max-width: 220px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    vertical-align: middle;
-}
+    #ugpgTable thead th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: #fff;
+        box-shadow: inset 0 -1px 0 #e9ecef;
+    }
+
+    #ugpgTable tbody tr:hover {
+        background: #fafbff;
+    }
+
+    #ugpgTable td .display-value {
+        display: inline-block;
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
 </style>
 @endpush
 
@@ -559,25 +578,25 @@
         $(document).on('click', '.edit-btn', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const container = $(this).closest('.inline-edit');
             const field = container.data('field');
             const id = container.data('id');
             const currentValue = container.data('current') !== undefined ? String(container.data('current')).trim() : container.find('.display-value').text().trim();
             const currentId = container.data('current-id') !== undefined ? String(container.data('current-id')).trim() : '';
             const universityId = container.data('university-id');
-            
+
             if (container.hasClass('editing')) {
                 return;
             }
-            
+
             $('.inline-edit.editing').not(container).each(function() {
                 $(this).removeClass('editing');
                 $(this).find('.edit-form').remove();
             });
 
             let editForm = '';
-            
+
             if (field === 'phone' || field === 'whatsapp_number') {
                 const currentCode = container.siblings('.inline-code-value').data('current') || '';
                 const codeField = field === 'phone' ? 'code' : 'whatsapp_code';
@@ -595,10 +614,10 @@
             } else {
                 editForm = createInputField(field, currentValue);
             }
-            
+
             container.addClass('editing');
             container.append(editForm);
-            
+
             // Load university courses if needed
             if (field === 'university_course_id') {
                 const $select = container.find('select');
@@ -606,7 +625,7 @@
                     loadUniversityCourses(universityId, $select, currentValue);
                 }
             }
-            
+
             container.find('input, select').first().focus();
         });
 
@@ -614,13 +633,13 @@
         $(document).off('click.saveInline').on('click.saveInline', '.save-edit', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const container = $(this).closest('.inline-edit');
             const field = container.data('field');
             const id = container.data('id');
             let value;
             let extra = {};
-            
+
             if (field === 'phone' || field === 'whatsapp_number') {
                 value = container.find('input[type="text"]').val();
                 const codeField = field === 'phone' ? 'code' : 'whatsapp_code';
@@ -629,12 +648,12 @@
             } else {
                 value = container.find('input, select').val();
             }
-            
+
             const btn = $(this);
             if (btn.data('busy')) return;
             btn.data('busy', true);
             btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
-            
+
             $.ajax({
                 url: `/admin/converted-leads/${id}/inline-update`,
                 method: 'POST',
@@ -646,7 +665,7 @@
                 success: function(response) {
                     if (response.success) {
                         let displayValue = response.value || value;
-                        
+
                         // Special handling for DOB field
                         if (field === 'dob' && displayValue) {
                             try {
@@ -658,10 +677,10 @@
                                 // Keep original value if conversion fails
                             }
                         }
-                        
+
                         container.find('.display-value').text(displayValue);
                         container.data('current', response.value || value);
-                        
+
                         if (field === 'phone') {
                             const codeVal = extra.code || '';
                             container.siblings('.inline-code-value').data('current', codeVal);
@@ -677,7 +696,7 @@
                                 $universityCourseContainer.find('.display-value').text('-');
                             }
                         }
-                        
+
                         toast_success(response.message);
                     } else {
                         toast_error(response.error || 'Update failed');
@@ -703,12 +722,12 @@
                 }
             });
         });
-        
+
         // Cancel edit
         $(document).on('click', '.cancel-edit', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const container = $(this).closest('.inline-edit');
             container.removeClass('editing');
             container.find('.edit-form').remove();
@@ -790,8 +809,12 @@
         function createUniversitySelect(currentValue) {
             let options = '<option value="">Select University</option>';
             @foreach($universities as $university)
-                const selected{{ $university->id }} = String(currentValue) === '{{ $university->id }}' ? 'selected' : '';
-                options += `<option value="{{ $university->id }}" ${selected{{ $university->id }}}>{{ $university->title }}</option>`;
+            const selected {
+                {
+                    $university - > id
+                }
+            } = String(currentValue) === '{{ $university->id }}' ? 'selected' : '';
+            options += `<option value="{{ $university->id }}" ${selected{{ $university->id }}}>{{ $university->title }}</option>`;
             @endforeach
             return `
                 <div class="edit-form">
@@ -825,7 +848,7 @@
                 $select.html('<option value="">Select University First</option>');
                 return;
             }
-            
+
             $.get(`/api/university-courses/by-university/${universityId}`)
                 .done(function(courses) {
                     let options = '<option value="">Select Course</option>';
@@ -900,24 +923,28 @@
         const $confirmBtn = $(this);
         const originalHtml = $confirmBtn.html();
         $confirmBtn.prop('disabled', true).addClass('disabled');
-        $.post(academicVerifyUrl, {_token: '{{ csrf_token() }}'})
+        $.post(academicVerifyUrl, {
+                _token: '{{ csrf_token() }}'
+            })
             .done(function(res) {
                 if (res && res.success) {
                     show_alert('success', res.message || 'Updated');
                     $('#academicVerifyModal').modal('hide');
-                    setTimeout(() => { location.reload(); }, 600);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 600);
                 } else {
                     show_alert('error', (res && res.message) ? res.message : 'Failed to update');
                 }
             })
-            .fail(function(xhr){
+            .fail(function(xhr) {
                 let msg = 'Failed to update';
                 if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
                     msg = xhr.responseJSON.message;
                 }
                 show_alert('error', msg);
             })
-            .always(function(){
+            .always(function() {
                 $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
                 academicVerifyUrl = null;
             });
@@ -947,24 +974,28 @@
         const $confirmBtn = $(this);
         const originalHtml = $confirmBtn.html();
         $confirmBtn.prop('disabled', true).addClass('disabled');
-        $.post(supportVerifyUrl, {_token: '{{ csrf_token() }}'})
+        $.post(supportVerifyUrl, {
+                _token: '{{ csrf_token() }}'
+            })
             .done(function(res) {
                 if (res && res.success) {
                     show_alert('success', res.message || 'Updated');
                     $('#supportVerifyModal').modal('hide');
-                    setTimeout(() => { location.reload(); }, 600);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 600);
                 } else {
                     show_alert('error', (res && res.message) ? res.message : 'Failed to update');
                 }
             })
-            .fail(function(xhr){
+            .fail(function(xhr) {
                 let msg = 'Failed to update';
                 if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
                     msg = xhr.responseJSON.message;
                 }
                 show_alert('error', msg);
             })
-            .always(function(){
+            .always(function() {
                 $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
                 supportVerifyUrl = null;
             });
@@ -1013,6 +1044,3 @@
         </div>
     </div>
 </div>
-
-
-

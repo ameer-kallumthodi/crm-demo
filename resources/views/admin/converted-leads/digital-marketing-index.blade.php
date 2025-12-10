@@ -1,16 +1,16 @@
 @php
-    $statusType = $type ?? 'academic';
-    $isAcademic = $statusType === 'academic';
-    $flagField = $isAcademic ? 'is_academic_verified' : 'is_support_verified';
-    $isVerified = (bool) ($convertedLead->{$flagField} ?? false);
-    $showToggle = $showToggle ?? false;
-    $toggleUrl = $toggleUrl ?? null;
-    $title = $title ?? ($isAcademic ? 'academic' : 'support');
-    $badgeClass = $isVerified ? 'bg-success' : 'bg-secondary';
-    $buttonClass = $isVerified ? 'btn-outline-danger' : 'btn-outline-success';
-    $iconClass = $isVerified ? 'ti-x' : 'ti-check';
-    $buttonLabel = $isVerified ? 'Unverify' : 'Verify';
-    $useModal = $useModal ?? false;
+$statusType = $type ?? 'academic';
+$isAcademic = $statusType === 'academic';
+$flagField = $isAcademic ? 'is_academic_verified' : 'is_support_verified';
+$isVerified = (bool) ($convertedLead->{$flagField} ?? false);
+$showToggle = $showToggle ?? false;
+$toggleUrl = $toggleUrl ?? null;
+$title = $title ?? ($isAcademic ? 'academic' : 'support');
+$badgeClass = $isVerified ? 'bg-success' : 'bg-secondary';
+$buttonClass = $isVerified ? 'btn-outline-danger' : 'btn-outline-success';
+$iconClass = $isVerified ? 'ti-x' : 'ti-check';
+$buttonLabel = $isVerified ? 'Unverify' : 'Verify';
+$useModal = $useModal ?? false;
 @endphp
 
 <span class="badge {{ $badgeClass }}{{ $showToggle ? ' me-1' : '' }}">
@@ -18,82 +18,90 @@
 </span>
 
 @if($showToggle && $toggleUrl)
-    <button type="button"
-        class="btn btn-sm {{ $buttonClass }} toggle-{{ $statusType }}-verify-btn"
-        @if($useModal) data-use-modal="1" @endif
-        data-id="{{ $convertedLead->id }}"
-        data-name="{{ $convertedLead->name }}"
-        data-verified="{{ $isVerified ? 1 : 0 }}"
-        data-url="{{ $toggleUrl }}"
-        title="{{ $buttonLabel }} {{ $title }}">
-        <i class="ti {{ $iconClass }}"></i>
-    </button>
+<button type="button"
+    class="btn btn-sm {{ $buttonClass }} toggle-{{ $statusType }}-verify-btn"
+    @if($useModal) data-use-modal="1" @endif
+    data-id="{{ $convertedLead->id }}"
+    data-name="{{ $convertedLead->name }}"
+    data-verified="{{ $isVerified ? 1 : 0 }}"
+    data-url="{{ $toggleUrl }}"
+    title="{{ $buttonLabel }} {{ $title }}">
+    <i class="ti {{ $iconClass }}"></i>
+</button>
 @endif
 
 @once
-    @push('scripts')
-    <script>
-        (function($){
-            if (!$) { return; }
-            function handleStatusToggle($btn, type) {
-                const url = $btn.data('url');
-                if (!url) { return; }
-                const name = $btn.data('name') || 'this record';
-                const isVerified = String($btn.data('verified')) === '1';
-                const actionText = isVerified ? 'unverify' : 'verify';
-                const label = type === 'academic' ? 'academic' : 'support';
-                if (!window.confirm(`Are you sure you want to ${actionText} ${label} status for ${name}?`)) {
-                    return;
-                }
+@push('scripts')
+<script>
+    (function($) {
+        if (!$) {
+            return;
+        }
 
-                const csrfToken = $('meta[name="csrf-token"]').attr('content');
-                if (!csrfToken) {
-                    console.error('CSRF token missing');
-                    return;
-                }
-
-                $btn.prop('disabled', true).addClass('disabled');
-
-                $.post(url, {_token: csrfToken})
-                    .done(function(res) {
-                        const success = res && (res.success || res.status === 'success');
-                        const message = (res && (res.message || res.status_message)) || 'Status updated successfully.';
-                        if (typeof window.show_alert === 'function') {
-                            window.show_alert(success ? 'success' : 'error', message);
-                        } else {
-                            window.alert(message);
-                        }
-                        if (success) {
-                            setTimeout(function(){ window.location.reload(); }, 400);
-                        }
-                    })
-                    .fail(function(xhr) {
-                        let message = 'Failed to update status.';
-                        if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
-                            message = xhr.responseJSON.message;
-                        }
-                        if (typeof window.show_alert === 'function') {
-                            window.show_alert('error', message);
-                        } else {
-                            window.alert(message);
-                        }
-                    })
-                    .always(function() {
-                        $btn.prop('disabled', false).removeClass('disabled');
-                    });
+        function handleStatusToggle($btn, type) {
+            const url = $btn.data('url');
+            if (!url) {
+                return;
+            }
+            const name = $btn.data('name') || 'this record';
+            const isVerified = String($btn.data('verified')) === '1';
+            const actionText = isVerified ? 'unverify' : 'verify';
+            const label = type === 'academic' ? 'academic' : 'support';
+            if (!window.confirm(`Are you sure you want to ${actionText} ${label} status for ${name}?`)) {
+                return;
             }
 
-            $(document).on('click', '.toggle-academic-verify-btn:not([data-use-modal="1"])', function(e){
-                e.preventDefault();
-                handleStatusToggle($(this), 'academic');
-            });
+            const csrfToken = $('meta[name="csrf-token"]').attr('content');
+            if (!csrfToken) {
+                console.error('CSRF token missing');
+                return;
+            }
 
-            $(document).on('click', '.toggle-support-verify-btn:not([data-use-modal="1"])', function(e){
-                e.preventDefault();
-                handleStatusToggle($(this), 'support');
-            });
-        })(window.jQuery);
-    </script>
-    @endpush
+            $btn.prop('disabled', true).addClass('disabled');
+
+            $.post(url, {
+                    _token: csrfToken
+                })
+                .done(function(res) {
+                    const success = res && (res.success || res.status === 'success');
+                    const message = (res && (res.message || res.status_message)) || 'Status updated successfully.';
+                    if (typeof window.show_alert === 'function') {
+                        window.show_alert(success ? 'success' : 'error', message);
+                    } else {
+                        window.alert(message);
+                    }
+                    if (success) {
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 400);
+                    }
+                })
+                .fail(function(xhr) {
+                    let message = 'Failed to update status.';
+                    if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+                    if (typeof window.show_alert === 'function') {
+                        window.show_alert('error', message);
+                    } else {
+                        window.alert(message);
+                    }
+                })
+                .always(function() {
+                    $btn.prop('disabled', false).removeClass('disabled');
+                });
+        }
+
+        $(document).on('click', '.toggle-academic-verify-btn:not([data-use-modal="1"])', function(e) {
+            e.preventDefault();
+            handleStatusToggle($(this), 'academic');
+        });
+
+        $(document).on('click', '.toggle-support-verify-btn:not([data-use-modal="1"])', function(e) {
+            e.preventDefault();
+            handleStatusToggle($(this), 'support');
+        });
+    })(window.jQuery);
+</script>
+@endpush
 @endonce
-
