@@ -97,6 +97,9 @@ class ConvertedStudentMentorDetail extends Model
         'second_month_marks',
         'second_month_feedback',
         'ai_workshop_attendance',
+        'deep_learning_workshop_attendance',
+        'graphic_design_session_attendance',
+        'copy_writing_session_attendance',
         'third_month_exam_date',
         'third_month_marks',
         'third_month_feedback',
@@ -127,7 +130,14 @@ class ConvertedStudentMentorDetail extends Model
         'interview_marks',
         'certificate_distribution_date',
         'experience_certificate_distribution_date',
+        'completed_cancelled_date',
         'cancelled_date',
+        'first_term_internship_exam_date',
+        'first_term_internship_exam_marks',
+        'first_term_internship_exam_feedback',
+        'final_internship_certification_exam_date',
+        'final_internship_certification_exam_marks',
+        'final_internship_certification_exam_feedback',
         'remarks',
     ];
 
@@ -154,6 +164,9 @@ class ConvertedStudentMentorDetail extends Model
         'final_interview_date' => 'date',
         'certificate_distribution_date' => 'date',
         'experience_certificate_distribution_date' => 'date',
+        'completed_cancelled_date' => 'date',
+        'first_term_internship_exam_date' => 'date',
+        'final_internship_certification_exam_date' => 'date',
         'cancelled_date' => 'date',
     ];
 
