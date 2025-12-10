@@ -401,7 +401,7 @@ class SupportConvertedLeadController extends Controller
             
             $validator = Validator::make($request->all(), [
                 'feedback_type' => 'required|string|max:255',
-                'feedback_content' => 'required|string|max:2000',
+                'feedback_content' => 'required|string|max:10000',
                 'feedback_status' => 'nullable|string|max:255',
                 'priority' => 'nullable|string|max:255',
                 'follow_up_date' => 'nullable|date',
@@ -435,6 +435,26 @@ class SupportConvertedLeadController extends Controller
             }
             $supportDetails->last_feedback = now();
             $supportDetails->save();
+
+            // Send email notification to CAO only (From CRM)
+            try {
+                $subject = 'Support Feedback - ' . ($convertedLead->name ?? 'Student') . ' (#' . $convertedLead->id . ')';
+                $body = view('emails.support-feedback-cao', [
+                    'convertedLead' => $convertedLead,
+                    'feedback' => $feedback
+                ])->render();
+                
+                // Send email only to cao@natdemy.com with "From CRM" as sender name
+                if (function_exists('send_email')) {
+                    send_email('cao@natdemy.com', 'CAO', $subject, $body, [], 'CRM');
+                }
+            } catch (\Exception $mailEx) {
+                Log::error('Support feedback CAO mail failed: ' . $mailEx->getMessage(), [
+                    'lead_id' => $convertedLead->id,
+                    'feedback_id' => $feedback->id ?? null
+                ]);
+                // Do not block user flow on email failure
+            }
 
             return response()->json([
                 'success' => true,

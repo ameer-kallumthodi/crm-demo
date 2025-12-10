@@ -738,17 +738,17 @@
         margin-top: 4px;
     }
 
-    .inline-edit .edit-form .btn-group {
+.inline-edit .edit-form .btn-group {
         display: inline-flex;
         align-items: center;
         gap: 6px;
         margin: 0;
-    }
+}
 
-    .inline-edit .edit-form .btn {
-        padding: 2px 8px;
-        font-size: 11px;
-    }
+.inline-edit .edit-form .btn {
+    padding: 2px 8px;
+    font-size: 11px;
+}
 
     /* Select2 sizing for inline tutor edit */
     .inline-edit .select2-container {

@@ -985,14 +985,32 @@ document.addEventListener('DOMContentLoaded', function() {
             answers.push(`\nStudent Comments: ${txt('student_comments')}`);
         }
         answers.push(`\nCollected By: ${txt('collected_by')}`);
-        const monthSel = feedbackForm.querySelector('[name="month_year_month"]').selectedOptions[0].text;
-        const yearSel = feedbackForm.querySelector('[name="month_year_year"]').value;
-        const daySel = feedbackForm.querySelector('[name="date_day"]').value;
-        const timeSel = feedbackForm.querySelector('[name="time_hm"]').value;
-        answers.push(`Month & Year: ${monthSel} ${yearSel}`);
-        answers.push(`Date & Time: ${daySel}-${('0'+feedbackForm.querySelector('[name="month_year_month"]').value).slice(-2)}-${yearSel} ${timeSel}`);
+        
+        // Get month/year/day/time from hidden inputs (not selects)
+        const monthVal = feedbackForm.querySelector('[name="month_year_month"]')?.value || '';
+        const yearVal = feedbackForm.querySelector('[name="month_year_year"]')?.value || '';
+        const dayVal = feedbackForm.querySelector('[name="date_day"]')?.value || '';
+        const timeVal = feedbackForm.querySelector('[name="time_hm"]')?.value || '';
+        
+        // Convert month number to month name
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                           'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthName = monthVal ? monthNames[parseInt(monthVal) - 1] || monthVal : '';
+        
+        answers.push(`Month & Year: ${monthName} ${yearVal}`);
+        answers.push(`Date & Time: ${dayVal}-${('0'+monthVal).slice(-2)}-${yearVal} ${timeVal}`);
 
-        document.getElementById('feedback_content').value = answers.join('\n');
+        const feedbackContent = answers.join('\n');
+        
+        // Check if content exceeds max length (10000 chars)
+        if (feedbackContent.length > 10000) {
+            alert('Feedback content is too long. Please reduce the content.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="ti ti-send me-1"></i> Submit Feedback';
+            return;
+        }
+
+        document.getElementById('feedback_content').value = feedbackContent;
 
         const formData = new FormData(feedbackForm);
         
@@ -1000,33 +1018,67 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => Promise.reject(err));
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 // Show success message
-                alert('Feedback submitted successfully!');
+                if (typeof toast_success === 'function') {
+                    toast_success(data.message || 'Feedback submitted successfully!');
+                } else {
+                    alert(data.message || 'Feedback submitted successfully!');
+                }
                 
                 // Close modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
+                const modalElement = document.getElementById('feedbackModal');
+                if (modalElement) {
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) {
                 modal.hide();
+                    }
+                }
                 
                 // Reset form
                 feedbackForm.reset();
                 
-                // Reload page to show new feedback
+                // Reload page to show new feedback in timeline
+                setTimeout(() => {
                 location.reload();
+                }, 500);
             } else {
-                alert('Error: ' + (data.error || 'Failed to submit feedback'));
+                const errorMsg = data.error || data.message || 'Failed to submit feedback';
+                if (typeof toast_error === 'function') {
+                    toast_error(errorMsg);
+                } else {
+                    alert('Error: ' + errorMsg);
+                }
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="ti ti-send me-1"></i> Submit Feedback';
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while submitting feedback');
-        })
-        .finally(() => {
+            let errorMsg = 'An error occurred while submitting feedback';
+            if (error.errors) {
+                errorMsg = Object.values(error.errors).flat().join(', ');
+            } else if (error.error) {
+                errorMsg = error.error;
+            } else if (error.message) {
+                errorMsg = error.message;
+            }
+            if (typeof toast_error === 'function') {
+                toast_error(errorMsg);
+            } else {
+                alert(errorMsg);
+            }
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="ti ti-send me-1"></i> Submit Feedback';
         });
