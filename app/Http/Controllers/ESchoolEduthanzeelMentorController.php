@@ -39,7 +39,7 @@ class ESchoolEduthanzeelMentorController extends Controller
     private function getMentorIndex(Request $request, $courseId, $courseName)
     {
         // Check permissions
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor() && !RoleHelper::is_telecaller() && !RoleHelper::is_team_lead() && !RoleHelper::is_senior_manager() && !RoleHelper::is_general_manager()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor() && !RoleHelper::is_telecaller() && !RoleHelper::is_team_lead() && !RoleHelper::is_senior_manager() && !RoleHelper::is_general_manager() && !RoleHelper::is_hod()) {
             return redirect()->route('dashboard')
                 ->with('message_danger', 'Access denied.');
         }
@@ -70,7 +70,22 @@ class ESchoolEduthanzeelMentorController extends Controller
         // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
         if ($currentUser) {
-            if (RoleHelper::is_mentor_head()) {
+            if (RoleHelper::is_admin_or_super_admin()) {
+                // Admins can see all support verified leads
+            } elseif (RoleHelper::is_hod()) {
+                // HOD: Only see leads for courses where they are assigned as HOD
+                $hodCourseIds = \App\Models\Course::where('hod_id', AuthHelper::getCurrentUserId())
+                    ->pluck('id')
+                    ->toArray();
+                
+                // Check if current course is in HOD's assigned courses
+                if (!empty($hodCourseIds) && in_array($courseId, $hodCourseIds)) {
+                    // HOD is assigned to this course, show data
+                } else {
+                    // HOD is not assigned to this course, return empty results
+                    $query->whereRaw('1 = 0');
+                }
+            } elseif (RoleHelper::is_mentor_head()) {
                 // Mentor Head: Can see all support verified leads
                 // No additional filtering needed
             } elseif (RoleHelper::is_mentor()) {

@@ -70,8 +70,17 @@ class ConvertedLeadController extends Controller
                 // Academic Assistant: Can see ALL converted leads
                 // No additional filtering needed - show all
             } elseif (RoleHelper::is_hod()) {
-                // HOD: Can see ALL converted leads
-                // No additional filtering needed - show all
+                // HOD: Only see leads for courses where they are assigned as HOD
+                $hodCourseIds = Course::where('hod_id', AuthHelper::getCurrentUserId())
+                    ->pluck('id')
+                    ->toArray();
+                
+                if (!empty($hodCourseIds)) {
+                    $query->whereIn('course_id', $hodCourseIds);
+                } else {
+                    // If HOD has no assigned courses, return empty results
+                    $query->whereRaw('1 = 0');
+                }
             } elseif (RoleHelper::is_telecaller()) {
                 // Telecaller: Can only see converted leads from leads assigned to them
                 $query->whereHas('lead', function($q) {

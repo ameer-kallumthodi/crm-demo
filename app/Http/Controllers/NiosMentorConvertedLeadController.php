@@ -39,6 +39,19 @@ class NiosMentorConvertedLeadController extends Controller
             if (RoleHelper::is_admin_or_super_admin()) {
                 // Admins and super admins can see all support verified leads
                 // No additional filtering needed
+            } elseif (RoleHelper::is_hod()) {
+                // HOD: Only see leads for courses where they are assigned as HOD
+                $hodCourseIds = \App\Models\Course::where('hod_id', AuthHelper::getCurrentUserId())
+                    ->pluck('id')
+                    ->toArray();
+                
+                // Check if current course (1) is in HOD's assigned courses
+                if (!empty($hodCourseIds) && in_array(1, $hodCourseIds)) {
+                    // HOD is assigned to this course, show data
+                } else {
+                    // HOD is not assigned to this course, return empty results
+                    $query->whereRaw('1 = 0');
+                }
             } elseif (RoleHelper::is_mentor_head()) {
                 // Mentor Head: Can see all support verified leads
                 // No additional filtering needed
