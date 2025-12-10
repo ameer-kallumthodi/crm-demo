@@ -2231,6 +2231,53 @@ class ConvertedLeadController extends Controller
     }
 
     /**
+     * Show cancellation confirmation modal for converted leads.
+     */
+    public function cancelFlag($id)
+    {
+        if (!$this->canManageCancellationFlag()) {
+            abort(403, 'Access denied.');
+        }
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+
+        return view('admin.converted-leads.cancel-flag-modal', compact('convertedLead'));
+    }
+
+    /**
+     * Update is_cancelled flag for converted leads.
+     */
+    public function cancelFlagSubmit(Request $request, $id)
+    {
+        if (!$this->canManageCancellationFlag()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied.'
+            ], 403);
+        }
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+
+        $validated = $request->validate([
+            'is_cancelled' => 'required|boolean',
+        ]);
+
+        $convertedLead->is_cancelled = (bool) $validated['is_cancelled'];
+        $convertedLead->updated_by = AuthHelper::getCurrentUserId();
+        $convertedLead->save();
+
+        $message = $convertedLead->is_cancelled
+            ? 'Cancellation flagged successfully.'
+            : 'Cancellation flag removed.';
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'is_cancelled' => $convertedLead->is_cancelled
+        ]);
+    }
+
+    /**
      * Show modal for changing course
      */
     public function showChangeCourseModal($id)
@@ -3084,6 +3131,12 @@ class ConvertedLeadController extends Controller
                 'error' => 'Failed to update records: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function canManageCancellationFlag(): bool
+    {
+        return RoleHelper::is_admin_or_super_admin()
+            || RoleHelper::is_admission_counsellor();
     }
 
     private function canManageCourseChange(): bool

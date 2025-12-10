@@ -494,6 +494,20 @@
                                             <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice">
                                                 <i class="ti ti-receipt"></i>
                                             </a>
+                                            @php
+                                            $canManageCancelFlag = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                            @endphp
+                                            @if($canManageCancelFlag)
+                                            @php
+                                            $cancelBtnClass = $convertedLead->is_cancelled ? 'btn-danger' : 'btn-outline-danger';
+                                            $cancelBtnTitle = $convertedLead->is_cancelled ? 'Update cancellation confirmation' : 'Confirm cancellation';
+                                            @endphp
+                                            <button type="button" class="btn btn-sm {{ $cancelBtnClass }} js-cancel-flag" title="{{ $cancelBtnTitle }}"
+                                                data-cancel-url="{{ route('admin.converted-leads.cancel-flag', $convertedLead->id) }}"
+                                                data-modal-title="Cancellation Confirmation">
+                                                <i class="ti ti-ban"></i>
+                                            </button>
+                                            @endif
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
                                             <button type="button" class="btn btn-sm btn-info update-register-btn" title="Update Register Number"
                                                 data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
@@ -559,6 +573,9 @@
                                     </h6>
                                     <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
                                 </div>
+                                @php
+                                $canManageCancelFlag = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                @endphp
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                         <i class="ti ti-dots-vertical"></i>
@@ -574,6 +591,20 @@
                                                 <i class="ti ti-receipt me-2"></i>View Invoice
                                             </a>
                                         </li>
+                                        @if($canManageCancelFlag)
+                                        @php
+                                        $cancelBtnClass = $convertedLead->is_cancelled ? 'text-danger' : 'text-danger';
+                                        $cancelBtnTitle = $convertedLead->is_cancelled ? 'Update cancellation confirmation' : 'Confirm cancellation';
+                                        @endphp
+                                        <li>
+                                            <button type="button" class="dropdown-item {{ $cancelBtnClass }} js-cancel-flag"
+                                                title="{{ $cancelBtnTitle }}"
+                                                data-cancel-url="{{ route('admin.converted-leads.cancel-flag', $convertedLead->id) }}"
+                                                data-modal-title="Cancellation Confirmation">
+                                                <i class="ti ti-ban me-2"></i>Cancellation Flag
+                                            </button>
+                                        </li>
+                                        @endif
                                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                         <li>
                                             <button type="button" class="dropdown-item update-register-btn"
@@ -1046,6 +1077,76 @@
             if (typeof show_ajax_modal === 'function' && url) {
                 show_ajax_modal(url, title);
             }
+        });
+
+        // Handle cancellation flag modal
+        $(document).on('click', '.js-cancel-flag', function(e) {
+            e.preventDefault();
+            const url = $(this).data('cancel-url');
+            const title = $(this).data('modal-title') || 'Cancellation Confirmation';
+            if (typeof show_ajax_modal === 'function' && url) {
+                show_ajax_modal(url, title);
+            }
+        });
+
+        // Delegated submit handler for cancellation flag modal (ensures AJAX even when inline scripts are not executed)
+        $(document).on('submit', '#cancelFlagForm', function(e) {
+            e.preventDefault();
+            const form = $(this);
+            const submitUrl = form.data('submit-url');
+            if (!submitUrl) {
+                return form.off('submit').submit(); // fallback to default submit if url missing
+            }
+
+            const submitBtn = form.find('button[type="submit"]');
+            const originalText = submitBtn.html();
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+
+            $.ajax({
+                url: submitUrl,
+                method: 'POST',
+                data: form.serialize(),
+                success: function (response) {
+                    $('#ajax_modal').modal('hide');
+                    if (typeof showToast === 'function') {
+                        showToast(response.message, 'success');
+                    } else if (typeof toast_success === 'function') {
+                        toast_success(response.message);
+                    } else {
+                        alert(response.message);
+                    }
+                    if ($.fn.DataTable.isDataTable('#convertedLeadsTable')) {
+                        const dt = $('#convertedLeadsTable').DataTable();
+                        if (dt.ajax && dt.ajax.url()) {
+                            dt.ajax.reload();
+                        } else {
+                            // Static table: redraw to clear warnings, then fallback reload
+                            dt.rows().invalidate().draw(false);
+                            location.reload();
+                        }
+                    } else {
+                        location.reload();
+                    }
+                },
+                error: function (xhr) {
+                    let message = 'Unable to update cancellation flag.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        message = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    }
+                    if (typeof showToast === 'function') {
+                        showToast(message, 'error');
+                    } else if (typeof toast_error === 'function') {
+                        toast_error(message);
+                    } else {
+                        alert(message);
+                    }
+                },
+                complete: function () {
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            });
         });
 
         // Handle clear button

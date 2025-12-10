@@ -742,13 +742,44 @@
         box-shadow: 0 0 0 2px rgba(115, 102, 255, 0.15);
     }
 
+    .inline-edit .edit-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+    }
+
     .inline-edit .edit-form .btn-group {
-        margin-top: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
     }
 
     .inline-edit .edit-form .btn {
         padding: 2px 8px;
         font-size: 11px;
+    }
+
+    /* Select2 sizing for inline tutor edit */
+    .inline-edit .select2-container {
+        width: 240px !important;
+    }
+
+    .inline-edit .select2-selection--single {
+        height: 34px;
+        padding: 4px 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+
+    .inline-edit .select2-selection__rendered {
+        line-height: 24px;
+    }
+
+    .inline-edit .select2-selection__arrow {
+        height: 32px;
+        right: 8px;
     }
 
     #eduthanzeelMentorTable thead th,
@@ -862,8 +893,16 @@ return ['id' => $teacher->id, 'name' => $teacher->name];
 
             // Load tutor options if it's a tutor field
             if (field === 'tutor_id') {
-                const $select = container.find('select');
+                const $select = container.find('.edit-form select');
                 loadTutorOptions($select, currentValue);
+                if ($.fn.select2) {
+                    $select.select2({
+                        dropdownParent: container.find('.edit-form'),
+                        width: '100%',
+                        placeholder: 'Select Tutor',
+                        allowClear: true
+                    }).val(String(currentValue || '')).trigger('change');
+                }
             }
 
             container.find('input, select').first().focus();
