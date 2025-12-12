@@ -98,6 +98,8 @@
                             Type: Batch Change - {{ $payment->invoice->batch->title ?? 'N/A' }} ({{ $payment->invoice->batch->course->title ?? 'N/A' }})
                         @elseif($payment->invoice->invoice_type === 'batch_postpond')
                             Type: Batch Postponed - {{ $payment->invoice->batch->title ?? 'N/A' }} ({{ $payment->invoice->batch->course->title ?? 'N/A' }})
+                        @elseif($payment->invoice->invoice_type === 'fine')
+                            Type: Fine - {{ $payment->invoice->service_name ?? 'N/A' }}
                         @else
                             Type: N/A
                         @endif

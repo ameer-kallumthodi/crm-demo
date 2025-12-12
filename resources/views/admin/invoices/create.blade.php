@@ -27,6 +27,7 @@
                                         <option value="course" {{ old('invoice_type') == 'course' ? 'selected' : '' }}>Course</option>
                                         <option value="e-service" {{ old('invoice_type') == 'e-service' ? 'selected' : '' }}>E-Service</option>
                                         <option value="batch_change" {{ old('invoice_type') == 'batch_change' ? 'selected' : '' }}>Batch Change</option>
+                                        <option value="fine" {{ old('invoice_type') == 'fine' ? 'selected' : '' }}>Fine</option>
                                     </select>
                                     @error('invoice_type')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -90,6 +91,35 @@
                                            name="service_amount" id="service_amount" step="0.01" min="0" 
                                            value="{{ old('service_amount') }}">
                                     @error('service_amount')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- Fine Fields (shown when fine is selected) -->
+                            <div class="col-md-6" id="fine_type_field" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="fine_type" class="form-label">Fine Type <span class="text-danger">*</span></label>
+                                    <select class="form-control @error('fine_type') is-invalid @enderror" name="fine_type" id="fine_type">
+                                        <option value="">Select Fine Type</option>
+                                        <option value="Bose Registration Fine" {{ old('fine_type') == 'Bose Registration Fine' ? 'selected' : '' }}>Bose Registration Fine</option>
+                                        <option value="Nios Registration Fine" {{ old('fine_type') == 'Nios Registration Fine' ? 'selected' : '' }}>Nios Registration Fine</option>
+                                        <option value="Nios Exam Fine" {{ old('fine_type') == 'Nios Exam Fine' ? 'selected' : '' }}>Nios Exam Fine</option>
+                                    </select>
+                                    @error('fine_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" id="fine_amount_field" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="fine_amount" class="form-label">Fine Amount <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control @error('fine_amount') is-invalid @enderror"
+                                           name="fine_amount" id="fine_amount" step="0.01" min="0"
+                                           value="{{ old('fine_amount') }}">
+                                    <div class="form-text">This value will be copied to Total Amount.</div>
+                                    @error('fine_amount')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -163,6 +193,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const courseSelect = document.getElementById('course_id');
     const totalAmountInput = document.getElementById('total_amount');
     const serviceAmountInput = document.getElementById('service_amount');
+    const fineTypeSelect = document.getElementById('fine_type');
+    const fineAmountInput = document.getElementById('fine_amount');
 
     // Show/hide fields based on invoice type
     function toggleFields() {
@@ -173,6 +205,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('batch_selection').style.display = 'none';
         document.getElementById('service_name_field').style.display = 'none';
         document.getElementById('service_amount_field').style.display = 'none';
+        document.getElementById('fine_type_field').style.display = 'none';
+        document.getElementById('fine_amount_field').style.display = 'none';
+        totalAmountInput.readOnly = false;
         
         // Show relevant fields
         if (invoiceType === 'course') {
@@ -185,6 +220,11 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('service_name_field').style.display = 'block';
             document.getElementById('service_amount_field').style.display = 'block';
             totalAmountInput.readOnly = false;
+        } else if (invoiceType === 'fine') {
+            document.getElementById('fine_type_field').style.display = 'block';
+            document.getElementById('fine_amount_field').style.display = 'block';
+            totalAmountInput.value = fineAmountInput.value || '';
+            totalAmountInput.readOnly = true;
         }
     }
 
@@ -196,6 +236,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (this.value !== 'batch_change') {
             totalAmountInput.value = '';
             totalAmountInput.readOnly = false;
+        }
+
+        if (this.value !== 'fine') {
+            fineTypeSelect.value = '';
+            fineAmountInput.value = '';
         }
     });
 
@@ -212,6 +257,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle service amount change
     serviceAmountInput.addEventListener('change', function() {
         if (invoiceTypeSelect.value === 'e-service') {
+            totalAmountInput.value = this.value;
+        }
+    });
+
+    // Handle fine amount change
+    fineAmountInput.addEventListener('change', function() {
+        if (invoiceTypeSelect.value === 'fine') {
             totalAmountInput.value = this.value;
         }
     });

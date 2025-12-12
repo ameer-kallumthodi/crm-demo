@@ -616,6 +616,15 @@ class PaymentController extends Controller
         $description = $validated['description'] ?? 'Payment for invoice ' . $invoice->invoice_number;
         $currency = config('razorpay.default_currency', 'INR');
         $customerContact = $this->formatCustomerContact($invoice->student->code ?? null, $invoice->student->phone ?? null);
+        $customerEmail = $invoice->student->email;
+
+        // Razorpay requires either email or contact; fail fast with a clear message
+        if (!$customerContact && !$customerEmail) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Student phone or email is required to generate a payment link. Please update the student contact details.',
+            ], 422);
+        }
 
         $payload = [
             'amount' => (int) round($amount * 100),
@@ -624,7 +633,7 @@ class PaymentController extends Controller
             'description' => $description,
             'customer' => array_filter([
                 'name' => $invoice->student->name,
-                'email' => $invoice->student->email,
+                'email' => $customerEmail,
                 'contact' => $customerContact,
             ]),
             'notify' => [
@@ -683,11 +692,12 @@ class PaymentController extends Controller
             Log::error('Failed to generate payment link', [
                 'invoice_id' => $invoice->id,
                 'message' => $exception->getMessage(),
+                'payload' => $payload ?? [],
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Unable to create payment link. Please try again later.',
+                'message' => 'Unable to create payment link. Please try again later. Ensure student contact (phone/email) is valid.',
             ], 500);
         }
     }

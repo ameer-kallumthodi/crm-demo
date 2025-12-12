@@ -154,9 +154,21 @@
                                                 <small class="text-muted">{{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->code ?? '') : '' }} {{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->phone ?? '') : '' }}</small>
                                             </td>
                                             <td>
-                                                <div>{{ $payment->invoice->course->title ?? 'N/A' }}</div>
-                                                @if($payment->invoice && $payment->invoice->batch)
-                                                    <small class="text-muted">{{ $payment->invoice->batch->title }}</small>
+                                                @if($payment->invoice && $payment->invoice->invoice_type === 'course')
+                                                    <div>{{ $payment->invoice->course->title ?? 'N/A' }}</div>
+                                                    @if($payment->invoice->batch)
+                                                        <small class="text-muted">{{ $payment->invoice->batch->title }}</small>
+                                                    @endif
+                                                @elseif($payment->invoice && $payment->invoice->invoice_type === 'batch_change' || ($payment->invoice && $payment->invoice->invoice_type === 'batch_postpond'))
+                                                    <div>{{ $payment->invoice->batch->title ?? 'N/A' }}</div>
+                                                    <small class="text-muted">{{ $payment->invoice->batch->course->title ?? 'N/A' }}</small>
+                                                @elseif($payment->invoice && $payment->invoice->invoice_type === 'e-service')
+                                                    <div>{{ $payment->invoice->service_name ?? 'N/A' }}</div>
+                                                @elseif($payment->invoice && $payment->invoice->invoice_type === 'fine')
+                                                    <div>{{ $payment->invoice->service_name ?? 'N/A' }}</div>
+                                                    <small class="text-muted">Fine</small>
+                                                @else
+                                                    <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
                                             <td class="text-end">
@@ -264,9 +276,21 @@
                                                 <small class="text-muted">{{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->code ?? '') : '' }} {{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->phone ?? '') : '' }}</small>
                                             </td>
                                             <td>
-                                                <div>{{ $payment->invoice->course->title ?? 'N/A' }}</div>
-                                                @if($payment->invoice && $payment->invoice->batch)
-                                                    <small class="text-muted">{{ $payment->invoice->batch->title }}</small>
+                                                @if($payment->invoice && $payment->invoice->invoice_type === 'course')
+                                                    <div>{{ $payment->invoice->course->title ?? 'N/A' }}</div>
+                                                    @if($payment->invoice->batch)
+                                                        <small class="text-muted">{{ $payment->invoice->batch->title }}</small>
+                                                    @endif
+                                                @elseif($payment->invoice && ($payment->invoice->invoice_type === 'batch_change' || $payment->invoice->invoice_type === 'batch_postpond'))
+                                                    <div>{{ $payment->invoice->batch->title ?? 'N/A' }}</div>
+                                                    <small class="text-muted">{{ $payment->invoice->batch->course->title ?? 'N/A' }}</small>
+                                                @elseif($payment->invoice && $payment->invoice->invoice_type === 'e-service')
+                                                    <div>{{ $payment->invoice->service_name ?? 'N/A' }}</div>
+                                                @elseif($payment->invoice && $payment->invoice->invoice_type === 'fine')
+                                                    <div>{{ $payment->invoice->service_name ?? 'N/A' }}</div>
+                                                    <small class="text-muted">Fine</small>
+                                                @else
+                                                    <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
                                             <td class="text-end">
@@ -365,9 +389,21 @@
                                                 <small class="text-muted">{{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->code ?? '') : '' }} {{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->phone ?? '') : '' }}</small>
                                             </td>
                                             <td>
-                                                <div>{{ $payment->invoice->course->title ?? 'N/A' }}</div>
-                                                @if($payment->invoice && $payment->invoice->batch)
-                                                    <small class="text-muted">{{ $payment->invoice->batch->title }}</small>
+                                                @if($payment->invoice && $payment->invoice->invoice_type === 'course')
+                                                    <div>{{ $payment->invoice->course->title ?? 'N/A' }}</div>
+                                                    @if($payment->invoice->batch)
+                                                        <small class="text-muted">{{ $payment->invoice->batch->title }}</small>
+                                                    @endif
+                                                @elseif($payment->invoice && ($payment->invoice->invoice_type === 'batch_change' || $payment->invoice->invoice_type === 'batch_postpond'))
+                                                    <div>{{ $payment->invoice->batch->title ?? 'N/A' }}</div>
+                                                    <small class="text-muted">{{ $payment->invoice->batch->course->title ?? 'N/A' }}</small>
+                                                @elseif($payment->invoice && $payment->invoice->invoice_type === 'e-service')
+                                                    <div>{{ $payment->invoice->service_name ?? 'N/A' }}</div>
+                                                @elseif($payment->invoice && $payment->invoice->invoice_type === 'fine')
+                                                    <div>{{ $payment->invoice->service_name ?? 'N/A' }}</div>
+                                                    <small class="text-muted">Fine</small>
+                                                @else
+                                                    <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
                                             <td class="text-end">

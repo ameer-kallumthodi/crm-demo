@@ -133,6 +133,8 @@
                                             <span class="badge bg-warning">Batch Change</span>
                                         @elseif($payment->invoice->invoice_type === 'batch_postpond')
                                             <span class="badge bg-warning text-dark">Batch Postponed</span>
+                                        @elseif($payment->invoice->invoice_type === 'fine')
+                                            <span class="badge bg-danger">Fine</span>
                                         @else
                                             N/A
                                         @endif
@@ -160,6 +162,8 @@
                                             {{ $payment->invoice->service_name ?? 'N/A' }}
                                         @elseif($payment->invoice->invoice_type === 'batch_change' || $payment->invoice->invoice_type === 'batch_postpond')
                                             {{ $payment->invoice->batch->title ?? 'N/A' }} ({{ $payment->invoice->batch->course->title ?? 'N/A' }})
+                                        @elseif($payment->invoice->invoice_type === 'fine')
+                                            {{ $payment->invoice->service_name ?? 'N/A' }}
                                         @else
                                             N/A
                                         @endif

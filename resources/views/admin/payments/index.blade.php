@@ -188,6 +188,10 @@
                                                             <span class="badge bg-warning text-dark fs-6 px-3 py-2">
                                                                 <i class="fas fa-calendar-alt me-1"></i>Batch Postponed
                                                             </span>
+                                                        @elseif($invoice->invoice_type == 'fine')
+                                                            <span class="badge bg-danger fs-6 px-3 py-2">
+                                                                <i class="fas fa-exclamation-circle me-1"></i>Fine
+                                                            </span>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -224,6 +228,8 @@
                                                             <i class="fas fa-exchange-alt text-warning me-1"></i>{{ $invoice->batch->title ?? 'N/A' }} ({{ $invoice->batch->course->title ?? 'N/A' }})
                                                         @elseif($invoice->invoice_type == 'batch_postpond')
                                                             <i class="fas fa-calendar-alt text-warning me-1"></i>{{ $invoice->batch->title ?? 'N/A' }} ({{ $invoice->batch->course->title ?? 'N/A' }})
+                                                        @elseif($invoice->invoice_type == 'fine')
+                                                            <i class="fas fa-exclamation-circle text-danger me-1"></i>{{ $invoice->service_name ?? 'N/A' }}
                                                         @endif
                                                     </div>
                                                 </div>

@@ -93,14 +93,19 @@ class InvoiceController extends Controller
             $request->merge(['total_amount' => 2000]);
         } elseif ($request->invoice_type === 'e-service' && $request->filled('service_amount')) {
             $request->merge(['total_amount' => $request->service_amount]);
+        } elseif ($request->invoice_type === 'fine' && $request->filled('fine_amount')) {
+            // Keep total amount in sync with the fine amount
+            $request->merge(['total_amount' => $request->fine_amount]);
         }
 
         $validator = Validator::make($request->all(), [
-            'invoice_type' => 'required|in:course,e-service,batch_change',
+            'invoice_type' => 'required|in:course,e-service,batch_change,fine',
             'course_id' => 'nullable|required_if:invoice_type,course|exists:courses,id',
             'batch_id' => 'nullable|required_if:invoice_type,batch_change|exists:batches,id',
             'service_name' => 'nullable|required_if:invoice_type,e-service|string|max:255',
             'service_amount' => 'nullable|required_if:invoice_type,e-service|numeric|min:0',
+            'fine_type' => 'nullable|required_if:invoice_type,fine|string|max:255',
+            'fine_amount' => 'nullable|required_if:invoice_type,fine|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
             'invoice_date' => 'required|date',
         ]);
@@ -139,6 +144,11 @@ class InvoiceController extends Controller
             } elseif ($request->invoice_type === 'e-service') {
                 $invoiceData['service_name'] = $request->service_name;
                 $invoiceData['service_amount'] = $request->service_amount;
+            } elseif ($request->invoice_type === 'fine') {
+                // Reuse service fields to store fine metadata without schema changes
+                $invoiceData['service_name'] = $request->fine_type;
+                $invoiceData['service_amount'] = $request->fine_amount;
+                $invoiceData['total_amount'] = $request->fine_amount;
             }
             
             $invoice = Invoice::create($invoiceData);
