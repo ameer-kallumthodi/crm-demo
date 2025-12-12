@@ -738,9 +738,8 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get sale count - converted leads where the first payment is approved
-     * A sale is counted when a converted lead has at least one invoice with an approved first payment
-     * First payment = oldest approved payment by created_at for each invoice
+     * Get sale count - converted leads where at least one payment is approved
+     * A sale is counted when a converted lead has at least one invoice with at least one approved payment
      */
     private function getSaleCount()
     {
@@ -748,19 +747,12 @@ class DashboardController extends Controller
         $convertedLeadsQuery = ConvertedLead::query();
         $this->applyRoleBasedFilterToConvertedLeads($convertedLeadsQuery);
         
-        // Count converted leads that have at least one invoice with a first approved payment
-        // Using a subquery to find the first (oldest) approved payment for each invoice
+        // Count converted leads that have at least one invoice with at least one approved payment
         $saleCount = $convertedLeadsQuery
             ->whereHas('invoices', function ($invoiceQuery) {
                 $invoiceQuery->whereHas('payments', function ($paymentQuery) {
-                    // This payment must be the first (oldest) approved payment for its invoice
-                    $paymentQuery->where('status', 'Approved')
-                        ->whereRaw('payments.created_at = (
-                            SELECT MIN(p2.created_at)
-                            FROM payments p2
-                            WHERE p2.invoice_id = payments.invoice_id
-                            AND p2.status = "Approved"
-                        )');
+                    // Count any approved payment (not just the first one)
+                    $paymentQuery->where('status', 'Approved');
                 });
             })
             ->count();
@@ -769,10 +761,9 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get weekly sale count - converted leads where the first payment is approved (this week)
-     * A sale is counted when a converted lead has at least one invoice with an approved first payment
-     * First payment = oldest approved payment by created_at for each invoice
-     * Only counts sales where the first payment was approved this week
+     * Get weekly sale count - converted leads where at least one payment is approved (this week)
+     * A sale is counted when a converted lead has at least one invoice with at least one approved payment
+     * Only counts sales where at least one payment was approved this week
      */
     private function getWeeklySaleCount()
     {
@@ -783,22 +774,14 @@ class DashboardController extends Controller
         $convertedLeadsQuery = ConvertedLead::query();
         $this->applyRoleBasedFilterToConvertedLeads($convertedLeadsQuery);
         
-        // Count converted leads that have at least one invoice with a first approved payment this week
-        // Using a subquery to find the first (oldest) approved payment for each invoice
+        // Count converted leads that have at least one invoice with at least one approved payment this week
         $weeklySaleCount = $convertedLeadsQuery
             ->whereHas('invoices', function ($invoiceQuery) use ($weekStart, $weekEnd) {
                 $invoiceQuery->whereHas('payments', function ($paymentQuery) use ($weekStart, $weekEnd) {
-                    // This payment must be the first (oldest by created_at) approved payment for its invoice
-                    // And it must have been approved this week
+                    // Count any approved payment that was approved this week
                     $paymentQuery->where('status', 'Approved')
                         ->whereNotNull('approved_date')
-                        ->whereBetween('approved_date', [$weekStart, $weekEnd])
-                        ->whereRaw('payments.created_at = (
-                            SELECT MIN(p2.created_at)
-                            FROM payments p2
-                            WHERE p2.invoice_id = payments.invoice_id
-                            AND p2.status = "Approved"
-                        )');
+                        ->whereBetween('approved_date', [$weekStart, $weekEnd]);
                 });
             })
             ->count();
