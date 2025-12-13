@@ -768,6 +768,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/support-nios-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-nios-converted-leads.update-support-details');
         Route::post('/support-converted-leads/{id}/toggle-support-verify', [App\Http\Controllers\SupportConvertedLeadController::class, 'toggleSupportVerification'])->name('support-converted-leads.toggle-support-verify');
 
+        // UG/PG Support Converted Leads Routes
+        Route::get('/support-ugpg-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'ugpgIndex'])->name('support-ugpg-converted-leads.index');
+        Route::post('/support-ugpg-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-ugpg-converted-leads.update-support-details');
+
         // Hotel Management Support Converted Leads Routes
         Route::get('/support-hotel-management-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'hotelManagementIndex'])->name('support-hotel-management-converted-leads.index');
         Route::post('/support-hotel-management-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-hotel-management-converted-leads.update-support-details');

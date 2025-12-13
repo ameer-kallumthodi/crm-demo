@@ -189,6 +189,9 @@
                     <a href="{{ route('admin.support-nios-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> NIOS Converted Support List
                     </a>
+                    <a href="{{ route('admin.support-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> UG/PG Converted Support List
+                    </a>
                     <a href="{{ route('admin.support-hotel-management-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Hotel Management Converted Support List
                     </a>

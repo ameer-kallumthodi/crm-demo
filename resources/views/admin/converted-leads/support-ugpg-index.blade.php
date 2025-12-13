@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'Digital Marketing Converted Support List')
+@section('title', 'UG/PG Converted Support List')
 
 @section('content')
 @php $appTimezone = config('app.timezone'); @endphp
@@ -41,7 +41,7 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Digital Marketing Converted Support List</h5>
+                    <h5 class="m-b-10">UG/PG Converted Support List</h5>
                 </div>
             </div>
             <div class="col-md-6">
@@ -49,7 +49,7 @@
                     <ul class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                         <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                        <li class="breadcrumb-item">Digital Marketing Converted Support List</li>
+                        <li class="breadcrumb-item">UG/PG Converted Support List</li>
                     </ul>
                     <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-secondary">
                         <i class="ti ti-arrow-left"></i> Back to Converted Leads
@@ -192,7 +192,7 @@
                     <a href="{{ route('admin.support-nios-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> NIOS Converted Support List
                     </a>
-                    <a href="{{ route('admin.support-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.support-ugpg-converted-leads.index') }}" class="btn btn-outline-primary active">
                         <i class="ti ti-headphones"></i> UG/PG Converted Support List
                     </a>
                     <a href="{{ route('admin.support-hotel-management-converted-leads.index') }}" class="btn btn-outline-primary">
@@ -201,7 +201,7 @@
                     <a href="{{ route('admin.support-gmvss-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> GMVSS Converted Support List
                     </a>
-                    <a href="{{ route('admin.support-digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary active">
+                    <a href="{{ route('admin.support-digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Digital Marketing Converted Support List
                     </a>
                     <a href="{{ route('admin.support-diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
@@ -241,12 +241,12 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.support-digital-marketing-converted-leads.index') }}" id="filterForm">
+                <form method="GET" action="{{ route('admin.support-ugpg-converted-leads.index') }}" id="filterForm">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
                             <input type="text" class="form-control" id="search" name="search"
-                                value="{{ request('search') }}" placeholder="Name, Phone, Email, Application Number">
+                                value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="batch_id" class="form-label">Batch</label>
@@ -266,17 +266,24 @@
                             </select>
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
-                            <label for="subject_id" class="form-label">Subject</label>
-                            <select class="form-select" id="subject_id" name="subject_id">
-                                <option value="">All Subjects</option>
-                                @foreach($subjects as $subject)
-                                <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>
-                                    {{ $subject->title }}
+                            <label for="university_id" class="form-label">University</label>
+                            <select class="form-select" id="university_id" name="university_id">
+                                <option value="">All Universities</option>
+                                @foreach($universities as $university)
+                                <option value="{{ $university->id }}" {{ request('university_id') == $university->id ? 'selected' : '' }}>
+                                    {{ $university->title }}
                                 </option>
                                 @endforeach
                             </select>
                         </div>
-
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="course_type" class="form-label">Course Type</label>
+                            <select class="form-select" id="course_type" name="course_type">
+                                <option value="">All</option>
+                                <option value="UG" {{ request('course_type')==='UG' ? 'selected' : '' }}>UG</option>
+                                <option value="PG" {{ request('course_type')==='PG' ? 'selected' : '' }}>PG</option>
+                            </select>
+                        </div>
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from"
@@ -291,7 +298,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.support-digital-marketing-converted-leads.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.support-ugpg-converted-leads.index') }}" class="btn btn-secondary">
                                 <i class="ti ti-refresh"></i> Clear
                             </a>
                         </div>
@@ -308,13 +315,13 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5>Digital Marketing Converted Support List</h5>
+                <h5>UG/PG Converted Support List</h5>
             </div>
             <div class="card-body">
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover data_table_basic" id="supportDigitalMarketingTable">
+                        <table class="table table-hover data_table_basic" id="supportUgpgTable">
                             <thead>
                                 <tr>
                                     <th>SL No</th>
@@ -326,12 +333,9 @@
                                     <th>DOB</th>
                                     <th>Application Number</th>
                                     <th>Phone</th>
-                                    <th>Subject</th>
+                                    <th>WhatsApp Number</th>
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
-
-
-
                                     <th>CALL - 1</th>
                                     <th>APP</th>
                                     <th>WhatsApp Group</th>
@@ -343,7 +347,7 @@
                             <tbody>
                                 @forelse($convertedLeads as $index => $convertedLead)
                                 <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
-                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ ($convertedLeads->currentPage() - 1) * $convertedLeads->perPage() + $index + 1 }}</td>
                                     <td>
                                         @php
                                         $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
@@ -389,14 +393,19 @@
                                     <td>{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</td>
                                     <td>{{ $convertedLead->studentDetails?->application_number ?? '-' }}</td>
                                     <td>{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</td>
-                                    <td>{{ $convertedLead->subject?->title ?? '-' }}</td>
+                                    <td>
+                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
+                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
                                     <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
                                     <td>{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</td>
-
                                     <td>
                                         <div class="inline-edit" data-field="call_1" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->call_1 }}">
                                             <span class="display-value">{{ $convertedLead->supportDetails?->call_1 ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_support_team())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </button>
@@ -406,7 +415,7 @@
                                     <td>
                                         <div class="inline-edit" data-field="app" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->app }}">
                                             <span class="display-value">{{ $convertedLead->supportDetails?->app ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_support_team())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </button>
@@ -416,7 +425,7 @@
                                     <td>
                                         <div class="inline-edit" data-field="whatsapp_group" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->whatsapp_group }}">
                                             <span class="display-value">{{ $convertedLead->supportDetails?->whatsapp_group ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_support_team())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </button>
@@ -426,7 +435,7 @@
                                     <td>
                                         <div class="inline-edit" data-field="telegram_group" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->telegram_group }}">
                                             <span class="display-value">{{ $convertedLead->supportDetails?->telegram_group ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_support_team())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </button>
@@ -436,7 +445,7 @@
                                     <td>
                                         <div class="inline-edit" data-field="problems" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->supportDetails?->problems }}">
                                             <span class="display-value">{{ $convertedLead->supportDetails?->problems ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_support_team())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </button>
@@ -471,11 +480,14 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="17" class="text-center">No converted leads found for support</td>
+                                    <td colspan="18" class="text-center">No converted leads found for support</td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    <div class="d-flex justify-content-center mt-3">
+                        {{ $convertedLeads->links() }}
                     </div>
                 </div>
 
@@ -516,8 +528,6 @@
                                                 <i class="ti ti-receipt me-2"></i>View Invoice
                                             </a>
                                         </li>
-                                        <li>
-                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -532,15 +542,13 @@
                                     <small class="text-muted d-block">Application Number</small>
                                     <span class="fw-medium">{{ $convertedLead->studentDetails?->application_number ?? 'N/A' }}</span>
                                 </div>
-
-
                                 <div class="col-6">
                                     <small class="text-muted d-block">Converted Date</small>
                                     <span class="fw-medium">{{ $convertedLead->created_at->format('d-m-Y') }}</span>
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block">Subject</small>
-                                    <span class="fw-medium">{{ $convertedLead->supportDetails?->subject?->title ?? $convertedLead->subject?->title ?? 'N/A' }}</span>
+                                    <small class="text-muted d-block">Batch</small>
+                                    <span class="fw-medium">{{ $convertedLead->batch?->title ?? 'N/A' }}</span>
                                 </div>
                                 <div class="col-12">
                                     <small class="text-muted d-block">Academic Verified At</small>
@@ -563,6 +571,9 @@
                         </div>
                     </div>
                     @endforelse
+                    <div class="d-flex justify-content-center mt-3">
+                        {{ $convertedLeads->links() }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -571,6 +582,27 @@
 <!-- [ Main Content ] end -->
 
 @endsection
+
+<!-- Support Verify Modal -->
+<div class="modal fade" id="supportVerifyModal" tabindex="-1" aria-labelledby="supportVerifyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="supportVerifyModalLabel">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="supportVerifyModalText" class="mb-0"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSupportVerifyBtn">
+                    <span class="confirm-text">Confirm</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @push('styles')
 <style>
@@ -641,12 +673,12 @@
         font-size: 11px;
     }
 
-    #supportDigitalMarketingTable thead th,
-    #supportDigitalMarketingTable tbody td {
+    #supportUgpgTable thead th,
+    #supportUgpgTable tbody td {
         white-space: nowrap;
     }
 
-    #supportDigitalMarketingTable thead th {
+    #supportUgpgTable thead th {
         position: sticky;
         top: 0;
         z-index: 5;
@@ -654,11 +686,11 @@
         box-shadow: inset 0 -1px 0 #e9ecef;
     }
 
-    #supportDigitalMarketingTable tbody tr:hover {
+    #supportUgpgTable tbody tr:hover {
         background: #fafbff;
     }
 
-    #supportDigitalMarketingTable td .display-value {
+    #supportUgpgTable td .display-value {
         display: inline-block;
         max-width: 220px;
         overflow: hidden;
@@ -667,11 +699,11 @@
         vertical-align: middle;
     }
 
-    #supportDigitalMarketingTable .btn-group .btn {
+    #supportUgpgTable .btn-group .btn {
         margin-right: 4px;
     }
 
-    #supportDigitalMarketingTable .btn-group .btn:last-child {
+    #supportUgpgTable .btn-group .btn:last-child {
         margin-right: 0;
     }
 </style>
@@ -681,12 +713,6 @@
 <script>
     $(document).ready(function() {
         // DataTable is automatically initialized by layout for tables with 'data_table_basic' class
-
-        // Batch filter enhancement
-        $('#batch_id').on('change', function() {
-            // Auto-submit form when batch is changed for better UX
-            $('#filterForm').submit();
-        });
 
         // Dependent filters: load admission batches by batch
         function loadAdmissionBatchesByBatch(batchId, selectedId) {
@@ -738,9 +764,7 @@
 
             let editForm = '';
 
-            if (field === 'subject_id') {
-                editForm = createSubjectField(field, currentValue);
-            } else if (['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'app', 'whatsapp_group', 'telegram_group', 'mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5', 'first_live', 'first_exam_registration', 'first_exam', 'second_live', 'second_exam', 'model_exam_live', 'model_exam', 'practical', 'self_registration', 'assignment', 'mock_test', 'admit_card', 'exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6'].includes(field)) {
+            if (['call_1', 'app', 'whatsapp_group', 'telegram_group'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
             } else {
                 editForm = createInputField(field, currentValue);
@@ -748,12 +772,6 @@
 
             container.addClass('editing');
             container.append(editForm);
-
-            // Load subjects if it's a subject field
-            if (field === 'subject_id') {
-                const $select = container.find('select');
-                loadSubjectsForEdit($select, currentValue);
-            }
 
             container.find('input, select').first().focus();
         });
@@ -774,7 +792,7 @@
             btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
 
             $.ajax({
-                url: `/admin/support-digital-marketing-converted-leads/${id}/update-support-details`,
+                url: `/admin/support-ugpg-converted-leads/${id}/update-support-details`,
                 method: 'POST',
                 data: {
                     field: field,
@@ -783,7 +801,7 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        container.find('.display-value').text(response.value || value);
+                        container.find('.display-value').text(response.value || value || '-');
                         // Update the data-current attribute with the new value
                         container.data('current', response.value || value);
                         toast_success(response.message);
@@ -839,37 +857,10 @@
             `;
         }
 
-        function createSubjectField(field, currentValue) {
-            return `
-                <div class="edit-form">
-                    <select class="form-select form-select-sm">
-                        <option value="">Select Subject</option>
-                    </select>
-                    <div class="btn-group mt-1">
-                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function loadSubjectsForEdit($select, currentValue) {
-            $.get('/api/subjects/by-course/11').done(function(list) {
-                let options = '<option value="">Select Subject</option>';
-                list.forEach(function(item) {
-                    const selected = String(currentValue) === String(item.id) ? 'selected' : '';
-                    options += `<option value="${item.id}" ${selected}>${item.title}</option>`;
-                });
-                $select.html(options);
-            }).fail(function() {
-                $select.html('<option value="">Error loading subjects</option>');
-            });
-        }
-
         function createSelectField(field, currentValue) {
             let options = '';
 
-            if (['call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9'].includes(field)) {
+            if (field === 'call_1') {
                 options = `
                     <option value="">Select Call Status</option>
                     <option value="Call Not Answered" ${currentValue === 'Call Not Answered' ? 'selected' : ''}>Call Not Answered</option>
@@ -906,50 +897,6 @@
                     <option value="inconsistent responses" ${currentValue === 'inconsistent responses' ? 'selected' : ''}>inconsistent responses</option>
                     <option value="task complete" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
                 `;
-            } else if (['mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5'].includes(field)) {
-                options = `
-                    <option value="">Select Support Live Status</option>
-                    <option value="Not Respond" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
-                    <option value="Task Complete" ${currentValue === 'Task Complete' ? 'selected' : ''}>Task Complete</option>
-                `;
-            } else if (['first_live', 'second_live', 'model_exam_live'].includes(field)) {
-                options = `
-                    <option value="">Select Live Status</option>
-                    <option value="Not Respond" ${currentValue === 'Not Respond' ? 'selected' : ''}>Not Respond</option>
-                    <option value="1 subject attend" ${currentValue === '1 subject attend' ? 'selected' : ''}>1 subject attend</option>
-                    <option value="2 subject attend" ${currentValue === '2 subject attend' ? 'selected' : ''}>2 subject attend</option>
-                    <option value="3 subject attend" ${currentValue === '3 subject attend' ? 'selected' : ''}>3 subject attend</option>
-                    <option value="4 subject attend" ${currentValue === '4 subject attend' ? 'selected' : ''}>4 subject attend</option>
-                    <option value="5 subject attend" ${currentValue === '5 subject attend' ? 'selected' : ''}>5 subject attend</option>
-                    <option value="6 subject attend" ${currentValue === '6 subject attend' ? 'selected' : ''}>6 subject attend</option>
-                    <option value="Task complete" ${currentValue === 'Task complete' ? 'selected' : ''}>Task complete</option>
-                `;
-            } else if (['first_exam_registration', 'practical', 'self_registration', 'mock_test', 'admit_card'].includes(field)) {
-                options = `
-                    <option value="">Select Status</option>
-                    <option value="Did not" ${currentValue === 'Did not' ? 'selected' : ''}>Did not</option>
-                    <option value="Task complete" ${currentValue === 'Task complete' ? 'selected' : ''}>Task complete</option>
-                `;
-            } else if (['first_exam', 'second_exam', 'model_exam', 'assignment'].includes(field)) {
-                options = `
-                    <option value="">Select Exam Status</option>
-                    <option value="not respond" ${currentValue === 'not respond' ? 'selected' : ''}>not respond</option>
-                    <option value="1 subject attend" ${currentValue === '1 subject attend' ? 'selected' : ''}>1 subject attend</option>
-                    <option value="2 subject attend" ${currentValue === '2 subject attend' ? 'selected' : ''}>2 subject attend</option>
-                    <option value="3 subject attend" ${currentValue === '3 subject attend' ? 'selected' : ''}>3 subject attend</option>
-                    <option value="4 subject attend" ${currentValue === '4 subject attend' ? 'selected' : ''}>4 subject attend</option>
-                    <option value="5 subject attend" ${currentValue === '5 subject attend' ? 'selected' : ''}>5 subject attend</option>
-                    <option value="6 subject attend" ${currentValue === '6 subject attend' ? 'selected' : ''}>6 subject attend</option>
-                    <option value="task complete" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
-                `;
-            } else if (['exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6'].includes(field)) {
-                options = `
-                    <option value="">Select Exam Subject Status</option>
-                    <option value="Did not log in on time" ${currentValue === 'Did not log in on time' ? 'selected' : ''}>Did not log in on time</option>
-                    <option value="missed the exam" ${currentValue === 'missed the exam' ? 'selected' : ''}>missed the exam</option>
-                    <option value="technical issue" ${currentValue === 'technical issue' ? 'selected' : ''}>technical issue</option>
-                    <option value="task complete" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
-                `;
             }
 
             return `
@@ -964,78 +911,57 @@
                 </div>
             `;
         }
-    });
 
-    // Toggle Support Verification with confirmation modal
-    let supportVerifyUrl = null;
-    $(document).off('click', '.toggle-support-verify-btn').on('click', '.toggle-support-verify-btn', function(e) {
-        e.preventDefault();
-        const $btn = $(this);
-        const url = $btn.data('url');
-        const name = $btn.data('name') || 'this student';
-        const isVerified = String($btn.data('verified')) === '1';
+        // Support verify with confirmation modal
+        let supportVerifyUrl = null;
+        $(document).off('click', '.toggle-support-verify-btn').on('click', '.toggle-support-verify-btn', function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const url = $btn.data('url');
+            const name = $btn.data('name') || 'this student';
+            const isVerified = String($btn.data('verified')) === '1';
 
-        supportVerifyUrl = url;
+            supportVerifyUrl = url;
 
-        const actionText = isVerified ? 'unverify' : 'verify';
-        const modalText = `Are you sure you want to ${actionText} support status for <strong>${name}</strong>?`;
-        $('#supportVerifyModalText').html(modalText);
-        const $confirmBtn = $('#confirmSupportVerifyBtn');
-        $confirmBtn.removeClass('btn-danger btn-success').addClass(isVerified ? 'btn-danger' : 'btn-success');
-        $('#supportVerifyModal').modal('show');
-    });
+            const actionText = isVerified ? 'unverify' : 'verify';
+            const modalText = `Are you sure you want to ${actionText} support status for <strong>${name}</strong>?`;
+            $('#supportVerifyModalText').html(modalText);
+            const $confirmBtn = $('#confirmSupportVerifyBtn');
+            $confirmBtn.removeClass('btn-danger btn-success').addClass(isVerified ? 'btn-danger' : 'btn-success');
+            $('#supportVerifyModal').modal('show');
+        });
 
-    $('#confirmSupportVerifyBtn').on('click', function() {
-        if (!supportVerifyUrl) return;
-        const $confirmBtn = $(this);
-        const originalHtml = $confirmBtn.html();
-        $confirmBtn.prop('disabled', true).addClass('disabled');
-        $.post(supportVerifyUrl, {
-                _token: '{{ csrf_token() }}'
-            })
-            .done(function(res) {
-                if (res && res.success) {
-                    show_alert('success', res.message || 'Updated');
-                    $('#supportVerifyModal').modal('hide');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 600);
-                } else {
-                    show_alert('error', (res && res.message) ? res.message : 'Failed to update');
-                }
-            })
-            .fail(function(xhr) {
-                let msg = 'Failed to update';
-                if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
-                    msg = xhr.responseJSON.message;
-                }
-                show_alert('error', msg);
-            })
-            .always(function() {
-                $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
-                supportVerifyUrl = null;
-            });
+        $('#confirmSupportVerifyBtn').on('click', function() {
+            if (!supportVerifyUrl) return;
+            const $confirmBtn = $(this);
+            const originalHtml = $confirmBtn.html();
+            $confirmBtn.prop('disabled', true).addClass('disabled');
+            $.post(supportVerifyUrl, {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                })
+                .done(function(res) {
+                    if (res && res.success) {
+                        toast_success(res.message || 'Updated');
+                        $('#supportVerifyModal').modal('hide');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 600);
+                    } else {
+                        toast_error((res && res.message) ? res.message : 'Failed to update');
+                    }
+                })
+                .fail(function(xhr) {
+                    let msg = 'Failed to update';
+                    if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    }
+                    toast_error(msg);
+                })
+                .always(function() {
+                    $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
+                    supportVerifyUrl = null;
+                });
+        });
     });
 </script>
 @endpush
-
-<!-- Support Verify Modal -->
-<div class="modal fade" id="supportVerifyModal" tabindex="-1" aria-labelledby="supportVerifyModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="supportVerifyModalLabel">Confirm Action</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="supportVerifyModalText" class="mb-0"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirmSupportVerifyBtn">
-                    <span class="confirm-text">Confirm</span>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
