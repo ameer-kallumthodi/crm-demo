@@ -361,6 +361,7 @@
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
                                     <th>Status</th>
+                                    <th>Cancelled By</th>
                                     <th>REG. FEE</th>
                                     <th>Mail</th>
                                     <th>Pending Payment</th>
@@ -465,6 +466,18 @@
                                     <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
                                     <td>{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</td>
                                     <td>{{ $convertedLead->status ?? 'N/A' }}</td>
+                                    <td>
+                                        @if($convertedLead->is_cancelled && $convertedLead->cancelledBy)
+                                            <div>
+                                                <span class="fw-semibold">{{ $convertedLead->cancelledBy->name }}</span>
+                                                @if($convertedLead->cancelled_at)
+                                                    <br><small class="text-muted">{{ $convertedLead->cancelled_at->format('d-m-Y h:i A') }}</small>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         @php $regFeeValue = $convertedLead->studentDetails?->reg_fee; @endphp
                                         {{ $regFeeValue ?? 'N/A' }}

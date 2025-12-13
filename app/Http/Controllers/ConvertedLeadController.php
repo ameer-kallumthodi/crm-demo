@@ -36,6 +36,7 @@ class ConvertedLeadController extends Controller
             'course',
             'academicAssistant',
             'createdBy',
+            'cancelledBy',
             'subject',
             'studentDetails',
             'leadDetail', // For Academic Document Approved (leads_details.reviewed_at)
@@ -2264,6 +2265,17 @@ class ConvertedLeadController extends Controller
 
         $convertedLead->is_cancelled = (bool) $validated['is_cancelled'];
         $convertedLead->updated_by = AuthHelper::getCurrentUserId();
+        
+        // Set cancelled_by and cancelled_at when cancelling
+        if ($convertedLead->is_cancelled) {
+            $convertedLead->cancelled_by = AuthHelper::getCurrentUserId();
+            $convertedLead->cancelled_at = now();
+        } else {
+            // Clear cancelled_by and cancelled_at when uncancelling
+            $convertedLead->cancelled_by = null;
+            $convertedLead->cancelled_at = null;
+        }
+        
         $convertedLead->save();
 
         $message = $convertedLead->is_cancelled

@@ -57,6 +57,7 @@ class PostSalesConvertedLeadController extends Controller
                 'admissionBatch',
                 'subject',
                 'lead.telecaller:id,name',
+                'cancelledBy:id,name',
                 'invoices.payments' // For checking pending payments
             ]);
 
@@ -120,13 +121,14 @@ class PostSalesConvertedLeadController extends Controller
                 8 => 'id', // Admission Batch - no sorting
                 9 => 'id', // Subject - no sorting
                 10 => 'id', // Status - no sorting
-                11 => 'id', // Paid Status - no sorting
-                12 => 'id', // Call Status - no sorting
-                13 => 'id', // Called Date - no sorting
-                14 => 'id', // Call Time - no sorting
-                15 => 'id', // Post Sale Followup - no sorting
-                16 => 'id', // Remark - no sorting
-                17 => 'id', // Actions - no sorting
+                11 => 'id', // Cancelled By - no sorting
+                12 => 'id', // Paid Status - no sorting
+                13 => 'id', // Call Status - no sorting
+                14 => 'id', // Called Date - no sorting
+                15 => 'id', // Call Time - no sorting
+                16 => 'id', // Post Sale Followup - no sorting
+                17 => 'id', // Remark - no sorting
+                18 => 'id', // Actions - no sorting
             ];
 
             // Apply ordering
@@ -163,6 +165,7 @@ class PostSalesConvertedLeadController extends Controller
                     'admission_batch' => $convertedLead->admissionBatch?->title ?? 'N/A',
                     'subject' => $convertedLead->subject?->title ?? 'N/A',
             'status' => $this->renderStatus($convertedLead),
+                    'cancelled_by' => $this->renderCancelledBy($convertedLead),
                     'paid_status' => $this->renderPaidStatus($convertedLead),
                     'call_status' => $this->renderCallStatus($convertedLead),
                     'called_date' => $this->renderCalledDate($convertedLead),
@@ -421,6 +424,8 @@ class PostSalesConvertedLeadController extends Controller
             'register_number' => $convertedLead->register_number ?? 'No register #',
             'status' => $convertedLead->postsale_status ?? null,
             'is_cancelled' => (bool) $convertedLead->is_cancelled,
+            'cancelled_by' => $convertedLead->cancelledBy ? $convertedLead->cancelledBy->name : null,
+            'cancelled_at' => $convertedLead->cancelled_at ? $convertedLead->cancelled_at->format('d M Y h:i A') : null,
             'phone' => \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone),
             'email' => $convertedLead->email ?? 'N/A',
             'bde_name' => $convertedLead->lead?->telecaller?->name ?? 'Unassigned',
@@ -466,6 +471,7 @@ class PostSalesConvertedLeadController extends Controller
             'subject',
             'academicAssistant',
             'createdBy',
+            'cancelledBy',
             'studentDetails.registrationLink'
         ])->findOrFail($id);
 
@@ -687,6 +693,12 @@ class PostSalesConvertedLeadController extends Controller
             $convertedLead->called_time = $request->called_time;
             $convertedLead->post_sales_remarks = $request->post_sales_remarks;
             
+            // Set cancelled_by and cancelled_at when status is set to 'cancel'
+            if (strcasecmp($request->status, 'cancel') === 0) {
+                $convertedLead->cancelled_by = AuthHelper::getCurrentUserId();
+                $convertedLead->cancelled_at = now();
+            }
+            
             // Only set followup date/time if not fully paid
             if (!$isFullyPaid && !in_array($request->status, ['postpond', 'cancel'], true)) {
                 $convertedLead->postsale_followupdate = $request->followup_date;
@@ -790,6 +802,17 @@ class PostSalesConvertedLeadController extends Controller
 
         $convertedLead->is_cancelled = (bool) $validated['is_cancelled'];
         $convertedLead->updated_by = AuthHelper::getCurrentUserId();
+        
+        // Set cancelled_by and cancelled_at when cancelling
+        if ($convertedLead->is_cancelled) {
+            $convertedLead->cancelled_by = AuthHelper::getCurrentUserId();
+            $convertedLead->cancelled_at = now();
+        } else {
+            // Clear cancelled_by and cancelled_at when uncancelling
+            $convertedLead->cancelled_by = null;
+            $convertedLead->cancelled_at = null;
+        }
+        
         $convertedLead->save();
 
         $message = $convertedLead->is_cancelled

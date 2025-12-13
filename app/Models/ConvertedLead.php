@@ -22,6 +22,8 @@ class ConvertedLead extends Model
         'status',
         'postsale_status',
         'is_cancelled',
+        'cancelled_by',
+        'cancelled_at',
         'postsale_followupdate',
         'postsale_followuptime',
         'paid_status',
@@ -64,6 +66,7 @@ class ConvertedLead extends Model
         'academic_verified_at' => 'datetime',
         'support_verified_at' => 'datetime',
         'course_changed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
         'postsale_followupdate' => 'date',
         'called_date' => 'date',
         'called_time' => 'datetime:H:i:s',
@@ -141,6 +144,11 @@ class ConvertedLead extends Model
     public function regUpdatedBy()
     {
         return $this->belongsTo(User::class, 'reg_updated_by');
+    }
+
+    public function cancelledBy()
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
     }
 
     public function admissionBatch()

@@ -198,6 +198,7 @@ $columns = [
     ['data' => 'admission_batch', 'name' => 'admission_batch', 'orderable' => false, 'searchable' => false],
     ['data' => 'subject', 'name' => 'subject', 'orderable' => false, 'searchable' => false],
     ['data' => 'status', 'name' => 'status', 'orderable' => false, 'searchable' => false],
+    ['data' => 'cancelled_by', 'name' => 'cancelled_by', 'orderable' => false, 'searchable' => false],
     ['data' => 'paid_status', 'name' => 'paid_status', 'orderable' => false, 'searchable' => false],
     ['data' => 'call_status', 'name' => 'call_status', 'orderable' => false, 'searchable' => false],
     ['data' => 'called_date', 'name' => 'called_date', 'orderable' => false, 'searchable' => false],
@@ -875,6 +876,13 @@ $columns = [
                     const cancelStateLabel = isCancelledFlag ? 'Confirmed' : 'Cancelled';
                     const cancelStateClass = isCancelledFlag ? 'bg-danger' : 'bg-secondary';
                     cardHtml += '<div class="col-12"><span class="badge bg-danger me-1">Cancel</span><span class="badge ' + cancelStateClass + '">Flag: ' + cancelStateLabel + '</span></div>';
+                    if (data.cancelled_by) {
+                        cardHtml += '<div class="col-12"><small class="text-muted f-11"><i class="ti ti-user f-12 me-1"></i>Cancelled by: ' + escapeHtml(data.cancelled_by);
+                        if (data.cancelled_at) {
+                            cardHtml += ' on ' + escapeHtml(data.cancelled_at);
+                        }
+                        cardHtml += '</small></div>';
+                    }
                 }
                 if (data.called_date) {
                     cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-calendar-time f-12 text-muted me-1"></i><small class="text-muted f-11">Called: ' + escapeHtml(data.called_date) + '</small></div></div>';
