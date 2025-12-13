@@ -478,10 +478,17 @@
                                         </div>
                                     </td>
                                     <td>
-                                        @php
-                                            $issuedDate = $convertedLead->studentDetails?->certificate_issued_date ? (strtotime($convertedLead->studentDetails->certificate_issued_date) ? date('d-m-Y', strtotime($convertedLead->studentDetails->certificate_issued_date)) : $convertedLead->studentDetails->certificate_issued_date) : 'N/A';
-                                        @endphp
-                                        <span class="display-value">{{ $issuedDate }}</span>
+                                        <div class="inline-edit" data-field="certificate_issued_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->certificate_issued_date ? (strtotime($convertedLead->studentDetails->certificate_issued_date) ? date('Y-m-d', strtotime($convertedLead->studentDetails->certificate_issued_date)) : $convertedLead->studentDetails->certificate_issued_date) : '' }}">
+                                            @php
+                                                $issuedDate = $convertedLead->studentDetails?->certificate_issued_date ? (strtotime($convertedLead->studentDetails->certificate_issued_date) ? date('d-m-Y', strtotime($convertedLead->studentDetails->certificate_issued_date)) : $convertedLead->studentDetails->certificate_issued_date) : 'N/A';
+                                            @endphp
+                                            <span class="display-value">{{ $issuedDate }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="inline-edit" data-field="certificate_distribution_mode" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->certificate_distribution_mode }}">
@@ -504,7 +511,14 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
+                                            <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="" role="group">

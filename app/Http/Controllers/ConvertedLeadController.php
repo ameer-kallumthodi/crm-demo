@@ -2594,7 +2594,7 @@ class ConvertedLeadController extends Controller
         }
         
         // If mentor, restrict to allowed fields only
-        $mentorAllowedFields = ['register_number', 'phone', 'enroll_no', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks', 'all_online_result_publication_date', 'certificate_publication_date', 'certificate_distribution_mode', 'courier_tracking_number'];
+        $mentorAllowedFields = ['register_number', 'phone', 'enroll_no', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks', 'all_online_result_publication_date', 'online_result_publication_date', 'certificate_publication_date', 'certificate_distribution_mode', 'courier_tracking_number'];
         $financeAllowedFields = ['status', 'exam_fee', 'registration_link_id'];
 
         $convertedLead = ConvertedLead::findOrFail($id);
@@ -2701,6 +2701,7 @@ class ConvertedLeadController extends Controller
             'remarks' => 'nullable|string|max:1000',
             // Mentor detail fields
             'all_online_result_publication_date' => 'nullable|date',
+            'online_result_publication_date' => 'nullable|date',
             'certificate_publication_date' => 'nullable|date',
             'certificate_distribution_mode' => 'nullable|string|in:In Person,Courier',
             'courier_tracking_number' => 'nullable|string|max:255',
@@ -2938,7 +2939,7 @@ class ConvertedLeadController extends Controller
         } elseif ($field === 'registration_link_id' && $updatedValue) {
             $registrationLink = \App\Models\RegistrationLink::find($updatedValue);
             $updatedValue = $registrationLink ? $registrationLink->title : $updatedValue;
-        } elseif (in_array($field, ['certificate_received_date', 'certificate_issued_date', 'class_starting_date', 'class_ending_date', 'complete_cancel_date', 'screening', 'all_online_result_publication_date', 'certificate_publication_date']) && $updatedValue) {
+        } elseif (in_array($field, ['certificate_received_date', 'certificate_issued_date', 'class_starting_date', 'class_ending_date', 'complete_cancel_date', 'screening', 'all_online_result_publication_date', 'online_result_publication_date', 'certificate_publication_date']) && $updatedValue) {
             $updatedValue = \Carbon\Carbon::parse($updatedValue)->format('d-m-Y');
         } elseif ($field === 'class_time' && $updatedValue) {
             $updatedValue = \Carbon\Carbon::parse($updatedValue)->format('h:i A');
