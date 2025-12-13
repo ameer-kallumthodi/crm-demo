@@ -23,10 +23,11 @@ class SupportConvertedLeadController extends Controller
     public function index(Request $request)
     {
         $query = ConvertedLead::with([
-            'lead', 
-            'course', 
-            'academicAssistant', 
-            'createdBy', 
+            'lead',
+            'course',
+            'academicAssistant',
+            'createdBy',
+            'cancelledBy',
             'studentDetails',
             'supportDetails',
             'subject',
@@ -224,10 +225,11 @@ class SupportConvertedLeadController extends Controller
     public function niosIndex(Request $request)
     {
         $query = ConvertedLead::with([
-            'lead', 
-            'course', 
-            'academicAssistant', 
-            'createdBy', 
+            'lead',
+            'course',
+            'academicAssistant',
+            'createdBy',
+            'cancelledBy',
             'studentDetails',
             'supportDetails',
             'subject',
@@ -602,10 +604,11 @@ class SupportConvertedLeadController extends Controller
     private function getCourseSupportIndex(Request $request, $courseId, $pageTitle, $viewName)
     {
         $query = ConvertedLead::with([
-            'lead', 
-            'course', 
-            'academicAssistant', 
-            'createdBy', 
+            'lead',
+            'course',
+            'academicAssistant',
+            'createdBy',
+            'cancelledBy',
             'studentDetails',
             'supportDetails',
             'subject',

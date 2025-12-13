@@ -44,7 +44,16 @@
                 <h5 class="mb-0 d-flex align-items-center gap-2"><i class="ti ti-user-check text-primary"></i> Converted Lead Information</h5>
                 <div class="d-flex align-items-center gap-2">
                     @if($convertedLead->is_cancelled)
-                        <span class="badge bg-danger">Cancelled</span>
+                        <div>
+                            <span class="badge bg-danger">Cancelled</span>
+                            @if($convertedLead->cancelledBy)
+                                <br><small class="text-muted">By: {{ $convertedLead->cancelledBy->name }}
+                                @if($convertedLead->cancelled_at)
+                                    ({{ $convertedLead->cancelled_at->format('d-m-Y h:i A') }})
+                                @endif
+                                </small>
+                            @endif
+                        </div>
                     @endif
                     <span class="badge bg-light-primary text-primary">ID #{{ $convertedLead->id }}</span>
                 </div>
@@ -64,7 +73,16 @@
                                         <h4 class="mb-1">{{ $convertedLead->name }}</h4>
                                         <p class="text-muted mb-0">Converted Lead</p>
                                         @if($convertedLead->is_cancelled)
-                                            <span class="badge bg-danger mt-1">Cancelled</span>
+                                            <div>
+                                                <span class="badge bg-danger mt-1">Cancelled</span>
+                                                @if($convertedLead->cancelledBy)
+                                                    <br><small class="text-muted mt-1 d-block">By: {{ $convertedLead->cancelledBy->name }}
+                                                    @if($convertedLead->cancelled_at)
+                                                        <br>{{ $convertedLead->cancelled_at->format('d-m-Y h:i A') }}
+                                                    @endif
+                                                    </small>
+                                                @endif
+                                            </div>
                                         @endif
                                     </div>
                                 </div>

@@ -422,7 +422,16 @@
                                     <td>
                                         {{ $convertedLead->name }}
                                         @if($convertedLead->is_cancelled)
-                                        <span class="badge bg-danger ms-2">Cancelled</span>
+                                        <div>
+                                            <span class="badge bg-danger ms-2">Cancelled</span>
+                                            @if($convertedLead->cancelledBy)
+                                                <br><small class="text-muted ms-2">By: {{ $convertedLead->cancelledBy->name }}
+                                                @if($convertedLead->cancelled_at)
+                                                    ({{ $convertedLead->cancelled_at->format('d-m-Y h:i A') }})
+                                                @endif
+                                                </small>
+                                            @endif
+                                        </div>
                                         @endif
                                     </td>
                                     <td>
@@ -665,7 +674,16 @@
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1 fw-bold">{{ $convertedLead->name }}</h6>
                                     @if($convertedLead->is_cancelled)
-                                    <span class="badge bg-danger ms-2">Cancelled</span>
+                                    <div>
+                                        <span class="badge bg-danger ms-2">Cancelled</span>
+                                        @if($convertedLead->cancelledBy)
+                                            <br><small class="text-muted ms-2">By: {{ $convertedLead->cancelledBy->name }}
+                                            @if($convertedLead->cancelled_at)
+                                                ({{ $convertedLead->cancelled_at->format('d-m-Y h:i A') }})
+                                            @endif
+                                            </small>
+                                        @endif
+                                    </div>
                                     @endif
                                     <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
                                 </div>

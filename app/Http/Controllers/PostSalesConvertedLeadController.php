@@ -244,7 +244,19 @@ class PostSalesConvertedLeadController extends Controller
             'followup' => 'bg-primary',
             default => 'bg-secondary'
         };
-        return '<span class="badge ' . $badgeClass . '">' . htmlspecialchars(ucfirst($status), ENT_QUOTES, 'UTF-8') . '</span>';
+        
+        $html = '<span class="badge ' . $badgeClass . '">' . htmlspecialchars(ucfirst($status), ENT_QUOTES, 'UTF-8') . '</span>';
+        
+        // Add cancelled_by information if status is cancel
+        if (strcasecmp($status, 'cancel') === 0 && $convertedLead->is_cancelled && $convertedLead->cancelledBy) {
+            $html .= '<br><small class="text-muted d-block mt-1">By: ' . htmlspecialchars($convertedLead->cancelledBy->name, ENT_QUOTES, 'UTF-8');
+            if ($convertedLead->cancelled_at) {
+                $html .= '<br>' . htmlspecialchars($convertedLead->cancelled_at->format('d-m-Y h:i A'), ENT_QUOTES, 'UTF-8');
+            }
+            $html .= '</small>';
+        }
+        
+        return $html;
     }
 
     /**
