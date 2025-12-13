@@ -196,6 +196,10 @@ class LeadsController extends Controller
         $user = $request->user();
 
         if (!$user) {
+            Log::warning('Call API: Unauthorized access attempt', [
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent()
+            ]);
             return response()->json([
                 'status' => false,
                 'message' => 'Unauthorized'
@@ -204,6 +208,13 @@ class LeadsController extends Controller
 
         $validated = $request->validate([
             'lead_id' => 'required|integer|exists:leads,id'
+        ]);
+
+        Log::info('Call API: Call request initiated', [
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'lead_id' => $validated['lead_id'],
+            'ip' => $request->ip()
         ]);
 
         $leadQuery = Lead::query()
@@ -215,6 +226,10 @@ class LeadsController extends Controller
         $lead = $leadQuery->first();
 
         if (!$lead) {
+            Log::warning('Call API: Lead not found or access denied', [
+                'user_id' => $user->id,
+                'lead_id' => $validated['lead_id']
+            ]);
             return response()->json([
                 'status' => false,
                 'message' => 'Lead not found or access denied'
@@ -229,6 +244,10 @@ class LeadsController extends Controller
         $upin = env('UPIN');
 
         if (empty($extension)) {
+            Log::warning('Call API: Extension not configured', [
+                'user_id' => $user->id,
+                'user_name' => $user->name
+            ]);
             return response()->json([
                 'status' => false,
                 'message' => 'Your extension is not configured. Please contact admin.'
@@ -236,6 +255,10 @@ class LeadsController extends Controller
         }
 
         if (empty($userPhone)) {
+            Log::warning('Call API: User phone/code not configured', [
+                'user_id' => $user->id,
+                'user_name' => $user->name
+            ]);
             return response()->json([
                 'status' => false,
                 'message' => 'Your phone/code is not configured. Please contact admin.'
@@ -243,6 +266,10 @@ class LeadsController extends Controller
         }
 
         if (empty($leadPhone) || empty($leadCode)) {
+            Log::warning('Call API: Lead phone/code not available', [
+                'user_id' => $user->id,
+                'lead_id' => $lead->id
+            ]);
             return response()->json([
                 'status' => false,
                 'message' => 'Lead phone/code not available.'
@@ -250,6 +277,7 @@ class LeadsController extends Controller
         }
 
         if (empty($uidNumber) || empty($upin)) {
+            Log::error('Call API: Voxbay credentials not configured');
             return response()->json([
                 'status' => false,
                 'message' => 'Voxbay credentials are not configured. Please set UID_NUMBER and UPIN.'
@@ -257,6 +285,15 @@ class LeadsController extends Controller
         }
 
         $destination = $leadCode . $leadPhone;
+
+        Log::info('Call API: Initiating Voxbay call', [
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'extension' => $extension,
+            'source' => $userPhone,
+            'destination' => $destination,
+            'lead_id' => $lead->id
+        ]);
 
         try {
             $response = Http::timeout(30)->get('https://x.voxbay.com/api/click_to_call', [
@@ -267,7 +304,20 @@ class LeadsController extends Controller
                 'destination' => $destination,
                 'source' => $userPhone,
             ]);
+
+            Log::info('Call API: Voxbay API response received', [
+                'user_id' => $user->id,
+                'lead_id' => $lead->id,
+                'status_code' => $response->status(),
+                'response_body' => $response->body()
+            ]);
         } catch (\Exception $e) {
+            Log::error('Call API: Voxbay service exception', [
+                'user_id' => $user->id,
+                'lead_id' => $lead->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to reach Voxbay service.',
@@ -276,12 +326,27 @@ class LeadsController extends Controller
         }
 
         if ($response->failed()) {
+            Log::error('Call API: Voxbay call request failed', [
+                'user_id' => $user->id,
+                'lead_id' => $lead->id,
+                'status_code' => $response->status(),
+                'response_body' => $response->body()
+            ]);
             return response()->json([
                 'status' => false,
                 'message' => 'Voxbay call request failed.',
                 'response' => $response->body()
             ], $response->status() ?: 500);
         }
+
+        Log::info('Call API: Call initiated successfully', [
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'lead_id' => $lead->id,
+            'destination' => $destination,
+            'extension' => $extension,
+            'source' => $userPhone
+        ]);
 
         return response()->json([
             'status' => true,
