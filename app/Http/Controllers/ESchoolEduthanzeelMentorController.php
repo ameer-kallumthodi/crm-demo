@@ -329,6 +329,7 @@ class ESchoolEduthanzeelMentorController extends Controller
             'certificate_collection' => 'nullable|in:Pending,Collected,Not Required',
             'continuing_studies' => 'nullable|in:yes,no',
             'reason' => 'nullable|string|max:1000',
+            'remarks' => 'nullable|string|max:1000',
         ];
 
         return $rules[$field] ?? null;

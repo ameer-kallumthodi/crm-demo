@@ -417,8 +417,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="class_time" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_time ? \Carbon\Carbon::parse($convertedLead->studentDetails->class_time)->format('h:i A') : '' }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->class_time ? \Carbon\Carbon::parse($convertedLead->studentDetails->class_time)->format('h:i A') : '-' }}</span>
+                                        <div class="inline-edit" data-field="class_time" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->class_time ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_time)->format('H:i') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->class_time ? \Carbon\Carbon::parse($convertedLead->mentorDetails->class_time)->format('h:i A') : '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -427,8 +427,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="screening" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->screening ? \Carbon\Carbon::parse($convertedLead->studentDetails->screening)->format('d-m-Y') : '' }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->screening ? \Carbon\Carbon::parse($convertedLead->studentDetails->screening)->format('d-m-Y') : '-' }}</span>
+                                        <div class="inline-edit" data-field="screening_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->screening_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->screening_date)->format('Y-m-d') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->screening_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->screening_date)->format('d-m-Y') : '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -437,8 +437,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="class_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->class_status }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->class_status ?: '-' }}</span>
+                                        <div class="inline-edit" data-field="class_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->class_status }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->class_status ?: '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -447,8 +447,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?: '-' }}</span>
+                                        <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->remarks ?? $convertedLead->studentDetails?->remarks }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->remarks ?? $convertedLead->studentDetails?->remarks ?: '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -457,8 +457,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="continuing_studies" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->continuing_studies }}">
-                                            <span class="display-value">{{ ucfirst($convertedLead->studentDetails?->continuing_studies ?: '-') }}</span>
+                                        <div class="inline-edit" data-field="continuing_studies" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->continuing_studies }}">
+                                            <span class="display-value">{{ ucfirst($convertedLead->mentorDetails?->continuing_studies ?: '-') }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -827,7 +827,7 @@
                 editForm = createPhoneField(currentCode, currentValue);
             } else if (['class_status', 'continuing_studies'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
-            } else if (['screening'].includes(field)) {
+            } else if (['screening', 'screening_date'].includes(field)) {
                 editForm = createDateField(field, currentValue);
             } else if (field === 'class_time') {
                 editForm = createTimeField(field, currentValue);
@@ -880,8 +880,15 @@
             btn.data('busy', true);
             btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
 
+            // Use mentorDetails endpoint for mentor fields, otherwise use regular inline-update
+            const mentorFields = ['screening_date', 'class_time', 'class_status', 'continuing_studies', 'remarks'];
+            const isMentorField = mentorFields.includes(field);
+            const updateUrl = isMentorField
+                ? `/admin/mentor-eduthanzeel-converted-leads/${id}/update-mentor-details`
+                : `/admin/converted-leads/${id}/inline-update`;
+
             $.ajax({
-                url: `/admin/converted-leads/${id}/inline-update`,
+                url: updateUrl,
                 method: 'POST',
                 data: $.extend({
                     field: field,
@@ -890,9 +897,22 @@
                 }, extra),
                 success: function(response) {
                     if (response.success) {
-                        container.find('.display-value').text(response.value || value);
-                        // Update the data-current attribute with the new value
-                        container.data('current', response.value || value);
+                        if (field === 'class_time') {
+                            // For class_time, use the formatted response value
+                            const displayTime = response.value || '-';
+                            container.find('.display-value').text(displayTime);
+                            // Store the raw time value (H:i format) in data-current for future edits
+                            container.data('current', value);
+                        } else if (field === 'screening_date') {
+                            // For screening_date, format the date
+                            const displayDate = response.value || '-';
+                            container.find('.display-value').text(displayDate);
+                            container.data('current', value);
+                        } else {
+                            container.find('.display-value').text(response.value || value);
+                            // Update the data-current attribute with the new value
+                            container.data('current', response.value || value);
+                        }
                         if (field === 'phone') {
                             const codeVal = extra.code || '';
                             container.siblings('.inline-code-value').data('current', codeVal);
@@ -1072,9 +1092,12 @@
             if (field === 'class_status') {
                 options = `
                     <option value="">Select Class Status</option>
-                    <option value="completed" ${currentValue === 'completed' ? 'selected' : ''}>Completed</option>
-                    <option value="drop out" ${currentValue === 'drop out' ? 'selected' : ''}>Drop Out</option>
-                    <option value="ongoing" ${currentValue === 'ongoing' ? 'selected' : ''}>Ongoing</option>
+                    <option value="Active" ${currentValue === 'Active' ? 'selected' : ''}>Active</option>
+                    <option value="In Progress" ${currentValue === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                    <option value="Inactive" ${currentValue === 'Inactive' ? 'selected' : ''}>Inactive</option>
+                    <option value="Dropped Out" ${currentValue === 'Dropped Out' ? 'selected' : ''}>Dropped Out</option>
+                    <option value="Completed" ${currentValue === 'Completed' ? 'selected' : ''}>Completed</option>
+                    <option value="Rejoining" ${currentValue === 'Rejoining' ? 'selected' : ''}>Rejoining</option>
                 `;
             } else if (field === 'continuing_studies') {
                 options = `
