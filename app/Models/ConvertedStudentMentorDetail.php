@@ -139,6 +139,23 @@ class ConvertedStudentMentorDetail extends Model
         'final_internship_certification_exam_marks',
         'final_internship_certification_exam_feedback',
         'remarks',
+        // UG/PG specific fields
+        'online_registration_date',
+        'admission_form_issued_date',
+        'admission_form_returned_date',
+        'document_verification_status',
+        'verification_completed_date',
+        'id_card_issued_date',
+        'first_year_result_declaration_date',
+        'second_year_result_declaration_date',
+        'third_year_result_declaration_date',
+        'all_online_result_publication_date',
+        'certificate_issued_date',
+        'certificate_distribution_mode',
+        'courier_tracking_number',
+        'online_result_publication_date',
+        'certificate_publication_date',
+        'remarks_internal_notes',
     ];
 
     protected $casts = [
@@ -168,6 +185,19 @@ class ConvertedStudentMentorDetail extends Model
         'first_term_internship_exam_date' => 'date',
         'final_internship_certification_exam_date' => 'date',
         'cancelled_date' => 'date',
+        // UG/PG specific date fields
+        'online_registration_date' => 'date',
+        'admission_form_issued_date' => 'date',
+        'admission_form_returned_date' => 'date',
+        'verification_completed_date' => 'date',
+        'id_card_issued_date' => 'date',
+        'first_year_result_declaration_date' => 'date',
+        'second_year_result_declaration_date' => 'date',
+        'third_year_result_declaration_date' => 'date',
+        'all_online_result_publication_date' => 'date',
+        'certificate_issued_date' => 'date',
+        'online_result_publication_date' => 'date',
+        'certificate_publication_date' => 'date',
     ];
 
     // Relationships

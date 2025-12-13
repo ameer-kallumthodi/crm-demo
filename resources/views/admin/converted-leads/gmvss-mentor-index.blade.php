@@ -131,6 +131,9 @@
                     <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> NIOS Converted Mentor List
                     </a>
+                    <a href="{{ route('admin.mentor-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> UG/PG Mentor Converted List
+                    </a>
                     <a href="{{ route('admin.mentor-eschool-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> E-School Converted Mentor List
                     </a>
@@ -330,9 +333,11 @@
                                     <th>Passed Year</th>
                                     <th>Enrollment Number</th>
                                     <th>Registration Link</th>
-                                    <th>Certificate</th>
-                                    <th>Certificate Received Date</th>
+                                    <th>Online Result Publication Date</th>
+                                    <th>Certificate Publication Date</th>
                                     <th>Certificate Issued Date</th>
+                                    <th>Certificate Distribution Mode</th>
+                                    <th>Courier Tracking Number</th>
                                     <th>Remarks</th>
                                     <th>Actions</th>
                                 </tr>
@@ -453,8 +458,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="certificate_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->certificate_status }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->certificate_status ?? 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="online_result_publication_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->online_result_publication_date ? $convertedLead->mentorDetails->online_result_publication_date->format('Y-m-d') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->online_result_publication_date ? $convertedLead->mentorDetails->online_result_publication_date->format('d-m-Y') : '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -463,11 +468,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="certificate_received_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->certificate_received_date }}">
-                                            @php
-                                                $receivedDate = $convertedLead->studentDetails?->certificate_received_date ? (strtotime($convertedLead->studentDetails->certificate_received_date) ? date('d-m-Y', strtotime($convertedLead->studentDetails->certificate_received_date)) : $convertedLead->studentDetails->certificate_received_date) : 'N/A';
-                                            @endphp
-                                            <span class="display-value">{{ $receivedDate }}</span>
+                                        <div class="inline-edit" data-field="certificate_publication_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->certificate_publication_date ? $convertedLead->mentorDetails->certificate_publication_date->format('Y-m-d') : '' }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->certificate_publication_date ? $convertedLead->mentorDetails->certificate_publication_date->format('d-m-Y') : '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -476,11 +478,14 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="certificate_issued_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->certificate_issued_date }}">
-                                            @php
-                                                $issuedDate = $convertedLead->studentDetails?->certificate_issued_date ? (strtotime($convertedLead->studentDetails->certificate_issued_date) ? date('d-m-Y', strtotime($convertedLead->studentDetails->certificate_issued_date)) : $convertedLead->studentDetails->certificate_issued_date) : 'N/A';
-                                            @endphp
-                                            <span class="display-value">{{ $issuedDate }}</span>
+                                        @php
+                                            $issuedDate = $convertedLead->studentDetails?->certificate_issued_date ? (strtotime($convertedLead->studentDetails->certificate_issued_date) ? date('d-m-Y', strtotime($convertedLead->studentDetails->certificate_issued_date)) : $convertedLead->studentDetails->certificate_issued_date) : 'N/A';
+                                        @endphp
+                                        <span class="display-value">{{ $issuedDate }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="certificate_distribution_mode" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->certificate_distribution_mode }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->certificate_distribution_mode ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -489,14 +494,17 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? 'N/A' }}</span>
+                                        <div class="inline-edit" data-field="courier_tracking_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->courier_tracking_number }}">
+                                            <span class="display-value">{{ $convertedLead->mentorDetails?->courier_tracking_number ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </button>
                                             @endif
                                         </div>
+                                    </td>
+                                    <td>
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? 'N/A' }}</span>
                                     </td>
                                     <td>
                                         <div class="" role="group">
@@ -532,7 +540,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="17" class="text-center">No converted leads found</td>
+                                    <td colspan="19" class="text-center">No converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -730,6 +738,12 @@
                 html += `<option value="Not Received" ${currentValue === 'Not Received' ? 'selected' : ''}>Not Received</option>`;
                 html += `<option value="No Admission" ${currentValue === 'No Admission' ? 'selected' : ''}>No Admission</option>`;
                 html += `</select>`;
+            } else if (field === 'certificate_distribution_mode') {
+                html += `<select class="form-select form-select-sm">`;
+                html += `<option value="">Select Mode</option>`;
+                html += `<option value="In Person" ${currentValue === 'In Person' ? 'selected' : ''}>In Person</option>`;
+                html += `<option value="Courier" ${currentValue === 'Courier' ? 'selected' : ''}>Courier</option>`;
+                html += `</select>`;
             }
             html += '</div><div class="btn-group"><button type="button" class="btn btn-sm btn-primary save-edit">Save</button><button type="button" class="btn btn-sm btn-secondary cancel-edit">Cancel</button></div></div>';
             return html;
@@ -738,12 +752,17 @@
         function createDateField(field, currentValue) {
             // Convert d-m-Y to Y-m-d for input
             let dateValue = '';
-            if (currentValue && currentValue !== 'N/A') {
-                const parts = currentValue.split('-');
-                if (parts.length === 3) {
-                    dateValue = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                } else {
+            if (currentValue && currentValue !== 'N/A' && currentValue !== '-') {
+                if (currentValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    // Already in Y-m-d format
                     dateValue = currentValue;
+                } else {
+                    const parts = currentValue.split('-');
+                    if (parts.length === 3) {
+                        dateValue = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    } else {
+                        dateValue = currentValue;
+                    }
                 }
             }
             return `<div class="edit-form"><div class="mb-2"><input type="date" class="form-control form-control-sm" value="${dateValue}"></div><div class="btn-group"><button type="button" class="btn btn-sm btn-primary save-edit">Save</button><button type="button" class="btn btn-sm btn-secondary cancel-edit">Cancel</button></div></div>`;
@@ -789,9 +808,9 @@
 
             let editForm = '';
             
-            if (['registration_link_id', 'certificate_status'].includes(field)) {
+            if (['registration_link_id', 'certificate_status', 'certificate_distribution_mode'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
-            } else if (['certificate_received_date', 'certificate_issued_date'].includes(field)) {
+            } else if (['certificate_received_date', 'certificate_issued_date', 'all_online_result_publication_date', 'certificate_publication_date', 'online_result_publication_date'].includes(field)) {
                 editForm = createDateField(field, currentValue);
             } else if (field === 'remarks') {
                 editForm = createTextareaField(field, currentValue);
@@ -833,7 +852,7 @@
                         let displayValue = response.value || value;
                         
                         // Special handling for date fields
-                        if (['certificate_received_date', 'certificate_issued_date'].includes(field) && displayValue) {
+                        if (['certificate_received_date', 'certificate_issued_date', 'all_online_result_publication_date', 'certificate_publication_date', 'online_result_publication_date'].includes(field) && displayValue) {
                             try {
                                 const date = new Date(displayValue);
                                 if (!isNaN(date.getTime())) {

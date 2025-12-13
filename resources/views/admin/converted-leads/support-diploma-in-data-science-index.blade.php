@@ -141,6 +141,9 @@
                     <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> NIOS Converted Mentor List
                     </a>
+                    <a href="{{ route('admin.mentor-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> UG/PG Mentor Converted List
+                    </a>
                     <a href="{{ route('admin.mentor-eschool-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> E-School Converted Mentor List
                     </a>
@@ -505,6 +508,8 @@
                                             <a class="dropdown-item" href="{{ route('admin.invoices.index', $convertedLead->id) }}">
                                                 <i class="ti ti-receipt me-2"></i>View Invoice
                                             </a>
+                                        </li>
+                                        <li>
                                         </li>
                                     </ul>
                                 </div>

@@ -719,6 +719,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/mentor-bosse-converted-leads', [App\Http\Controllers\MentorConvertedLeadController::class, 'index'])->name('mentor-bosse-converted-leads.index');
         Route::post('/mentor-bosse-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\MentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-bosse-converted-leads.update-mentor-details');
 
+        // UG/PG Mentor Converted Leads Routes
+        Route::get('/mentor-ugpg-converted-leads', [App\Http\Controllers\UGPGMentorConvertedLeadController::class, 'index'])->name('mentor-ugpg-converted-leads.index');
+        Route::post('/mentor-ugpg-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\UGPGMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-ugpg-converted-leads.update-mentor-details');
+
         // NIOS Mentor Converted Leads Routes
         Route::get('/mentor-nios-converted-leads', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'index'])->name('mentor-nios-converted-leads.index');
         Route::post('/mentor-nios-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-nios-converted-leads.update-mentor-details');
