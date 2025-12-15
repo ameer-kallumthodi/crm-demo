@@ -695,8 +695,13 @@ class LeadController extends Controller
      */
     private function renderStatus($lead)
     {
-        $statusTitle = $this->cleanUtf8($lead->leadStatus->title ?? '');
-        return '<span class="badge ' . \App\Helpers\StatusHelper::getLeadStatusColorClass($lead->leadStatus->id) . '">' . htmlspecialchars($statusTitle, ENT_QUOTES, 'UTF-8') . '</span>';
+        $status = $lead->leadStatus;
+        if (!$status) {
+            return '<span class="badge bg-secondary">Unknown</span>';
+        }
+
+        $statusTitle = $this->cleanUtf8($status->title ?? '');
+        return '<span class="badge ' . \App\Helpers\StatusHelper::getLeadStatusColorClass($status->id) . '">' . htmlspecialchars($statusTitle, ENT_QUOTES, 'UTF-8') . '</span>';
     }
 
     /**
@@ -808,10 +813,14 @@ class LeadController extends Controller
             'phone_number' => $lead->phone ?? '',
             'code' => $lead->code ?? '',
             'email' => $this->cleanUtf8($lead->email ?? '-'),
-            'status' => [
+            'status' => $lead->leadStatus ? [
                 'id' => $lead->leadStatus->id,
                 'title' => $this->cleanUtf8($lead->leadStatus->title),
                 'color_class' => \App\Helpers\StatusHelper::getLeadStatusColorClass($lead->leadStatus->id)
+            ] : [
+                'id' => null,
+                'title' => 'Unknown',
+                'color_class' => 'bg-secondary'
             ],
             'interest' => [
                 'status' => $lead->interest_status,
