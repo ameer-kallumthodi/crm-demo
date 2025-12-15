@@ -76,6 +76,33 @@
             background-color: #ffc107;
             color: #212529;
         }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-table td {
+            padding: 6px 10px 6px 0;
+            vertical-align: top;
+        }
+        .info-table .label {
+            width: 180px;
+            white-space: nowrap;
+        }
+        .section-heading {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .feedback-heading {
+            margin-top: 0;
+            color: #28a745;
+        }
+        .feedback-body {
+            margin-top: 10px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
     </style>
 </head>
 <body>
@@ -86,70 +113,78 @@
     
     <div class="content">
         <div class="student-info">
-            <h3 style="margin-top: 0; color: #007bff;">Student Information</h3>
-            <table style="width: 100%; border-collapse: collapse;">
+            <h3 class="section-heading">Student Information</h3>
+            <table class="info-table">
                 <tr>
-                    <td class="label" style="padding: 5px 10px 5px 0; width: 150px;">Student ID:</td>
+                    <td class="label">Student ID:</td>
                     <td class="value">#{{ $convertedLead->id }}</td>
                 </tr>
                 <tr>
-                    <td class="label" style="padding: 5px 10px 5px 0;">Name:</td>
+                    <td class="label">Name:</td>
                     <td class="value">{{ $convertedLead->name ?? 'N/A' }}</td>
                 </tr>
                 <tr>
-                    <td class="label" style="padding: 5px 10px 5px 0;">Register Number:</td>
+                    <td class="label">Register Number:</td>
                     <td class="value">{{ $convertedLead->register_number ?? 'N/A' }}</td>
                 </tr>
                 <tr>
-                    <td class="label" style="padding: 5px 10px 5px 0;">Course:</td>
+                    <td class="label">Course:</td>
                     <td class="value">{{ $convertedLead->course?->title ?? 'N/A' }}</td>
                 </tr>
                 <tr>
-                    <td class="label" style="padding: 5px 10px 5px 0;">Batch:</td>
+                    <td class="label">Batch:</td>
                     <td class="value">{{ $convertedLead->batch?->title ?? 'N/A' }}</td>
                 </tr>
                 <tr>
-                    <td class="label" style="padding: 5px 10px 5px 0;">Phone:</td>
+                    <td class="label">Admission Batch:</td>
+                    <td class="value">{{ $convertedLead->admissionBatch?->title ?? 'N/A' }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Phone:</td>
                     <td class="value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</td>
                 </tr>
                 <tr>
-                    <td class="label" style="padding: 5px 10px 5px 0;">Email:</td>
+                    <td class="label">Email:</td>
                     <td class="value">{{ $convertedLead->email ?? 'N/A' }}</td>
                 </tr>
             </table>
         </div>
 
         <div class="feedback-content">
-            <h3 style="margin-top: 0; color: #28a745;">Feedback Details</h3>
-            <div style="margin-bottom: 15px;">
-                <span class="label">Type:</span>
-                <span class="badge badge-primary">{{ ucfirst(str_replace('_', ' ', $feedback->feedback_type ?? 'general')) }}</span>
-                @if($feedback->priority ?? null)
-                <span class="badge badge-warning" style="margin-left: 10px;">Priority: {{ ucfirst($feedback->priority) }}</span>
+            <h3 class="feedback-heading">Feedback Details</h3>
+            <table class="info-table" style="margin-bottom: 10px;">
+                <tr>
+                    <td class="label">Type:</td>
+                    <td class="value">
+                        <span class="badge badge-primary">{{ ucfirst(str_replace('_', ' ', $feedback->feedback_type ?? 'general')) }}</span>
+                        @if($feedback->priority ?? null)
+                        <span class="badge badge-warning" style="margin-left: 6px;">Priority: {{ ucfirst($feedback->priority) }}</span>
+                        @endif
+                        @if($feedback->feedback_status ?? null)
+                        <span class="badge badge-success" style="margin-left: 6px;">Status: {{ ucfirst(str_replace('_', ' ', $feedback->feedback_status)) }}</span>
+                        @endif
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">Submitted:</td>
+                    <td class="value">{{ $feedback->created_at?->format('d M Y, H:i A') ?? 'N/A' }}</td>
+                </tr>
+                @if($feedback->follow_up_date ?? null)
+                <tr>
+                    <td class="label">Follow-up Date:</td>
+                    <td class="value">{{ \Carbon\Carbon::parse($feedback->follow_up_date)->format('d M Y') }}</td>
+                </tr>
                 @endif
-                @if($feedback->feedback_status ?? null)
-                <span class="badge badge-success" style="margin-left: 10px;">Status: {{ ucfirst(str_replace('_', ' ', $feedback->feedback_status)) }}</span>
+                @if($feedback->notes ?? null)
+                <tr>
+                    <td class="label">Additional Notes:</td>
+                    <td class="value">{{ $feedback->notes }}</td>
+                </tr>
                 @endif
-            </div>
-            <div style="margin-bottom: 15px;">
-                <span class="label">Submitted:</span>
-                <span class="value">{{ $feedback->created_at?->format('d M Y, H:i A') ?? 'N/A' }}</span>
-            </div>
-            @if($feedback->follow_up_date ?? null)
-            <div style="margin-bottom: 15px;">
-                <span class="label">Follow-up Date:</span>
-                <span class="value">{{ \Carbon\Carbon::parse($feedback->follow_up_date)->format('d M Y') }}</span>
-            </div>
-            @endif
-            @if($feedback->notes ?? null)
-            <div style="margin-bottom: 15px;">
-                <span class="label">Additional Notes:</span>
-                <div class="value" style="margin-top: 5px; padding: 10px; background-color: #f8f9fa; border-radius: 4px;">{{ $feedback->notes }}</div>
-            </div>
-            @endif
-            <div style="margin-top: 20px;">
+            </table>
+            <div>
                 <span class="label">Feedback Content:</span>
-                <div style="margin-top: 10px; padding: 15px; background-color: #f8f9fa; border-radius: 4px; border: 1px solid #dee2e6;">{{ $feedback->feedback_content ?? 'N/A' }}</div>
+                <div class="feedback-body">{{ $feedback->feedback_content ?? 'N/A' }}</div>
             </div>
         </div>
     </div>
