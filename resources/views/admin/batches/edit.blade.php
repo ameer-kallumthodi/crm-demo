@@ -21,12 +21,32 @@
             </div>
         </div>
 
-        <div class="col-lg-6">
+        <div class="col-lg-6 amount-general">
             <div class="p-1">
                 <label for="amount" class="form-label">Amount</label>
                 <div class="input-group">
                     <span class="input-group-text">₹</span>
                     <input type="number" step="0.01" min="0" class="form-control" name="amount" id="amount" value="{{ old('amount', $edit_data->amount) }}" placeholder="Enter amount">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 gmvss-amount d-none">
+            <div class="p-1">
+                <label for="sslc_amount" class="form-label">SSLC Amount (GMVSS)</label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" step="0.01" min="0" class="form-control" name="sslc_amount" id="sslc_amount" value="{{ old('sslc_amount', $edit_data->sslc_amount) }}" placeholder="Enter SSLC amount">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 gmvss-amount d-none">
+            <div class="p-1">
+                <label for="plustwo_amount" class="form-label">Plus Two Amount (GMVSS)</label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" step="0.01" min="0" class="form-control" name="plustwo_amount" id="plustwo_amount" value="{{ old('plustwo_amount', $edit_data->plustwo_amount) }}" placeholder="Enter Plus Two amount">
                 </div>
             </div>
         </div>
@@ -53,3 +73,23 @@
         </div>
     </div>
 </form>
+
+<script>
+(function () {
+    const courseSelect = document.getElementById('course_id');
+    const gmvssFields = document.querySelectorAll('.gmvss-amount');
+    const generalAmount = document.querySelectorAll('.amount-general');
+
+    function toggleGmvssFields() {
+        const value = courseSelect ? courseSelect.value : '';
+        const isGmvss = value === '16' || value === 16;
+        gmvssFields.forEach(el => el.classList.toggle('d-none', !isGmvss));
+        generalAmount.forEach(el => el.classList.toggle('d-none', isGmvss));
+    }
+
+    if (courseSelect) {
+        toggleGmvssFields();
+        courseSelect.addEventListener('change', toggleGmvssFields);
+    }
+})();
+</script>

@@ -77,15 +77,18 @@
                     @endif
                     @endif
 
-                    @if($extraAmount > 0)
-                    <br><small class="text-success">
-                        <i class="fas fa-plus-circle"></i> GMVSS SSLC Extra: +₹{{ number_format($extraAmount, 2) }}
+                    @if($studentClass)
+                    <br><small class="text-info">
+                        <i class="fas fa-user-graduate"></i> Class: <strong>{{ strtoupper($studentClass) }}</strong>
                     </small>
                     @endif
 
                     @if($batch && $batchAmount > 0)
                     <br><small class="text-info">
                         <i class="fas fa-layer-group"></i> Batch: <strong>{{ $batch->title }}</strong> - ₹{{ number_format($batchAmount, 2) }}
+                        @if($batchAmountLabel)
+                            <span class="badge bg-primary ms-1">{{ $batchAmountLabel }}</span>
+                        @endif
                     </small>
                     @endif
 

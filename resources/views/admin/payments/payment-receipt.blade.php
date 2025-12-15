@@ -88,6 +88,15 @@
                                         @else
                                             Type: Course - {{ $payment->invoice->course->title ?? 'N/A' }}
                                         @endif
+                                    @elseif($payment->invoice->course_id == 16 && $payment->invoice->student->leadDetail)
+                                        @php
+                                            $studentDetail = $payment->invoice->student->leadDetail;
+                                            $class = $studentDetail->class;
+                                        @endphp
+                                        Type: Course - {{ $payment->invoice->course->title ?? 'N/A' }}
+                                        @if($class)
+                                            <span class="badge bg-primary ms-1">{{ strtoupper($class) }}</span>
+                                        @endif
                                     @else
                                         Type: Course - {{ $payment->invoice->course->title ?? 'N/A' }}
                                     @endif

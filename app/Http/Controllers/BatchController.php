@@ -6,6 +6,7 @@ use App\Models\Batch;
 use Illuminate\Http\Request;
 use App\Helpers\RoleHelper;
 use App\Helpers\AuthHelper;
+use Illuminate\Support\Facades\Log;
 
 class BatchController extends Controller
 {
@@ -27,21 +28,29 @@ class BatchController extends Controller
 
         $request->merge([
             'amount' => $request->filled('amount') ? $request->amount : null,
+            'sslc_amount' => $request->filled('sslc_amount') ? $request->sslc_amount : null,
+            'plustwo_amount' => $request->filled('plustwo_amount') ? $request->plustwo_amount : null,
         ]);
 
-        $request->validate([
+        $rules = [
             'title' => 'required|string|max:255',
             'course_id' => 'required|exists:courses,id',
             'description' => 'nullable|string',
             'amount' => 'nullable|numeric|min:0',
+            'sslc_amount' => 'nullable|numeric|min:0',
+            'plustwo_amount' => 'nullable|numeric|min:0',
             'is_active' => 'nullable|boolean',
-        ]);
+        ];
+
+        $request->validate($rules);
 
         $batch = Batch::create([
             'title' => $request->title,
             'course_id' => $request->course_id,
             'description' => $request->description,
             'amount' => $request->input('amount'),
+            'sslc_amount' => $request->input('sslc_amount'),
+            'plustwo_amount' => $request->input('plustwo_amount'),
             'is_active' => $request->has('is_active'),
             'created_by' => AuthHelper::getCurrentUserId(),
             'updated_by' => AuthHelper::getCurrentUserId(),
@@ -101,7 +110,7 @@ class BatchController extends Controller
             }
             return redirect()->route('admin.batches.index')->with('message_danger', 'Batch not found.');
         } catch (\Throwable $e) {
-            \Log::error('[BatchController@destroy] Error deleting batch: ' . $e->getMessage(), ['batch_id' => $batch->id ?? null]);
+            Log::error('[BatchController@destroy] Error deleting batch: ' . $e->getMessage(), ['batch_id' => $batch->id ?? null]);
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -132,22 +141,30 @@ class BatchController extends Controller
             // Normalize checkbox to boolean before validation
             $request->merge([
                 'amount' => $request->filled('amount') ? $request->amount : null,
+                'sslc_amount' => $request->filled('sslc_amount') ? $request->sslc_amount : null,
+                'plustwo_amount' => $request->filled('plustwo_amount') ? $request->plustwo_amount : null,
                 'is_active' => $request->has('is_active') ? 1 : 0,
             ]);
 
-            $request->validate([
+            $rules = [
                 'title' => 'required|string|max:255',
                 'course_id' => 'required|exists:courses,id',
                 'description' => 'nullable|string',
                 'amount' => 'nullable|numeric|min:0',
+                'sslc_amount' => 'nullable|numeric|min:0',
+                'plustwo_amount' => 'nullable|numeric|min:0',
                 'is_active' => 'nullable|boolean',
-            ]);
+            ];
+
+            $request->validate($rules);
 
             $batch = Batch::create([
                 'title' => $request->title,
                 'course_id' => $request->course_id,
                 'description' => $request->description,
                 'amount' => $request->input('amount'),
+                'sslc_amount' => $request->input('sslc_amount'),
+                'plustwo_amount' => $request->input('plustwo_amount'),
                 'is_active' => $request->is_active,
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
@@ -180,16 +197,27 @@ class BatchController extends Controller
             // Normalize checkbox to boolean before validation
             $request->merge([
                 'amount' => $request->filled('amount') ? $request->amount : null,
+                'sslc_amount' => $request->filled('sslc_amount') ? $request->sslc_amount : null,
+                'plustwo_amount' => $request->filled('plustwo_amount') ? $request->plustwo_amount : null,
                 'is_active' => $request->has('is_active') ? 1 : 0,
             ]);
 
-            $request->validate([
+            $rules = [
                 'title' => 'required|string|max:255',
                 'course_id' => 'required|exists:courses,id',
                 'description' => 'nullable|string',
                 'amount' => 'nullable|numeric|min:0',
+                'sslc_amount' => 'nullable|numeric|min:0',
+                'plustwo_amount' => 'nullable|numeric|min:0',
                 'is_active' => 'nullable|boolean',
-            ]);
+            ];
+
+            if ((int) $request->course_id === 16) {
+                $rules['sslc_amount'] = 'required|numeric|min:0';
+                $rules['plustwo_amount'] = 'required|numeric|min:0';
+            }
+
+            $request->validate($rules);
 
             $batch = Batch::findOrFail($id);
             
@@ -199,6 +227,8 @@ class BatchController extends Controller
                 'course_id' => $request->course_id,
                 'description' => $request->description,
                 'amount' => $request->input('amount'),
+                'sslc_amount' => $request->input('sslc_amount'),
+                'plustwo_amount' => $request->input('plustwo_amount'),
                 'is_active' => $request->is_active,
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ];
@@ -229,7 +259,7 @@ class BatchController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        \Log::info('[BatchController@delete] Attempting delete', ['id' => $id]);
+        Log::info('[BatchController@delete] Attempting delete', ['id' => $id]);
 
         try {
             $batch = Batch::findOrFail($id);
@@ -245,7 +275,7 @@ class BatchController extends Controller
             }
 
             $batch->delete();
-            \Log::info('[BatchController@delete] Batch deleted', ['id' => $id]);
+            Log::info('[BatchController@delete] Batch deleted', ['id' => $id]);
 
             if (request()->ajax()) {
                 return response()->json([
@@ -263,7 +293,7 @@ class BatchController extends Controller
             }
             return redirect()->route('admin.batches.index')->with('message_danger', 'Batch not found.');
         } catch (\Throwable $e) {
-            \Log::error('[BatchController@delete] Error deleting batch: ' . $e->getMessage(), ['id' => $id]);
+            Log::error('[BatchController@delete] Error deleting batch: ' . $e->getMessage(), ['id' => $id]);
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -399,7 +429,7 @@ class BatchController extends Controller
             }
             return back()->withInput()->withErrors($e->errors());
         } catch (\Throwable $e) {
-            \Log::error('[BatchController@postpone_submit] Error postponing batch: ' . $e->getMessage(), ['batch_id' => $id]);
+            Log::error('[BatchController@postpone_submit] Error postponing batch: ' . $e->getMessage(), ['batch_id' => $id]);
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,

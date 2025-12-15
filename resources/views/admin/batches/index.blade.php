@@ -64,7 +64,22 @@
                                 <td>{{ $batch->title }}</td>
                                 <td>{{ $batch->course->title ?? 'N/A' }}</td>
                                 <td>
-                                    @if(!is_null($batch->amount))
+                                    @if($batch->course_id == 16)
+                                        <div><strong>SSLC:</strong>
+                                            @if(!is_null($batch->sslc_amount))
+                                                ₹ {{ number_format($batch->sslc_amount, 2) }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </div>
+                                        <div><strong>Plus Two:</strong>
+                                            @if(!is_null($batch->plustwo_amount))
+                                                ₹ {{ number_format($batch->plustwo_amount, 2) }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </div>
+                                    @elseif(!is_null($batch->amount))
                                         ₹ {{ number_format($batch->amount, 2) }}
                                     @else
                                         N/A

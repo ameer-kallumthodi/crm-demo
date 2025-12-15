@@ -132,7 +132,17 @@
                                 @endif
                                 <tr>
                                     <td><strong>Batch:</strong></td>
-                                    <td>{{ $invoice->student->batch->title ?? 'N/A' }}</td>
+                                    <td>
+                                        {{ $invoice->student->batch->title ?? 'N/A' }}
+                                        @if($invoice->invoice_type == 'course' && $invoice->course_id == 16 && $invoice->student->leadDetail)
+                                            @php
+                                                $class = $invoice->student->leadDetail->class;
+                                            @endphp
+                                            @if($class)
+                                                <span class="badge bg-primary ms-1">{{ strtoupper($class) }}</span>
+                                            @endif
+                                        @endif
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Academic Assistant:</strong></td>

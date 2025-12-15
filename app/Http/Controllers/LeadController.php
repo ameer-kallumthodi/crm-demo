@@ -3487,8 +3487,9 @@ class LeadController extends Controller
         $course = null;
         $courseAmount = 0;
         $batch = $lead->batch ?: ($lead->studentDetails?->batch);
-        $batchAmount = $batch ? (float) $batch->amount : 0.0;
-        $extraAmount = 0;
+        $batchAmount = 0.0;
+        $batchAmountLabel = null;
+        $studentClass = $lead->studentDetails?->class;
         $universityAmount = 0;
         $additionalAmount = 0.0;
         $courseType = null;
@@ -3498,11 +3499,6 @@ class LeadController extends Controller
         if ($lead->course_id) {
             $course = \App\Models\Course::find($lead->course_id);
             $courseAmount = $course ? (float) $course->amount : 0.0;
-            
-            // Check if it's GMVSS (course_id = 16) and has student details with SSLC class
-            if ($lead->course_id == 16 && $lead->studentDetails && $lead->studentDetails->class == 'sslc') {
-                $extraAmount = 10000; // ₹10,000 extra for GMVSS SSLC class
-            }
             
             // Check if it's UG/PG course (course_id = 9) and has student details with course_type and university
             if ($lead->course_id == 9 && $lead->studentDetails) {
@@ -3522,8 +3518,25 @@ class LeadController extends Controller
             }
         }
 
+        // Determine batch amount based on course rules
+        if ($batch) {
+            if ($lead->course_id == 16) {
+                $normalizedClass = $studentClass ? strtolower($studentClass) : null;
+                if ($normalizedClass === 'sslc' && !is_null($batch->sslc_amount)) {
+                    $batchAmount = (float) $batch->sslc_amount;
+                    $batchAmountLabel = 'SSLC Amount';
+                } elseif (!is_null($batch->plustwo_amount)) {
+                    $batchAmount = (float) $batch->plustwo_amount;
+                    $batchAmountLabel = 'Plus Two Amount';
+                } else {
+                    $batchAmount = (float) ($batch->amount ?? 0);
+                }
+            } else {
+                $batchAmount = (float) ($batch->amount ?? 0);
+            }
+        }
+
         $additionalAmount += (float) $universityAmount;
-        $additionalAmount += (float) $extraAmount;
 
         $totalAmount = $courseAmount + $batchAmount + $additionalAmount;
 
@@ -3535,12 +3548,13 @@ class LeadController extends Controller
             'courseAmount',
             'batchAmount',
             'batch',
-            'extraAmount',
+            'studentClass',
             'universityAmount',
             'additionalAmount',
             'totalAmount',
             'courseType',
-            'university'
+            'university',
+            'batchAmountLabel'
         ));
     }
 

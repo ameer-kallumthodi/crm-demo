@@ -239,15 +239,30 @@ class InvoiceController extends Controller
             
             // Calculate total amount
             $totalAmount = (float) ($course->amount ?? 0);
+            $batchAmount = 0.0;
 
             // Determine batch and add batch amount if available
             $batchId = $student->batch_id ?? optional($student->leadDetail)->batch_id;
             if ($batchId) {
                 $batch = Batch::find($batchId);
-                if ($batch && $batch->amount) {
-                    $totalAmount += (float) $batch->amount;
+                if ($batch) {
+                    if ($courseId == 16) {
+                        $studentClass = optional($student->leadDetail)->class;
+                        $normalizedClass = $studentClass ? strtolower($studentClass) : null;
+
+                        if ($normalizedClass === 'sslc' && !is_null($batch->sslc_amount)) {
+                            $batchAmount = (float) $batch->sslc_amount;
+                        } elseif (!is_null($batch->plustwo_amount)) {
+                            $batchAmount = (float) $batch->plustwo_amount;
+                        } elseif ($batch->amount) {
+                            $batchAmount = (float) $batch->amount;
+                        }
+                    } elseif ($batch->amount) {
+                        $batchAmount = (float) $batch->amount;
+                    }
                 }
             }
+            $totalAmount += $batchAmount;
             
             // Add university amount for UG/PG course (course_id = 9)
             if ($courseId == 9 && $student->leadDetail) {
@@ -264,10 +279,6 @@ class InvoiceController extends Controller
                         }
                     }
                 }
-            }
-            // Add extra amount for GMVSS SSLC class
-            elseif ($courseId == 16 && $student->leadDetail && $student->leadDetail->class == 'sslc') {
-                $totalAmount += 10000; // ₹10,000 extra for GMVSS SSLC class
             }
             
             // Generate invoice number

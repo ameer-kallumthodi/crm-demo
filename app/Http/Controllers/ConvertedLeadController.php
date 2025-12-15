@@ -2359,7 +2359,6 @@ class ConvertedLeadController extends Controller
             'data' => [
                 'course_amount' => $pricing['course_amount'],
                 'batch_amount' => $pricing['batch_amount'],
-                'extra_amount' => $pricing['extra_amount'],
                 'university_amount' => $pricing['university_amount'],
                 'total_amount' => $pricing['total_amount'],
                 'formatted_total' => $this->formatCurrency($pricing['total_amount']),
@@ -2525,7 +2524,6 @@ class ConvertedLeadController extends Controller
                     'pricing' => [
                         'course_amount' => $pricing['course_amount'],
                         'batch_amount' => $pricing['batch_amount'],
-                        'extra_amount' => $pricing['extra_amount'],
                         'university_amount' => $pricing['university_amount'],
                         'total_amount' => $pricing['total_amount'],
                         'formatted_total' => $this->formatCurrency($pricing['total_amount']),
@@ -3189,8 +3187,7 @@ class ConvertedLeadController extends Controller
         $batch = $batchId ? Batch::find($batchId) : null;
 
         $courseAmount = $course ? (float) ($course->amount ?? 0) : 0.0;
-        $batchAmount = $batch ? (float) ($batch->amount ?? 0) : 0.0;
-        $extraAmount = 0.0;
+        $batchAmount = 0.0;
         $universityAmount = 0.0;
         $university = null;
 
@@ -3199,8 +3196,20 @@ class ConvertedLeadController extends Controller
             $leadDetail = LeadDetail::where('lead_id', $convertedLead->lead_id)->first();
         }
 
-        if ($course && (int) $course->id === 16 && $leadDetail && $leadDetail->class === 'sslc') {
-            $extraAmount += 10000;
+        // Determine batch amount with class-specific pricing for GMVSS (course 16)
+        if ($batch) {
+            if ($course && (int) $course->id === 16 && $leadDetail) {
+                $studentClass = strtolower($leadDetail->class ?? '');
+                if ($studentClass === 'sslc' && !is_null($batch->sslc_amount)) {
+                    $batchAmount = (float) $batch->sslc_amount;
+                } elseif (!is_null($batch->plustwo_amount)) {
+                    $batchAmount = (float) $batch->plustwo_amount;
+                } else {
+                    $batchAmount = (float) ($batch->amount ?? 0);
+                }
+            } else {
+                $batchAmount = (float) ($batch->amount ?? 0);
+            }
         }
 
         if ($course && (int) $course->id === 9 && $leadDetail) {
@@ -3218,14 +3227,13 @@ class ConvertedLeadController extends Controller
             }
         }
 
-        $totalAmount = $courseAmount + $batchAmount + $extraAmount + $universityAmount;
+        $totalAmount = $courseAmount + $batchAmount + $universityAmount;
 
         return [
             'course' => $course,
             'batch' => $batch,
             'course_amount' => $courseAmount,
             'batch_amount' => $batchAmount,
-            'extra_amount' => $extraAmount,
             'university_amount' => $universityAmount,
             'total_amount' => $totalAmount,
             'course_type' => $leadDetail?->course_type,
