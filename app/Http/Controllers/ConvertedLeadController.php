@@ -2653,7 +2653,7 @@ class ConvertedLeadController extends Controller
         // Skip this check for mentors and finance as they have their own allowed fields list
         if (!$isMentor && !$isFinance) {
             $isRestricted = in_array($field, $restrictedFields, true);
-            $canEditRestricted = RoleHelper::is_admin_or_super_admin() || $isHod || RoleHelper::is_admission_counsellor();
+            $canEditRestricted = RoleHelper::is_admin_or_super_admin() || $isHod || RoleHelper::is_admission_counsellor() || RoleHelper::is_academic_assistant();
             if ($isRestricted && !$canEditRestricted) {
                 return response()->json(['error' => 'Access denied.'], 403);
             }
@@ -3119,7 +3119,7 @@ class ConvertedLeadController extends Controller
         $value = $request->value;
 
         // Validate field
-        $allowedFields = ['batch_id', 'admission_batch_id', 'status', 'reg_fee', 'exam_fee', 'id_card', 'tma', 'academic_assistant_id'];
+        $allowedFields = ['batch_id', 'admission_batch_id', 'remarks', 'status', 'reg_fee', 'exam_fee', 'id_card', 'tma', 'academic_assistant_id'];
         if (!in_array($field, $allowedFields)) {
             return response()->json([
                 'success' => false,
