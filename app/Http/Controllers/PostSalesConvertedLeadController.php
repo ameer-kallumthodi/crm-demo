@@ -260,6 +260,28 @@ class PostSalesConvertedLeadController extends Controller
     }
 
     /**
+     * Render cancelled by column HTML
+     */
+    private function renderCancelledBy($convertedLead)
+    {
+        if (!$convertedLead->is_cancelled || !$convertedLead->cancelledBy) {
+            return '<span class="text-muted">N/A</span>';
+        }
+
+        $name = htmlspecialchars($convertedLead->cancelledBy->name, ENT_QUOTES, 'UTF-8');
+        $cancelledAt = $convertedLead->cancelled_at ? $convertedLead->cancelled_at->format('d-m-Y h:i A') : null;
+
+        $html = '<span class="badge bg-danger">Cancelled</span>';
+        $html .= '<div class="small text-muted mt-1">By: ' . $name;
+        if ($cancelledAt) {
+            $html .= '<br>' . htmlspecialchars($cancelledAt, ENT_QUOTES, 'UTF-8');
+        }
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
      * Render paid status column HTML
      */
     private function renderPaidStatus($convertedLead)

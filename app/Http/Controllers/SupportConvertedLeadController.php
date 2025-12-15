@@ -539,7 +539,7 @@ class SupportConvertedLeadController extends Controller
             $supportDetails->last_feedback = now();
             $supportDetails->save();
 
-            // Send email notification to CAO only (From CRM)
+            // Send email notification to CAO (From CRM)
             try {
                 $subject = 'Support Feedback - ' . ($convertedLead->name ?? 'Student') . ' (#' . $convertedLead->id . ')';
                 $body = view('emails.support-feedback-cao', [
@@ -557,6 +557,27 @@ class SupportConvertedLeadController extends Controller
                     'feedback_id' => $feedback->id ?? null
                 ]);
                 // Do not block user flow on email failure
+            }
+
+            // Send aligned feedback mail to student if email available
+            if (!empty($convertedLead->email)) {
+                try {
+                    $studentSubject = 'Your Support Feedback Update - ' . ($convertedLead->course?->title ?? 'Course');
+                    $studentBody = view('emails.support-feedback-student', [
+                        'convertedLead' => $convertedLead,
+                        'feedback' => $feedback
+                    ])->render();
+
+                    if (function_exists('send_email')) {
+                        // Send from support team (no CRM label for student-facing mail)
+                        send_email($convertedLead->email, $convertedLead->name ?? 'Student', $studentSubject, $studentBody, [], 'Support Team');
+                    }
+                } catch (\Exception $studentMailEx) {
+                    Log::error('Support feedback student mail failed: ' . $studentMailEx->getMessage(), [
+                        'lead_id' => $convertedLead->id,
+                        'feedback_id' => $feedback->id ?? null
+                    ]);
+                }
             }
 
             return response()->json([
