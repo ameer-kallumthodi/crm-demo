@@ -161,6 +161,14 @@ Route::prefix('register')->group(function () {
     Route::post('/ugpg', [App\Http\Controllers\Public\LeadUGPGRegistrationController::class, 'store'])->name('public.lead.ugpg.register.store');
     Route::get('/ugpg/{leadId}/success', [App\Http\Controllers\Public\LeadUGPGRegistrationController::class, 'showSuccess'])->name('public.lead.ugpg.register.success');
 
+    // EduMaster Registration Routes
+    Route::get('/edumaster/subjects', [App\Http\Controllers\Public\LeadEduMasterRegistrationController::class, 'getSubjects'])->name('public.lead.edumaster.subjects');
+    Route::get('/edumaster/batches', [App\Http\Controllers\Public\LeadEduMasterRegistrationController::class, 'getBatches'])->name('public.lead.edumaster.batches');
+    Route::get('/edumaster/courses', [App\Http\Controllers\Public\LeadEduMasterRegistrationController::class, 'getCourses'])->name('public.lead.edumaster.courses');
+    Route::get('/edumaster/{leadId?}', [App\Http\Controllers\Public\LeadEduMasterRegistrationController::class, 'showEduMasterForm'])->name('public.lead.edumaster.register');
+    Route::post('/edumaster', [App\Http\Controllers\Public\LeadEduMasterRegistrationController::class, 'store'])->name('public.lead.edumaster.register.store');
+    Route::get('/edumaster/{leadId}/success', [App\Http\Controllers\Public\LeadEduMasterRegistrationController::class, 'showSuccess'])->name('public.lead.edumaster.register.success');
+
     // Python Registration Routes
     Route::get('/python/{leadId?}', [App\Http\Controllers\Public\LeadPythonRegistrationController::class, 'showPythonForm'])->name('public.lead.python.register');
     Route::post('/python', [App\Http\Controllers\Public\LeadPythonRegistrationController::class, 'store'])->name('public.lead.python.register.store');

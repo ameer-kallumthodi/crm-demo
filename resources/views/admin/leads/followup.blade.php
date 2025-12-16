@@ -491,6 +491,17 @@
                                                         <i class="ti ti-copy"></i>
                                                     </button>
                                                 </div>
+                                                @elseif($lead->course_id == 23)
+                                                <div class="d-flex gap-1">
+                                                    <a href="{{ route('public.lead.edumaster.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open EduMaster Registration Form">
+                                                        <i class="ti ti-external-link"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-info copy-link-btn" 
+                                                            data-url="{{ route('public.lead.edumaster.register', $lead->id) }}" 
+                                                            title="Copy EduMaster Registration Link">
+                                                        <i class="ti ti-copy"></i>
+                                                    </button>
+                                                </div>
                                                 @endif
                                             </div>
                                             @endif
@@ -962,6 +973,17 @@
                                             <button type="button" class="btn btn-sm btn-info copy-link-btn" 
                                                     data-url="{{ route('public.lead.gmvss.register', $lead->id) }}" 
                                                     title="Copy GMVSS Registration Link">
+                                                <i class="ti ti-copy f-12"></i>
+                                            </button>
+                                        </div>
+                                        @elseif($lead->course_id == 23)
+                                        <div class="d-flex gap-1 mt-2">
+                                            <a href="{{ route('public.lead.edumaster.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open EduMaster Registration Form">
+                                                <i class="ti ti-external-link f-12"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-info copy-link-btn" 
+                                                    data-url="{{ route('public.lead.edumaster.register', $lead->id) }}" 
+                                                    title="Copy EduMaster Registration Link">
                                                 <i class="ti ti-copy f-12"></i>
                                             </button>
                                         </div>

@@ -634,7 +634,8 @@ class LeadController extends Controller
             15 => ['route' => 'public.lead.graphic-designing.register', 'title' => 'Graphic Designing'],
             16 => ['route' => 'public.lead.gmvss.register', 'title' => 'GMVSS'],
             20 => ['route' => 'public.lead.machine-learning.register', 'title' => 'Diploma in Machine Learning'],
-            21 => ['route' => 'public.lead.flutter.register', 'title' => 'Flutter']
+            21 => ['route' => 'public.lead.flutter.register', 'title' => 'Flutter'],
+            23 => ['route' => 'public.lead.edumaster.register', 'title' => 'EduMaster']
         ];
         
         if (isset($courseRoutes[$lead->course_id])) {
@@ -895,7 +896,10 @@ class LeadController extends Controller
             13 => 'public.lead.web-dev.register',
             14 => 'public.lead.vibe-coding.register',
             15 => 'public.lead.graphic-designing.register',
-            16 => 'public.lead.gmvss.register'
+            16 => 'public.lead.gmvss.register',
+            20 => 'public.lead.machine-learning.register',
+            21 => 'public.lead.flutter.register',
+            23 => 'public.lead.edumaster.register'
         ];
         
         if (isset($courseRoutes[$lead->course_id])) {
