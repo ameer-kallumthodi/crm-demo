@@ -689,6 +689,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // UG/PG Converted Leads Routes
         Route::get('/ugpg-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'ugpgIndex'])->name('ugpg-converted-leads.index');
 
+        // EduMaster Converted Leads Routes
+        Route::get('/edumaster-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'edumasterIndex'])->name('edumaster-converted-leads.index');
+
         // Hotel Management Converted Leads Routes
         Route::get('/hotel-management-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'hotelManagementIndex'])->name('hotel-management-converted-leads.index');
 

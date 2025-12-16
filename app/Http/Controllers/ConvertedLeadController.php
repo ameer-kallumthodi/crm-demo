@@ -1876,6 +1876,86 @@ class ConvertedLeadController extends Controller
     }
 
     /**
+     * Display EduMaster converted leads listing
+     */
+    public function edumasterIndex(Request $request)
+    {
+        $query = ConvertedLead::with(['lead', 'leadDetail.university', 'course', 'academicAssistant', 'createdBy', 'cancelledBy'])
+            ->where('course_id', 23);
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_general_manager()) {
+                // No filtering
+            } elseif (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
+                } else {
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Can see all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                // Can see all
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
+            }
+        }
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('register_number', 'like', "%{$search}%")
+                    ->orWhereHas('leadDetail', function($sq) use ($search) {
+                        $sq->where('whatsapp_number', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->filled('university_id')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('university_id', $request->university_id);
+            });
+        }
+
+        if ($request->filled('course_type')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('course_type', $request->course_type);
+            });
+        }
+
+        // Get all results
+        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
+
+        // Get filter data
+        $universities = \App\Models\University::where('is_active', 1)->orderBy('title')->get();
+        $country_codes = get_country_code();
+
+        return view('admin.converted-leads.edumaster-index', compact('convertedLeads', 'universities', 'country_codes'));
+    }
+
+    /**
      * Display the specified converted lead
      */
     public function show($id)
@@ -2744,6 +2824,12 @@ class ConvertedLeadController extends Controller
             'programme_type' => 'nullable|string|in:online,offline',
             'location' => 'nullable|string|in:Ernakulam,Malappuram',
             'class_time_id' => 'nullable|exists:class_times,id',
+            // EduMaster specific fields
+            'selected_courses' => 'nullable|string',
+            'sslc_back_year' => 'nullable|integer|min:2018|max:' . date('Y'),
+            'plustwo_back_year' => 'nullable|integer|min:2018|max:' . date('Y'),
+            'degree_back_year' => 'nullable|integer|min:2018|max:' . date('Y'),
+            'edumaster_course_name' => 'nullable|string|max:255',
         ];
 
         if (!array_key_exists($field, $allowedFields)) {
@@ -2807,8 +2893,8 @@ class ConvertedLeadController extends Controller
             }
         }
 
-        // Handle fields that are in LeadDetail (for UG/PG course)
-        $leadDetailFields = ['whatsapp_number', 'whatsapp_code', 'university_id', 'course_type', 'university_course_id', 'passed_year', 'date_of_birth', 'dob', 'programme_type', 'location', 'class_time_id'];
+        // Handle fields that are in LeadDetail (for UG/PG course and EduMaster)
+        $leadDetailFields = ['whatsapp_number', 'whatsapp_code', 'university_id', 'course_type', 'university_course_id', 'passed_year', 'date_of_birth', 'dob', 'programme_type', 'location', 'class_time_id', 'selected_courses', 'sslc_back_year', 'plustwo_back_year', 'degree_back_year', 'edumaster_course_name'];
 
         // Handle fields that are now in ConvertedStudentDetail
         $studentDetailFields = ['reg_fee', 'exam_fee', 'enroll_no', 'internship_id', 'id_card', 'tma', 'registration_number', 'enrollment_number', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks', 'continuing_studies', 'reason', 'application_number', 'board_registration_number', 'st', 'phy', 'che', 'bio', 'app', 'group', 'interview', 'howmany_interview', 'call_status', 'class_information', 'orientation_class_status', 'class_starting_date', 'class_ending_date', 'whatsapp_group_status', 'class_time', 'class_status', 'complete_cancel_date', 'teacher_id', 'screening'];
@@ -2835,6 +2921,9 @@ class ConvertedLeadController extends Controller
             // Special handling for date_of_birth (DOB in lead_details)
             if ($field === 'dob') {
                 $leadDetail->date_of_birth = $value;
+            } elseif ($field === 'selected_courses') {
+                // Store selected_courses as JSON
+                $leadDetail->selected_courses = $value; // Value is already JSON string from frontend
             } elseif ($field === 'programme_type') {
                 // If changing to online, clear location
                 if ($value === 'online') {
@@ -2944,15 +3033,25 @@ class ConvertedLeadController extends Controller
         } elseif ($field === 'teacher_id' && $updatedValue) {
             $teacher = \App\Models\User::find($updatedValue);
             $updatedValue = $teacher ? $teacher->name : $updatedValue;
+        } elseif ($field === 'selected_courses' && $updatedValue) {
+            // Format selected_courses JSON for display
+            try {
+                $courses = json_decode($updatedValue, true);
+                if (is_array($courses)) {
+                    $updatedValue = implode(', ', $courses);
+                }
+            } catch (\Exception $e) {
+                // Keep original value if JSON decode fails
+            }
+        } elseif ($field === 'university_id' && $updatedValue) {
+            $university = \App\Models\University::find($updatedValue);
+            $updatedValue = $university ? $university->title : $updatedValue;
         } elseif ($field === 'register_number') {
             // For register_number, return the value or '-' if empty
             $updatedValue = $updatedValue ?: '-';
         } elseif ($field === 'continuing_studies' && $updatedValue) {
             // Format continuing_studies with ucfirst
             $updatedValue = ucfirst($updatedValue);
-        } elseif ($field === 'university_id' && $updatedValue) {
-            $university = \App\Models\University::find($updatedValue);
-            $updatedValue = $university ? $university->title : $updatedValue;
         } elseif ($field === 'university_course_id' && $updatedValue) {
             $universityCourse = \App\Models\UniversityCourse::find($updatedValue);
             $updatedValue = $universityCourse ? $universityCourse->title : $updatedValue;
@@ -2972,6 +3071,10 @@ class ConvertedLeadController extends Controller
                 // Keep original value if parsing fails
             }
         } elseif ($field === 'passed_year' && !$updatedValue) {
+            $updatedValue = '-';
+        } elseif (in_array($field, ['sslc_back_year', 'plustwo_back_year', 'degree_back_year']) && !$updatedValue) {
+            $updatedValue = '-';
+        } elseif ($field === 'edumaster_course_name' && !$updatedValue) {
             $updatedValue = '-';
         } elseif ($field === 'class_time_id' && $updatedValue) {
             $classTime = \App\Models\ClassTime::find($updatedValue);

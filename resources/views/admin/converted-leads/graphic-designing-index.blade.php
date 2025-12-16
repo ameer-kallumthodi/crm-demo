@@ -628,7 +628,35 @@
                                             <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice">
                                                 <i class="ti ti-receipt"></i>
                                             </a>
-
+                                            @php
+                                            $canManageCancelFlag = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                            @endphp
+                                            @if($canManageCancelFlag)
+                                            @php
+                                            $cancelBtnClass = $convertedLead->is_cancelled ? 'btn-danger' : 'btn-outline-danger';
+                                            $cancelBtnTitle = $convertedLead->is_cancelled ? 'Update cancellation confirmation' : 'Confirm cancellation';
+                                            @endphp
+                                            <button type="button" class="btn btn-sm {{ $cancelBtnClass }} js-cancel-flag" title="{{ $cancelBtnTitle }}"
+                                                data-cancel-url="{{ route('admin.converted-leads.cancel-flag', $convertedLead->id) }}"
+                                                data-modal-title="Cancellation Confirmation">
+                                                <i class="ti ti-ban"></i>
+                                            </button>
+                                            @endif
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
+                                            <button type="button" class="btn btn-sm btn-info update-register-btn" title="Update Register Number"
+                                                data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
+                                                data-title="Update Register Number">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @php $courseChanged = (bool) ($convertedLead->is_course_changed ?? false); @endphp
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                            <button type="button" class="btn btn-sm {{ $courseChanged ? 'btn-success' : 'btn-danger' }} js-change-course-modal"
+                                                title="Change Course"
+                                                data-modal-url="{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}"
+                                                data-modal-title="Change Course">
+                                                <i class="ti ti-exchange"></i>
+                                            </button>
+                                            @endif
                                             <!-- ID Card Generation/View Buttons -->
                                             @php
                                             $idCardRecord = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();

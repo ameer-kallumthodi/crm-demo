@@ -108,27 +108,38 @@ class LeadEduMasterRegistrationController extends Controller
         if ($hasUG) {
             $rules['university_id'] = 'required|exists:universities,id';
             $rules['course_type'] = 'required|in:UG';
-            $rules['university_course_id'] = 'required|exists:university_courses,id';
+            $rules['edumaster_course_name'] = 'required|string|max:255';
+            $rules['degree_back_year'] = 'required_if:university_id,1|integer|min:2018|max:' . date('Y');
             $rules['plustwo_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:1024';
         }
-        
+
         // Conditional validation for PG
         if ($hasPG) {
             $rules['university_id'] = 'required|exists:universities,id';
             $rules['course_type'] = 'required|in:PG';
-            $rules['university_course_id'] = 'required|exists:university_courses,id';
+            $rules['edumaster_course_name'] = 'required|string|max:255';
+            $rules['degree_back_year'] = 'required_if:university_id,1|integer|min:2018|max:' . date('Y');
             $rules['ug_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:1024';
         }
-        
+
         // If both UG and PG are selected, we need to handle this differently
         if ($hasUG && $hasPG) {
             // Require university and course selection (user selects one course type at a time)
             $rules['university_id'] = 'required|exists:universities,id';
             $rules['course_type'] = 'required|in:UG,PG';
-            $rules['university_course_id'] = 'required|exists:university_courses,id';
+            $rules['edumaster_course_name'] = 'required|string|max:255';
+            $rules['degree_back_year'] = 'required_if:university_id,1|integer|min:2018|max:' . date('Y');
             // Both certificates are required when both UG and PG are selected
             $rules['plustwo_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:1024';
             $rules['ug_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:1024';
+        }
+        
+        // Degree Back Year must be at least 2 years after Plus Two Back Year (when university_id == 1)
+        if (($hasUG || $hasPG) && $request->has('university_id') && $request->university_id == 1) {
+            if ($hasPlusTwo && $request->has('plustwo_back_year')) {
+                $plustwoBackYear = (int) $request->plustwo_back_year;
+                $rules['degree_back_year'] .= '|min:' . ($plustwoBackYear + 2);
+            }
         }
         
         // Add batch validation if needed
@@ -162,14 +173,16 @@ class LeadEduMasterRegistrationController extends Controller
             'residential_address.required' => 'Residential address is required.',
             'selected_courses.required' => 'Please select at least one course.',
             'selected_courses.min' => 'Please select at least one course.',
+            'degree_back_year.required_if' => 'Degree back year is required for the selected university.',
+            'degree_back_year.min' => 'Degree back year must be at least 2 years after Plus Two back year.',
             'sslc_back_year.required' => 'SSLC back year is required.',
             'plustwo_back_year.required' => 'Plus Two back year is required.',
             'plustwo_back_year.min' => 'Plus Two back year must be at least 2 years after SSLC back year.',
             'university_id.required' => 'University selection is required.',
             'university_id.exists' => 'Selected university is invalid.',
+            'back_year.required_if' => 'Back year is required for the selected university.',
             'course_type.required' => 'Course type is required.',
-            'university_course_id.required' => 'Course name is required.',
-            'university_course_id.exists' => 'Selected course is invalid.',
+            'edumaster_course_name.required' => 'Course name is required.',
             'sslc_certificate.required' => 'Secondary (10th) Certificate is required when Plus Two is selected.',
             'sslc_certificate.file' => 'Secondary (10th) Certificate must be a valid file.',
             'sslc_certificate.mimes' => 'Secondary (10th) Certificate must be a PDF or image file.',
@@ -290,7 +303,10 @@ class LeadEduMasterRegistrationController extends Controller
             if ($hasUG || $hasPG) {
                 $detailData['university_id'] = $request->university_id;
                 $detailData['course_type'] = $request->course_type;
-                $detailData['university_course_id'] = $request->university_course_id;
+                $detailData['edumaster_course_name'] = $request->edumaster_course_name;
+                if ($request->has('degree_back_year')) {
+                    $detailData['degree_back_year'] = $request->degree_back_year;
+                }
             }
             
             if ($hasUG) {

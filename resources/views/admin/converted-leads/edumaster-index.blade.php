@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'UG/PG Converted Leads')
+@section('title', 'EduMaster Converted Leads')
 
 @section('content')
 <style>
@@ -40,14 +40,14 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">UG/PG Converted Leads Management</h5>
+                    <h5 class="m-b-10">EduMaster Converted Leads Management</h5>
                 </div>
             </div>
             <div class="col-md-6">
                 <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                    <li class="breadcrumb-item">UG/PG</li>
+                    <li class="breadcrumb-item">EduMaster</li>
                 </ul>
             </div>
         </div>
@@ -72,41 +72,17 @@
                     <a href="{{ route('admin.bosse-converted-leads.index') }}" class="btn btn-outline-warning">
                         <i class="ti ti-school-2"></i> BOSSE Converted Leads
                     </a>
-                    <a href="{{ route('admin.ugpg-converted-leads.index') }}" class="btn btn-warning active">
+                    <a href="{{ route('admin.ugpg-converted-leads.index') }}" class="btn btn-outline-warning">
                         <i class="ti ti-graduation"></i> UG/PG Converted Leads
+                    </a>
+                    <a href="{{ route('admin.edumaster-converted-leads.index') }}" class="btn btn-warning active">
+                        <i class="ti ti-graduation"></i> EduMaster Converted Leads
                     </a>
                     <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-outline-info">
                         <i class="ti ti-building"></i> Hotel Management Converted Leads
                     </a>
                     <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
                         <i class="ti ti-certificate"></i> GMVSS Converted Leads
-                    </a>
-                    <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
-                    </a>
-                    <a href="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-database"></i> Diploma in Data Science Converted Leads
-                    </a>
-                    <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-world"></i> Web Development & Designing Converted Leads
-                    </a>
-                    <a href="{{ route('admin.vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-device-desktop"></i> Vibe Coding Converted Leads
-                    </a>
-                    <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-palette"></i> Graphic Designing Converted Leads
-                    </a>
-                    <a href="{{ route('admin.machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-brain"></i> Diploma in Machine Learning Converted Leads
-                    </a>
-                    <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-device-mobile"></i> Flutter Converted Leads
-                    </a>
-                    <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-school"></i> Eduthanzeel Converted Leads
-                    </a>
-                    <a href="{{ route('admin.e-school-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-device-laptop"></i> E-School Converted Leads
                     </a>
                 </div>
             </div>
@@ -116,121 +92,12 @@
 @endif
 <!-- [ Course Filter Buttons ] end -->
 
-<!-- [ Mentor List ] start -->
-@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
-<div class="row mb-3">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <h6 class="mb-3">Mentor List</h6>
-                <div class="d-flex gap-2 flex-wrap">
-                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
-                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-list"></i> All Converted Leads
-                    </a>
-                    @endif
-                    <a href="{{ route('admin.mentor-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Bosse Converted Mentor List
-                    </a>
-                    <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> NIOS Converted Mentor List
-                    </a>
-                    <a href="{{ route('admin.mentor-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> UG/PG Mentor Converted List
-                    </a>
-                    <a href="{{ route('admin.mentor-eschool-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> E-School Converted Mentor List
-                    </a>
-                    <a href="{{ route('admin.mentor-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Eduthanzeel Converted Mentor List
-                    </a>
-                    <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> GMVSS Mentor List
-                    </a>
-                    <a href="{{ route('admin.digital-marketing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Digital Marketing Mentor List
-                    </a>
-                    <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Data Science Course Mentor List
-                    </a>
-                    <a href="{{ route('admin.graphic-designing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Graphic Designing Mentor List
-                    </a>
-                    <a href="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Machine Learning Mentor List
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
-<!-- [ Mentor List ] end -->
-
-<!-- [ Support List ] start -->
-@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
-<div class="row mb-3">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <h6 class="mb-3">Support List</h6>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('admin.support-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Bosse Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-nios-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> NIOS Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> UG/PG Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-hotel-management-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Hotel Management Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-gmvss-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> GMVSS Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Digital Marketing Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Diploma in Data Science Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-web-development-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Web Development & Designing Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Vibe Coding Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Graphic Designing Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Diploma in Machine Learning Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-flutter-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Flutter Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Eduthanzeel Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-e-school-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> E-School Converted Support List
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
-<!-- [ Support List ] end -->
-
 <!-- [ Filter Section ] start -->
 <div class="row mb-3">
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.ugpg-converted-leads.index') }}" id="filterForm">
+                <form method="GET" action="{{ route('admin.edumaster-converted-leads.index') }}" id="filterForm">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
@@ -271,7 +138,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="ti ti-search"></i> Filter
                                 </button>
-                                <a href="{{ route('admin.ugpg-converted-leads.index') }}" class="btn btn-secondary">
+                                <a href="{{ route('admin.edumaster-converted-leads.index') }}" class="btn btn-secondary">
                                     <i class="ti ti-x"></i> Clear
                                 </a>
                             </div>
@@ -289,13 +156,13 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">UG/PG Converted Leads List</h5>
+                <h5 class="mb-0">EduMaster Converted Leads List</h5>
             </div>
             <div class="card-body">
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover data_table_basic" id="ugpgTable">
+                        <table class="table table-hover data_table_basic" id="edumasterTable">
                             <thead>
                                 <tr>
                                     <th>SL No</th>
@@ -308,10 +175,13 @@
                                     <th>Phone</th>
                                     <th>WhatsApp Number</th>
                                     <th>Email</th>
+                                    <th>Selected Courses</th>
                                     <th>Board/University</th>
                                     <th>Course Type</th>
                                     <th>Course Name</th>
-                                    <th>Back Year</th>
+                                    <th>SSLC Back Year</th>
+                                    <th>Plus Two Back Year</th>
+                                    <th>Degree Back Year</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -321,6 +191,9 @@
                                     @php
                                     $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
                                     $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                                    $selectedCourses = $convertedLead->leadDetail?->selected_courses ? json_decode($convertedLead->leadDetail->selected_courses, true) : [];
+                                    $hasUG = in_array('UG', $selectedCourses);
+                                    $hasPG = in_array('PG', $selectedCourses);
                                     @endphp
                                     <td>{{ $index + 1 }}</td>
                                     <td>
@@ -423,6 +296,22 @@
                                     </td>
                                     <td>{{ $convertedLead->email ?? '-' }}</td>
                                     <td>
+                                        <div class="inline-edit" data-field="selected_courses" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->leadDetail?->selected_courses }}">
+                                            <span class="display-value">
+                                                @if(!empty($selectedCourses))
+                                                    {{ implode(', ', $selectedCourses) }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
                                         <div class="inline-edit" data-field="university_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->leadDetail?->university_id }}">
                                             <span class="display-value">{{ $convertedLead->leadDetail?->university?->title ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
@@ -443,8 +332,22 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="university_course_id" data-id="{{ $convertedLead->id }}" data-university-id="{{ $convertedLead->leadDetail?->university_id }}" data-current="{{ $convertedLead->leadDetail?->university_course_id }}">
-                                            <span class="display-value">{{ $convertedLead->leadDetail?->universityCourse?->title ?? '-' }}</span>
+                                        @if($hasUG || $hasPG)
+                                        <div class="inline-edit" data-field="edumaster_course_name" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->leadDetail?->edumaster_course_name }}">
+                                            <span class="display-value">{{ $convertedLead->leadDetail?->edumaster_course_name ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                        @else
+                                        <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="sslc_back_year" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->leadDetail?->sslc_back_year }}">
+                                            <span class="display-value">{{ $convertedLead->leadDetail?->sslc_back_year ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -453,14 +356,28 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="passed_year" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->leadDetail?->passed_year }}">
-                                            <span class="display-value">{{ $convertedLead->leadDetail?->passed_year ?? '-' }}</span>
+                                        <div class="inline-edit" data-field="plustwo_back_year" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->leadDetail?->plustwo_back_year }}">
+                                            <span class="display-value">{{ $convertedLead->leadDetail?->plustwo_back_year ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </button>
                                             @endif
                                         </div>
+                                    </td>
+                                    <td>
+                                        @if($hasUG || $hasPG)
+                                        <div class="inline-edit" data-field="degree_back_year" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->leadDetail?->degree_back_year }}">
+                                            <span class="display-value">{{ $convertedLead->leadDetail?->degree_back_year ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                        @else
+                                        <span class="text-muted">-</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="" role="group">
@@ -522,7 +439,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="15" class="text-center">No UG/PG converted leads found</td>
+                                    <td colspan="18" class="text-center">No EduMaster converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -611,12 +528,12 @@
         font-size: 11px;
     }
 
-    #ugpgTable thead th,
-    #ugpgTable tbody td {
+    #edumasterTable thead th,
+    #edumasterTable tbody td {
         white-space: nowrap;
     }
 
-    #ugpgTable thead th {
+    #edumasterTable thead th {
         position: sticky;
         top: 0;
         z-index: 5;
@@ -624,11 +541,11 @@
         box-shadow: inset 0 -1px 0 #e9ecef;
     }
 
-    #ugpgTable tbody tr:hover {
+    #edumasterTable tbody tr:hover {
         background: #fafbff;
     }
 
-    #ugpgTable td .display-value {
+    #edumasterTable td .display-value {
         display: inline-block;
         max-width: 220px;
         overflow: hidden;
@@ -673,26 +590,18 @@
                 editForm = createCourseTypeSelect(currentValue);
             } else if (field === 'university_id') {
                 editForm = createUniversitySelect(currentValue);
-            } else if (field === 'university_course_id') {
-                editForm = createUniversityCourseSelect(universityId, currentValue);
+            } else if (field === 'selected_courses') {
+                editForm = createSelectedCoursesField(currentValue);
+            } else if (field === 'sslc_back_year' || field === 'plustwo_back_year' || field === 'degree_back_year') {
+                editForm = createYearField(field, currentValue);
             } else if (field === 'dob') {
                 editForm = createDateField(field, currentValue);
-            } else if (field === 'passed_year') {
-                editForm = createYearField(field, currentValue);
             } else {
                 editForm = createInputField(field, currentValue);
             }
 
             container.addClass('editing');
             container.append(editForm);
-
-            // Load university courses if needed
-            if (field === 'university_course_id') {
-                const $select = container.find('select');
-                if (universityId) {
-                    loadUniversityCourses(universityId, $select, currentValue);
-                }
-            }
 
             container.find('input, select').first().focus();
         });
@@ -713,6 +622,12 @@
                 const codeField = field === 'phone' ? 'code' : 'whatsapp_code';
                 const codeVal = container.find('select[name="' + codeField + '"]').val();
                 extra[codeField] = codeVal;
+            } else if (field === 'selected_courses') {
+                const selected = [];
+                container.find('input[type="checkbox"]:checked').each(function() {
+                    selected.push($(this).val());
+                });
+                value = JSON.stringify(selected);
             } else {
                 value = container.find('input, select').val();
             }
@@ -741,6 +656,16 @@
                                 if (!isNaN(date.getTime())) {
                                     displayValue = date.toLocaleDateString('en-GB'); // d/m/Y format
                                 }
+                            } catch (e) {
+                                // Keep original value if conversion fails
+                            }
+                        }
+
+                        // Special handling for selected_courses
+                        if (field === 'selected_courses') {
+                            try {
+                                const courses = JSON.parse(displayValue);
+                                displayValue = courses.join(', ');
                             } catch (e) {
                                 // Keep original value if conversion fails
                             }
@@ -849,7 +774,7 @@
             const currentYear = new Date().getFullYear();
             return `
                 <div class="edit-form">
-                    <input type="number" min="1900" max="${currentYear}" value="${displayValue}" class="form-control form-control-sm" placeholder="Year">
+                    <input type="number" min="2018" max="${currentYear}" value="${displayValue}" class="form-control form-control-sm" placeholder="Year">
                     <div class="btn-group mt-1">
                         <button class="btn btn-success btn-sm save-edit">Save</button>
                         <button class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
@@ -877,11 +802,7 @@
         function createUniversitySelect(currentValue) {
             let options = '<option value="">Select University</option>';
             @foreach($universities as $university)
-            const selected {
-                {
-                    $university - > id
-                }
-            } = String(currentValue) === '{{ $university->id }}' ? 'selected' : '';
+            const selected{{ $university->id }} = String(currentValue) === '{{ $university->id }}' ? 'selected' : '';
             options += `<option value="{{ $university->id }}" ${selected{{ $university->id }}}>{{ $university->title }}</option>`;
             @endforeach
             return `
@@ -897,38 +818,43 @@
             `;
         }
 
-        function createUniversityCourseSelect(universityId, currentValue) {
+        function createSelectedCoursesField(currentValue) {
+            let courses = [];
+            try {
+                if (currentValue && currentValue !== '-') {
+                    courses = JSON.parse(currentValue);
+                }
+            } catch (e) {
+                // If not JSON, try to parse as comma-separated
+                if (currentValue && currentValue !== '-') {
+                    courses = currentValue.split(',').map(c => c.trim());
+                }
+            }
+            
             return `
                 <div class="edit-form">
-                    <select class="form-select form-select-sm">
-                        <option value="">Loading...</option>
-                    </select>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="SSLC" id="course_sslc" ${courses.includes('SSLC') ? 'checked' : ''}>
+                        <label class="form-check-label" for="course_sslc">SSLC</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="Plus two" id="course_plustwo" ${courses.includes('Plus two') ? 'checked' : ''}>
+                        <label class="form-check-label" for="course_plustwo">Plus two</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="UG" id="course_ug" ${courses.includes('UG') ? 'checked' : ''}>
+                        <label class="form-check-label" for="course_ug">UG</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="PG" id="course_pg" ${courses.includes('PG') ? 'checked' : ''}>
+                        <label class="form-check-label" for="course_pg">PG</label>
+                    </div>
                     <div class="btn-group mt-1">
                         <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
                         <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
                     </div>
                 </div>
             `;
-        }
-
-        function loadUniversityCourses(universityId, $select, currentValue) {
-            if (!universityId) {
-                $select.html('<option value="">Select University First</option>');
-                return;
-            }
-
-            $.get(`/api/university-courses/by-university/${universityId}`)
-                .done(function(courses) {
-                    let options = '<option value="">Select Course</option>';
-                    courses.forEach(function(course) {
-                        const isSelected = String(currentValue) === String(course.id) ? 'selected' : '';
-                        options += `<option value="${course.id}" ${isSelected}>${course.title}</option>`;
-                    });
-                    $select.html(options);
-                })
-                .fail(function() {
-                    $select.html('<option value="">Error loading courses</option>');
-                });
         }
 
         function createPhoneField(currentCode, currentPhone, codeFieldName) {

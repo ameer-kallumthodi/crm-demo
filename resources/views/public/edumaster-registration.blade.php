@@ -379,14 +379,27 @@
                         </div>
                     </div>
                     
+                    <!-- Degree / University Back Year (separate from Plus Two back year) -->
+                    <div class="row" id="degree_back_year_row" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Degree Back Year <span class="required">*</span></label>
+                                <select class="form-control" name="degree_back_year" id="degree_back_year">
+                                    <option value="">Select Back Year</option>
+                                    @for($year = 2018; $year <= date('Y'); $year++)
+                                        <option value="{{ $year }}">{{ $year }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Course Name (for UG/PG) -->
                     <div class="row" id="course_name_row" style="display: none;">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">Course Name <span class="required">*</span></label>
-                                <select class="form-control" name="university_course_id" id="university_course_id">
-                                    <option value="">Select Course</option>
-                                </select>
+                                <input type="text" class="form-control" name="edumaster_course_name" id="edumaster_course_name" placeholder="Enter course name">
                             </div>
                         </div>
                     </div>
@@ -570,31 +583,53 @@
             if (plustwoChecked) {
                 plustwoRow.style.display = 'block';
                 plustwoBackYear.required = true;
-                updatePlusTwoBackYear();
+                updatePlusTwoBackYear(); // populate options whenever Plus Two is selected (this also calls updateDegreeBackYear)
             } else {
                 plustwoRow.style.display = 'none';
                 plustwoBackYear.required = false;
                 plustwoBackYear.value = '';
+                // Update Degree Back Year when Plus Two is unchecked
+                updateDegreeBackYear();
             }
             
             // Show/hide university fields (for UG/PG)
             const universityRow = document.getElementById('university_row');
             const courseNameRow = document.getElementById('course_name_row');
+            const courseNameInput = document.getElementById('edumaster_course_name');
+            const degreeBackYearRow = document.getElementById('degree_back_year_row');
+            const degreeBackYearSelect = document.getElementById('degree_back_year');
+            const universityId = document.getElementById('university_id').value;
             if (ugChecked || pgChecked) {
                 universityRow.style.display = 'block';
                 courseNameRow.style.display = 'block';
                 document.getElementById('university_id').required = true;
                 document.getElementById('course_type').required = true;
-                document.getElementById('university_course_id').required = true;
+                courseNameInput.required = true;
+                // Degree Back Year only shows when university_id == 1
+                if (degreeBackYearRow && degreeBackYearSelect) {
+                    if (universityId == '1') {
+                        degreeBackYearRow.style.display = 'block';
+                        degreeBackYearSelect.required = true;
+                    } else {
+                        degreeBackYearRow.style.display = 'none';
+                        degreeBackYearSelect.required = false;
+                        degreeBackYearSelect.value = '';
+                    }
+                }
             } else {
                 universityRow.style.display = 'none';
                 courseNameRow.style.display = 'none';
                 document.getElementById('university_id').required = false;
                 document.getElementById('course_type').required = false;
-                document.getElementById('university_course_id').required = false;
+                courseNameInput.required = false;
                 document.getElementById('university_id').value = '';
                 document.getElementById('course_type').value = '';
-                document.getElementById('university_course_id').innerHTML = '<option value="">Select Course</option>';
+                courseNameInput.value = '';
+                if (degreeBackYearRow && degreeBackYearSelect) {
+                    degreeBackYearRow.style.display = 'none';
+                    degreeBackYearSelect.required = false;
+                    degreeBackYearSelect.value = '';
+                }
             }
             
             // Show/hide document upload fields
@@ -634,9 +669,9 @@
                 document.getElementById('ug_certificate_preview').innerHTML = '';
             }
             
-            // Update course dropdown if needed
+            // After handling course selection, update degree back year visibility based on university
             if (ugChecked || pgChecked) {
-                updateCourseDropdown();
+                handleUniversityChange();
             }
         }
         
@@ -671,53 +706,71 @@
                     plustwoBackYear.appendChild(option);
                 }
             }
+            
+            // Update Degree Back Year when Plus Two Back Year changes
+            updateDegreeBackYear();
         }
         
-        // Handle Course Type selection change
-        function handleCourseTypeChange() {
-            updateCourseDropdown();
-        }
-        
-        // Handle University selection change
-        function handleUniversityChange() {
-            updateCourseDropdown();
-        }
-        
-        // Update course dropdown based on university and course type
-        function updateCourseDropdown() {
+        // Update Degree Back Year based on Plus Two Back Year (2 years after)
+        function updateDegreeBackYear() {
+            const plustwoBackYear = document.getElementById('plustwo_back_year').value;
+            const degreeBackYearSelect = document.getElementById('degree_back_year');
             const universityId = document.getElementById('university_id').value;
-            const courseType = document.getElementById('course_type').value;
-            const courseSelect = document.getElementById('university_course_id');
+            const ugChecked = document.getElementById('course_ug').checked;
+            const pgChecked = document.getElementById('course_pg').checked;
             
-            // Store current selection
-            const currentValue = courseSelect.value;
+            if (!degreeBackYearSelect) return;
             
-            // Clear existing options
-            courseSelect.innerHTML = '<option value="">Select Course</option>';
-            
-            if (!universityId || !courseType) {
-                return;
-            }
-            
-            // Fetch courses from API
-            fetch(`/register/edumaster/courses?university_id=${universityId}&course_type=${courseType}`)
-                .then(response => response.json())
-                .then(courses => {
-                    courses.forEach(course => {
-                        const option = document.createElement('option');
-                        option.value = course.id;
-                        option.textContent = course.title;
-                        courseSelect.appendChild(option);
-                    });
+            // Only update if university_id == 1 and UG/PG is checked
+            if (universityId == '1' && (ugChecked || pgChecked)) {
+                if (plustwoBackYear) {
+                    const minYear = parseInt(plustwoBackYear) + 2;
+                    const maxYear = new Date().getFullYear();
                     
-                    // Restore previous selection if it exists in the new options
-                    if (currentValue && courseSelect.querySelector(`option[value="${currentValue}"]`)) {
-                        courseSelect.value = currentValue;
+                    degreeBackYearSelect.innerHTML = '<option value="">Select Back Year</option>';
+                    for (let year = minYear; year <= maxYear; year++) {
+                        const option = document.createElement('option');
+                        option.value = year;
+                        option.textContent = year;
+                        degreeBackYearSelect.appendChild(option);
                     }
-                })
-                .catch(error => {
-                    console.error('Error fetching courses:', error);
-                });
+                } else {
+                    // If Plus Two Back Year is not selected, show all years from 2018
+                    const minYear = 2018;
+                    const maxYear = new Date().getFullYear();
+                    
+                    degreeBackYearSelect.innerHTML = '<option value="">Select Back Year</option>';
+                    for (let year = minYear; year <= maxYear; year++) {
+                        const option = document.createElement('option');
+                        option.value = year;
+                        option.textContent = year;
+                        degreeBackYearSelect.appendChild(option);
+                    }
+                }
+            }
+        }
+        
+        // Handle University selection change (for degree back year only)
+        function handleUniversityChange() {
+            const universityId = document.getElementById('university_id').value;
+            const ugChecked = document.getElementById('course_ug').checked;
+            const pgChecked = document.getElementById('course_pg').checked;
+            
+            // Show/hide Degree Back Year - only for university_id == 1 AND when UG/PG is checked
+            const degreeBackYearRow = document.getElementById('degree_back_year_row');
+            const degreeBackYearSelect = document.getElementById('degree_back_year');
+            
+            if (degreeBackYearRow && degreeBackYearSelect) {
+                if (universityId == '1' && (ugChecked || pgChecked)) {
+                    degreeBackYearRow.style.display = 'block';
+                    degreeBackYearSelect.required = true;
+                    updateDegreeBackYear(); // Update options based on Plus Two Back Year
+                } else {
+                    degreeBackYearRow.style.display = 'none';
+                    degreeBackYearSelect.required = false;
+                    degreeBackYearSelect.value = '';
+                }
+            }
         }
 
         function loadSavedData() {
@@ -748,18 +801,10 @@
                         handleCourseSelection();
                     }
                     
-                    // Populate course dropdown if university and course type are selected
-                    if (data.university_id && data.course_type) {
+                    // Update Degree Back Year if Plus Two Back Year is loaded
+                    if (data.plustwo_back_year) {
                         setTimeout(() => {
-                            updateCourseDropdown();
-                            if (data.university_course_id) {
-                                setTimeout(() => {
-                                    const courseSelect = document.getElementById('university_course_id');
-                                    if (courseSelect) {
-                                        courseSelect.value = data.university_course_id;
-                                    }
-                                }, 500);
-                            }
+                            updateDegreeBackYear();
                         }, 100);
                     }
                 } catch (e) {
@@ -803,6 +848,8 @@
             loadSavedData();
             setupAutoSave();
             updateStepDisplay();
+            // Ensure initial state (shows/hides and populates dropdowns)
+            handleCourseSelection();
             
             // Add event listeners for course checkboxes
             document.querySelectorAll('input[name="selected_courses[]"]').forEach(checkbox => {
@@ -829,9 +876,15 @@
                 }
             });
             
+            // Add event listener for Plus Two back year change to update Degree Back Year
+            document.getElementById('plustwo_back_year').addEventListener('change', function() {
+                updateDegreeBackYear();
+                saveFormData();
+            });
+            
             // Add change event listener to Course Type select
             document.getElementById('course_type').addEventListener('change', function() {
-                handleCourseTypeChange();
+                handleCourseSelection();
                 saveFormData();
                 this.classList.remove('is-invalid');
             });
@@ -967,7 +1020,8 @@
                 if (ugChecked || pgChecked) {
                     const universityId = document.getElementById('university_id').value;
                     const courseType = document.getElementById('course_type').value;
-                    const courseId = document.getElementById('university_course_id').value;
+                    const courseName = document.getElementById('edumaster_course_name').value;
+                    const degreeBackYearSelect = document.getElementById('degree_back_year');
                     
                     if (!universityId) {
                         document.getElementById('university_id').classList.add('is-invalid');
@@ -981,10 +1035,20 @@
                         return false;
                     }
                     
-                    if (!courseId) {
-                        document.getElementById('university_course_id').classList.add('is-invalid');
-                        showAlert('Please select a Course Name.', 'warning');
+                    if (!courseName || courseName.trim() === '') {
+                        document.getElementById('edumaster_course_name').classList.add('is-invalid');
+                        showAlert('Please enter a Course Name.', 'warning');
                         return false;
+                    }
+                    
+                    if (universityId == '1' && degreeBackYearSelect) {
+                        if (!degreeBackYearSelect.value || degreeBackYearSelect.value.trim() === '') {
+                            degreeBackYearSelect.classList.add('is-invalid');
+                            showAlert('Please select a Degree Back Year.', 'warning');
+                            return false;
+                        } else {
+                            degreeBackYearSelect.classList.remove('is-invalid');
+                        }
                     }
                 }
             }
