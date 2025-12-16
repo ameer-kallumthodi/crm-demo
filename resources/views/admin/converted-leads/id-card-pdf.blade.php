@@ -26,9 +26,9 @@
                 background-image: url('{{ public_path("assets/images/e-school-frnd.jpg") }}');
             @elseif(in_array($convertedLead->course_id, [6, 7]))
                 background-image: url('{{ public_path("assets/images/eduthanzeel-frnd.jpg") }}');
-            @elseif(in_array($convertedLead->course_id, [1, 2, 9, 16, 23]))
+            @elseif(in_array($convertedLead->course_id, [1, 2, 9, 16]))
                 background-image: url('{{ public_path("assets/images/natdemy-frnd.jpg") }}');
-            @elseif(in_array($convertedLead->course_id, [3, 4, 8, 10, 11, 12, 13, 14, 15]))
+            @elseif(in_array($convertedLead->course_id, [3, 4, 8, 10, 11, 12, 13, 14, 15, 23]))
                 background-image: url('{{ public_path("assets/images/skill-park-frnd.jpg") }}');
             @else
                 background-image: url('{{ public_path("assets/images/natdemy-frnd.jpg") }}');
@@ -40,9 +40,9 @@
                 background-image: url('{{ public_path("assets/images/e-school-back.jpg") }}');
             @elseif(in_array($convertedLead->course_id, [6, 7]))
                 background-image: url('{{ public_path("assets/images/eduthanzeel-back.jpg") }}');
-            @elseif(in_array($convertedLead->course_id, [1, 2, 9, 16, 23]))
+            @elseif(in_array($convertedLead->course_id, [1, 2, 9, 16]))
                 background-image: url('{{ public_path("assets/images/natdemy-back.jpg") }}');
-            @elseif(in_array($convertedLead->course_id, [3, 4, 8, 10, 11, 12, 13, 14, 15]))
+            @elseif(in_array($convertedLead->course_id, [3, 4, 8, 10, 11, 12, 13, 14, 15, 23]))
                 background-image: url('{{ public_path("assets/images/skill-park-back.jpg") }}');
             @else
                 background-image: url('{{ public_path("assets/images/natdemy-back.jpg") }}');

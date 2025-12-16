@@ -344,6 +344,7 @@
                                     <th>Phone</th>
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
+                                    <th>Class</th>
                                     <th>Mail</th>
                                     <th>Course</th>
                                     <th>Passed Year</th>
@@ -446,6 +447,22 @@
                                     <td>
                                         <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
                                             <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="class" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->leadDetail?->class }}">
+                                            <span class="display-value">
+                                                @if($convertedLead->leadDetail?->class)
+                                                    {{ $convertedLead->leadDetail->class === 'sslc' ? 'SSLC' : ($convertedLead->leadDetail->class === 'plustwo' ? 'Plus Two' : $convertedLead->leadDetail->class) }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -588,7 +605,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="19" class="text-center">No GMVSS converted leads found</td>
+                                    <td colspan="20" class="text-center">No GMVSS converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -680,6 +697,16 @@
                                 <div class="col-6">
                                     <small class="text-muted d-block">Session</small>
                                     <span class="fw-medium">{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Class</small>
+                                    <span class="fw-medium">
+                                        @if($convertedLead->leadDetail?->class)
+                                            {{ $convertedLead->leadDetail->class === 'sslc' ? 'SSLC' : ($convertedLead->leadDetail->class === 'plustwo' ? 'Plus Two' : $convertedLead->leadDetail->class) }}
+                                        @else
+                                            -
+                                        @endif
+                                    </span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Registration Number</small>
@@ -1151,7 +1178,7 @@
 
             if (field === 'admission_batch_id') {
                 editForm = createAdmissionBatchField(container.data('batch-id'), currentId);
-            } else if (['registration_link_id', 'certificate_status'].includes(field)) {
+            } else if (['registration_link_id', 'certificate_status', 'class'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
             } else if (['certificate_received_date', 'certificate_issued_date'].includes(field)) {
                 editForm = createDateField(field, currentValue);
@@ -1336,6 +1363,21 @@
                     options += `<option value="Certificate Arrived" ${selectedValue === 'Certificate Arrived' ? 'selected' : ''}>Certificate Arrived</option>`;
                     options += `<option value="Not Received" ${selectedValue === 'Not Received' ? 'selected' : ''}>Not Received</option>`;
                     options += `<option value="No Admission" ${selectedValue === 'No Admission' ? 'selected' : ''}>No Admission</option>`;
+                    break;
+                case 'class':
+                    // Normalize currentValue: handle both 'SSLC'/'sslc' and 'Plus Two'/'plustwo'
+                    let normalizedValue = '';
+                    if (selectedValue) {
+                        const lowerValue = selectedValue.toLowerCase().trim();
+                        if (lowerValue === 'sslc') {
+                            normalizedValue = 'sslc';
+                        } else if (lowerValue === 'plustwo' || lowerValue === 'plus two' || lowerValue === 'plustwo') {
+                            normalizedValue = 'plustwo';
+                        }
+                    }
+                    options = '<option value="">Select Class</option>';
+                    options += `<option value="sslc" ${normalizedValue === 'sslc' ? 'selected' : ''}>SSLC</option>`;
+                    options += `<option value="plustwo" ${normalizedValue === 'plustwo' ? 'selected' : ''}>Plus Two</option>`;
                     break;
             }
 

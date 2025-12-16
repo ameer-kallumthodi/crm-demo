@@ -456,7 +456,7 @@ class ConvertedLeadController extends Controller
      */
     public function gmvssIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead.studentDetails', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'studentDetails.registrationLink'])
+        $query = ConvertedLead::with(['lead.studentDetails', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'studentDetails.registrationLink'])
             ->where('course_id', 16);
 
         // Apply role-based filtering
@@ -2824,6 +2824,8 @@ class ConvertedLeadController extends Controller
             'programme_type' => 'nullable|string|in:online,offline',
             'location' => 'nullable|string|in:Ernakulam,Malappuram',
             'class_time_id' => 'nullable|exists:class_times,id',
+            // GMVSS specific fields
+            'class' => 'nullable|string|in:sslc,plustwo',
             // EduMaster specific fields
             'selected_courses' => 'nullable|string',
             'sslc_back_year' => 'nullable|integer|min:2018|max:' . date('Y'),
@@ -2894,7 +2896,7 @@ class ConvertedLeadController extends Controller
         }
 
         // Handle fields that are in LeadDetail (for UG/PG course and EduMaster)
-        $leadDetailFields = ['whatsapp_number', 'whatsapp_code', 'university_id', 'course_type', 'university_course_id', 'passed_year', 'date_of_birth', 'dob', 'programme_type', 'location', 'class_time_id', 'selected_courses', 'sslc_back_year', 'plustwo_back_year', 'degree_back_year', 'edumaster_course_name'];
+        $leadDetailFields = ['whatsapp_number', 'whatsapp_code', 'university_id', 'course_type', 'university_course_id', 'passed_year', 'date_of_birth', 'dob', 'programme_type', 'location', 'class_time_id', 'selected_courses', 'sslc_back_year', 'plustwo_back_year', 'degree_back_year', 'edumaster_course_name', 'class'];
 
         // Handle fields that are now in ConvertedStudentDetail
         $studentDetailFields = ['reg_fee', 'exam_fee', 'enroll_no', 'internship_id', 'id_card', 'tma', 'registration_number', 'enrollment_number', 'registration_link_id', 'certificate_status', 'certificate_received_date', 'certificate_issued_date', 'remarks', 'continuing_studies', 'reason', 'application_number', 'board_registration_number', 'st', 'phy', 'che', 'bio', 'app', 'group', 'interview', 'howmany_interview', 'call_status', 'class_information', 'orientation_class_status', 'class_starting_date', 'class_ending_date', 'whatsapp_group_status', 'class_time', 'class_status', 'complete_cancel_date', 'teacher_id', 'screening'];
@@ -3033,6 +3035,9 @@ class ConvertedLeadController extends Controller
         } elseif ($field === 'teacher_id' && $updatedValue) {
             $teacher = \App\Models\User::find($updatedValue);
             $updatedValue = $teacher ? $teacher->name : $updatedValue;
+        } elseif ($field === 'class' && $updatedValue) {
+            // Format class for display (sslc -> SSLC, plustwo -> Plus Two)
+            $updatedValue = $updatedValue === 'sslc' ? 'SSLC' : ($updatedValue === 'plustwo' ? 'Plus Two' : $updatedValue);
         } elseif ($field === 'selected_courses' && $updatedValue) {
             // Format selected_courses JSON for display
             try {
