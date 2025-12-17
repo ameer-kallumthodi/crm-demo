@@ -112,7 +112,7 @@ class LeadEduMasterRegistrationController extends Controller
             $rules['degree_back_year'] = 'required_if:university_id,1|integer|min:2018|max:' . date('Y');
             $rules['plustwo_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:1024';
         }
-
+        
         // Conditional validation for PG
         if ($hasPG) {
             $rules['university_id'] = 'required|exists:universities,id';
@@ -121,7 +121,7 @@ class LeadEduMasterRegistrationController extends Controller
             $rules['degree_back_year'] = 'required_if:university_id,1|integer|min:2018|max:' . date('Y');
             $rules['ug_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:1024';
         }
-
+        
         // If both UG and PG are selected, we need to handle this differently
         if ($hasUG && $hasPG) {
             // Require university and course selection (user selects one course type at a time)

@@ -275,66 +275,66 @@
                 <h5 class="modal-title" id="approvePaymentModalLabel">Approve Payment</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <strong>Please review the payment details before approving:</strong>
+            <form id="approvePaymentForm" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Please review the payment details before approving:</strong>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Amount:</strong>
+                        </div>
+                        <div class="col-6" id="approveAmount">
+                            <!-- Amount will be populated here -->
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Previous Balance:</strong>
+                        </div>
+                        <div class="col-6" id="approvePreviousBalance">
+                            <!-- Previous balance will be populated here -->
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Payment Type:</strong>
+                        </div>
+                        <div class="col-6" id="approvePaymentType">
+                            <!-- Payment type will be populated here -->
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Transaction ID:</strong>
+                        </div>
+                        <div class="col-6">
+                            <input type="text" class="form-control" id="approveTransactionId" name="transaction_id" placeholder="Enter transaction ID" value="">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Receipt/Proof:</strong>
+                        </div>
+                        <div class="col-6" id="approveFile">
+                            <!-- File will be populated here -->
+                        </div>
+                    </div>
+                    <hr>
+                    <p class="text-muted">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Once approved, this payment will be added to the invoice total and cannot be undone.
+                    </p>
                 </div>
-                <div class="row">
-                    <div class="col-6">
-                        <strong>Amount:</strong>
-                    </div>
-                    <div class="col-6" id="approveAmount">
-                        <!-- Amount will be populated here -->
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-6">
-                        <strong>Previous Balance:</strong>
-                    </div>
-                    <div class="col-6" id="approvePreviousBalance">
-                        <!-- Previous balance will be populated here -->
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-6">
-                        <strong>Payment Type:</strong>
-                    </div>
-                    <div class="col-6" id="approvePaymentType">
-                        <!-- Payment type will be populated here -->
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-6">
-                        <strong>Transaction ID:</strong>
-                    </div>
-                    <div class="col-6" id="approveTransactionId">
-                        <!-- Transaction ID will be populated here -->
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-6">
-                        <strong>Receipt/Proof:</strong>
-                    </div>
-                    <div class="col-6" id="approveFile">
-                        <!-- File will be populated here -->
-                    </div>
-                </div>
-                <hr>
-                <p class="text-muted">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Once approved, this payment will be added to the invoice total and cannot be undone.
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="approvePaymentForm" method="POST" class="d-inline">
-                    @csrf
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-check me-2"></i>Approve Payment
                     </button>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -434,7 +434,7 @@
             maximumFractionDigits: 2
         });
         document.getElementById('approvePaymentType').textContent = paymentType;
-        document.getElementById('approveTransactionId').textContent = transactionId || 'N/A';
+        document.getElementById('approveTransactionId').value = transactionId || '';
 
         // Handle file display
         const fileElement = document.getElementById('approveFile');
@@ -487,5 +487,6 @@
         }
         document.getElementById('rejectionRemarksInput').value = remarks;
     });
+
 </script>
 @endsection

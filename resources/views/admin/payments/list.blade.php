@@ -467,44 +467,44 @@
                 <h5 class="modal-title" id="approvePaymentModalLabel">Approve Payment</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="alert alert-info d-flex align-items-center">
-                    <i class="ti ti-info-circle me-2"></i>
-                    <span>Please review the payment details before approving.</span>
+            <form id="approvePaymentForm" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-info d-flex align-items-center">
+                        <i class="ti ti-info-circle me-2"></i>
+                        <span>Please review the payment details before approving.</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Amount:</strong>
+                        <div id="approveAmount">-</div>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Previous Approved Total:</strong>
+                        <div id="approvePreviousBalance">-</div>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Payment Type:</strong>
+                        <div id="approvePaymentType">-</div>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Transaction ID:</strong>
+                        <input type="text" class="form-control mt-1" id="approveTransactionId" name="transaction_id" placeholder="Enter transaction ID" value="">
+                    </div>
+                    <div class="mb-2">
+                        <strong>Receipt / Proof:</strong>
+                        <div id="approveFile">-</div>
+                    </div>
+                    <p class="text-muted mt-3 mb-0">
+                        <i class="ti ti-alert-circle me-1"></i>Once approved, this payment will update the invoice totals and cannot be undone.
+                    </p>
                 </div>
-                <div class="mb-2">
-                    <strong>Amount:</strong>
-                    <div id="approveAmount">-</div>
-                </div>
-                <div class="mb-2">
-                    <strong>Previous Approved Total:</strong>
-                    <div id="approvePreviousBalance">-</div>
-                </div>
-                <div class="mb-2">
-                    <strong>Payment Type:</strong>
-                    <div id="approvePaymentType">-</div>
-                </div>
-                <div class="mb-2">
-                    <strong>Transaction ID:</strong>
-                    <div id="approveTransactionId">-</div>
-                </div>
-                <div class="mb-2">
-                    <strong>Receipt / Proof:</strong>
-                    <div id="approveFile">-</div>
-                </div>
-                <p class="text-muted mt-3 mb-0">
-                    <i class="ti ti-alert-circle me-1"></i>Once approved, this payment will update the invoice totals and cannot be undone.
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="approvePaymentForm" method="POST" class="d-inline">
-                    @csrf
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success">
                         <i class="ti ti-check me-1"></i>Approve Payment
                     </button>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -580,7 +580,7 @@
         document.getElementById('approveAmount').textContent = formatCurrency(amount);
         document.getElementById('approvePreviousBalance').textContent = formatCurrency(previousBalance);
         document.getElementById('approvePaymentType').textContent = paymentType || 'N/A';
-        document.getElementById('approveTransactionId').textContent = transactionId || 'N/A';
+        document.getElementById('approveTransactionId').value = transactionId || '';
 
         const approveFile = document.getElementById('approveFile');
         if (fileUpload) {

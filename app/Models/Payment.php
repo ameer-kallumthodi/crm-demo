@@ -97,12 +97,18 @@ class Payment extends Model
     }
 
     // Methods
-    public function approve()
+    public function approve($transactionId = null)
     {
         $this->status = 'Approved';
         $this->approved_date = now();
         $this->approved_by = \App\Helpers\AuthHelper::getCurrentUserId();
         $this->updated_by = \App\Helpers\AuthHelper::getCurrentUserId();
+        
+        // Update transaction ID if provided (including empty string to clear it)
+        if ($transactionId !== null) {
+            $this->transaction_id = $transactionId;
+        }
+        
         $this->save();
 
         // Recalculate invoice paid amount from all approved payments

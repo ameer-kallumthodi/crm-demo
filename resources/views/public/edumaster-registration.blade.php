@@ -696,17 +696,17 @@
             } else {
                 // If SSLC is not checked, show all years from 2018
                 const minYear = 2018;
-                const maxYear = new Date().getFullYear();
-                
-                plustwoBackYear.innerHTML = '<option value="">Select Back Year</option>';
-                for (let year = minYear; year <= maxYear; year++) {
-                    const option = document.createElement('option');
-                    option.value = year;
-                    option.textContent = year;
-                    plustwoBackYear.appendChild(option);
-                }
-            }
+            const maxYear = new Date().getFullYear();
             
+            plustwoBackYear.innerHTML = '<option value="">Select Back Year</option>';
+            for (let year = minYear; year <= maxYear; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                plustwoBackYear.appendChild(option);
+            }
+        }
+        
             // Update Degree Back Year when Plus Two Back Year changes
             updateDegreeBackYear();
         }
@@ -863,7 +863,7 @@
             document.getElementById('sslc_back_year').addEventListener('change', function() {
                 // Only update Plus Two back year if Plus Two is checked
                 if (document.getElementById('course_plustwo').checked) {
-                    updatePlusTwoBackYear();
+                updatePlusTwoBackYear();
                 }
                 saveFormData();
             });

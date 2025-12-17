@@ -315,9 +315,6 @@
                                 <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-secondary">
                                     <i class="ti ti-x"></i> <span class="d-none d-sm-inline">Clear</span>
                                 </a>
-                    <a href="{{ route('admin.mentor-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> UG/PG Mentor Converted List
-                    </a>
                             </div>
                         </div>
                     </div>

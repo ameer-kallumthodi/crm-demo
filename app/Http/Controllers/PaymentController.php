@@ -258,7 +258,7 @@ class PaymentController extends Controller
     /**
      * Approve a payment
      */
-    public function approve($id)
+    public function approve($id, Request $request)
     {
         try {
             $payment = Payment::findOrFail($id);
@@ -266,7 +266,10 @@ class PaymentController extends Controller
             // Check permissions
             $this->checkInvoiceAccess($payment->invoice);
             
-            $payment->approve();
+            // Get transaction_id from request (can be empty string to clear it)
+            $transactionId = $request->input('transaction_id', null);
+            
+            $payment->approve($transactionId);
 
             return redirect()->back()
                 ->with('message_success', 'Payment approved successfully!');
