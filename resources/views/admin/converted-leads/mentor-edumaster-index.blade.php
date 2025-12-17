@@ -202,6 +202,7 @@
                                     <th>Admission Batch</th>
                                     <th>Selected Course(s)</th>
                                     <!-- SSLC Back Year -->
+                                    <th>SSLC Back Year</th>
                                     <th>SSLC Enrollment Number</th>
                                     <th>SSLC Registration Link</th>
                                     <th>SSLC Online Result Publication Date</th>
@@ -211,7 +212,8 @@
                                     <th>SSLC Courier Tracking Number</th>
                                     <th>SSLC Remarks</th>
                                     <!-- Plus Two Back Year -->
-                                    <th>Plus Two Subject No</th>
+                                    <th>Plus Two Back Year</th>
+                                    <th>Plus Two Subject</th>
                                     <th>Plus Two Enrollment Number</th>
                                     <th>Plus Two Registration Link</th>
                                     <th>Plus Two Online Result Publication Date</th>
@@ -308,6 +310,7 @@
                                         @endif
                                     </td>
                                     <!-- SSLC Back Year Fields -->
+                                    <td>{{ $convertedLead->leadDetail?->sslc_back_year ?? '-' }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="sslc_enrollment_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->sslc_enrollment_number }}">
                                             <span class="display-value">{{ $convertedLead->mentorDetails?->sslc_enrollment_number ?? '-' }}</span>
@@ -389,6 +392,7 @@
                                         </div>
                                     </td>
                                     <!-- Plus Two Back Year Fields -->
+                                    <td>{{ $convertedLead->leadDetail?->plustwo_back_year ?? '-' }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="plustwo_subject_no" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->plustwo_subject_no }}">
                                             <span class="display-value">{{ $convertedLead->mentorDetails?->plustwo_subject_no ?? '-' }}</span>
@@ -617,7 +621,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="48" class="text-center">No converted leads found for mentoring</td>
+                                    <td colspan="50" class="text-center">No converted leads found for mentoring</td>
                                 </tr>
                                 @endforelse
                             </tbody>
