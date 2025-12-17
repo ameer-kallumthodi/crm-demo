@@ -145,7 +145,9 @@ class EduMasterMentorConvertedLeadController extends Controller
 
         // Get filter data
         $batches = Batch::where('course_id', 23)->where('is_active', 1)->orderBy('title')->get();
-        $admissionBatches = AdmissionBatch::where('course_id', 23)->where('is_active', 1)->orderBy('title')->get();
+        $admissionBatches = AdmissionBatch::whereHas('batch', function($q) {
+            $q->where('course_id', 23)->where('is_active', 1);
+        })->where('is_active', 1)->orderBy('title')->get();
         $registrationLinks = RegistrationLink::orderBy('title')->get();
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
 
