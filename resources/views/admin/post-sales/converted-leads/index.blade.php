@@ -386,7 +386,7 @@ $columns = [
                 },
                 pageLength: 25,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-                order: [[5, 'desc']], // Sort by created_at (column 5)
+                order: [[0, 'desc']], // Sort by id (column 0) descending
                 dom: "Bfrtip",
                 buttons: ["csv", "excel", "print", "pdf"],
                 stateSave: true,
@@ -606,7 +606,7 @@ $columns = [
                     draw: page,
                     start: (page - 1) * mobileViewState.pageSize,
                     length: mobileViewState.pageSize,
-                    order: [{column: 5, dir: 'desc'}],
+                    order: [{column: 0, dir: 'desc'}],
                     search: {value: '', regex: false}
                 };
                 

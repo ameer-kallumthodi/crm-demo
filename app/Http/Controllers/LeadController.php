@@ -3580,6 +3580,7 @@ class LeadController extends Controller
             'payment_type' => 'required_if:payment_collected,1|required_if:payment_collected,true|required_if:payment_collected,"1"|nullable|in:Cash,Online,Bank,Cheque,Card,Other',
             'transaction_id' => 'nullable|string|max:255',
             'payment_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'custom_total_amount' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -3644,7 +3645,12 @@ class LeadController extends Controller
             $invoice = null;
             if ($lead->course_id) {
                 $invoiceController = new \App\Http\Controllers\InvoiceController();
-                $invoice = $invoiceController->autoGenerate($convertedLead->id, $lead->course_id);
+                // For course_id 23, pass custom_total_amount if provided
+                $customTotalAmount = null;
+                if ($lead->course_id == 23 && $request->filled('custom_total_amount')) {
+                    $customTotalAmount = (float) $request->custom_total_amount;
+                }
+                $invoice = $invoiceController->autoGenerate($convertedLead->id, $lead->course_id, $customTotalAmount);
             }
 
             // Process payment if collected

@@ -334,6 +334,7 @@
                                     <th>Mail</th>
                                     <th>Course</th>
                                     <th>Passed Year</th>
+                                    <th>Class</th>
                                     <th>Enrollment Number</th>
                                     <th>Registration Link</th>
                                     <th>Online Result Publication Date</th>
@@ -434,6 +435,13 @@
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
                                     <td>{{ $convertedLead->lead?->studentDetails?->passed_year ?? 'N/A' }}</td>
+                                    <td>
+                                        @if($convertedLead->leadDetail?->class)
+                                            {{ $convertedLead->leadDetail->class === 'sslc' ? 'SSLC' : ($convertedLead->leadDetail->class === 'plustwo' ? 'Plus Two' : $convertedLead->leadDetail->class) }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="inline-edit" data-field="enroll_no" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->enroll_no ?? $convertedLead->enroll_no }}">
                                             <span class="display-value">{{ $convertedLead->studentDetails?->enroll_no ?? $convertedLead->enroll_no ?? 'N/A' }}</span>
@@ -557,7 +565,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="19" class="text-center">No converted leads found</td>
+                                    <td colspan="20" class="text-center">No converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>

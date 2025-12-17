@@ -311,6 +311,8 @@
                                     <th>Phone</th>
                                     <th>WhatsApp Number</th>
                                     <th>Email</th>
+                                    <th>Batch</th>
+                                    <th>Admission Batch</th>
                                     <th>Selected Courses</th>
                                     <th>Board/University</th>
                                     <th>Course Type</th>
@@ -575,7 +577,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="18" class="text-center">No EduMaster converted leads found</td>
+                                    <td colspan="20" class="text-center">No EduMaster converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -722,6 +724,11 @@
                 const currentCode = container.siblings('.inline-code-value').data('current') || '';
                 const codeField = field === 'phone' ? 'code' : 'whatsapp_code';
                 editForm = createPhoneField(currentCode, currentValue, codeField);
+            } else if (field === 'batch_id') {
+                editForm = createBatchSelect(currentValue);
+            } else if (field === 'admission_batch_id') {
+                const batchId = container.data('batch-id') || '';
+                editForm = createAdmissionBatchSelect(batchId, currentValue);
             } else if (field === 'course_type') {
                 editForm = createCourseTypeSelect(currentValue);
             } else if (field === 'university_id') {
@@ -738,6 +745,26 @@
 
             container.addClass('editing');
             container.append(editForm);
+
+            // Handle dependent dropdowns
+            if (field === 'admission_batch_id') {
+                const batchId = container.data('batch-id') || '';
+                const currentId = container.data('current-id') || '';
+                const $select = container.find('.admission-batch-select');
+                loadAdmissionBatchesForEdit($select, batchId, currentId);
+            } else if (field === 'batch_id') {
+                // When batch changes, update admission batch dropdown if it exists in the same row
+                const $batchSelect = container.find('.batch-select');
+                $batchSelect.on('change', function() {
+                    const newBatchId = $(this).val();
+                    const $row = container.closest('tr');
+                    const $admissionContainer = $row.find('[data-field="admission_batch_id"]');
+                    if ($admissionContainer.length && $admissionContainer.hasClass('editing')) {
+                        const $admissionSelect = $admissionContainer.find('.admission-batch-select');
+                        loadAdmissionBatchesForEdit($admissionSelect, newBatchId, '');
+                    }
+                });
+            }
 
             container.find('input, select').first().focus();
         });
@@ -816,6 +843,27 @@
                         } else if (field === 'whatsapp_number') {
                             const codeVal = extra.whatsapp_code || '';
                             container.siblings('.inline-code-value[data-field="whatsapp_code"]').data('current', codeVal);
+                        } else if (field === 'batch_id') {
+                            // Update batch_id in data attribute and refresh admission batch if needed
+                            container.data('batch-id', value);
+                            container.data('current-id', value);
+                            const $row = container.closest('tr');
+                            const $admissionContainer = $row.find('[data-field="admission_batch_id"]');
+                            if ($admissionContainer.length) {
+                                $admissionContainer.data('batch-id', value);
+                                // Clear admission batch if batch changed
+                                if ($admissionContainer.data('current-id')) {
+                                    $admissionContainer.find('.display-value').text('N/A');
+                                    $admissionContainer.data('current-id', '');
+                                }
+                                // If admission batch is currently being edited, reload its options
+                                if ($admissionContainer.hasClass('editing')) {
+                                    const $admissionSelect = $admissionContainer.find('.admission-batch-select');
+                                    loadAdmissionBatchesForEdit($admissionSelect, value, '');
+                                }
+                            }
+                        } else if (field === 'admission_batch_id') {
+                            container.data('current-id', value);
                         } else if (field === 'university_id') {
                             // Reload university course options when university changes
                             const $universityCourseContainer = container.closest('tr').find('[data-field="university_course_id"]');
@@ -952,6 +1000,73 @@
                     </div>
                 </div>
             `;
+        }
+
+        function createBatchSelect(currentValue) {
+            let options = '<option value="">Select Batch</option>';
+            @foreach($batches as $batch)
+            const batchSelected{{ $batch->id }} = String(currentValue) === '{{ $batch->id }}' ? 'selected' : '';
+            options += `<option value="{{ $batch->id }}" ${batchSelected{{ $batch->id }}}>{{ $batch->title }}</option>`;
+            @endforeach
+            return `
+                <div class="edit-form">
+                    <select class="form-select form-select-sm batch-select">
+                        ${options}
+                    </select>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createAdmissionBatchSelect(batchId, currentValue) {
+            let options = '<option value="">Select Admission Batch</option>';
+            if (batchId) {
+                // Load admission batches dynamically
+                return `
+                    <div class="edit-form">
+                        <select class="form-select form-select-sm admission-batch-select">
+                            <option value="">Loading...</option>
+                        </select>
+                        <div class="btn-group mt-1">
+                            <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                            <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="edit-form">
+                        <select class="form-select form-select-sm admission-batch-select">
+                            <option value="">Please select a batch first</option>
+                        </select>
+                        <div class="btn-group mt-1">
+                            <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                            <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function loadAdmissionBatchesForEdit($select, batchId, selectedId) {
+            if (!batchId) {
+                $select.html('<option value="">Please select a batch first</option>');
+                return;
+            }
+            $select.html('<option value="">Loading...</option>');
+            $.get(`/api/admission-batches/by-batch/${batchId}`).done(function(list) {
+                let opts = '<option value="">Select Admission Batch</option>';
+                list.forEach(function(i) {
+                    const sel = String(selectedId) === String(i.id) ? 'selected' : '';
+                    opts += `<option value="${i.id}" ${sel}>${i.title}</option>`;
+                });
+                $select.html(opts);
+            }).fail(function() {
+                $select.html('<option value="">Error loading admission batches</option>');
+            });
         }
 
         function createSelectedCoursesField(currentValue) {

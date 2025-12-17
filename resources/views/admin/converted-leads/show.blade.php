@@ -353,8 +353,13 @@
                                 <p class="fw-bold">{{ optional($convertedLead->leadDetail->batch)->title ?? 'N/A' }}</p>
                             </div>
 
-                            <div class="col-12">
-                                <h6 class="text-primary mt-2">Uploaded Documents</h6>
+                            <div class="col-12 d-flex justify-content-between align-items-center">
+                                <h6 class="text-primary mt-2 mb-0">Uploaded Documents</h6>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editDocumentsModal">
+                                        <i class="ti ti-edit me-1"></i> Edit Documents
+                                    </button>
+                                @endif
                             </div>
                             @php
                                 $doc = $convertedLead->leadDetail;
@@ -846,6 +851,73 @@
     </div>
 </div>
 <!-- [ Main Content ] end -->
+
+<!-- Edit Documents Modal -->
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+<div class="modal fade" id="editDocumentsModal" tabindex="-1" aria-labelledby="editDocumentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editDocumentsModalLabel">Edit Uploaded Documents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editDocumentsForm" method="POST" action="{{ route('admin.converted-leads.update-documents', $convertedLead->id) }}" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="ti ti-info-circle me-2"></i>
+                        You can update any document by uploading a new file. Leave blank to keep the existing file.
+                    </div>
+                    <div class="row g-3">
+                        @php
+                            $doc = $convertedLead->leadDetail;
+                            $editFiles = [
+                                'passport_photo' => ['label' => 'Passport Photo', 'field' => 'passport_photo'],
+                                'adhar_front' => ['label' => 'Aadhar Front', 'field' => 'adhar_front'],
+                                'adhar_back' => ['label' => 'Aadhar Back', 'field' => 'adhar_back'],
+                                'signature' => ['label' => 'Signature', 'field' => 'signature'],
+                                'birth_certificate' => ['label' => 'Birth Certificate', 'field' => 'birth_certificate'],
+                                'plustwo_certificate' => ['label' => 'Plus Two Certificate', 'field' => 'plustwo_certificate'],
+                                'ug_certificate' => ['label' => 'UG Certificate', 'field' => 'ug_certificate'],
+                                'pg_certificate' => ['label' => 'PG Certificate', 'field' => 'pg_certificate'],
+                                'other_document' => ['label' => 'Other Document', 'field' => 'other_document'],
+                            ];
+                        @endphp
+                        @foreach($editFiles as $key => $fileConfig)
+                            <div class="col-md-6">
+                                <label class="form-label">{{ $fileConfig['label'] }}</label>
+                                @php
+                                    $currentFile = $doc ? $doc->{$fileConfig['field']} : null;
+                                    $fileExists = $currentFile ? \Illuminate\Support\Facades\Storage::disk('public')->exists($currentFile) : false;
+                                    $fileUrl = $fileExists ? asset('storage/' . $currentFile) : null;
+                                @endphp
+                                @if($fileExists)
+                                    <div class="mb-2">
+                                        <small class="text-muted d-block mb-1">Current file:</small>
+                                        <a href="{{ $fileUrl }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                            <i class="ti ti-eye me-1"></i> View Current
+                                        </a>
+                                    </div>
+                                @endif
+                                <input type="file" class="form-control" name="{{ $fileConfig['field'] }}" accept="image/*,.pdf">
+                                <small class="text-muted">Leave blank to keep existing file. Max size: 2MB</small>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-upload me-1"></i> Update Documents
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 @endsection
 
 @push('styles')

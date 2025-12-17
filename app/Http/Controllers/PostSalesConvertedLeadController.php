@@ -133,14 +133,14 @@ class PostSalesConvertedLeadController extends Controller
 
             // Apply ordering
             $order = $request->get('order', []);
-            $orderColumn = isset($order[0]['column']) ? (int)$order[0]['column'] : 5; // Default to created_at
+            $orderColumn = isset($order[0]['column']) ? (int)$order[0]['column'] : 0; // Default to id
             $orderDir = isset($order[0]['dir']) ? $order[0]['dir'] : 'desc';
 
-            $orderColumnName = $columns[$orderColumn] ?? 'created_at';
+            $orderColumnName = $columns[$orderColumn] ?? 'id';
             if ($orderColumnName !== 'id') {
                 $query->orderBy($orderColumnName, $orderDir);
             } else {
-                $query->orderBy('created_at', 'desc');
+                $query->orderBy('id', 'desc');
             }
 
             // Apply pagination

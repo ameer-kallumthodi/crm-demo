@@ -12,7 +12,7 @@ class BatchController extends Controller
 {
     public function index()
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -22,7 +22,7 @@ class BatchController extends Controller
 
     public function store(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -65,7 +65,7 @@ class BatchController extends Controller
 
     public function show(Batch $batch)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -74,7 +74,7 @@ class BatchController extends Controller
 
     public function destroy(Batch $batch)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             if (request()->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
             }
@@ -123,7 +123,7 @@ class BatchController extends Controller
 
     public function ajax_add()
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -133,7 +133,7 @@ class BatchController extends Controller
 
     public function submit(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -178,7 +178,7 @@ class BatchController extends Controller
 
     public function ajax_edit($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -189,7 +189,7 @@ class BatchController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -252,7 +252,7 @@ class BatchController extends Controller
 
     public function delete($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             if (request()->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
             }
@@ -325,7 +325,7 @@ class BatchController extends Controller
      */
     public function ajax_postpone($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -346,7 +346,7 @@ class BatchController extends Controller
      */
     public function postpone_submit(Request $request, $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
         }
 

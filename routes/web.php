@@ -723,6 +723,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/e-school-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'eschoolIndex'])->name('e-school-converted-leads.index');
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
         Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
+        Route::put('/converted-leads/{id}/update-documents', [App\Http\Controllers\ConvertedLeadController::class, 'updateDocuments'])->name('converted-leads.update-documents');
         Route::post('/converted-leads/{id}/inline-update', [App\Http\Controllers\ConvertedLeadController::class, 'inlineUpdate'])->name('converted-leads.inline-update');
         Route::post('/converted-leads/batch-update', [App\Http\Controllers\ConvertedLeadController::class, 'batchUpdate'])->name('converted-leads.batch-update');
 

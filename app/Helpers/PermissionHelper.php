@@ -193,6 +193,10 @@ class PermissionHelper
             'admin/eduthanzeel-converted-leads/index',
             'admin/e-school-converted-leads/index',
             'admin/payments/list',
+            'admin/courses/index',
+            'admin/batches/index',
+            'admin/universities/index',
+            'admin/university-courses/index',
         ];
         return in_array($permission, $permissions);
     }

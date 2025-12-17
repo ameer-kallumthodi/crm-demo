@@ -22,7 +22,9 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\LeadDetail;
 use App\Models\ConvertedStudentActivity;
+use App\Models\LeadActivity;
 use App\Services\LeadCallLogService;
+use Illuminate\Support\Str;
 
 class ConvertedLeadController extends Controller
 {
@@ -1880,7 +1882,7 @@ class ConvertedLeadController extends Controller
      */
     public function edumasterIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'leadDetail.university', 'course', 'academicAssistant', 'createdBy', 'cancelledBy'])
+        $query = ConvertedLead::with(['lead', 'leadDetail.university', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch'])
             ->where('course_id', 23);
 
         // Apply role-based filtering
@@ -1950,9 +1952,11 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $universities = \App\Models\University::where('is_active', 1)->orderBy('title')->get();
+        $batches = \App\Models\Batch::where('course_id', 23)->where('is_active', 1)->get();
+        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
         $country_codes = get_country_code();
 
-        return view('admin.converted-leads.edumaster-index', compact('convertedLeads', 'universities', 'country_codes'));
+        return view('admin.converted-leads.edumaster-index', compact('convertedLeads', 'universities', 'batches', 'admission_batches', 'country_codes'));
     }
 
     /**
@@ -2310,6 +2314,117 @@ class ConvertedLeadController extends Controller
             'message' => 'Register number updated successfully.',
             'register_number' => $convertedLead->register_number
         ]);
+    }
+
+    /**
+     * Update uploaded documents for a converted lead
+     */
+    public function updateDocuments(Request $request, $id)
+    {
+        // Check permissions
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return redirect()->back()->with('message_danger', 'Access denied. Only admins and admission counsellors can update documents.');
+        }
+
+        $convertedLead = ConvertedLead::with('leadDetail')->findOrFail($id);
+        
+        if (!$convertedLead->leadDetail) {
+            return redirect()->back()->with('message_danger', 'Lead detail not found.');
+        }
+
+        $leadDetail = $convertedLead->leadDetail;
+        $updateData = [];
+        $updatedFiles = [];
+
+        // File fields that can be updated
+        $fileFields = [
+            'passport_photo',
+            'adhar_front',
+            'adhar_back',
+            'signature',
+            'birth_certificate',
+            'plustwo_certificate',
+            'ug_certificate',
+            'pg_certificate',
+            'other_document'
+        ];
+
+        foreach ($fileFields as $field) {
+            if ($request->hasFile($field)) {
+                $file = $request->file($field);
+                
+                // Validate file
+                $request->validate([
+                    $field => 'file|mimes:pdf,jpg,jpeg,png|max:2048'
+                ], [
+                    $field . '.mimes' => 'The ' . str_replace('_', ' ', $field) . ' must be a PDF, JPG, JPEG, or PNG file.',
+                    $field . '.max' => 'The ' . str_replace('_', ' ', $field) . ' must not be larger than 2MB.'
+                ]);
+
+                // Generate unique filename
+                $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('student-documents', $fileName, 'public');
+
+                // Delete old file if exists
+                $oldPath = $leadDetail->$field;
+                if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+                }
+
+                // Update the field
+                $updateData[$field] = $filePath;
+                $updatedFiles[] = ucfirst(str_replace('_', ' ', $field));
+            }
+        }
+
+        // Update lead detail if there are changes
+        if (!empty($updateData)) {
+            // Reset verification status for updated documents
+            foreach ($fileFields as $field) {
+                if (isset($updateData[$field])) {
+                    $baseField = str_replace('_certificate', '', $field);
+                    $verificationField = $baseField . '_verification_status';
+                    $verifiedByField = $baseField . '_verified_by';
+                    $verifiedAtField = $baseField . '_verified_at';
+                    
+                    // Handle special cases
+                    if ($field === 'plustwo_certificate') {
+                        $verificationField = 'plustwo_verification_status';
+                        $verifiedByField = 'plustwo_verified_by';
+                        $verifiedAtField = 'plustwo_verified_at';
+                    } elseif ($field === 'ug_certificate') {
+                        $verificationField = 'ug_verification_status';
+                        $verifiedByField = 'ug_verified_by';
+                        $verifiedAtField = 'ug_verified_at';
+                    } elseif ($field === 'pg_certificate') {
+                        $verificationField = 'pg_verification_status';
+                        $verifiedByField = 'pg_verified_by';
+                        $verifiedAtField = 'pg_verified_at';
+                    }
+                    
+                    $updateData[$verificationField] = 'pending';
+                    $updateData[$verifiedByField] = null;
+                    $updateData[$verifiedAtField] = null;
+                }
+            }
+
+            $leadDetail->update($updateData);
+
+            // Log activity
+            if ($convertedLead->lead) {
+                \App\Models\LeadActivity::create([
+                    'lead_id' => $convertedLead->lead_id,
+                    'activity_type' => 'document_update',
+                    'description' => 'Documents updated: ' . implode(', ', $updatedFiles),
+                    'reason' => 'Documents updated by ' . AuthHelper::getCurrentUser()->name,
+                    'created_by' => AuthHelper::getCurrentUserId(),
+                ]);
+            }
+
+            return redirect()->back()->with('message_success', 'Documents updated successfully: ' . implode(', ', $updatedFiles));
+        }
+
+        return redirect()->back()->with('message_info', 'No documents were updated.');
     }
 
     /**

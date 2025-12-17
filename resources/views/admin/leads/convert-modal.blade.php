@@ -129,7 +129,13 @@
                                 <div class="col-lg-6">
                                     <div class="p-1">
                                         <label for="modal_total_amount_display" class="form-label">Total Amount</label>
-                                        <input type="text" class="form-control" id="modal_total_amount_display" readonly>
+                                        <input type="text" class="form-control" id="modal_total_amount_display" 
+                                            @if($lead->course_id == 23) 
+                                                data-editable="true"
+                                            @else 
+                                                readonly
+                                            @endif>
+                                        <input type="hidden" name="custom_total_amount" id="custom_total_amount_hidden" value="">
                                     </div>
                                 </div>
 
@@ -235,6 +241,8 @@ $(document).ready(function() {
         const $convertBtn = $('#convertLeadBtn');
         
         const totalAmountValue = @json($totalAmount);
+        const courseId = @json($lead->course_id);
+        const isEditableTotalAmount = courseId == 23;
         
         @if(!$course || !$course->title)
         // Hide payment section if no course is available
@@ -269,6 +277,38 @@ $(document).ready(function() {
         setTimeout(togglePaymentFields, 10);
     });
 
+    // Handle editable total amount for course_id 23
+    if (isEditableTotalAmount) {
+        // Remove readonly attribute and make it editable
+        $totalAmountDisplay.removeAttr('readonly');
+        
+        // Format on focus (remove currency symbol for editing)
+        $totalAmountDisplay.on('focus', function() {
+            const value = $(this).val().replace(/[^\d.-]/g, '');
+            $(this).val(value || '');
+        });
+        
+        // Format on blur (add currency symbol for display)
+        $totalAmountDisplay.on('blur', function() {
+            const value = parseFloat($(this).val()) || 0;
+            $(this).val('₹' + value.toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }));
+            // Update hidden field and payment max
+            $('#custom_total_amount_hidden').val(value);
+            $paymentAmountInput.attr('max', value);
+            $paymentAmountInput.data('total-amount', value);
+        });
+        
+        // Update hidden field on input change
+        $totalAmountDisplay.on('input', function() {
+            const value = parseFloat($(this).val().replace(/[^\d.-]/g, '')) || 0;
+            $('#custom_total_amount_hidden').val(value);
+            $paymentAmountInput.attr('max', value);
+            $paymentAmountInput.data('total-amount', value);
+        });
+    }
 
     // Set max payment amount
     $paymentAmountInput.on('input', function() {
@@ -282,10 +322,21 @@ $(document).ready(function() {
         @if($course && $course->title)
         let amount = totalAmountValue;
         
-        $totalAmountDisplay.val('₹' + amount.toLocaleString('en-IN', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }));
+        if (isEditableTotalAmount) {
+            // For editable field, store numeric value and show formatted
+            $totalAmountDisplay.val('₹' + amount.toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }));
+            $('#custom_total_amount_hidden').val(amount);
+        } else {
+            // For readonly field, just display formatted
+            $totalAmountDisplay.val('₹' + amount.toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }));
+        }
+        
         $paymentAmountInput.attr('max', amount);
         $paymentAmountInput.data('total-amount', amount);
         @else
@@ -324,6 +375,12 @@ $(document).ready(function() {
         
         // Submit form via AJAX using jQuery
         const formData = new FormData($form[0]);
+        
+        // For course_id 23, ensure custom_total_amount is included
+        if (isEditableTotalAmount) {
+            const customTotalAmount = $('#custom_total_amount_hidden').val() || $totalAmountDisplay.val().replace(/[^\d.-]/g, '');
+            formData.set('custom_total_amount', customTotalAmount);
+        }
         
         console.log('Submitting form to:', '{{ route("leads.convert.submit", $lead->id) }}');
         console.log('Form data:', Object.fromEntries(formData));

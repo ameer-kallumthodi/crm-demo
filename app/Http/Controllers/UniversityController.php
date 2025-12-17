@@ -11,7 +11,7 @@ class UniversityController extends Controller
 {
     public function index()
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -21,7 +21,7 @@ class UniversityController extends Controller
 
     public function store(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_finance()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -50,7 +50,7 @@ class UniversityController extends Controller
 
     public function show(University $university)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -59,7 +59,7 @@ class UniversityController extends Controller
 
     public function update(Request $request, University $university)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_finance()) {
             if ($request->ajax()) {
                 return response()->json(['error' => 'Access denied.'], 403);
             }
@@ -116,7 +116,7 @@ class UniversityController extends Controller
 
     public function ajax_add()
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -125,7 +125,7 @@ class UniversityController extends Controller
 
     public function submit(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_finance()) {
             if ($request->ajax()) {
                 return response()->json(['error' => 'Access denied.'], 403);
             }
@@ -161,7 +161,7 @@ class UniversityController extends Controller
 
     public function ajax_edit($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -171,7 +171,7 @@ class UniversityController extends Controller
 
     public function delete($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             if (request()->ajax()) {
                 return response()->json(['error' => 'Access denied.'], 403);
             }

@@ -10,7 +10,7 @@ class CourseController extends Controller
 {
     public function index()
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -20,7 +20,7 @@ class CourseController extends Controller
 
     public function store(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -57,7 +57,7 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -67,7 +67,7 @@ class CourseController extends Controller
 
     public function destroy(Course $course)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -88,7 +88,7 @@ class CourseController extends Controller
 
     public function ajax_add()
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -98,7 +98,7 @@ class CourseController extends Controller
 
     public function submit(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -168,7 +168,7 @@ class CourseController extends Controller
 
     public function ajax_edit($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -180,7 +180,7 @@ class CourseController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -260,7 +260,7 @@ class CourseController extends Controller
 
     public function delete($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 

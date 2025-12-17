@@ -222,7 +222,7 @@ class InvoiceController extends Controller
     /**
      * Auto-generate invoice when converting a lead
      */
-    public function autoGenerate($studentId, $courseId)
+    public function autoGenerate($studentId, $courseId, $customTotalAmount = null)
     {
         try {
             $student = ConvertedLead::findOrFail($studentId);
@@ -237,45 +237,52 @@ class InvoiceController extends Controller
                 return $existingInvoice;
             }
             
-            // Calculate total amount
-            $totalAmount = (float) ($course->amount ?? 0);
-            $batchAmount = 0.0;
-
-            // Determine batch and add batch amount if available
+            // Get batch_id
             $batchId = $student->batch_id ?? optional($student->leadDetail)->batch_id;
-            if ($batchId) {
-                $batch = Batch::find($batchId);
-                if ($batch) {
-                    if ($courseId == 16) {
-                        $studentClass = optional($student->leadDetail)->class;
-                        $normalizedClass = $studentClass ? strtolower($studentClass) : null;
+            
+            // For course_id 23, use custom_total_amount if provided
+            if ($courseId == 23 && $customTotalAmount !== null) {
+                $totalAmount = (float) $customTotalAmount;
+            } else {
+                // Calculate total amount
+                $totalAmount = (float) ($course->amount ?? 0);
+                $batchAmount = 0.0;
 
-                        if ($normalizedClass === 'sslc' && !is_null($batch->sslc_amount)) {
-                            $batchAmount = (float) $batch->sslc_amount;
-                        } elseif (!is_null($batch->plustwo_amount)) {
-                            $batchAmount = (float) $batch->plustwo_amount;
+                // Determine batch and add batch amount if available
+                if ($batchId) {
+                    $batch = Batch::find($batchId);
+                    if ($batch) {
+                        if ($courseId == 16) {
+                            $studentClass = optional($student->leadDetail)->class;
+                            $normalizedClass = $studentClass ? strtolower($studentClass) : null;
+
+                            if ($normalizedClass === 'sslc' && !is_null($batch->sslc_amount)) {
+                                $batchAmount = (float) $batch->sslc_amount;
+                            } elseif (!is_null($batch->plustwo_amount)) {
+                                $batchAmount = (float) $batch->plustwo_amount;
+                            } elseif ($batch->amount) {
+                                $batchAmount = (float) $batch->amount;
+                            }
                         } elseif ($batch->amount) {
                             $batchAmount = (float) $batch->amount;
                         }
-                    } elseif ($batch->amount) {
-                        $batchAmount = (float) $batch->amount;
                     }
                 }
-            }
-            $totalAmount += $batchAmount;
-            
-            // Add university amount for UG/PG course (course_id = 9)
-            if ($courseId == 9 && $student->leadDetail) {
-                $courseType = $student->leadDetail->course_type;
-                $universityId = $student->leadDetail->university_id;
+                $totalAmount += $batchAmount;
                 
-                if ($universityId && $courseType) {
-                    $university = \App\Models\University::find($universityId);
-                    if ($university) {
-                        if ($courseType === 'UG') {
-                            $totalAmount += $university->ug_amount ?? 0;
-                        } elseif ($courseType === 'PG') {
-                            $totalAmount += $university->pg_amount ?? 0;
+                // Add university amount for UG/PG course (course_id = 9)
+                if ($courseId == 9 && $student->leadDetail) {
+                    $courseType = $student->leadDetail->course_type;
+                    $universityId = $student->leadDetail->university_id;
+                    
+                    if ($universityId && $courseType) {
+                        $university = \App\Models\University::find($universityId);
+                        if ($university) {
+                            if ($courseType === 'UG') {
+                                $totalAmount += $university->ug_amount ?? 0;
+                            } elseif ($courseType === 'PG') {
+                                $totalAmount += $university->pg_amount ?? 0;
+                            }
                         }
                     }
                 }
