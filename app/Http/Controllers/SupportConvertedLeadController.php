@@ -424,6 +424,106 @@ class SupportConvertedLeadController extends Controller
     }
 
     /**
+     * Display a listing of EduMaster converted leads for support
+     */
+    public function edumasterIndex(Request $request)
+    {
+        $query = ConvertedLead::with([
+            'lead',
+            'leadDetail.university',
+            'course',
+            'academicAssistant',
+            'createdBy',
+            'cancelledBy',
+            'studentDetails',
+            'supportDetails',
+            'batch',
+            'admissionBatch'
+        ])->where('course_id', 23) // EduMaster course
+          ->where('is_academic_verified', 1);
+
+        // Apply role-based filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
+                } else {
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Can see all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                // Can see all
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
+            }
+        }
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('register_number', 'like', "%{$search}%")
+                  ->orWhereHas('leadDetail', function($subQ) use ($search) {
+                      $subQ->where('whatsapp_number', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('university_id')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('university_id', $request->university_id);
+            });
+        }
+
+        if ($request->filled('course_type')) {
+            $query->whereHas('leadDetail', function($q) use ($request) {
+                $q->where('course_type', $request->course_type);
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(50);
+        $batches = Batch::where('course_id', 23)->orderBy('title')->get();
+        $universities = \App\Models\University::where('is_active', 1)->orderBy('title')->get();
+        $country_codes = \App\Helpers\CountriesHelper::get_country_code();
+
+        return view('admin.converted-leads.support-edumaster-index', compact(
+            'convertedLeads', 
+            'batches', 
+            'universities', 
+            'country_codes'
+        ));
+    }
+
+    /**
      * Update support details inline
      */
     public function updateSupportDetails(Request $request, $id)

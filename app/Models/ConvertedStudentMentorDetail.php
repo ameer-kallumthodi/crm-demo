@@ -156,6 +156,41 @@ class ConvertedStudentMentorDetail extends Model
         'online_result_publication_date',
         'certificate_publication_date',
         'remarks_internal_notes',
+        // EduMaster specific fields
+        'sslc_enrollment_number',
+        'sslc_registration_link_id',
+        'sslc_online_result_publication_date',
+        'sslc_certificate_publication_date',
+        'sslc_certificate_issued_date',
+        'sslc_certificate_distribution_date',
+        'sslc_courier_tracking_number',
+        'sslc_remarks',
+        'plustwo_subject_no',
+        'plustwo_enrollment_number',
+        'plustwo_registration_link_id',
+        'plustwo_online_result_publication_date',
+        'plustwo_certificate_publication_date',
+        'plustwo_certificate_issued_date',
+        'plustwo_certificate_distribution_date',
+        'plustwo_courier_tracking_number',
+        'plustwo_remarks',
+        'degree_board_university',
+        'degree_course_type',
+        'degree_course_name',
+        'degree_back_year',
+        'degree_registration_start_date',
+        'degree_registration_form_summary_distribution_date',
+        'degree_registration_form_summary_submission_date',
+        'degree_id_card_issued_date',
+        'degree_first_year_result_date',
+        'degree_second_year_result_date',
+        'degree_third_year_result_date',
+        'degree_online_result_publication_date',
+        'degree_certificate_publication_date',
+        'degree_certificate_issued_date',
+        'degree_certificate_distribution_date',
+        'degree_courier_tracking_number',
+        'degree_remarks',
     ];
 
     protected $casts = [
@@ -198,6 +233,26 @@ class ConvertedStudentMentorDetail extends Model
         'certificate_issued_date' => 'date',
         'online_result_publication_date' => 'date',
         'certificate_publication_date' => 'date',
+        // EduMaster specific date fields
+        'sslc_online_result_publication_date' => 'date',
+        'sslc_certificate_publication_date' => 'date',
+        'sslc_certificate_issued_date' => 'date',
+        'sslc_certificate_distribution_date' => 'date',
+        'plustwo_online_result_publication_date' => 'date',
+        'plustwo_certificate_publication_date' => 'date',
+        'plustwo_certificate_issued_date' => 'date',
+        'plustwo_certificate_distribution_date' => 'date',
+        'degree_registration_start_date' => 'date',
+        'degree_registration_form_summary_distribution_date' => 'date',
+        'degree_registration_form_summary_submission_date' => 'date',
+        'degree_id_card_issued_date' => 'date',
+        'degree_first_year_result_date' => 'date',
+        'degree_second_year_result_date' => 'date',
+        'degree_third_year_result_date' => 'date',
+        'degree_online_result_publication_date' => 'date',
+        'degree_certificate_publication_date' => 'date',
+        'degree_certificate_issued_date' => 'date',
+        'degree_certificate_distribution_date' => 'date',
     ];
 
     // Relationships
@@ -209,5 +264,15 @@ class ConvertedStudentMentorDetail extends Model
     public function subject()
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function sslcRegistrationLink()
+    {
+        return $this->belongsTo(RegistrationLink::class, 'sslc_registration_link_id');
+    }
+
+    public function plustwoRegistrationLink()
+    {
+        return $this->belongsTo(RegistrationLink::class, 'plustwo_registration_link_id');
     }
 }

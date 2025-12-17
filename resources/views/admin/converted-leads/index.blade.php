@@ -141,6 +141,9 @@
                     <a href="{{ route('admin.mentor-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> UG/PG Mentor Converted List
                     </a>
+                    <a href="{{ route('admin.mentor-edumaster-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> EduMaster Mentor Converted List
+                    </a>
                     <a href="{{ route('admin.mentor-eschool-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> E-School Converted Mentor List
                     </a>
@@ -191,6 +194,9 @@
                     </a>
                     <a href="{{ route('admin.support-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> UG/PG Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-edumaster-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> EduMaster Converted Support List
                     </a>
                     <a href="{{ route('admin.support-hotel-management-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Hotel Management Converted Support List

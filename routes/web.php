@@ -735,6 +735,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/mentor-ugpg-converted-leads', [App\Http\Controllers\UGPGMentorConvertedLeadController::class, 'index'])->name('mentor-ugpg-converted-leads.index');
         Route::post('/mentor-ugpg-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\UGPGMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-ugpg-converted-leads.update-mentor-details');
 
+        // EduMaster Mentor Converted Leads Routes
+        Route::get('/mentor-edumaster-converted-leads', [App\Http\Controllers\EduMasterMentorConvertedLeadController::class, 'index'])->name('mentor-edumaster-converted-leads.index');
+        Route::post('/mentor-edumaster-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\EduMasterMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-edumaster-converted-leads.update-mentor-details');
+
         // NIOS Mentor Converted Leads Routes
         Route::get('/mentor-nios-converted-leads', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'index'])->name('mentor-nios-converted-leads.index');
         Route::post('/mentor-nios-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\NiosMentorConvertedLeadController::class, 'updateMentorDetails'])->name('mentor-nios-converted-leads.update-mentor-details');
@@ -783,6 +787,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // UG/PG Support Converted Leads Routes
         Route::get('/support-ugpg-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'ugpgIndex'])->name('support-ugpg-converted-leads.index');
         Route::post('/support-ugpg-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-ugpg-converted-leads.update-support-details');
+        Route::get('/support-edumaster-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'edumasterIndex'])->name('support-edumaster-converted-leads.index');
+        Route::post('/support-edumaster-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-edumaster-converted-leads.update-support-details');
 
         // Hotel Management Support Converted Leads Routes
         Route::get('/support-hotel-management-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'hotelManagementIndex'])->name('support-hotel-management-converted-leads.index');
