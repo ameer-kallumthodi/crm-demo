@@ -61,6 +61,70 @@
 </div>
 <!-- [ breadcrumb ] end -->
 
+<!-- [ Course Filter Buttons ] start -->
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance())
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-3">Filter by Course</h6>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary {{ request()->routeIs('admin.converted-leads.index') && !request('course_id') ? 'active' : '' }}">
+                        <i class="ti ti-list"></i> All Converted Leads
+                    </a>
+                    <a href="{{ route('admin.nios-converted-leads.index') }}" class="btn btn-outline-success">
+                        <i class="ti ti-school"></i> NIOS Converted Leads
+                    </a>
+                    <a href="{{ route('admin.bosse-converted-leads.index') }}" class="btn btn-outline-warning">
+                        <i class="ti ti-school-2"></i> BOSSE Converted Leads
+                    </a>
+                    <a href="{{ route('admin.ugpg-converted-leads.index') }}" class="btn btn-outline-warning">
+                        <i class="ti ti-graduation"></i> UG/PG Converted Leads
+                    </a>
+                    <a href="{{ route('admin.edumaster-converted-leads.index') }}" class="btn btn-warning">
+                        <i class="ti ti-graduation"></i> EduMaster Converted Leads
+                    </a>
+                    <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-outline-info">
+                        <i class="ti ti-building"></i> Hotel Management Converted Leads
+                    </a>
+                    <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
+                        <i class="ti ti-certificate"></i> GMVSS Converted Leads
+                    </a>
+                    <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-database"></i> Diploma in Data Science Converted Leads
+                    </a>
+                    <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-world"></i> Web Development & Designing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-desktop"></i> Vibe Coding Converted Leads
+                    </a>
+                    <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-palette"></i> Graphic Designing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-brain"></i> Diploma in Machine Learning Converted Leads
+                    </a>
+                    <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-mobile"></i> Flutter Converted Leads
+                    </a>
+                    <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-school"></i> Eduthanzeel Converted Leads
+                    </a>
+                    <a href="{{ route('admin.e-school-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-laptop"></i> E-School Converted Leads
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+<!-- [ Course Filter Buttons ] end -->
+
 <!-- [ Mentor List ] start -->
 @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
 <div class="row mb-3">
@@ -114,6 +178,75 @@
 </div>
 @endif
 <!-- [ Mentor List ] end -->
+
+<!-- [ Support List ] start -->
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-3">Support List</h6>
+                <div class="d-flex gap-2 flex-wrap">
+                    @if(\App\Helpers\RoleHelper::is_support_team())
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-list"></i> All Converted Leads
+                    </a>
+                    @endif
+                    <a href="{{ route('admin.support-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Bosse Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-nios-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> NIOS Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> UG/PG Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-edumaster-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> EduMaster Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-hotel-management-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Hotel Management Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-gmvss-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> GMVSS Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Digital Marketing Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Diploma in Data Science Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-web-development-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Web Development & Designing Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Vibe Coding Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Graphic Designing Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Machine Learning Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-flutter-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Flutter Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-ai-python-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> AI Python Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Eduthanzeel Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-e-school-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> E-School Converted Support List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+<!-- [ Support List ] end -->
 
 <!-- [ Filter Section ] start -->
 <div class="row mb-3">
