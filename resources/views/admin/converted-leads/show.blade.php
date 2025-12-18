@@ -340,13 +340,15 @@
                                 <p class="fw-bold">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->personal_code, $convertedLead->leadDetail->personal_number) }}</p>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label text-muted">Parent Phone</label>
-                                <p class="fw-bold">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}</p>
-                            </div>
-                            <div class="col-md-3">
                                 <label class="form-label text-muted">WhatsApp</label>
                                 <p class="fw-bold">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}</p>
                             </div>
+                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                            <div class="col-md-3">
+                                <label class="form-label text-muted">Parent Phone</label>
+                                <p class="fw-bold">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}</p>
+                            </div>
+                            @endif
 
                             <div class="col-md-3">
                                 <label class="form-label text-muted">Batch</label>

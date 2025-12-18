@@ -55,6 +55,22 @@
                             <div class="card-body">
                                 <h6 class="text-muted mb-3"><i class="ti ti-user-circle"></i> Student</h6>
                                 <div class="mb-2"><span class="text-muted">Phone:</span> <span class="fw-medium">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</span></div>
+                                <div class="mb-2"><span class="text-muted">WhatsApp:</span> <span class="fw-medium">
+                                    @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
+                                        {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </span></div>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                <div class="mb-2"><span class="text-muted">Parent Phone:</span> <span class="fw-medium">
+                                    @if($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
+                                        {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </span></div>
+                                @endif
                                 <div class="mb-2"><span class="text-muted">Email:</span> <span class="fw-medium">{{ $convertedLead->email ?? '-' }}</span></div>
                                 <div class=""><span class="text-muted">DOB:</span> <span class="fw-medium">{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</span></div>
                             </div>

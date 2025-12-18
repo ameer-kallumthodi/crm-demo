@@ -332,6 +332,10 @@
                                     <th>DOB</th>
                                     <th>Application Number</th>
                                     <th>Phone</th>
+                                    <th>WhatsApp</th>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                    <th>Parent Phone</th>
+                                    @endif
                                     <th>Subject</th>
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
@@ -395,6 +399,22 @@
                                     <td>{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</td>
                                     <td>{{ $convertedLead->studentDetails?->application_number ?? '-' }}</td>
                                     <td>{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</td>
+                                    <td>
+                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
+                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                    <td>
+                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
+                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    @endif
                                     <td>{{ $convertedLead->subject?->title ?? '-' }}</td>
                                     <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
                                     <td>{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</td>
@@ -615,6 +635,28 @@
                                     <small class="text-muted d-block">Phone</small>
                                     <span class="fw-medium">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</span>
                                 </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">WhatsApp</small>
+                                    <span class="fw-medium">
+                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
+                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </span>
+                                </div>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Parent Phone</small>
+                                    <span class="fw-medium">
+                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
+                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </span>
+                                </div>
+                                @endif
                                 <div class="col-6">
                                     <small class="text-muted d-block">Application Number</small>
                                     <span class="fw-medium">{{ $convertedLead->studentDetails?->application_number ?? 'N/A' }}</span>

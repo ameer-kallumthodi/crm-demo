@@ -45,6 +45,22 @@
                         <h6 class="text-muted mb-2"><i class="ti ti-user me-1"></i> Student</h6>
                         <div class="mb-1"><strong>Name:</strong> {{ $convertedLead->name }}</div>
                         <div class="mb-1"><strong>Phone:</strong> {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</div>
+                        <div class="mb-1"><strong>WhatsApp:</strong> 
+                            @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
+                                {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}
+                            @else
+                                <span class="text-muted">N/A</span>
+                            @endif
+                        </div>
+                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                        <div class="mb-1"><strong>Parent Phone:</strong> 
+                            @if($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
+                                {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}
+                            @else
+                                <span class="text-muted">N/A</span>
+                            @endif
+                        </div>
+                        @endif
                         <div class="mb-1"><strong>Email:</strong> {{ $convertedLead->email ?? '-' }}</div>
                         <div class="mb-1"><strong>DOB:</strong> {{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</div>
                     </div>

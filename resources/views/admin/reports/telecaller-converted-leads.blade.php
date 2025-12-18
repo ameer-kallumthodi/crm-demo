@@ -85,6 +85,10 @@
                                     <th class="text-center" style="width: 80px;">Sl No</th>
                                     <th>Student Name</th>
                                     <th>Phone</th>
+                                    <th>WhatsApp</th>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                    <th>Parent Phone</th>
+                                    @endif
                                     <th class="text-end">Total Sale Amount</th>
                                     <th class="text-end">Received Amount (This Telecaller)</th>
                                 </tr>
@@ -107,6 +111,22 @@
                                         <td>
                                             <a href="tel:{{ $student->phone }}">{{ $student->phone }}</a>
                                         </td>
+                                        <td>
+                                            @if($student->leadDetail && $student->leadDetail->whatsapp_number)
+                                                {{ \App\Helpers\PhoneNumberHelper::display($student->leadDetail->whatsapp_code, $student->leadDetail->whatsapp_number) }}
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </td>
+                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                        <td>
+                                            @if($student->leadDetail && $student->leadDetail->parents_number)
+                                                {{ \App\Helpers\PhoneNumberHelper::display($student->leadDetail->parents_code, $student->leadDetail->parents_number) }}
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </td>
+                                        @endif
                                         <td class="text-end">
                                             ₹{{ number_format(round($row['total_sale_amount'])) }}
                                         </td>

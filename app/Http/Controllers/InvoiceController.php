@@ -96,12 +96,33 @@ class InvoiceController extends Controller
         } elseif ($request->invoice_type === 'fine' && $request->filled('fine_amount')) {
             // Keep total amount in sync with the fine amount
             $request->merge(['total_amount' => $request->fine_amount]);
+        } elseif ($request->invoice_type === 'course') {
+            // Calculate total amount similar to lead convert form
+            $student = ConvertedLead::with('leadDetail')->findOrFail($studentId);
+            $calculatedAmount = $this->calculateCourseInvoiceAmount(
+                $student,
+                $request->course_id,
+                $request->batch_id
+            );
+            // Only override if not manually edited (user can still edit)
+            if (!$request->has('total_amount') || $request->total_amount == '') {
+                $request->merge(['total_amount' => $calculatedAmount]);
+            }
         }
 
         $validator = Validator::make($request->all(), [
             'invoice_type' => 'required|in:course,e-service,batch_change,fine',
             'course_id' => 'nullable|required_if:invoice_type,course|exists:courses,id',
-            'batch_id' => 'nullable|required_if:invoice_type,batch_change|exists:batches,id',
+            'batch_id' => [
+                'nullable',
+                function ($attribute, $value, $fail) use ($request) {
+                    // Batch is required for course type unless course_id is 23 (EduMaster)
+                    if ($request->invoice_type === 'course' && $request->course_id != 23 && empty($value)) {
+                        $fail('The batch field is required when course type is selected (except for EduMaster).');
+                    }
+                },
+                'exists:batches,id'
+            ],
             'service_name' => 'nullable|required_if:invoice_type,e-service|string|max:255',
             'service_amount' => 'nullable|required_if:invoice_type,e-service|numeric|min:0',
             'fine_type' => 'nullable|required_if:invoice_type,fine|string|max:255',
@@ -138,6 +159,9 @@ class InvoiceController extends Controller
             // Add type-specific fields
             if ($request->invoice_type === 'course') {
                 $invoiceData['course_id'] = $request->course_id;
+                if ($request->filled('batch_id')) {
+                    $invoiceData['batch_id'] = $request->batch_id;
+                }
             } elseif ($request->invoice_type === 'batch_change') {
                 $invoiceData['batch_id'] = $request->batch_id;
                 $invoiceData['total_amount'] = 2000; // Fixed amount for batch change
@@ -414,5 +438,82 @@ class InvoiceController extends Controller
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Calculate course invoice amount similar to lead convert form
+     */
+    private function calculateCourseInvoiceAmount(ConvertedLead $student, ?int $courseId, ?int $batchId = null): float
+    {
+        $course = $courseId ? Course::find($courseId) : null;
+        $batch = $batchId ? Batch::find($batchId) : null;
+
+        $courseAmount = $course ? (float) ($course->amount ?? 0) : 0.0;
+        $batchAmount = 0.0;
+        $universityAmount = 0.0;
+
+        $leadDetail = $student->leadDetail;
+        if (!$leadDetail && $student->lead_id) {
+            $leadDetail = \App\Models\LeadDetail::where('lead_id', $student->lead_id)->first();
+        }
+
+        // Determine batch amount with class-specific pricing for GMVSS (course 16)
+        if ($batch) {
+            if ($course && (int) $course->id === 16 && $leadDetail) {
+                $studentClass = strtolower($leadDetail->class ?? '');
+                if ($studentClass === 'sslc' && !is_null($batch->sslc_amount)) {
+                    $batchAmount = (float) $batch->sslc_amount;
+                } elseif (!is_null($batch->plustwo_amount)) {
+                    $batchAmount = (float) $batch->plustwo_amount;
+                } else {
+                    $batchAmount = (float) ($batch->amount ?? 0);
+                }
+            } else {
+                $batchAmount = (float) ($batch->amount ?? 0);
+            }
+        }
+
+        // Add university amount for UG/PG course (course_id = 9)
+        if ($course && (int) $course->id === 9 && $leadDetail) {
+            $courseType = $leadDetail->course_type;
+            $universityId = $leadDetail->university_id;
+            if ($universityId) {
+                $university = \App\Models\University::find($universityId);
+                if ($university) {
+                    if ($courseType === 'UG') {
+                        $universityAmount += (float) ($university->ug_amount ?? 0);
+                    } elseif ($courseType === 'PG') {
+                        $universityAmount += (float) ($university->pg_amount ?? 0);
+                    }
+                }
+            }
+        }
+
+        $totalAmount = $courseAmount + $batchAmount + $universityAmount;
+
+        return $totalAmount;
+    }
+
+    /**
+     * Calculate total amount for invoice (API endpoint)
+     */
+    public function calculateAmount(Request $request, $studentId)
+    {
+        $request->validate([
+            'course_id' => 'required|exists:courses,id',
+            'batch_id' => 'nullable|exists:batches,id',
+        ]);
+
+        $student = ConvertedLead::with('leadDetail')->findOrFail($studentId);
+        $totalAmount = $this->calculateCourseInvoiceAmount(
+            $student,
+            $request->course_id,
+            $request->batch_id
+        );
+
+        return response()->json([
+            'success' => true,
+            'total_amount' => $totalAmount
+        ]);
     }
 }

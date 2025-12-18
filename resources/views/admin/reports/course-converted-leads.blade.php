@@ -112,6 +112,10 @@
                                 <th class="no-sort">#</th>
                                 <th>Name</th>
                                 <th>Phone</th>
+                                <th>WhatsApp</th>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                <th>Parent Phone</th>
+                                @endif
                                 <th>Email</th>
                                 <th>Register Number</th>
                                 <th>Academic Assistant</th>
@@ -135,6 +139,22 @@
                                     </div>
                                 </td>
                                 <td>{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</td>
+                                <td>
+                                    @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
+                                        {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                <td>
+                                    @if($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
+                                        {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                @endif
                                 <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                 <td>
                                     @if($convertedLead->register_number)

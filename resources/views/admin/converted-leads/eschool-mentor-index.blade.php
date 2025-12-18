@@ -323,6 +323,10 @@
                                 <th>Registration No</th>
                                 <th>Name</th>
                                 <th>Phone</th>
+                                <th>WhatsApp</th>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                <th>Parent Phone</th>
+                                @endif
                                 <th>Batch</th>
                                 <th>Admission Batch</th>
                                 <th>Subcourse</th>
@@ -428,6 +432,22 @@
                                         @endif
                                     </div>
                                 </td>
+                                <td>
+                                    @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
+                                        {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                <td>
+                                    @if($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
+                                        {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                @endif
                                 <td>{{ $convertedLead->batch?->title ?: '-' }}</td>
                                 <td>{{ $convertedLead->admissionBatch?->title ?: '-' }}</td>
                                 <td>{{ $convertedLead->subCourse?->title ?: '-' }}</td>

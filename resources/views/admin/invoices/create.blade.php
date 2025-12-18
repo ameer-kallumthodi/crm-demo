@@ -53,6 +53,19 @@
                                 </div>
                             </div>
 
+                            <!-- Batch Selection for Course Type (shown when course is selected, except for course_id 23) -->
+                            <div class="col-md-6" id="course_batch_selection" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="course_batch_id" class="form-label">Batch <span class="text-danger">*</span></label>
+                                    <select class="form-control @error('course_batch_id') is-invalid @enderror" name="batch_id" id="course_batch_id">
+                                        <option value="">Select Batch</option>
+                                    </select>
+                                    @error('batch_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
                             <!-- Batch Selection (shown when batch_change is selected) -->
                             <div class="col-md-6" id="batch_selection" style="display: none;">
                                 <div class="mb-3">
@@ -164,6 +177,13 @@
                                                     <p><strong>Current Course:</strong> {{ $student->course->title }}</p>
                                                     <p><strong>Batch:</strong> {{ $student->batch->title ?? 'N/A' }}</p>
                                                     <p><strong>Academic Assistant:</strong> {{ $student->academicAssistant->name ?? 'N/A' }}</p>
+                                                    @if($student->leadDetail)
+                                                        <p><strong>Class:</strong> {{ $student->leadDetail->class ?? 'N/A' }}</p>
+                                                        @if($student->leadDetail->university_id)
+                                                            <p><strong>University:</strong> {{ $student->leadDetail->university->title ?? 'N/A' }}</p>
+                                                            <p><strong>Course Type:</strong> {{ $student->leadDetail->course_type ?? 'N/A' }}</p>
+                                                        @endif
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
@@ -189,12 +209,27 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Setup CSRF token for AJAX requests
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
     const invoiceTypeSelect = document.getElementById('invoice_type');
     const courseSelect = document.getElementById('course_id');
+    const courseBatchSelect = document.getElementById('course_batch_id');
     const totalAmountInput = document.getElementById('total_amount');
     const serviceAmountInput = document.getElementById('service_amount');
     const fineTypeSelect = document.getElementById('fine_type');
     const fineAmountInput = document.getElementById('fine_amount');
+
+    // Student data for calculation
+    const studentData = {
+        class: @json($student->leadDetail->class ?? null),
+        courseType: @json($student->leadDetail->course_type ?? null),
+        universityId: @json($student->leadDetail->university_id ?? null)
+    };
 
     // Show/hide fields based on invoice type
     function toggleFields() {
@@ -202,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Hide all conditional fields
         document.getElementById('course_selection').style.display = 'none';
+        document.getElementById('course_batch_selection').style.display = 'none';
         document.getElementById('batch_selection').style.display = 'none';
         document.getElementById('service_name_field').style.display = 'none';
         document.getElementById('service_amount_field').style.display = 'none';
@@ -212,6 +248,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show relevant fields
         if (invoiceType === 'course') {
             document.getElementById('course_selection').style.display = 'block';
+            // Batch selection will be shown/hidden based on course_id
+            handleCourseChange();
         } else if (invoiceType === 'batch_change') {
             document.getElementById('batch_selection').style.display = 'block';
             totalAmountInput.value = '2000';
@@ -228,12 +266,106 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Load batches by course
+    function loadBatchesByCourse(courseId) {
+        if (!courseId) {
+            courseBatchSelect.innerHTML = '<option value="">Select Batch</option>';
+            document.getElementById('course_batch_selection').style.display = 'none';
+            return;
+        }
+
+        // Hide batch selection for course_id 23 (EduMaster)
+        if (courseId == 23) {
+            document.getElementById('course_batch_selection').style.display = 'none';
+            courseBatchSelect.innerHTML = '<option value="">No batch required</option>';
+            calculateTotalAmount(courseId, null);
+            return;
+        }
+
+        // Show batch selection for other courses
+        document.getElementById('course_batch_selection').style.display = 'block';
+        courseBatchSelect.innerHTML = '<option value="">Loading...</option>';
+
+        $.get(`/api/batches/by-course/${courseId}`)
+            .done(function(response) {
+                let options = '<option value="">Select Batch</option>';
+                if (response.success && response.batches) {
+                    response.batches.forEach(function(batch) {
+                        options += `<option value="${batch.id}" 
+                            data-amount="${batch.amount || 0}" 
+                            data-sslc-amount="${batch.sslc_amount || 0}" 
+                            data-plustwo-amount="${batch.plustwo_amount || 0}">${batch.title}</option>`;
+                    });
+                }
+                courseBatchSelect.innerHTML = options;
+            })
+            .fail(function() {
+                courseBatchSelect.innerHTML = '<option value="">Error loading batches</option>';
+            });
+    }
+
+    // Calculate total amount similar to lead convert form
+    function calculateTotalAmount(courseId, batchId) {
+        if (!courseId) {
+            totalAmountInput.value = '';
+            return;
+        }
+
+        // Use API to calculate total amount (includes university amount)
+        $.post(`/api/invoices/calculate-amount/{{ $student->id }}`, {
+            course_id: courseId,
+            batch_id: batchId || null
+        })
+        .done(function(response) {
+            if (response.success && response.total_amount !== undefined) {
+                totalAmountInput.value = parseFloat(response.total_amount).toFixed(2);
+            }
+        })
+        .fail(function() {
+            // Fallback to basic calculation if API fails
+            const selectedCourse = courseSelect.options[courseSelect.selectedIndex];
+            if (selectedCourse && selectedCourse.dataset.amount) {
+                let courseAmount = parseFloat(selectedCourse.dataset.amount) || 0;
+                let batchAmount = 0;
+
+                if (batchId && courseBatchSelect.value) {
+                    const selectedBatch = courseBatchSelect.options[courseBatchSelect.selectedIndex];
+                    if (selectedBatch) {
+                        // For GMVSS (course_id 16), use class-specific pricing
+                        if (courseId == 16 && studentData.class) {
+                            const studentClass = studentData.class.toLowerCase();
+                            if (studentClass === 'sslc' && selectedBatch.dataset.sslcAmount) {
+                                batchAmount = parseFloat(selectedBatch.dataset.sslcAmount) || 0;
+                            } else if (selectedBatch.dataset.plustwoAmount) {
+                                batchAmount = parseFloat(selectedBatch.dataset.plustwoAmount) || 0;
+                            } else {
+                                batchAmount = parseFloat(selectedBatch.dataset.amount) || 0;
+                            }
+                        } else {
+                            batchAmount = parseFloat(selectedBatch.dataset.amount) || 0;
+                        }
+                    }
+                }
+
+                const totalAmount = courseAmount + batchAmount;
+                totalAmountInput.value = totalAmount.toFixed(2);
+            }
+        });
+    }
+
+    // Handle course change
+    function handleCourseChange() {
+        const courseId = courseSelect.value;
+        courseBatchSelect.value = '';
+        loadBatchesByCourse(courseId);
+    }
+
     // Handle invoice type change
     invoiceTypeSelect.addEventListener('change', function() {
         toggleFields();
         
         // Clear total amount when changing type
-        if (this.value !== 'batch_change') {
+        if (this.value !== 'batch_change' && this.value !== 'fine') {
             totalAmountInput.value = '';
             totalAmountInput.readOnly = false;
         }
@@ -244,14 +376,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle course selection
+    // Handle course selection change
     courseSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        if (selectedOption && selectedOption.dataset.amount) {
-            totalAmountInput.value = selectedOption.dataset.amount;
-        } else {
-            totalAmountInput.value = '';
-        }
+        handleCourseChange();
+    });
+
+    // Handle course batch selection change
+    courseBatchSelect.addEventListener('change', function() {
+        const courseId = courseSelect.value;
+        const batchId = this.value;
+        calculateTotalAmount(courseId, batchId);
     });
 
     // Handle service amount change
@@ -271,11 +405,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize on page load
     toggleFields();
     
-    if (courseSelect.value) {
-        const selectedOption = courseSelect.options[courseSelect.selectedIndex];
-        if (selectedOption && selectedOption.dataset.amount) {
-            totalAmountInput.value = selectedOption.dataset.amount;
-        }
+    // If course is pre-selected, load batches
+    if (courseSelect.value && invoiceTypeSelect.value === 'course') {
+        handleCourseChange();
     }
 });
 </script>

@@ -156,8 +156,17 @@ class PostSalesConvertedLeadController extends Controller
                     'DT_RowData' => ['id' => $convertedLead->id],
                     'index' => $start + $index + 1,
                     'name' => $this->renderName($convertedLead),
-                    'phone' => \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone),
-                    'email' => $convertedLead->email ?? 'N/A',
+            'phone' => \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone),
+            'whatsapp' => ($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number) 
+                ? \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) 
+                : 'N/A',
+            'parent_phone' => (\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor()) 
+                ? (($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number) 
+                    ? \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) 
+                    : 'N/A')
+                : null,
+            'show_parent_phone' => \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor(),
+            'email' => $convertedLead->email ?? 'N/A',
                     'bde_name' => $convertedLead->lead?->telecaller?->name ?? 'Unassigned',
                     'created_at' => $convertedLead->created_at ? $convertedLead->created_at->format('d M Y h:i A') : 'N/A',
                     'course' => $convertedLead->course?->title ?? 'N/A',
@@ -461,6 +470,15 @@ class PostSalesConvertedLeadController extends Controller
             'cancelled_by' => $convertedLead->cancelledBy ? $convertedLead->cancelledBy->name : null,
             'cancelled_at' => $convertedLead->cancelled_at ? $convertedLead->cancelled_at->format('d M Y h:i A') : null,
             'phone' => \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone),
+            'whatsapp' => ($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number) 
+                ? \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) 
+                : 'N/A',
+            'parent_phone' => (\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor()) 
+                ? (($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number) 
+                    ? \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) 
+                    : 'N/A')
+                : null,
+            'show_parent_phone' => \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor(),
             'email' => $convertedLead->email ?? 'N/A',
             'bde_name' => $convertedLead->lead?->telecaller?->name ?? 'Unassigned',
             'created_at' => $convertedLead->created_at ? $convertedLead->created_at->format('d M Y h:i A') : 'N/A',

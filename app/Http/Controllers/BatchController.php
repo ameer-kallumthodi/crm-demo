@@ -311,7 +311,7 @@ class BatchController extends Controller
     {
         $batches = Batch::where('course_id', $courseId)
             ->where('is_active', true)
-            ->select('id', 'title', 'amount')
+            ->select('id', 'title', 'amount', 'sslc_amount', 'plustwo_amount')
             ->get();
 
         return response()->json([

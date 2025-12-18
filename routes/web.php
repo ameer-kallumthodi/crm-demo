@@ -90,6 +90,7 @@ Route::get('/api/admission-batches/by-batch/{batchId}', [App\Http\Controllers\Ad
 Route::get('/api/university-courses/by-university/{universityId}', [App\Http\Controllers\UniversityCourseController::class, 'getByUniversity'])->name('api.university-courses.by-university');
 Route::get('/api/class-times/by-course/{courseId}', [App\Http\Controllers\ClassTimeController::class, 'getByCourse'])->name('api.class-times.by-course');
 Route::get('/api/courses/{courseId}/needs-time', [App\Http\Controllers\CourseController::class, 'checkNeedsTime'])->name('api.courses.needs-time');
+Route::post('/api/invoices/calculate-amount/{studentId}', [App\Http\Controllers\InvoiceController::class, 'calculateAmount'])->name('api.invoices.calculate-amount');
 
 // Public Lead Registration Routes
 Route::prefix('register')->group(function () {

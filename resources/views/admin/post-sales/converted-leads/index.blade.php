@@ -144,6 +144,10 @@
                                     <th>#</th>
                                     <th>Name</th>
                                     <th>Phone</th>
+                                    <th>WhatsApp</th>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                    <th>Parent Phone</th>
+                                    @endif
                                     <th>Email</th>
                                     <th>BDE Name</th>
                                     <th>Converted Date</th>
@@ -190,6 +194,10 @@ $columns = [
     ['data' => 'index', 'name' => 'index', 'orderable' => false, 'searchable' => false],
     ['data' => 'name', 'name' => 'name'],
     ['data' => 'phone', 'name' => 'phone'],
+    ['data' => 'whatsapp', 'name' => 'whatsapp', 'orderable' => false, 'searchable' => false],
+    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+    ['data' => 'parent_phone', 'name' => 'parent_phone', 'orderable' => false, 'searchable' => false],
+    @endif
     ['data' => 'email', 'name' => 'email'],
     ['data' => 'bde_name', 'name' => 'bde_name', 'orderable' => false, 'searchable' => false],
     ['data' => 'created_at', 'name' => 'created_at'],
@@ -855,6 +863,10 @@ $columns = [
                 // Student details
                 cardHtml += '<div class="row g-1 mb-2">';
                 cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-phone f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.phone || '-') + '</small></div></div>';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-brand-whatsapp f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.whatsapp || 'N/A') + '</small></div></div>';
+                if (data.show_parent_phone && data.parent_phone) {
+                    cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-phone-call f-12 text-muted me-1"></i><small class="text-muted f-11">Parent: ' + escapeHtml(data.parent_phone || 'N/A') + '</small></div></div>';
+                }
                 cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-mail f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.email || '-') + '</small></div></div>';
                 cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-user f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.bde_name || 'Unassigned') + '</small></div></div>';
                 cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-book f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.course || '-') + '</small></div></div>';

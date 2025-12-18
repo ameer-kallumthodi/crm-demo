@@ -342,6 +342,9 @@
                                     <th>DOB</th>
                                     <th>Phone</th>
                                     <th>WhatsApp Number</th>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                    <th>Parent Phone</th>
+                                    @endif
                                     <th>Email</th>
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
@@ -423,6 +426,15 @@
                                             -
                                         @endif
                                     </td>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                    <td>
+                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
+                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    @endif
                                     <td>{{ $convertedLead->email ?? '-' }}</td>
                                     <td>{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</td>
                                     <td>{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</td>
