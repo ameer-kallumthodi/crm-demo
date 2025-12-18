@@ -195,9 +195,13 @@ $columns = [
     ['data' => 'name', 'name' => 'name'],
     ['data' => 'phone', 'name' => 'phone'],
     ['data' => 'whatsapp', 'name' => 'whatsapp', 'orderable' => false, 'searchable' => false],
-    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
-    ['data' => 'parent_phone', 'name' => 'parent_phone', 'orderable' => false, 'searchable' => false],
-    @endif
+];
+
+if (\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor()) {
+    $columns[] = ['data' => 'parent_phone', 'name' => 'parent_phone', 'orderable' => false, 'searchable' => false];
+}
+
+$columns = array_merge($columns, [
     ['data' => 'email', 'name' => 'email'],
     ['data' => 'bde_name', 'name' => 'bde_name', 'orderable' => false, 'searchable' => false],
     ['data' => 'created_at', 'name' => 'created_at'],
@@ -215,7 +219,7 @@ $columns = [
     ['data' => 'post_sales_remarks', 'name' => 'post_sales_remarks', 'orderable' => false, 'searchable' => false],
     ['data' => 'pending_payment', 'name' => 'pending_payment', 'orderable' => false, 'searchable' => false],
     ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
-];
+]);
 @endphp
 
 @endsection

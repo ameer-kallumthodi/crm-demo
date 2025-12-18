@@ -108,40 +108,9 @@ class PostSalesConvertedLeadController extends Controller
             // Get filtered count
             $filteredCount = $query->count();
 
-            // Column mapping for ordering
-            $columns = [
-                0 => 'id', // Index column
-                1 => 'name', // Name
-                2 => 'phone', // Phone
-                3 => 'email', // Email
-                4 => 'id', // BDE Name - no sorting
-                5 => 'created_at', // Converted Date
-                6 => 'course_id', // Course
-                7 => 'id', // Batch - no sorting
-                8 => 'id', // Admission Batch - no sorting
-                9 => 'id', // Subject - no sorting
-                10 => 'id', // Status - no sorting
-                11 => 'id', // Cancelled By - no sorting
-                12 => 'id', // Paid Status - no sorting
-                13 => 'id', // Call Status - no sorting
-                14 => 'id', // Called Date - no sorting
-                15 => 'id', // Call Time - no sorting
-                16 => 'id', // Post Sale Followup - no sorting
-                17 => 'id', // Remark - no sorting
-                18 => 'id', // Actions - no sorting
-            ];
-
-            // Apply ordering
-            $order = $request->get('order', []);
-            $orderColumn = isset($order[0]['column']) ? (int)$order[0]['column'] : 0; // Default to id
-            $orderDir = isset($order[0]['dir']) ? $order[0]['dir'] : 'desc';
-
-            $orderColumnName = $columns[$orderColumn] ?? 'id';
-            if ($orderColumnName !== 'id') {
-                $query->orderBy($orderColumnName, $orderDir);
-            } else {
-                $query->orderBy('id', 'desc');
-            }
+            // Always order by ID (latest first) to keep
+            // stable ordering regardless of search or UI sort state.
+            $query->orderBy('id', 'desc');
 
             // Apply pagination
             $start = $request->get('start', 0);
