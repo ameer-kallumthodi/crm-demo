@@ -21,9 +21,10 @@ class NiosMentorConvertedLeadController extends Controller
     public function index(Request $request)
     {
         $query = ConvertedLead::with([
-            'lead', 
-            'course', 
-            'academicAssistant', 
+            'lead',
+            'leadDetail',
+            'course',
+            'academicAssistant',
             'createdBy',
             'cancelledBy',
             'studentDetails',

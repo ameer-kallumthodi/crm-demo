@@ -24,6 +24,7 @@ class SupportConvertedLeadController extends Controller
     {
         $query = ConvertedLead::with([
             'lead',
+            'leadDetail',
             'course',
             'academicAssistant',
             'createdBy',
@@ -226,6 +227,7 @@ class SupportConvertedLeadController extends Controller
     {
         $query = ConvertedLead::with([
             'lead',
+            'leadDetail',
             'course',
             'academicAssistant',
             'createdBy',
@@ -827,6 +829,7 @@ class SupportConvertedLeadController extends Controller
     {
         $query = ConvertedLead::with([
             'lead',
+            'leadDetail',
             'course',
             'academicAssistant',
             'createdBy',

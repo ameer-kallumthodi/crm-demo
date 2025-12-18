@@ -158,13 +158,31 @@
                 </tr>
                 <tr>
                     <td class="label">Personal Phone</td>
-                    <td class="value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->personal_code, $convertedLead->leadDetail->personal_number) }}</td>
+                    <td class="value">
+                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->personal_number)
+                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->personal_code, $convertedLead->leadDetail->personal_number) }}
+                        @else
+                            N/A
+                        @endif
+                    </td>
                     <td class="label">Parent Phone</td>
-                    <td class="value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}</td>
+                    <td class="value">
+                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
+                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}
+                        @else
+                            N/A
+                        @endif
+                    </td>
                 </tr>
                 <tr>
                     <td class="label">WhatsApp</td>
-                    <td class="value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}</td>
+                    <td class="value">
+                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
+                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}
+                        @else
+                            N/A
+                        @endif
+                    </td>
                     <td class="label">Batch</td>
                     <td class="value">{{ optional($convertedLead->leadDetail->batch)->title ?? 'N/A' }}</td>
                 </tr>

@@ -187,7 +187,7 @@ class ConvertedLeadController extends Controller
      */
     public function niosIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'studentDetails'])
             ->where('course_id', 1);
 
         // Apply role-based filtering
@@ -289,7 +289,7 @@ class ConvertedLeadController extends Controller
      */
     public function bosseIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'studentDetails'])
             ->where('course_id', 2);
 
         // Apply role-based filtering
@@ -373,7 +373,7 @@ class ConvertedLeadController extends Controller
      */
     public function hotelManagementIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails'])
             ->where('course_id', 8);
 
         // Apply role-based filtering
@@ -546,7 +546,7 @@ class ConvertedLeadController extends Controller
      */
     public function gmvssMentorIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead.studentDetails', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'studentDetails.registrationLink', 'mentorDetails'])
+        $query = ConvertedLead::with(['lead.studentDetails', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'studentDetails.registrationLink', 'mentorDetails'])
             ->where('course_id', 16);
 
         // Apply role-based filtering
@@ -664,7 +664,7 @@ class ConvertedLeadController extends Controller
      */
     public function aiPythonIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails'])
             ->where('course_id', 10);
 
         // Apply role-based filtering
@@ -1617,7 +1617,7 @@ class ConvertedLeadController extends Controller
 
     public function eduthanzeelIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'subCourse', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'teacher'])
+        $query = ConvertedLead::with(['lead', 'leadDetail', 'course', 'subCourse', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'teacher'])
             ->where('course_id', 6);
 
         // Apply role-based filtering
@@ -1702,7 +1702,7 @@ class ConvertedLeadController extends Controller
      */
     public function eschoolIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'course', 'subCourse', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'teacher'])
+        $query = ConvertedLead::with(['lead', 'leadDetail', 'course', 'subCourse', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'teacher'])
             ->where('course_id', 5);
 
         // Apply role-based filtering

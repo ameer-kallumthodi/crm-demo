@@ -45,9 +45,10 @@ class ESchoolEduthanzeelMentorController extends Controller
         }
 
         $query = ConvertedLead::with([
-            'lead', 
-            'course', 
-            'academicAssistant', 
+            'lead',
+            'leadDetail',
+            'course',
+            'academicAssistant',
             'createdBy',
             'cancelledBy',
             'studentDetails.teacher',
