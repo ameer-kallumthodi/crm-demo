@@ -450,6 +450,22 @@
                                         <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}"> </div>
                                     </td>
                                     <td>
+                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
+                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
+                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                    <td>
+                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
+                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
+                                    @endif
+                                    <td>
                                         <div class="inline-edit" data-field="batch_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->batch_id }}">
                                             <span class="display-value">{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())

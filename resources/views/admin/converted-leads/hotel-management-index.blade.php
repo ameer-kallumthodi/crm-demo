@@ -623,7 +623,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="17" class="text-center">No Hotel Management converted leads found</td>
+                                <td colspan="19" class="text-center">No Hotel Management converted leads found</td>
                             </tr>
                             @endforelse
                         </tbody>
