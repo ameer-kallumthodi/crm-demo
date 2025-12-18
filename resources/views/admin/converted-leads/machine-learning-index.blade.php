@@ -671,6 +671,7 @@
                                                 data-title="Update Register Number">
                                                 <i class="ti ti-edit"></i>
                                             </button>
+                                            @endif
                                             @php $courseChanged = (bool) ($convertedLead->is_course_changed ?? false); @endphp
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                             <button type="button" class="btn btn-sm {{ $courseChanged ? 'btn-success' : 'btn-danger' }} js-change-course-modal"
