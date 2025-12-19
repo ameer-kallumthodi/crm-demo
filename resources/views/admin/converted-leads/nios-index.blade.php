@@ -1516,6 +1516,7 @@
                 case 'status':
                     options = '<option value="">Select Status</option>';
                     options += `<option value="Paid" ${selectedValue === 'Paid' ? 'selected' : ''}>Paid</option>`;
+                    options += `<option value="Received" ${selectedValue === 'Received' ? 'selected' : ''}>Received</option>`;
                     options += `<option value="Admission cancel" ${selectedValue === 'Admission cancel' ? 'selected' : ''}>Admission cancel</option>`;
                     options += `<option value="Active" ${selectedValue === 'Active' ? 'selected' : ''}>Active</option>`;
                     options += `<option value="Inactive" ${selectedValue === 'Inactive' ? 'selected' : ''}>Inactive</option>`;

@@ -1479,14 +1479,15 @@
 
             switch (field) {
                 case 'status':
-                    options = '<option value="">Select Status</option>';
+                    options = '<option value="">Select Registration Fee</option>';
                     options += `<option value="Paid" ${selectedValue === 'Paid' ? 'selected' : ''}>Paid</option>`;
+                    options += `<option value="Received" ${selectedValue === 'Received' ? 'selected' : ''}>Received</option>`;
                     options += `<option value="Admission cancel" ${selectedValue === 'Admission cancel' ? 'selected' : ''}>Admission cancel</option>`;
                     options += `<option value="Active" ${selectedValue === 'Active' ? 'selected' : ''}>Active</option>`;
                     options += `<option value="Inactive" ${selectedValue === 'Inactive' ? 'selected' : ''}>Inactive</option>`;
                     break;
                 case 'reg_fee':
-                    options = '<option value="">Select Registration Fee</option>';
+                    options = '<option value="">Select Registration Status</option>';
                     options += `<option value="Handover -1" ${selectedValue === 'Handover -1' ? 'selected' : ''}>Handover -1</option>`;
                     options += `<option value="Handover - 2" ${selectedValue === 'Handover - 2' ? 'selected' : ''}>Handover - 2</option>`;
                     options += `<option value="Handover - 3" ${selectedValue === 'Handover - 3' ? 'selected' : ''}>Handover - 3</option>`;
