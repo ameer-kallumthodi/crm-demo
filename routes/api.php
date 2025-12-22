@@ -9,6 +9,8 @@ use App\Http\Controllers\API\MarketingLeadsController;
 use App\Http\Controllers\API\FollowupLeadsController;
 use App\Http\Controllers\API\RegistrationLeadsController;
 use App\Http\Controllers\API\ConvertedLeadsController;
+use App\Http\Controllers\API\InvoiceController;
+use App\Http\Controllers\API\PaymentController;
 
 Route::prefix('v1')->group(function () {
     Route::post('auth/login', [AuthController::class, 'login']);
@@ -52,5 +54,11 @@ Route::prefix('v1')->group(function () {
         Route::get('converted-leads', [ConvertedLeadsController::class, 'index']);
         Route::get('converted-leads/filters', [ConvertedLeadsController::class, 'filters']);
         Route::get('converted-leads/{id}', [ConvertedLeadsController::class, 'show'])->whereNumber('id');
+
+        // Invoice APIs
+        Route::get('invoices/student/{studentId}', [InvoiceController::class, 'getStudentInvoices'])->whereNumber('studentId');
+
+        // Payment APIs
+        Route::get('payments/invoice/{invoiceId}', [PaymentController::class, 'getInvoicePayments'])->whereNumber('invoiceId');
     });
 });
