@@ -5,7 +5,6 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\ConvertedLead;
-use App\Helpers\AuthHelper;
 use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
@@ -31,8 +30,8 @@ class InvoiceController extends Controller
         try {
             $student = ConvertedLead::with(['course', 'lead'])->findOrFail($studentId);
             
-            // Check permissions (similar to web controller)
-            $this->checkStudentAccess($student);
+            // Check permissions (using authenticated user from request)
+            $this->checkStudentAccess($student, $user);
             
             $invoices = Invoice::with(['course', 'batch', 'payments' => function($query) {
                 $query->orderBy('created_at', 'desc');
@@ -110,36 +109,62 @@ class InvoiceController extends Controller
     /**
      * Check if user has access to the student
      */
-    private function checkStudentAccess($student)
+    private function checkStudentAccess($student, $user)
     {
-        $currentUserId = AuthHelper::getCurrentUserId();
-        $currentUserRole = AuthHelper::getCurrentUserRole();
+        $currentUserId = $user->id;
+        $currentUserRole = $user->role_id;
+        $isTeamLead = $user->is_team_lead == 1;
         
-        switch ($currentUserRole) {
-            case 1: // Super Admin
-            case 2: // Admin
-            case 11: // General Manager
-            case 4: // Admission Counsellor
-            case 6: // Finance
-            case 7: // Post Sales
-                // Can access all students
-                break;
-                
-            case 3: // Team Lead
-                // Can access students from their team
-                $teamMemberIds = \App\Models\User::where('team_id', AuthHelper::getCurrentUserTeam())
+        // Get role title for specific role checks
+        $role = \App\Models\UserRole::find($currentUserRole);
+        $roleTitle = $role ? $role->title : '';
+        
+        // General Manager: Can access all students
+        if ($roleTitle === 'General Manager') {
+            return;
+        }
+        
+        // Check team lead
+        if ($isTeamLead) {
+            // Team Lead: Can access students from their team
+            $teamId = $user->team_id;
+            if ($teamId) {
+                $teamMemberIds = \App\Models\User::where('team_id', $teamId)
                     ->pluck('id')
                     ->toArray();
                     
                 if (!in_array($student->created_by, $teamMemberIds)) {
                     abort(403, 'Access denied. You can only view students from your team.');
                 }
+            } else {
+                // If no team assigned, only show their own students
+                if ($student->created_by != $currentUserId) {
+                    abort(403, 'Access denied. You can only view students you created.');
+                }
+            }
+            return;
+        }
+        
+        switch ($currentUserRole) {
+            case 1: // Super Admin
+            case 2: // Admin
+            case 4: // Admission Counsellor
+            case 6: // Finance
+            case 7: // Post Sales
+                // Can access all students
                 break;
                 
             case 5: // Academic Assistant
                 // Can only access students assigned to them
                 if ($student->academic_assistant_id != $currentUserId) {
                     abort(403, 'Access denied. You can only view students assigned to you.');
+                }
+                break;
+                
+            case 3: // Telecaller
+                // Can only access students they created
+                if ($student->created_by != $currentUserId) {
+                    abort(403, 'Access denied. You can only view students you created.');
                 }
                 break;
                 

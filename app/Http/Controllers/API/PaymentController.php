@@ -5,7 +5,6 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Invoice;
-use App\Helpers\AuthHelper;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -38,8 +37,8 @@ class PaymentController extends Controller
                 },
             ])->findOrFail($invoiceId);
             
-            // Check permissions
-            $this->checkInvoiceAccess($invoice);
+            // Check permissions (using authenticated user from request)
+            $this->checkInvoiceAccess($invoice, $user);
             
             $payments = Payment::with(['createdBy', 'approvedBy', 'rejectedBy'])
                 ->where('invoice_id', $invoiceId)
@@ -166,21 +165,28 @@ class PaymentController extends Controller
     /**
      * Check if user has access to the invoice
      */
-    private function checkInvoiceAccess($invoice)
+    private function checkInvoiceAccess($invoice, $user)
     {
-        $currentUserId = AuthHelper::getCurrentUserId();
-        $currentUserRole = AuthHelper::getCurrentUserRole();
+        $currentUserRole = $user->role_id;
+        $isTeamLead = $user->is_team_lead == 1;
         
-        // Check if user is team lead using the helper method
-        if (\App\Helpers\RoleHelper::is_team_lead()) {
-            // Team Lead can access all invoices
+        // Get role title for specific role checks
+        $role = \App\Models\UserRole::find($currentUserRole);
+        $roleTitle = $role ? $role->title : '';
+        
+        // Team Lead: Can access all invoices
+        if ($isTeamLead) {
+            return;
+        }
+        
+        // General Manager: Can access all invoices
+        if ($roleTitle === 'General Manager') {
             return;
         }
         
         switch ($currentUserRole) {
             case 1: // Super Admin
             case 2: // Admin
-            case 11: // General Manager
             case 3: // Telecaller
             case 4: // Admission Counsellor
             case 5: // Academic Assistant
