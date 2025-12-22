@@ -738,8 +738,8 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get sale count - converted leads where at least one payment is approved
-     * A sale is counted when a converted lead has at least one invoice with at least one approved payment
+     * Get sale count - converted leads where the first payment is approved
+     * A sale is counted when a converted lead has at least one invoice with the first approved payment
      */
     private function getSaleCount()
     {
@@ -747,23 +747,31 @@ class DashboardController extends Controller
         $convertedLeadsQuery = ConvertedLead::query();
         $this->applyRoleBasedFilterToConvertedLeads($convertedLeadsQuery);
         
-        // Count converted leads that have at least one invoice with at least one approved payment
-        $saleCount = $convertedLeadsQuery
-            ->whereHas('invoices', function ($invoiceQuery) {
-                $invoiceQuery->whereHas('payments', function ($paymentQuery) {
-                    // Count any approved payment (not just the first one)
-                    $paymentQuery->where('status', 'Approved');
-                });
+        $convertedLeads = $convertedLeadsQuery->get();
+        $saleCount = 0;
+        
+        foreach ($convertedLeads as $convertedLead) {
+            // Get the first approved payment for this student's invoices
+            $firstApprovedPayment = Payment::whereHas('invoice', function($query) use ($convertedLead) {
+                $query->where('student_id', $convertedLead->id);
             })
-            ->count();
+            ->where('status', 'Approved')
+            ->whereNotNull('approved_date')
+            ->orderBy('approved_date', 'asc')
+            ->first();
+            
+            // Count as sale if first payment has been approved
+            if ($firstApprovedPayment) {
+                $saleCount++;
+            }
+        }
         
         return $saleCount;
     }
 
     /**
-     * Get weekly sale count - converted leads where at least one payment is approved (this week)
-     * A sale is counted when a converted lead has at least one invoice with at least one approved payment
-     * Only counts sales where at least one payment was approved this week
+     * Get weekly sale count - converted leads where the first payment was approved this week
+     * A sale is counted when a converted lead has the first approved payment approved this week
      */
     private function getWeeklySaleCount()
     {
@@ -774,17 +782,26 @@ class DashboardController extends Controller
         $convertedLeadsQuery = ConvertedLead::query();
         $this->applyRoleBasedFilterToConvertedLeads($convertedLeadsQuery);
         
-        // Count converted leads that have at least one invoice with at least one approved payment this week
-        $weeklySaleCount = $convertedLeadsQuery
-            ->whereHas('invoices', function ($invoiceQuery) use ($weekStart, $weekEnd) {
-                $invoiceQuery->whereHas('payments', function ($paymentQuery) use ($weekStart, $weekEnd) {
-                    // Count any approved payment that was approved this week
-                    $paymentQuery->where('status', 'Approved')
-                        ->whereNotNull('approved_date')
-                        ->whereBetween('approved_date', [$weekStart, $weekEnd]);
-                });
+        $convertedLeads = $convertedLeadsQuery->get();
+        $weeklySaleCount = 0;
+        
+        foreach ($convertedLeads as $convertedLead) {
+            // Get the first approved payment for this student's invoices
+            $firstApprovedPayment = Payment::whereHas('invoice', function($query) use ($convertedLead) {
+                $query->where('student_id', $convertedLead->id);
             })
-            ->count();
+            ->where('status', 'Approved')
+            ->whereNotNull('approved_date')
+            ->orderBy('approved_date', 'asc')
+            ->first();
+            
+            // Count as sale if first payment was approved this week
+            if ($firstApprovedPayment && 
+                $firstApprovedPayment->approved_date >= $weekStart && 
+                $firstApprovedPayment->approved_date <= $weekEnd) {
+                $weeklySaleCount++;
+            }
+        }
         
         return $weeklySaleCount;
     }

@@ -367,7 +367,7 @@ class PostSalesReportController extends Controller
         $reports = [];
 
         foreach ($telecallers as $telecaller) {
-            // Get converted leads for this telecaller within date range
+            // Get converted leads for this telecaller
             // Converted leads are linked to leads via lead_id, and leads have telecaller_id
             // Exclude course_id 5 and 6
             $convertedLeads = \App\Models\ConvertedLead::whereHas('lead', function($query) use ($telecaller) {
@@ -375,15 +375,33 @@ class PostSalesReportController extends Controller
                       ->where('is_converted', true);
             })
             ->whereNotIn('course_id', [5, 6])
-            ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
             ->get();
 
-            // Sales count (converted leads count)
-            $salesCount = $convertedLeads->count();
+            // Sales count: Count converted leads where first payment was approved within date range
+            // A sale is counted when the first approved payment's approval_date is within the date range
+            $salesCount = 0;
+            $convertedLeadIds = [];
+            
+            foreach ($convertedLeads as $convertedLead) {
+                // Get the first approved payment for this student's invoices
+                $firstApprovedPayment = Payment::whereHas('invoice', function($query) use ($convertedLead) {
+                    $query->where('student_id', $convertedLead->id);
+                })
+                ->where('status', 'Approved')
+                ->whereNotNull('approved_date')
+                ->orderBy('approved_date', 'asc')
+                ->first();
+                
+                // Count as sale if first payment was approved within date range
+                if ($firstApprovedPayment && 
+                    $firstApprovedPayment->approved_date >= $fromDate->copy()->startOfDay() && 
+                    $firstApprovedPayment->approved_date <= $toDate->copy()->endOfDay()) {
+                    $salesCount++;
+                    $convertedLeadIds[] = $convertedLead->id;
+                }
+            }
 
-            // Total Sale Amount (sum of invoice total_amount for converted leads)
-            // Get all invoices for converted leads (invoices are created at conversion time)
-            $convertedLeadIds = $convertedLeads->pluck('id')->toArray();
+            // Total Sale Amount (sum of invoice total_amount for converted leads that had first payment approved in date range)
             $totalSaleAmount = 0;
             if (!empty($convertedLeadIds)) {
                 $totalSaleAmount = Invoice::whereIn('student_id', $convertedLeadIds)
@@ -457,22 +475,40 @@ class PostSalesReportController extends Controller
         $reports = [];
 
         foreach ($telecallers as $telecaller) {
-            // Get converted leads for this telecaller within date range
+            // Get converted leads for this telecaller
             // Only include course_id 5 and 6
             $convertedLeads = \App\Models\ConvertedLead::whereHas('lead', function($query) use ($telecaller) {
                 $query->where('telecaller_id', $telecaller->id)
                       ->where('is_converted', true);
             })
             ->whereIn('course_id', [5, 6])
-            ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
             ->get();
 
-            // Sales count (converted leads count)
-            $salesCount = $convertedLeads->count();
+            // Sales count: Count converted leads where first payment was approved within date range
+            // A sale is counted when the first approved payment's approval_date is within the date range
+            $salesCount = 0;
+            $convertedLeadIds = [];
+            
+            foreach ($convertedLeads as $convertedLead) {
+                // Get the first approved payment for this student's invoices
+                $firstApprovedPayment = Payment::whereHas('invoice', function($query) use ($convertedLead) {
+                    $query->where('student_id', $convertedLead->id);
+                })
+                ->where('status', 'Approved')
+                ->whereNotNull('approved_date')
+                ->orderBy('approved_date', 'asc')
+                ->first();
+                
+                // Count as sale if first payment was approved within date range
+                if ($firstApprovedPayment && 
+                    $firstApprovedPayment->approved_date >= $fromDate->copy()->startOfDay() && 
+                    $firstApprovedPayment->approved_date <= $toDate->copy()->endOfDay()) {
+                    $salesCount++;
+                    $convertedLeadIds[] = $convertedLead->id;
+                }
+            }
 
-            // Total Sale Amount (sum of invoice total_amount for converted leads)
-            // Get all invoices for converted leads (invoices are created at conversion time)
-            $convertedLeadIds = $convertedLeads->pluck('id')->toArray();
+            // Total Sale Amount (sum of invoice total_amount for converted leads that had first payment approved in date range)
             $totalSaleAmount = 0;
             if (!empty($convertedLeadIds)) {
                 $totalSaleAmount = Invoice::whereIn('student_id', $convertedLeadIds)
@@ -815,21 +851,40 @@ class PostSalesReportController extends Controller
         $reports = [];
 
         foreach ($telecallers as $telecaller) {
-            // Get converted leads for this telecaller within date range
+            // Get converted leads for this telecaller
             // Exclude course_id 5 and 6
             $convertedLeads = ConvertedLead::whereHas('lead', function($query) use ($telecaller) {
                 $query->where('telecaller_id', $telecaller->id)
                       ->where('is_converted', true);
             })
             ->whereNotIn('course_id', [5, 6])
-            ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
             ->get();
 
-            // Sales count (converted leads count)
-            $salesCount = $convertedLeads->count();
+            // Sales count: Count converted leads where first payment was approved within date range
+            // A sale is counted when the first approved payment's approval_date is within the date range
+            $salesCount = 0;
+            $convertedLeadIds = [];
+            
+            foreach ($convertedLeads as $convertedLead) {
+                // Get the first approved payment for this student's invoices
+                $firstApprovedPayment = Payment::whereHas('invoice', function($query) use ($convertedLead) {
+                    $query->where('student_id', $convertedLead->id);
+                })
+                ->where('status', 'Approved')
+                ->whereNotNull('approved_date')
+                ->orderBy('approved_date', 'asc')
+                ->first();
+                
+                // Count as sale if first payment was approved within date range
+                if ($firstApprovedPayment && 
+                    $firstApprovedPayment->approved_date >= $fromDate->copy()->startOfDay() && 
+                    $firstApprovedPayment->approved_date <= $toDate->copy()->endOfDay()) {
+                    $salesCount++;
+                    $convertedLeadIds[] = $convertedLead->id;
+                }
+            }
 
-            // Total Sale Amount (sum of invoice total_amount for converted leads)
-            $convertedLeadIds = $convertedLeads->pluck('id')->toArray();
+            // Total Sale Amount (sum of invoice total_amount for converted leads that had first payment approved in date range)
             $totalSaleAmount = 0;
             if (!empty($convertedLeadIds)) {
                 $totalSaleAmount = Invoice::whereIn('student_id', $convertedLeadIds)
@@ -904,21 +959,40 @@ class PostSalesReportController extends Controller
         $reports = [];
 
         foreach ($telecallers as $telecaller) {
-            // Get converted leads for this telecaller within date range
+            // Get converted leads for this telecaller
             // Only include course_id 5 and 6
             $convertedLeads = ConvertedLead::whereHas('lead', function($query) use ($telecaller) {
                 $query->where('telecaller_id', $telecaller->id)
                       ->where('is_converted', true);
             })
             ->whereIn('course_id', [5, 6])
-            ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
             ->get();
 
-            // Sales count (converted leads count)
-            $salesCount = $convertedLeads->count();
+            // Sales count: Count converted leads where first payment was approved within date range
+            // A sale is counted when the first approved payment's approval_date is within the date range
+            $salesCount = 0;
+            $convertedLeadIds = [];
+            
+            foreach ($convertedLeads as $convertedLead) {
+                // Get the first approved payment for this student's invoices
+                $firstApprovedPayment = Payment::whereHas('invoice', function($query) use ($convertedLead) {
+                    $query->where('student_id', $convertedLead->id);
+                })
+                ->where('status', 'Approved')
+                ->whereNotNull('approved_date')
+                ->orderBy('approved_date', 'asc')
+                ->first();
+                
+                // Count as sale if first payment was approved within date range
+                if ($firstApprovedPayment && 
+                    $firstApprovedPayment->approved_date >= $fromDate->copy()->startOfDay() && 
+                    $firstApprovedPayment->approved_date <= $toDate->copy()->endOfDay()) {
+                    $salesCount++;
+                    $convertedLeadIds[] = $convertedLead->id;
+                }
+            }
 
-            // Total Sale Amount (sum of invoice total_amount for converted leads)
-            $convertedLeadIds = $convertedLeads->pluck('id')->toArray();
+            // Total Sale Amount (sum of invoice total_amount for converted leads that had first payment approved in date range)
             $totalSaleAmount = 0;
             if (!empty($convertedLeadIds)) {
                 $totalSaleAmount = Invoice::whereIn('student_id', $convertedLeadIds)
