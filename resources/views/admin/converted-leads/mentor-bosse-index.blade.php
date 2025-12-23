@@ -342,7 +342,10 @@
                                     <th>Registration Number</th>
                                     <th>Name</th>
                                     <th>DOB</th>
+                                    <th>Registration Fee</th>
+                                    <th>Enrollment Number</th>
                                     <th>Application Number</th>
+                                    <th>Status</th>
                                     <th>Phone</th>
                                     <th>WhatsApp</th>
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
@@ -436,7 +439,25 @@
                                         @endif
                                     </td>
                                     <td>{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</td>
-                                    <td>{{ $convertedLead->studentDetails?->application_number ?? '-' }}</td>
+                                    <td>
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->status ?? 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->enroll_no ?? 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->application_number ?? 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->status }}">
+                                            <span class="display-value">{{ $convertedLead->status ?? 'N/A' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td>{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</td>
                                     <td>
                                         @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
@@ -1212,7 +1233,7 @@
                 editForm = createSubjectField(field, currentValue);
             } else if (field === 'problems') {
                 editForm = createTextareaField(field, currentValue);
-            } else if (['registration_status', 'technology_side', 'student_status', 'call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'app', 'whatsapp_group', 'telegram_group', 'mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5', 'first_live', 'first_exam_registration', 'first_exam', 'second_live', 'second_exam', 'model_exam_live', 'model_exam', 'practical', 'self_registration', 'assignment', 'mock_test', 'admit_card', 'exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6'].includes(field)) {
+            } else if (['registration_status', 'technology_side', 'student_status', 'call_1', 'call_2', 'call_3', 'call_4', 'call_5', 'call_6', 'call_7', 'call_8', 'call_9', 'app', 'whatsapp_group', 'telegram_group', 'mentor_live_1', 'mentor_live_2', 'mentor_live_3', 'mentor_live_4', 'mentor_live_5', 'first_live', 'first_exam_registration', 'first_exam', 'second_live', 'second_exam', 'model_exam_live', 'model_exam', 'practical', 'self_registration', 'assignment', 'mock_test', 'admit_card', 'exam_subject_1', 'exam_subject_2', 'exam_subject_3', 'exam_subject_4', 'exam_subject_5', 'exam_subject_6', 'status'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
             } else {
                 editForm = createInputField(field, currentValue);
@@ -1453,6 +1474,15 @@
                     <option value="missed the exam" ${currentValue === 'missed the exam' ? 'selected' : ''}>missed the exam</option>
                     <option value="technical issue" ${currentValue === 'technical issue' ? 'selected' : ''}>technical issue</option>
                     <option value="task complete" ${currentValue === 'task complete' ? 'selected' : ''}>task complete</option>
+                `;
+            } else if (field === 'status') {
+                options = `
+                    <option value="">Registration fee</option>
+                    <option value="Paid" ${currentValue === 'Paid' ? 'selected' : ''}>Paid</option>
+                    <option value="Received" ${currentValue === 'Received' ? 'selected' : ''}>Received</option>
+                    <option value="Admission cancel" ${currentValue === 'Admission cancel' ? 'selected' : ''}>Admission cancel</option>
+                    <option value="Active" ${currentValue === 'Active' ? 'selected' : ''}>Active</option>
+                    <option value="Inactive" ${currentValue === 'Inactive' ? 'selected' : ''}>Inactive</option>
                 `;
             }
 

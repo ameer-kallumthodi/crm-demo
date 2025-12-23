@@ -2877,7 +2877,7 @@ class ConvertedLeadController extends Controller
             'username' => 'nullable|string|max:255',
             'password' => 'nullable|string|max:255',
             'dob' => 'nullable|date|before_or_equal:today',
-            'status' => 'nullable|string|in:Paid,Admission cancel,Active,Inactive',
+            'status' => 'nullable|string|in:Paid,Received,Admission cancel,Active,Inactive',
             'reg_fee' => 'nullable|string|in:Handover -1,Handover - 2,Handover - 3,Handover - 4,Handover - 5,Paid,Admission cancel',
             'internship_id' => 'nullable|string|max:255',
             'exam_fee' => 'nullable|string|in:Pending,Not Paid,Paid',
