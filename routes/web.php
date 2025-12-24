@@ -236,6 +236,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     // Leads
     Route::get('leads', [LeadController::class, 'index'])->name('leads.index');
     Route::get('leads/data', [LeadController::class, 'getLeadsData'])->name('leads.data');
+    Route::get('leads/duplicate', [LeadController::class, 'duplicateLeads'])->name('leads.duplicate');
+    Route::get('leads/duplicate/data', [LeadController::class, 'getDuplicateLeadsData'])->name('leads.duplicate-data');
     Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');
     Route::get('followup-leads', [LeadController::class, 'followupLeads'])->name('leads.followup');
     Route::get('registration-form-submitted-leads', [LeadController::class, 'registrationFormSubmittedLeads'])->name('leads.registration-form-submitted');

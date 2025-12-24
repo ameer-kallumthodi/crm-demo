@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'Leads')
+@section('title', 'Duplicate Leads')
 
 @section('content')
 <!-- [ breadcrumb ] start -->
@@ -9,13 +9,14 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Leads Management</h5>
+                    <h5 class="m-b-10">Duplicate Leads Management</h5>
                 </div>
             </div>
             <div class="col-md-6">
                 <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item">Leads</li>
+                    <li class="breadcrumb-item"><a href="{{ route('leads.index') }}">Leads</a></li>
+                    <li class="breadcrumb-item">Duplicate Leads</li>
                 </ul>
             </div>
         </div>
@@ -29,9 +30,9 @@
     <div class="d-flex align-items-center">
         <i class="ti ti-search me-2"></i>
         <div class="flex-grow-1">
-            <strong>Search Results:</strong> Showing leads matching "{{ request('search_key') }}"
+            <strong>Search Results:</strong> Showing duplicate leads matching "{{ request('search_key') }}"
         </div>
-        <a href="{{ route('leads.index') }}" class="btn btn-sm btn-outline-info">
+        <a href="{{ route('leads.duplicate') }}" class="btn btn-sm btn-outline-info">
             <i class="ti ti-x"></i> Clear Search
         </a>
     </div>
@@ -44,7 +45,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('leads.index') }}" id="dateFilterForm">
+                <form method="GET" action="{{ route('leads.duplicate') }}" id="dateFilterForm">
                     <div class="row g-3 align-items-end">
                         <!-- From Date -->
                         <div class="col-6 col-md-4 col-lg-2">
@@ -145,7 +146,7 @@
                                 <button type="submit" class="btn btn-primary btn-sm flex-fill flex-lg-grow-0">
                                     <i class="ti ti-filter me-1"></i> Filter
                                 </button>
-                                <a href="{{ route('leads.index') }}" class="btn btn-outline-secondary btn-sm flex-fill flex-lg-grow-0">
+                                <a href="{{ route('leads.duplicate') }}" class="btn btn-outline-secondary btn-sm flex-fill flex-lg-grow-0">
                                     <i class="ti ti-x me-1"></i> Clear
                                 </a>
                             </div>
@@ -165,12 +166,8 @@
             <div class="card-header">
                 <!-- Desktop Header -->
                 <div class="d-none d-md-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">All Leads</h5>
+                    <h5 class="mb-0">Duplicate Leads (Same Code & Phone)</h5>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('leads.duplicate') }}" class="btn btn-outline-warning btn-sm px-3"
-                            title="View Duplicate Leads">
-                            <i class="ti ti-copy"></i> Duplicate Leads
-                        </a>
                         <a href="{{ route('leads.export', request()->query()) }}" class="btn btn-outline-info btn-sm px-3 js-export-excel"
                             title="Export to Excel">
                             <i class="ti ti-download"></i> Export Excel
@@ -211,7 +208,7 @@
                 <!-- Mobile Header -->
                 <div class="d-md-none">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">All Leads</h5>
+                        <h5 class="mb-0">Duplicate Leads</h5>
                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_general_manager() || \App\Helpers\RoleHelper::is_senior_manager())
                         <a href="javascript:void(0);" class="btn btn-primary btn-sm"
                             onclick="show_ajax_modal('{{ route('leads.add') }}', 'Add New Lead')">
@@ -221,12 +218,6 @@
                     </div>
 
                     <div class="row g-2 mb-2">
-                        <div class="col-12">
-                            <a href="{{ route('leads.duplicate') }}" class="btn btn-outline-warning btn-sm w-100"
-                                title="View Duplicate Leads">
-                                <i class="ti ti-copy me-1"></i> Duplicate Leads
-                            </a>
-                        </div>
                         <div class="col-12">
                             <a href="{{ route('leads.export', request()->query()) }}" class="btn btn-outline-info btn-sm w-100 js-export-excel"
                                 title="Export to Excel">
@@ -280,7 +271,7 @@
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive" style="overflow-x: auto;">
-<table class="table table-hover" id="leadsTable" style="min-width: 1900px;">
+<table class="table table-hover" id="duplicateLeadsTable" style="min-width: 1900px;">
                             <thead>
 @php
 $canViewFirstCreated = $isAdminOrSuperAdmin || $isGeneralManager;
@@ -418,18 +409,18 @@ $columns = array_merge($columns, [
         border: none;
     }
 
-    #leadsTable {
+    #leadsTable, #duplicateLeadsTable {
         margin-bottom: 0;
     }
 
-    #leadsTable thead th {
+    #leadsTable thead th, #duplicateLeadsTable thead th {
         border-top: none;
         font-weight: 600;
         background-color: #f8f9fa;
         white-space: nowrap;
     }
 
-    #leadsTable tbody td {
+    #leadsTable tbody td, #duplicateLeadsTable tbody td {
         vertical-align: middle;
         white-space: nowrap;
     }
@@ -557,17 +548,17 @@ $columns = array_merge($columns, [
 <script>
     // Initialize DataTables asynchronously to prevent blocking
     $(document).ready(function() {
-        const exportBaseUrl = @json(route('leads.export'));
+        const exportBaseUrl = @json(route('leads.export')); // Note: Export may need to be updated for duplicates
 
-        // ULTRA-OPTIMIZED DataTables for 410+ leads - Performance Critical
+        // ULTRA-OPTIMIZED DataTables for duplicate leads - Performance Critical
         // Prevent global initialization for this table
-        $('#leadsTable').removeClass('data_table_basic');
+        $('#duplicateLeadsTable').removeClass('data_table_basic');
         
         // Use setTimeout to defer initialization and allow page to render first
         setTimeout(function() {
             // Destroy existing instance if any
-            if ($.fn.DataTable.isDataTable('#leadsTable')) {
-                $('#leadsTable').DataTable().destroy();
+            if ($.fn.DataTable.isDataTable('#duplicateLeadsTable')) {
+                $('#duplicateLeadsTable').DataTable().destroy();
             }
             
             // Get filter values from form
@@ -673,11 +664,11 @@ $columns = array_merge($columns, [
             var lastJsonResponse = null;
             
             // Initialize with AJAX - maximum performance optimizations
-            var leadsTable = $('#leadsTable').DataTable({
+            var leadsTable = $('#duplicateLeadsTable').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: '{{ route('leads.data') }}',
+                    url: '{{ route('leads.duplicate-data') }}',
                     type: 'GET',
                     data: function(d) {
                         // Merge DataTables parameters with filter parameters
@@ -854,7 +845,7 @@ $columns = array_merge($columns, [
                 
                 // Make AJAX request to load all data
                 $.ajax({
-                    url: '{{ route('leads.data') }}',
+                    url: '{{ route('leads.duplicate-data') }}',
                     type: 'GET',
                     data: requestData,
                     success: function(response) {
@@ -1237,9 +1228,9 @@ $columns = array_merge($columns, [
             e.preventDefault();
             const searchValue = $(this).find('input[name="search_key"]').val().trim();
             if (searchValue) {
-                window.location.href = '{{ route("leads.index") }}?search_key=' + encodeURIComponent(searchValue);
+                window.location.href = '{{ route("leads.duplicate") }}?search_key=' + encodeURIComponent(searchValue);
             } else {
-                window.location.href = '{{ route("leads.index") }}';
+                window.location.href = '{{ route("leads.duplicate") }}';
             }
         });
 

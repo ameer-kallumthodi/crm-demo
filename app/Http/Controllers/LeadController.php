@@ -116,6 +116,95 @@ class LeadController extends Controller
     }
 
     /**
+     * Display duplicate leads page
+     */
+    public function duplicateLeads(Request $request)
+    {
+        // Get filter options (cached for better performance - cache for 1 hour)
+        $leadStatuses = cache()->remember('lead_statuses_list', 3600, function() {
+            return LeadStatus::select('id', 'title')->orderBy('title')->get();
+        });
+        $leadSources = cache()->remember('lead_sources_list', 3600, function() {
+            return LeadSource::select('id', 'title')->orderBy('title')->get();
+        });
+        $countries = cache()->remember('countries_list', 3600, function() {
+            return Country::select('id', 'title')->orderBy('title')->get();
+        });
+        $courses = cache()->remember('courses_list', 3600, function() {
+            return Course::select('id', 'title')->orderBy('title')->get();
+        });
+        
+        $currentUser = AuthHelper::getCurrentUser();
+        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+        
+        // Cache telecallers query based on role
+        $cacheKey = 'telecallers_list_' . ($currentUser ? $currentUser->id : 'guest');
+        $telecallers = cache()->remember($cacheKey, 1800, function() {
+            return User::select('id', 'name')
+                      ->where('role_id', 3)
+                      ->orderBy('name')
+                      ->get();
+        });
+
+        // Create lookup arrays
+        $leadStatusList = $leadStatuses->pluck('title', 'id')->toArray();
+        $leadSourceList = $leadSources->pluck('title', 'id')->toArray();
+        $courseName = $courses->pluck('title', 'id')->toArray();
+        $telecallerList = $telecallers->pluck('name', 'id')->toArray();
+
+        // Get role flags
+        $isTelecaller = $currentUser && $currentUser->role_id == 3;
+        $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        
+        // Filter telecallers based on role
+        if ($isTeamLead && !$isSeniorManager) {
+            // Team Lead: Show only their team members
+            $teamId = $currentUser->team_id;
+            if ($teamId) {
+                $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
+                $telecallers = User::whereIn('id', $teamMemberIds)->get();
+            } else {
+                $telecallers = collect([$currentUser]); // Only themselves if no team
+            }
+        } elseif ($isTelecaller && !$isSeniorManager) {
+            // Telecaller: Show only themselves
+            $telecallers = collect([$currentUser]);
+        }
+        
+        // Update telecallerList after filtering
+        $telecallerList = $telecallers->pluck('name', 'id')->toArray();
+
+        // Get date filters
+        $fromDate = $request->get('date_from', now()->subDays(7)->format('Y-m-d'));
+        $toDate = $request->get('date_to', now()->format('Y-m-d'));
+        
+        if ($request->filled('search_key')) {
+            // When searching, clear the date values to show search is across all dates
+            $fromDate = '';
+            $toDate = '';
+        }
+
+        // Pre-calculate role checks
+        $isAdminOrSuperAdmin = RoleHelper::is_admin_or_super_admin();
+        $isTeamLeadRole = RoleHelper::is_team_lead();
+        $isGeneralManager = RoleHelper::is_general_manager();
+        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+        $isTelecallerRole = RoleHelper::is_telecaller();
+        $isAcademicAssistant = RoleHelper::is_academic_assistant();
+        $isAdmissionCounsellor = RoleHelper::is_admission_counsellor();
+        $hasLeadActionPermission = \App\Helpers\PermissionHelper::has_lead_action_permission();
+
+        return view('admin.leads.duplicate', compact(
+            'leadStatuses', 'leadSources', 'countries', 'courses', 'telecallers',
+            'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList',
+            'fromDate', 'toDate', 'isTelecaller', 'isTeamLead',
+            'isAdminOrSuperAdmin', 'isTeamLeadRole', 'isGeneralManager', 'isSeniorManager', 'isTelecallerRole',
+            'isAcademicAssistant', 'isAdmissionCounsellor', 'hasLeadActionPermission'
+        ))->with('search_key', $request->search_key);
+    }
+
+    /**
      * Build the base query for leads with all filters applied
      * This method is reused by both index view and AJAX endpoint
      */
@@ -236,6 +325,174 @@ class LeadController extends Controller
                 }
             } elseif (AuthHelper::isTelecaller()) {
                 // Telecaller: Can only see their own leads
+                $query->where('telecaller_id', AuthHelper::getCurrentUserId());
+            }
+        }
+
+        return $query;
+    }
+
+    /**
+     * Build the base query for duplicate leads (same code and phone)
+     */
+    private function buildDuplicateLeadsQuery(Request $request)
+    {
+        // Apply date filters first to the duplicate detection query
+        $fromDate = $request->get('date_from');
+        $toDate = $request->get('date_to');
+        
+        // Build base query for finding duplicates with date filters
+        $duplicateQuery = DB::table('leads')
+            ->select('code', 'phone')
+            ->where('is_converted', 0)
+            ->whereNotNull('code')
+            ->whereNotNull('phone');
+        
+        // Apply date filters if provided
+        if ($fromDate) {
+            $duplicateQuery->whereDate('created_at', '>=', $fromDate);
+        }
+        if ($toDate) {
+            $duplicateQuery->whereDate('created_at', '<=', $toDate);
+        }
+        
+        // Find code+phone combinations that appear more than once
+        $duplicateGroups = $duplicateQuery
+            ->groupBy('code', 'phone')
+            ->havingRaw('COUNT(*) > 1')
+            ->get();
+
+        // Get all lead IDs that match these duplicate combinations
+        $duplicateLeadIds = [];
+        foreach ($duplicateGroups as $group) {
+            $leadQuery = Lead::where('code', $group->code)
+                ->where('phone', $group->phone)
+                ->where('is_converted', 0);
+            
+            // Apply same date filters
+            if ($fromDate) {
+                $leadQuery->whereDate('created_at', '>=', $fromDate);
+            }
+            if ($toDate) {
+                $leadQuery->whereDate('created_at', '<=', $toDate);
+            }
+            
+            $leadIds = $leadQuery->pluck('id')->toArray();
+            $duplicateLeadIds = array_merge($duplicateLeadIds, $leadIds);
+        }
+        
+        // If no duplicates found, return empty result
+        if (empty($duplicateLeadIds)) {
+            $duplicateLeadIds = [0]; // Return no results
+        }
+
+        // Build query with same structure as buildLeadsQuery
+        $query = Lead::select([
+            'id', 'title', 'code', 'phone', 'email', 'lead_status_id', 'lead_source_id', 
+            'course_id', 'telecaller_id', 'team_id', 'place', 'rating', 'interest_status', 
+            'followup_date', 'remarks', 'is_converted', 'created_at', 'updated_at',
+            'gender', 'age', 'whatsapp', 'whatsapp_code', 'qualification', 'country_id', 
+            'address', 'first_created_at'
+        ])
+        ->where('is_converted', 0)
+        ->whereIn('id', $duplicateLeadIds)
+        ->with([
+            'leadStatus:id,title', 
+            'leadSource:id,title', 
+            'course:id,title', 
+            'telecaller:id,name', 
+            'studentDetails' => function($query) {
+                $query->select([
+                    'id', 'lead_id', 'status', 'course_id',
+                    'sslc_certificate', 'plustwo_certificate', 'ug_certificate',
+                    'birth_certificate', 'passport_photo', 'adhar_front', 'adhar_back',
+                    'signature', 'other_document',
+                    'sslc_verification_status', 'plustwo_verification_status', 'ug_verification_status',
+                    'birth_certificate_verification_status', 'passport_photo_verification_status',
+                    'adhar_front_verification_status', 'adhar_back_verification_status',
+                    'signature_verification_status', 'other_document_verification_status',
+                    'reviewed_at'
+                ]);
+            },
+            'studentDetails.sslcCertificates:id,lead_detail_id,verification_status'
+        ]);
+
+        // Apply date filters (already applied in duplicate detection, but apply again for consistency)
+        $fromDate = $request->get('date_from');
+        $toDate = $request->get('date_to');
+        
+        if ($fromDate && !$request->filled('search_key')) {
+            $query->whereDate('created_at', '>=', $fromDate);
+        }
+        if ($toDate && !$request->filled('search_key')) {
+            $query->whereDate('created_at', '<=', $toDate);
+        }
+
+        if ($request->filled('lead_status_id')) {
+            $query->where('lead_status_id', $request->lead_status_id);
+        }
+
+        if ($request->filled('lead_source_id')) {
+            $query->where('lead_source_id', $request->lead_source_id);
+        }
+
+        if ($request->filled('course_id')) {
+            $query->where('course_id', $request->course_id);
+        }
+
+        if ($request->filled('telecaller_id')) {
+            $query->where('telecaller_id', $request->telecaller_id);
+        }
+
+        if ($request->filled('rating')) {
+            $query->where('rating', $request->rating);
+        }
+
+        // Lead Type filter (only for Admin/Super Admin, Senior Manager, General Manager)
+        $currentUser = AuthHelper::getCurrentUser();
+        $isAdminOrSuperAdmin = RoleHelper::is_admin_or_super_admin();
+        $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+        $isGeneralManager = RoleHelper::is_general_manager();
+        
+        if (($isAdminOrSuperAdmin || $isSeniorManager || $isGeneralManager) && $request->filled('lead_type')) {
+            $leadType = $request->lead_type;
+            if ($leadType === 'pullback') {
+                $query->withoutGlobalScope('exclude_pullbacked');
+                $query->where('is_pullbacked', 1);
+            } elseif ($leadType === 'normal') {
+                $query->where(function($q) {
+                    $q->whereNull('is_pullbacked')
+                      ->orWhere('is_pullbacked', 0);
+                });
+            }
+        }
+
+        // Add search functionality
+        if ($request->filled('search_key')) {
+            $searchKey = $request->search_key;
+            $query->where(function($q) use ($searchKey) {
+                $q->where('title', 'LIKE', "%{$searchKey}%")
+                  ->orWhere('phone', 'LIKE', "%{$searchKey}%")
+                  ->orWhere('email', 'LIKE', "%{$searchKey}%");
+            });
+        }
+
+        // Role-based lead filtering (same as buildLeadsQuery)
+        if ($currentUser) {
+            if ($isSeniorManager || $isGeneralManager || RoleHelper::is_admin_or_super_admin()) {
+                if ($request->filled('telecaller_id')) {
+                    $query->where('telecaller_id', $request->telecaller_id);
+                }
+            } elseif (AuthHelper::isTeamLead() == 1) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
+                    $teamMemberIds[] = AuthHelper::getCurrentUserId();  
+                    $query->whereIn('telecaller_id', $teamMemberIds);
+                } else {
+                    $query->where('telecaller_id', AuthHelper::getCurrentUserId());
+                }
+            } elseif (AuthHelper::isTelecaller()) {
                 $query->where('telecaller_id', AuthHelper::getCurrentUserId());
             }
         }
@@ -523,6 +780,289 @@ class LeadController extends Controller
                 'recordsFiltered' => 0,
                 'data' => [],
                 'error' => 'An error occurred while fetching leads data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * AJAX endpoint for DataTables to fetch duplicate leads data
+     */
+    public function getDuplicateLeadsData(Request $request): JsonResponse
+    {
+        try {
+            set_time_limit(config('timeout.max_execution_time', 300));
+
+            // Build the query with all filters
+            $query = $this->buildDuplicateLeadsQuery($request);
+
+            // Get total count of duplicate leads (apply same date filters)
+            $fromDate = $request->get('date_from');
+            $toDate = $request->get('date_to');
+            
+            $duplicateQuery = DB::table('leads')
+                ->select('code', 'phone')
+                ->where('is_converted', 0)
+                ->whereNotNull('code')
+                ->whereNotNull('phone');
+            
+            // Apply date filters if provided
+            if ($fromDate) {
+                $duplicateQuery->whereDate('created_at', '>=', $fromDate);
+            }
+            if ($toDate) {
+                $duplicateQuery->whereDate('created_at', '<=', $toDate);
+            }
+            
+            $duplicateGroups = $duplicateQuery
+                ->groupBy('code', 'phone')
+                ->havingRaw('COUNT(*) > 1')
+                ->get();
+            
+            $totalRecords = 0;
+            foreach ($duplicateGroups as $group) {
+                $leadQuery = Lead::where('code', $group->code)
+                    ->where('phone', $group->phone)
+                    ->where('is_converted', 0);
+                
+                // Apply same date filters
+                if ($fromDate) {
+                    $leadQuery->whereDate('created_at', '>=', $fromDate);
+                }
+                if ($toDate) {
+                    $leadQuery->whereDate('created_at', '<=', $toDate);
+                }
+                
+                $totalRecords += $leadQuery->count();
+            }
+
+            // Apply DataTables search (from DataTables search box)
+            if ($request->filled('search') && is_array($request->search) && isset($request->search['value']) && !empty($request->search['value'])) {
+                $searchValue = $request->search['value'];
+                $query->where(function($q) use ($searchValue) {
+                    $q->where('title', 'LIKE', "%{$searchValue}%")
+                      ->orWhere('phone', 'LIKE', "%{$searchValue}%")
+                      ->orWhere('email', 'LIKE', "%{$searchValue}%");
+                });
+            }
+
+            // Get filtered count
+            $filteredCount = $query->count();
+
+            // Pre-calculate role checks (same as getLeadsData)
+            $currentUser = AuthHelper::getCurrentUser();
+            $isAdminOrSuperAdmin = RoleHelper::is_admin_or_super_admin();
+            $isTeamLeadRole = RoleHelper::is_team_lead();
+            $isGeneralManager = RoleHelper::is_general_manager();
+            $isSeniorManager = $currentUser && RoleHelper::is_senior_manager();
+            $isTelecallerRole = RoleHelper::is_telecaller();
+            $isAcademicAssistant = RoleHelper::is_academic_assistant();
+            $isAdmissionCounsellor = RoleHelper::is_admission_counsellor();
+            $isPostSales = RoleHelper::is_post_sales();
+            $hasLeadActionPermission = \App\Helpers\PermissionHelper::has_lead_action_permission();
+            $canViewFirstCreated = $isAdminOrSuperAdmin || $isGeneralManager;
+            
+            $hasRegistrationDetails = $isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor;
+            
+            // Build dynamic column mapping (same as getLeadsData)
+            $columnIndex = 0;
+            $columns = [
+                $columnIndex++ => 'id',
+                $columnIndex++ => 'id',
+            ];
+            
+            if ($hasRegistrationDetails) {
+                $columns[$columnIndex++] = 'id';
+            }
+            
+            $columns[$columnIndex++] = 'created_at';
+            if ($canViewFirstCreated) {
+                $columns[$columnIndex++] = 'first_created_at';
+            }
+            $columns[$columnIndex++] = 'title';
+            $columns[$columnIndex++] = 'id';
+            $columns[$columnIndex++] = 'phone';
+            $columns[$columnIndex++] = 'email';
+            $columns[$columnIndex++] = 'lead_status_id';
+            $columns[$columnIndex++] = 'interest_status';
+            $columns[$columnIndex++] = 'rating';
+            $columns[$columnIndex++] = 'lead_source_id';
+            $columns[$columnIndex++] = 'course_id';
+            $columns[$columnIndex++] = 'telecaller_id';
+            $columns[$columnIndex++] = 'place';
+            $columns[$columnIndex++] = 'followup_date';
+            $columns[$columnIndex++] = 'id';
+            $columns[$columnIndex++] = 'remarks';
+            $columns[$columnIndex++] = 'marketing_remarks';
+            $columns[$columnIndex++] = 'created_at';
+            $columns[$columnIndex++] = 'created_at';
+
+            // Apply sorting - group duplicates together by code and phone, then by created_at
+            if ($request->filled('order') && is_array($request->order)) {
+                // First order by code and phone to group duplicates together
+                $query->orderBy('code', 'asc')
+                      ->orderBy('phone', 'asc');
+                
+                // Then apply user's sorting preference
+                foreach ($request->order as $order) {
+                    $columnIndex = intval($order['column']);
+                    $dir = $order['dir'];
+                    if (isset($columns[$columnIndex]) && $columns[$columnIndex] !== 'id') {
+                        $query->orderBy($columns[$columnIndex], $dir);
+                    }
+                }
+                
+                // Finally order by created_at to show duplicates in chronological order
+                $query->orderBy('created_at', 'desc');
+            } else {
+                // Default: Group by code and phone, then by created_at
+                $query->orderBy('code', 'asc')
+                      ->orderBy('phone', 'asc')
+                      ->orderBy('created_at', 'desc');
+            }
+
+            // Apply pagination
+            $start = $request->get('start', 0);
+            $length = $request->get('length', 25);
+            if ($length > 0) {
+                $query->skip($start)->take($length);
+            }
+
+            // Execute query
+            $leads = $query->get();
+
+            // Pre-calculate profile data (same as getLeadsData)
+            $fieldLabels = [
+                'title' => 'Name', 'gender' => 'Gender', 'age' => 'Age', 'phone' => 'Phone',
+                'code' => 'Country Code', 'whatsapp' => 'WhatsApp', 'whatsapp_code' => 'WhatsApp Code',
+                'email' => 'Email', 'qualification' => 'Qualification', 'country_id' => 'Country',
+                'interest_status' => 'Interest Status', 'lead_status_id' => 'Lead Status',
+                'lead_source_id' => 'Lead Source', 'address' => 'Address',
+                'telecaller_id' => 'Telecaller', 'team_id' => 'Team', 'place' => 'Place'
+            ];
+            $requiredFields = array_keys($fieldLabels);
+            $totalFields = count($requiredFields);
+
+            // Get course names for lookup
+            $courses = cache()->remember('courses_list', 3600, function() {
+                return Course::select('id', 'title')->orderBy('title')->get();
+            });
+            $courseName = $courses->pluck('title', 'id')->toArray();
+
+            // Build response data (same structure as getLeadsData)
+            $data = [];
+            foreach ($leads as $index => $lead) {
+                // Calculate profile completeness
+                $completedFields = 0;
+                $missingFields = [];
+                
+                foreach ($requiredFields as $field) {
+                    if (!empty($lead->$field)) {
+                        $completedFields++;
+                    } else {
+                        $missingFields[] = $fieldLabels[$field];
+                    }
+                }
+                
+                $profileCompleteness = round(($completedFields / $totalFields) * 100);
+                $profileStatus = $profileCompleteness == 100 ? 'complete' : 
+                    ($profileCompleteness >= 75 ? 'almost_complete' : 
+                    ($profileCompleteness >= 50 ? 'partial' : 'incomplete'));
+                $missingFieldsDisplay = implode(', ', array_slice($missingFields, 0, 5));
+
+                // Clean all string data from database before using
+                $leadTitle = $this->cleanUtf8($lead->title ?? '');
+                $leadEmail = $this->cleanUtf8($lead->email ?? '');
+                $leadPlace = $this->cleanUtf8($lead->place ?? '');
+                $leadRemarks = $this->cleanUtf8($lead->remarks ?? '');
+                $leadMarketingRemarks = $this->cleanUtf8($lead->marketing_remarks ?? '');
+                $leadSourceTitle = $this->cleanUtf8($lead->leadSource->title ?? '');
+                $leadCourseTitle = $this->cleanUtf8($lead->course->title ?? '');
+                $leadTelecallerName = $this->cleanUtf8($lead->telecaller->name ?? 'Unassigned');
+                $leadStatusTitle = $this->cleanUtf8($lead->leadStatus->title ?? '');
+                $missingFieldsDisplayClean = $this->cleanUtf8($missingFieldsDisplay);
+                
+                // Build row data with cleaned strings
+                $row = [
+                    'DT_RowId' => 'lead_' . $lead->id,
+                    'DT_RowData' => ['id' => $lead->id],
+                    'index' => $start + $index + 1,
+                    'actions' => $this->renderActions($lead, $isAdminOrSuperAdmin, $isTeamLeadRole, $isGeneralManager, $hasLeadActionPermission, $isTelecallerRole, $isAcademicAssistant, $isAdmissionCounsellor),
+                    'registration_details' => ($isAdminOrSuperAdmin || $isTelecallerRole || $isAcademicAssistant || $isAdmissionCounsellor) ? $this->renderRegistrationDetails($lead, $courseName) : '',
+                    'created_at' => $lead->created_at->format('d-m-Y h:i A'),
+                    'name' => $this->renderName($lead),
+                    'profile' => $this->renderProfile($lead, $profileCompleteness, $profileStatus, $missingFieldsDisplayClean, count($missingFields)),
+                    'phone' => \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone),
+                    'email' => $leadEmail ?: '-',
+                    'status' => $this->renderStatus($lead),
+                    'interest' => $this->renderInterest($lead),
+                    'rating' => $this->renderRating($lead),
+                    'source' => $leadSourceTitle ?: '-',
+                    'course' => $leadCourseTitle ?: '-',
+                    'telecaller' => $leadTelecallerName,
+                    'place' => $leadPlace ?: '-',
+                    'followup_date' => $lead->followup_date ? $lead->followup_date->format('M d, Y') : '-',
+                    'last_reason' => '-',
+                    'remarks' => $leadRemarks ?: '-',
+                    'marketing_remarks' => $leadMarketingRemarks ?: '-',
+                    'date' => $lead->created_at->format('M d, Y'),
+                    'time' => $lead->created_at->format('h:i A'),
+                    // Mobile view data
+                    'mobile_view' => $this->renderMobileView($lead, $profileCompleteness, $profileStatus, $missingFieldsDisplayClean, count($missingFields), $courseName, $isAdminOrSuperAdmin, $isTelecallerRole, $isAcademicAssistant, $isAdmissionCounsellor, $hasLeadActionPermission)
+                ];
+
+                if ($canViewFirstCreated) {
+                    $row['first_created_at'] = $lead->first_created_at
+                        ? $lead->first_created_at->format('d-m-Y h:i A')
+                        : '-';
+                }
+                
+                $data[] = $row;
+            }
+
+            // Clean data for JSON
+            $cleanedData = $this->cleanDataForJson($data);
+
+            // Build response array
+            $responseData = [
+                'draw' => intval($request->get('draw')),
+                'recordsTotal' => $totalRecords,
+                'recordsFiltered' => $filteredCount,
+                'data' => $cleanedData
+            ];
+
+            $jsonFlags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+            if (defined('JSON_INVALID_UTF8_IGNORE')) {
+                $jsonFlags |= JSON_INVALID_UTF8_IGNORE;
+            }
+            
+            $jsonData = @json_encode($responseData, $jsonFlags);
+            
+            if ($jsonData === false) {
+                $cleanedData = $this->aggressiveCleanData($data);
+                $responseData['data'] = $cleanedData;
+                $jsonData = @json_encode($responseData, $jsonFlags);
+                
+                if ($jsonData === false) {
+                    $responseData['data'] = [];
+                    $jsonData = json_encode($responseData, $jsonFlags);
+                }
+            }
+
+            $decoded = json_decode($jsonData, true);
+            return response()->json($decoded, 200, [], $jsonFlags);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching duplicate leads data: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            return response()->json([
+                'draw' => intval($request->get('draw', 1)),
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+                'error' => 'An error occurred while fetching duplicate leads data: ' . $e->getMessage()
             ], 500);
         }
     }
