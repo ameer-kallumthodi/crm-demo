@@ -348,6 +348,21 @@ class PostSalesReportController extends Controller
         $fromDateStr = $fromDate->format('Y-m-d');
         $toDateStr = $toDate->format('Y-m-d');
 
+        // Payment date range filter (payment_date_from & payment_date_to)
+        $paymentDateFromInput = $request->get('payment_date_from');
+        $paymentDateToInput = $request->get('payment_date_to');
+        
+        $paymentDateFrom = null;
+        $paymentDateTo = null;
+        
+        if ($paymentDateFromInput) {
+            $paymentDateFrom = Carbon::createFromFormat('Y-m-d', $paymentDateFromInput)->startOfDay();
+        }
+        
+        if ($paymentDateToInput) {
+            $paymentDateTo = Carbon::createFromFormat('Y-m-d', $paymentDateToInput)->endOfDay();
+        }
+
         // Telecaller filter
         $selectedTelecallerId = $request->get('telecaller_id');
 
@@ -409,10 +424,17 @@ class PostSalesReportController extends Controller
             }
 
             // Received at Sale (DP) - payments collected_by telecaller and approved
-            $receivedAtSale = Payment::where('collected_by', $telecaller->id)
-                ->where('status', 'Approved')
-                ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
-                ->sum('amount_paid');
+            $receivedAtSaleQuery = Payment::where('collected_by', $telecaller->id)
+                ->where('status', 'Approved');
+            
+            // Filter by payment_date if provided, otherwise use created_at
+            if ($paymentDateFrom && $paymentDateTo) {
+                $receivedAtSaleQuery->whereBetween('payment_date', [$paymentDateFrom->copy()->startOfDay(), $paymentDateTo->copy()->endOfDay()]);
+            } else {
+                $receivedAtSaleQuery->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()]);
+            }
+            
+            $receivedAtSale = $receivedAtSaleQuery->sum('amount_paid');
 
             $reports[] = [
                 'telecaller' => $telecaller,
@@ -428,6 +450,8 @@ class PostSalesReportController extends Controller
             'selectedTelecallerId' => $selectedTelecallerId,
             'fromDate' => $fromDateStr,
             'toDate' => $toDateStr,
+            'paymentDateFrom' => $paymentDateFromInput ?? '',
+            'paymentDateTo' => $paymentDateToInput ?? '',
         ]);
     }
 
@@ -524,11 +548,18 @@ class PostSalesReportController extends Controller
                     ->toArray();
                 
                 if (!empty($invoiceIds)) {
-                    $receivedAtSale = Payment::whereIn('invoice_id', $invoiceIds)
+                    $receivedAtSaleQuery = Payment::whereIn('invoice_id', $invoiceIds)
                         ->where('collected_by', $telecaller->id)
-                        ->where('status', 'Approved')
-                        ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
-                        ->sum('amount_paid');
+                        ->where('status', 'Approved');
+                    
+                    // Filter by payment_date if provided, otherwise use created_at
+                    if ($paymentDateFrom && $paymentDateTo) {
+                        $receivedAtSaleQuery->whereBetween('payment_date', [$paymentDateFrom->copy()->startOfDay(), $paymentDateTo->copy()->endOfDay()]);
+                    } else {
+                        $receivedAtSaleQuery->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()]);
+                    }
+                    
+                    $receivedAtSale = $receivedAtSaleQuery->sum('amount_paid');
                 }
             }
 
@@ -546,6 +577,8 @@ class PostSalesReportController extends Controller
             'selectedTelecallerId' => $selectedTelecallerId,
             'fromDate' => $fromDateStr,
             'toDate' => $toDateStr,
+            'paymentDateFrom' => $paymentDateFromInput ?? '',
+            'paymentDateTo' => $paymentDateToInput ?? '',
         ]);
     }
 
@@ -784,10 +817,17 @@ class PostSalesReportController extends Controller
                     ->toArray();
                 
                 if (!empty($invoiceIds)) {
-                    $receivedAmount = Payment::whereIn('invoice_id', $invoiceIds)
-                        ->where('status', 'Approved')
-                        ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
-                        ->sum('amount_paid');
+                    $receivedAmountQuery = Payment::whereIn('invoice_id', $invoiceIds)
+                        ->where('status', 'Approved');
+                    
+                    // Filter by payment_date if provided, otherwise use created_at
+                    if ($paymentDateFrom && $paymentDateTo) {
+                        $receivedAmountQuery->whereBetween('payment_date', [$paymentDateFrom->copy()->startOfDay(), $paymentDateTo->copy()->endOfDay()]);
+                    } else {
+                        $receivedAmountQuery->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()]);
+                    }
+                    
+                    $receivedAmount = $receivedAmountQuery->sum('amount_paid');
                 }
             }
 
@@ -805,6 +845,8 @@ class PostSalesReportController extends Controller
             'selectedCourseIds' => $selectedCourseIds,
             'fromDate' => $fromDateStr,
             'toDate' => $toDateStr,
+            'paymentDateFrom' => $paymentDateFromInput ?? '',
+            'paymentDateTo' => $paymentDateToInput ?? '',
         ]);
     }
 
@@ -831,6 +873,21 @@ class PostSalesReportController extends Controller
         // Normalized strings for form values
         $fromDateStr = $fromDate->format('Y-m-d');
         $toDateStr = $toDate->format('Y-m-d');
+
+        // Payment date range filter (payment_date_from & payment_date_to)
+        $paymentDateFromInput = $request->get('payment_date_from');
+        $paymentDateToInput = $request->get('payment_date_to');
+        
+        $paymentDateFrom = null;
+        $paymentDateTo = null;
+        
+        if ($paymentDateFromInput) {
+            $paymentDateFrom = Carbon::createFromFormat('Y-m-d', $paymentDateFromInput)->startOfDay();
+        }
+        
+        if ($paymentDateToInput) {
+            $paymentDateTo = Carbon::createFromFormat('Y-m-d', $paymentDateToInput)->endOfDay();
+        }
 
         // Telecaller filter
         $selectedTelecallerId = $request->get('telecaller_id');
@@ -892,10 +949,17 @@ class PostSalesReportController extends Controller
             }
 
             // Received at Sale (DP) - payments collected_by telecaller and approved
-            $receivedAtSale = Payment::where('collected_by', $telecaller->id)
-                ->where('status', 'Approved')
-                ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
-                ->sum('amount_paid');
+            $receivedAtSaleQuery = Payment::where('collected_by', $telecaller->id)
+                ->where('status', 'Approved');
+            
+            // Filter by payment_date if provided, otherwise use created_at
+            if ($paymentDateFrom && $paymentDateTo) {
+                $receivedAtSaleQuery->whereBetween('payment_date', [$paymentDateFrom->copy()->startOfDay(), $paymentDateTo->copy()->endOfDay()]);
+            } else {
+                $receivedAtSaleQuery->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()]);
+            }
+            
+            $receivedAtSale = $receivedAtSaleQuery->sum('amount_paid');
 
             $reports[] = [
                 'telecaller' => $telecaller,
@@ -939,6 +1003,21 @@ class PostSalesReportController extends Controller
         // Normalized strings for form values
         $fromDateStr = $fromDate->format('Y-m-d');
         $toDateStr = $toDate->format('Y-m-d');
+
+        // Payment date range filter (payment_date_from & payment_date_to)
+        $paymentDateFromInput = $request->get('payment_date_from');
+        $paymentDateToInput = $request->get('payment_date_to');
+        
+        $paymentDateFrom = null;
+        $paymentDateTo = null;
+        
+        if ($paymentDateFromInput) {
+            $paymentDateFrom = Carbon::createFromFormat('Y-m-d', $paymentDateFromInput)->startOfDay();
+        }
+        
+        if ($paymentDateToInput) {
+            $paymentDateTo = Carbon::createFromFormat('Y-m-d', $paymentDateToInput)->endOfDay();
+        }
 
         // Telecaller filter
         $selectedTelecallerId = $request->get('telecaller_id');
@@ -1008,11 +1087,18 @@ class PostSalesReportController extends Controller
                     ->toArray();
                 
                 if (!empty($invoiceIds)) {
-                    $receivedAtSale = Payment::whereIn('invoice_id', $invoiceIds)
+                    $receivedAtSaleQuery = Payment::whereIn('invoice_id', $invoiceIds)
                         ->where('collected_by', $telecaller->id)
-                        ->where('status', 'Approved')
-                        ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
-                        ->sum('amount_paid');
+                        ->where('status', 'Approved');
+                    
+                    // Filter by payment_date if provided, otherwise use created_at
+                    if ($paymentDateFrom && $paymentDateTo) {
+                        $receivedAtSaleQuery->whereBetween('payment_date', [$paymentDateFrom->copy()->startOfDay(), $paymentDateTo->copy()->endOfDay()]);
+                    } else {
+                        $receivedAtSaleQuery->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()]);
+                    }
+                    
+                    $receivedAtSale = $receivedAtSaleQuery->sum('amount_paid');
                 }
             }
 
@@ -1059,6 +1145,21 @@ class PostSalesReportController extends Controller
         $fromDateStr = $fromDate->format('Y-m-d');
         $toDateStr = $toDate->format('Y-m-d');
 
+        // Payment date range filter (payment_date_from & payment_date_to)
+        $paymentDateFromInput = $request->get('payment_date_from');
+        $paymentDateToInput = $request->get('payment_date_to');
+        
+        $paymentDateFrom = null;
+        $paymentDateTo = null;
+        
+        if ($paymentDateFromInput) {
+            $paymentDateFrom = Carbon::createFromFormat('Y-m-d', $paymentDateFromInput)->startOfDay();
+        }
+        
+        if ($paymentDateToInput) {
+            $paymentDateTo = Carbon::createFromFormat('Y-m-d', $paymentDateToInput)->endOfDay();
+        }
+
         // Course filter (supports multiple courses)
         $selectedCourseIds = $request->get('course_ids', []);
         if (!is_array($selectedCourseIds)) {
@@ -1099,10 +1200,17 @@ class PostSalesReportController extends Controller
                     ->toArray();
                 
                 if (!empty($invoiceIds)) {
-                    $receivedAmount = Payment::whereIn('invoice_id', $invoiceIds)
-                        ->where('status', 'Approved')
-                        ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
-                        ->sum('amount_paid');
+                    $receivedAmountQuery = Payment::whereIn('invoice_id', $invoiceIds)
+                        ->where('status', 'Approved');
+                    
+                    // Filter by payment_date if provided, otherwise use created_at
+                    if ($paymentDateFrom && $paymentDateTo) {
+                        $receivedAmountQuery->whereBetween('payment_date', [$paymentDateFrom->copy()->startOfDay(), $paymentDateTo->copy()->endOfDay()]);
+                    } else {
+                        $receivedAmountQuery->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()]);
+                    }
+                    
+                    $receivedAmount = $receivedAmountQuery->sum('amount_paid');
                 }
             }
 
