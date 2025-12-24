@@ -293,6 +293,7 @@ $canViewFirstCreated = $isAdminOrSuperAdmin || $isGeneralManager;
                                     <th>Status</th>
                                     <th>Interest</th>
                                     <th>Rating</th>
+                                    <th>Converted</th>
                                     <th>Source</th>
                                     <th>Course</th>
                                     <th>Telecaller</th>
@@ -354,6 +355,7 @@ $columns = array_merge($columns, [
     ['data' => 'status', 'name' => 'status', 'orderable' => false, 'searchable' => false],
     ['data' => 'interest', 'name' => 'interest', 'orderable' => false, 'searchable' => false],
     ['data' => 'rating', 'name' => 'rating', 'orderable' => false, 'searchable' => false],
+    ['data' => 'converted', 'name' => 'converted', 'orderable' => false, 'searchable' => false],
     ['data' => 'source', 'name' => 'source'],
     ['data' => 'course', 'name' => 'course'],
     ['data' => 'telecaller', 'name' => 'telecaller'],
