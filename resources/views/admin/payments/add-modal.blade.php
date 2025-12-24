@@ -45,6 +45,16 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
+                                <label for="payment_date" class="form-label">Payment Date</label>
+                                <input type="date" class="form-control" id="payment_date" name="payment_date" value="{{ date('Y-m-d') }}">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
                                 <label for="file_upload" class="form-label">Receipt/Proof</label>
                                 <input type="file" class="form-control" id="file_upload" name="file_upload" accept=".pdf,.jpg,.jpeg,.png">
                                 <small class="form-text text-muted">Accepted formats: PDF, JPG, JPEG, PNG (Max: 2MB)</small>

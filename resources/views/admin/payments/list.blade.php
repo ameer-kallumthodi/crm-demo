@@ -50,6 +50,14 @@
                                 <input type="date" class="form-control" id="to_date" name="to_date" value="{{ $filters['to_date'] ?? '' }}">
                             </div>
                             <div class="col-12 col-lg-3">
+                                <label for="payment_date_from" class="form-label text-muted small text-uppercase fw-semibold">Payment Date From</label>
+                                <input type="date" class="form-control" id="payment_date_from" name="payment_date_from" value="{{ $filters['payment_date_from'] ?? '' }}">
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="payment_date_to" class="form-label text-muted small text-uppercase fw-semibold">Payment Date To</label>
+                                <input type="date" class="form-control" id="payment_date_to" name="payment_date_to" value="{{ $filters['payment_date_to'] ?? '' }}">
+                            </div>
+                            <div class="col-12 col-lg-3">
                                 <label for="student_id" class="form-label text-muted small text-uppercase fw-semibold">Student</label>
                                 <select class="form-select select2" id="student_id" name="student_id" data-placeholder="All Students">
                                     <option value="">All Students</option>
@@ -122,6 +130,7 @@
                                         <tr>
                                             <th>SL No</th>
                                             <th>Requested On</th>
+                                            <th>Payment Date</th>
                                             <th>Invoice #</th>
                                             <th>Converted Student</th>
                                             <th>Course / Batch</th>
@@ -140,6 +149,14 @@
                                                 <div class="d-flex flex-column">
                                                     <span class="fw-semibold">{{ $payment->created_at->format('M d, Y') }}</span>
                                                     <small class="text-muted">{{ $payment->created_at->format('h:i A') }}</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-column">
+                                                    <span class="fw-semibold">{{ $payment->payment_date ? $payment->payment_date->format('M d, Y') : '-' }}</span>
+                                                    @if($payment->payment_date)
+                                                    <small class="text-muted">Payment Date</small>
+                                                    @endif
                                                 </div>
                                             </td>
                                             <td>
@@ -221,7 +238,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="10" class="text-center py-4">
+                                            <td colspan="11" class="text-center py-4">
                                                 <i class="ti ti-circle-check text-success me-2"></i>No pending payments. Great job!
                                             </td>
                                         </tr>
@@ -238,6 +255,7 @@
                                         <tr>
                                             <th>SL No</th>
                                             <th>Approved On</th>
+                                            <th>Payment Date</th>
                                             <th>Invoice #</th>
                                             <th>Converted Student</th>
                                             <th>Course / Batch</th>
@@ -261,6 +279,14 @@
                                                     <span class="fw-semibold">{{ optional($payment->approved_date)->format('M d, Y') ?? 'N/A' }}</span>
                                                     @if($payment->approved_date)
                                                     <small class="text-muted">{{ $payment->approved_date->format('h:i A') }}</small>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-column">
+                                                    <span class="fw-semibold">{{ $payment->payment_date ? $payment->payment_date->format('M d, Y') : '-' }}</span>
+                                                    @if($payment->payment_date)
+                                                    <small class="text-muted">Payment Date</small>
                                                     @endif
                                                 </div>
                                             </td>
@@ -329,7 +355,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="10" class="text-center py-4">
+                                            <td colspan="11" class="text-center py-4">
                                                 <i class="ti ti-info-circle text-muted me-2"></i>No approved payments yet.
                                             </td>
                                         </tr>
@@ -346,6 +372,7 @@
                                         <tr>
                                             <th>SL No</th>
                                             <th>Rejected On</th>
+                                            <th>Payment Date</th>
                                             <th>Invoice #</th>
                                             <th>Converted Student</th>
                                             <th>Course / Batch</th>
@@ -374,6 +401,14 @@
                                                             <strong>Remarks:</strong> {{ $payment->rejection_remarks }}
                                                         </small>
                                                     </div>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-column">
+                                                    <span class="fw-semibold">{{ $payment->payment_date ? $payment->payment_date->format('M d, Y') : '-' }}</span>
+                                                    @if($payment->payment_date)
+                                                    <small class="text-muted">Payment Date</small>
                                                     @endif
                                                 </div>
                                             </td>
@@ -443,7 +478,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="10" class="text-center py-4">
+                                            <td colspan="12" class="text-center py-4">
                                                 <i class="ti ti-alert-triangle text-danger me-2"></i>No rejected payments.
                                             </td>
                                         </tr>

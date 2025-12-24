@@ -450,6 +450,7 @@ class RegistrationLeadsController extends Controller
             'payment_amount' => 'required_if:payment_collected,1|required_if:payment_collected,true|required_if:payment_collected,"1"|nullable|numeric|min:0.01',
             'payment_type' => 'required_if:payment_collected,1|required_if:payment_collected,true|required_if:payment_collected,"1"|nullable|in:Cash,Online,Bank,Cheque,Card,Other',
             'transaction_id' => 'nullable|string|max:255',
+            'payment_date' => 'nullable|date',
             'payment_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
@@ -512,7 +513,8 @@ class RegistrationLeadsController extends Controller
                     $request->payment_type,
                     $request->transaction_id,
                     $request->file('payment_file'),
-                    $user->id
+                    $user->id,
+                    $request->payment_date
                 );
             }
 
@@ -1466,7 +1468,7 @@ class RegistrationLeadsController extends Controller
     /**
      * Auto-create payment linked to invoice (pending approval).
      */
-    private function autoCreatePayment(Invoice $invoice, float $amount, string $paymentType, ?string $transactionId, ?UploadedFile $fileUpload, int $userId): ?Payment
+    private function autoCreatePayment(Invoice $invoice, float $amount, string $paymentType, ?string $transactionId, ?UploadedFile $fileUpload, int $userId, ?string $paymentDate = null): ?Payment
     {
         try {
             $previousBalance = Payment::where('invoice_id', $invoice->id)
@@ -1485,6 +1487,7 @@ class RegistrationLeadsController extends Controller
                 'previous_balance' => $previousBalance,
                 'payment_type' => $paymentType,
                 'transaction_id' => $transactionId,
+                'payment_date' => $paymentDate ?? now()->toDateString(),
                 'file_upload' => $filePath,
                 'status' => 'Pending Approval',
                 'created_by' => $userId,

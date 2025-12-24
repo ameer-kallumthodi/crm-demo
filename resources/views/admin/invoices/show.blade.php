@@ -175,7 +175,14 @@
                                         @forelse($invoice->payments as $index => $payment)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-                                            <td>{{ $payment->created_at->format('M d, Y h:i A') }}</td>
+                                            <td>
+                                                @if($payment->payment_date)
+                                                    {{ $payment->payment_date->format('M d, Y') }}
+                                                @else
+                                                    {{ $payment->created_at->format('M d, Y') }}
+                                                @endif
+                                                <br><small class="text-muted">{{ $payment->created_at->format('h:i A') }}</small>
+                                            </td>
                                             <td>₹{{ number_format(round($payment->amount_paid)) }}</td>
                                             <td>{{ $payment->payment_type }}</td>
                                             <td>{{ $payment->transaction_id ?? 'N/A' }}</td>

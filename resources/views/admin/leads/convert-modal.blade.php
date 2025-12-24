@@ -168,6 +168,13 @@
                                     </div>
                                 </div>
 
+                                <div class="col-lg-6">
+                                    <div class="p-1">
+                                        <label for="modal_payment_date" class="form-label">Payment Date</label>
+                                        <input type="date" class="form-control" name="payment_date" id="modal_payment_date" value="{{ date('Y-m-d') }}">
+                                    </div>
+                                </div>
+
                                 <div class="col-12">
                                     <div class="p-1">
                                         <label for="modal_payment_file" class="form-label">Upload Receipt/Proof <span class="text-danger payment-required" style="display: none;">*</span></label>

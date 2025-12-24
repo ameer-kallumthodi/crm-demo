@@ -110,6 +110,7 @@ class PermissionHelper
             'leads/registration-form-submitted',
             'admin/converted-leads/index',
             'admin/reports/leads',
+            'admin/payments/list',
             'profile/index',
         ];
         return in_array($permission, $permissions);

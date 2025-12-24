@@ -99,6 +99,16 @@
                                 @endif
                                 <tr>
                                     <td><strong>Payment Date:</strong></td>
+                                    <td>
+                                        @if($payment->payment_date)
+                                            {{ $payment->payment_date->format('M d, Y') }}
+                                        @else
+                                            {{ $payment->created_at->format('M d, Y') }}
+                                        @endif
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Created Date:</strong></td>
                                     <td>{{ $payment->created_at->format('M d, Y h:i A') }}</td>
                                 </tr>
                                 <tr>

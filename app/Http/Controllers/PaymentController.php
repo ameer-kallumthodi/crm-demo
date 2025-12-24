@@ -57,13 +57,15 @@ class PaymentController extends Controller
      */
     public function listAll(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_finance()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_finance() && !RoleHelper::is_telecaller()) {
             abort(403, 'Access denied.');
         }
 
         $filters = [
             'from_date' => $request->input('from_date'),
             'to_date' => $request->input('to_date'),
+            'payment_date_from' => $request->input('payment_date_from'),
+            'payment_date_to' => $request->input('payment_date_to'),
             'student_id' => $request->input('student_id'),
             'search' => $request->input('search'),
         ];
@@ -149,6 +151,7 @@ class PaymentController extends Controller
             'amount_paid' => 'required|numeric|min:0.01',
             'payment_type' => 'required|in:Cash,Online,Bank,Cheque,Card,Other,Razorpay',
             'transaction_id' => 'nullable|string|max:255',
+            'payment_date' => 'nullable|date',
             'file_upload' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
@@ -223,6 +226,7 @@ class PaymentController extends Controller
                 'previous_balance' => $previousBalance,
                 'payment_type' => $request->payment_type,
                 'transaction_id' => $request->transaction_id,
+                'payment_date' => $request->payment_date ?? now()->toDateString(),
                 'file_upload' => $filePath,
                 'status' => 'Pending Approval',
                 'created_by' => AuthHelper::getCurrentUserId(),
@@ -260,6 +264,11 @@ class PaymentController extends Controller
      */
     public function approve($id, Request $request)
     {
+        // Check if user has permission to approve payments
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_finance()) {
+            abort(403, 'Access denied. Only Admin, Super Admin, and Finance can approve payments.');
+        }
+
         try {
             $payment = Payment::findOrFail($id);
             
@@ -271,10 +280,24 @@ class PaymentController extends Controller
             
             $payment->approve($transactionId);
 
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment approved successfully!'
+                ]);
+            }
+
             return redirect()->back()
                 ->with('message_success', 'Payment approved successfully!');
 
         } catch (\Exception $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while approving the payment. Please try again.'
+                ], 500);
+            }
+
             return redirect()->back()
                 ->with('message_danger', 'An error occurred while approving the payment. Please try again.');
         }
@@ -285,6 +308,11 @@ class PaymentController extends Controller
      */
     public function reject($id, Request $request)
     {
+        // Check if user has permission to reject payments
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_finance()) {
+            abort(403, 'Access denied. Only Admin, Super Admin, and Finance can reject payments.');
+        }
+
         try {
             $payment = Payment::findOrFail($id);
             
@@ -297,10 +325,24 @@ class PaymentController extends Controller
             
             $payment->reject($request->input('rejection_remarks'));
 
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment rejected successfully!'
+                ]);
+            }
+
             return redirect()->back()
                 ->with('message_success', 'Payment rejected successfully!');
 
         } catch (\Exception $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while rejecting the payment. Please try again.'
+                ], 500);
+            }
+
             return redirect()->back()
                 ->with('message_danger', 'An error occurred while rejecting the payment. Please try again.');
         }
@@ -896,7 +938,7 @@ class PaymentController extends Controller
     /**
      * Auto-create payment during lead conversion
      */
-    public function autoCreate($invoiceId, $amount, $paymentType, $transactionId = null, $fileUpload = null)
+    public function autoCreate($invoiceId, $amount, $paymentType, $transactionId = null, $fileUpload = null, $paymentDate = null)
     {
         try {
             $invoice = Invoice::findOrFail($invoiceId);
@@ -918,6 +960,7 @@ class PaymentController extends Controller
                 'previous_balance' => $previousBalance,
                 'payment_type' => $paymentType,
                 'transaction_id' => $transactionId,
+                'payment_date' => $paymentDate ?? now()->toDateString(),
                 'file_upload' => $filePath,
                 'status' => 'Pending Approval', // Keep as pending for manual approval
                 'created_by' => AuthHelper::getCurrentUserId(),
@@ -1011,6 +1054,15 @@ class PaymentController extends Controller
 
         if (!empty($filters['to_date'])) {
             $query->whereDate($dateColumn, '<=', $filters['to_date']);
+        }
+
+        // Filter by payment_date if provided
+        if (!empty($filters['payment_date_from'])) {
+            $query->whereDate('payment_date', '>=', $filters['payment_date_from']);
+        }
+
+        if (!empty($filters['payment_date_to'])) {
+            $query->whereDate('payment_date', '<=', $filters['payment_date_to']);
         }
 
         return $query;

@@ -327,7 +327,7 @@
                                                 <i class="fas fa-calendar text-primary" style="font-size: 12px;"></i>
                                             </div>
                                             <div>
-                                                <div class="fw-semibold">{{ $payment->created_at->format('M d, Y') }}</div>
+                                                <div class="fw-semibold">{{ $payment->payment_date ? $payment->payment_date->format('M d, Y') : $payment->created_at->format('M d, Y') }}</div>
                                                 <small class="text-muted">{{ $payment->created_at->format('h:i A') }}</small>
                                             </div>
                                         </div>

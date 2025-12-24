@@ -3579,6 +3579,7 @@ class LeadController extends Controller
             'payment_amount' => 'required_if:payment_collected,1|required_if:payment_collected,true|required_if:payment_collected,"1"|nullable|numeric|min:0.01',
             'payment_type' => 'required_if:payment_collected,1|required_if:payment_collected,true|required_if:payment_collected,"1"|nullable|in:Cash,Online,Bank,Cheque,Card,Other',
             'transaction_id' => 'nullable|string|max:255',
+            'payment_date' => 'nullable|date',
             'payment_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'custom_total_amount' => 'nullable|numeric|min:0',
         ]);
@@ -3661,7 +3662,8 @@ class LeadController extends Controller
                     $request->payment_amount,
                     $request->payment_type,
                     $request->transaction_id,
-                    $request->file('payment_file')
+                    $request->file('payment_file'),
+                    $request->payment_date
                 );
             }
 

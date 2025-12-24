@@ -16,6 +16,7 @@ class Payment extends Model
         'previous_balance',
         'payment_type',
         'transaction_id',
+        'payment_date',
         'file_upload',
         'status',
         'approved_date',
@@ -32,6 +33,7 @@ class Payment extends Model
     protected $casts = [
         'amount_paid' => 'decimal:2',
         'previous_balance' => 'decimal:2',
+        'payment_date' => 'date',
         'approved_date' => 'datetime',
         'rejected_date' => 'datetime',
         'created_at' => 'datetime',
