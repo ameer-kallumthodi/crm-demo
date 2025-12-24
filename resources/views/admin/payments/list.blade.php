@@ -379,6 +379,7 @@
                                             <th class="text-end">Amount</th>
                                             <th>Payment Type</th>
                                             <th>Transaction ID</th>
+                                            <th>Created By</th>
                                             <th>Rejected By</th>
                                             <th>Remarks</th>
                                             <th class="text-center">Actions</th>
@@ -452,6 +453,7 @@
                                                     <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
+                                            <td>{{ $payment->createdBy->name ?? 'N/A' }}</td>
                                             <td>{{ $payment->rejectedBy->name ?? 'N/A' }}</td>
                                             <td>
                                                 @if($payment->rejection_remarks)
@@ -478,7 +480,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="12" class="text-center py-4">
+                                            <td colspan="13" class="text-center py-4">
                                                 <i class="ti ti-alert-triangle text-danger me-2"></i>No rejected payments.
                                             </td>
                                         </tr>
