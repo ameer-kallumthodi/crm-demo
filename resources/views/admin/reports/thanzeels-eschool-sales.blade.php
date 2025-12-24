@@ -43,16 +43,6 @@
                                    value="{{ $toDate ?? '' }}" required>
                         </div>
                         <div class="col-12 col-sm-6 col-md-3">
-                            <label for="payment_date_from" class="form-label">Payment Date From</label>
-                            <input type="date" class="form-control" id="payment_date_from" name="payment_date_from"
-                                   value="{{ $paymentDateFrom ?? '' }}">
-                        </div>
-                        <div class="col-12 col-sm-6 col-md-3">
-                            <label for="payment_date_to" class="form-label">Payment Date To</label>
-                            <input type="date" class="form-control" id="payment_date_to" name="payment_date_to"
-                                   value="{{ $paymentDateTo ?? '' }}">
-                        </div>
-                        <div class="col-12 col-sm-6 col-md-3">
                             <label for="telecaller_id" class="form-label">Telecaller</label>
                             <select class="form-select" id="telecaller_id" name="telecaller_id">
                                 <option value="">All Telecallers</option>
