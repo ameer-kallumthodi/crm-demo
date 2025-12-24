@@ -366,6 +366,28 @@ class InvoiceController extends Controller
         $currentUserId = AuthHelper::getCurrentUserId();
         $currentUserRole = AuthHelper::getCurrentUserRole();
         
+        // Senior Manager: Can access all students
+        if (\App\Helpers\RoleHelper::is_senior_manager()) {
+            return;
+        }
+        
+        // General Manager: Can access all students
+        if (\App\Helpers\RoleHelper::is_general_manager()) {
+            return;
+        }
+        
+        // Team Lead: Can access students from their team
+        if (\App\Helpers\RoleHelper::is_team_lead()) {
+            $teamMemberIds = \App\Models\User::where('team_id', AuthHelper::getCurrentUserTeam())
+                ->pluck('id')
+                ->toArray();
+                
+            if (!in_array($student->created_by, $teamMemberIds)) {
+                abort(403, 'Access denied. You can only view students from your team.');
+            }
+            return;
+        }
+        
         switch ($currentUserRole) {
             case 1: // Super Admin
             case 2: // Admin
@@ -376,14 +398,10 @@ class InvoiceController extends Controller
                 // Can access all students
                 break;
                 
-            case 3: // Team Lead
-                // Can access students from their team
-                $teamMemberIds = \App\Models\User::where('team_id', AuthHelper::getCurrentUserTeam())
-                    ->pluck('id')
-                    ->toArray();
-                    
-                if (!in_array($student->created_by, $teamMemberIds)) {
-                    abort(403, 'Access denied. You can only view students from your team.');
+            case 3: // Telecaller
+                // Can only access students they created
+                if ($student->created_by != $currentUserId) {
+                    abort(403, 'Access denied. You can only view students you created.');
                 }
                 break;
                 
@@ -391,13 +409,6 @@ class InvoiceController extends Controller
                 // Can only access students assigned to them
                 if ($student->academic_assistant_id != $currentUserId) {
                     abort(403, 'Access denied. You can only view students assigned to you.');
-                }
-                break;
-                
-            case 6: // Telecaller
-                // Can only access students they created
-                if ($student->created_by != $currentUserId) {
-                    abort(403, 'Access denied. You can only view students you created.');
                 }
                 break;
                 

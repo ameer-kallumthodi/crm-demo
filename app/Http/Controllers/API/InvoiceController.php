@@ -119,6 +119,11 @@ class InvoiceController extends Controller
         $role = \App\Models\UserRole::find($currentUserRole);
         $roleTitle = $role ? $role->title : '';
         
+        // Senior Manager: Can access all students
+        if ($currentUserRole == 3 && $user->is_senior_manager == 1) {
+            return;
+        }
+        
         // General Manager: Can access all students
         if ($roleTitle === 'General Manager') {
             return;
