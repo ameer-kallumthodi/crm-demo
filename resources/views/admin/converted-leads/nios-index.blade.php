@@ -1807,6 +1807,85 @@
                     supportVerifyUrl = null;
                 });
         });
+
+        // Handle Change Course modal buttons
+        $(document).on('click', '.js-change-course-modal', function(e) {
+            e.preventDefault();
+            const url = $(this).data('modal-url');
+            const title = $(this).data('modal-title') || 'Change Course';
+            if (typeof show_ajax_modal === 'function' && url) {
+                show_ajax_modal(url, title);
+            }
+        });
+
+        // Handle cancellation flag modal
+        $(document).on('click', '.js-cancel-flag', function(e) {
+            e.preventDefault();
+            const url = $(this).data('cancel-url');
+            const title = $(this).data('modal-title') || 'Cancellation Confirmation';
+            if (typeof show_ajax_modal === 'function' && url) {
+                show_ajax_modal(url, title);
+            }
+        });
+
+        // Delegated submit handler for cancellation flag modal
+        $(document).on('submit', '#cancelFlagForm', function(e) {
+            e.preventDefault();
+            const form = $(this);
+            const submitUrl = form.data('submit-url');
+            if (!submitUrl) {
+                return form.off('submit').submit();
+            }
+
+            const submitBtn = form.find('button[type="submit"]');
+            const originalText = submitBtn.html();
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+
+            $.ajax({
+                url: submitUrl,
+                method: 'POST',
+                data: form.serialize(),
+                success: function (response) {
+                    $('#ajax_modal').modal('hide');
+                    if (typeof showToast === 'function') {
+                        showToast(response.message, 'success');
+                    } else if (typeof toast_success === 'function') {
+                        toast_success(response.message);
+                    } else {
+                        alert(response.message);
+                    }
+                    if ($.fn.DataTable.isDataTable('#convertedLeadsTable')) {
+                        const dt = $('#convertedLeadsTable').DataTable();
+                        if (dt.ajax && dt.ajax.url()) {
+                            dt.ajax.reload();
+                        } else {
+                            dt.rows().invalidate().draw(false);
+                            location.reload();
+                        }
+                    } else {
+                        location.reload();
+                    }
+                },
+                error: function (xhr) {
+                    let message = 'Unable to update cancellation flag.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        message = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    }
+                    if (typeof showToast === 'function') {
+                        showToast(message, 'error');
+                    } else if (typeof toast_error === 'function') {
+                        toast_error(message);
+                    } else {
+                        alert(message);
+                    }
+                },
+                complete: function () {
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
     });
 </script>
 @endpush
