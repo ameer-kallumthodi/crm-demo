@@ -422,9 +422,9 @@ class PaymentController extends Controller
         $this->checkInvoiceAccess($payment->invoice);
         
         // Allow tax invoice only for course-type invoices
+        // For non-course invoices, redirect to payment receipt
         if ($payment->invoice->invoice_type !== 'course') {
-            return redirect()->back()
-                ->with('message_danger', 'Tax invoice is available only for course invoices.');
+            return redirect()->route('admin.payments.payment-receipt', $payment->id);
         }
 
         // Check if payment is approved
@@ -452,9 +452,9 @@ class PaymentController extends Controller
         $this->checkInvoiceAccess($payment->invoice);
         
         // Allow tax invoice only for course-type invoices
+        // For non-course invoices, redirect to payment receipt PDF
         if ($payment->invoice->invoice_type !== 'course') {
-            return redirect()->back()
-                ->with('message_danger', 'Tax invoice is available only for course invoices.');
+            return redirect()->route('admin.payments.payment-receipt-pdf', $payment->id);
         }
 
         // Check if payment is approved

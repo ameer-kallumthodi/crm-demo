@@ -178,12 +178,26 @@
                                             <i class="fas fa-credit-card"></i>
                                         </a>
                                         @if($invoice->payments->where('status', 'Approved')->count() > 0)
-                                            <a href="{{ route('admin.payments.tax-invoice', $invoice->payments->where('status', 'Approved')->first()->id) }}" class="btn btn-sm btn-warning" title="Tax Invoice" target="_blank">
-                                                <i class="fas fa-file-invoice"></i>
-                                            </a>
-                                            <a href="{{ route('admin.payments.tax-invoice-pdf', $invoice->payments->where('status', 'Approved')->first()->id) }}" class="btn btn-sm btn-danger" title="View PDF" target="_blank">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </a>
+                                            @php
+                                                $firstApprovedPayment = $invoice->payments->where('status', 'Approved')->sortBy('created_at')->first();
+                                            @endphp
+                                            @if($invoice->invoice_type === 'course' && $firstApprovedPayment)
+                                                <!-- Tax Invoice only for course invoices, first approved payment -->
+                                                <a href="{{ route('admin.payments.tax-invoice', $firstApprovedPayment->id) }}" class="btn btn-sm btn-warning" title="Tax Invoice" target="_blank">
+                                                    <i class="fas fa-file-invoice"></i>
+                                                </a>
+                                                <a href="{{ route('admin.payments.tax-invoice-pdf', $firstApprovedPayment->id) }}" class="btn btn-sm btn-danger" title="View PDF" target="_blank">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            @elseif($firstApprovedPayment)
+                                                <!-- Payment Receipt for non-course invoice types -->
+                                                <a href="{{ route('admin.payments.payment-receipt', $firstApprovedPayment->id) }}" class="btn btn-sm btn-warning" title="Payment Receipt" target="_blank">
+                                                    <i class="fas fa-receipt"></i>
+                                                </a>
+                                                <a href="{{ route('admin.payments.payment-receipt-pdf', $firstApprovedPayment->id) }}" class="btn btn-sm btn-danger" title="View PDF" target="_blank">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            @endif
                                         @endif
                                     </td>
                                 </tr>
