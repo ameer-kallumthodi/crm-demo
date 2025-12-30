@@ -278,6 +278,7 @@
                             <select class="form-select" id="status" name="status">
                                 <option value="">All</option>
                                 <option value="Paid" {{ request('status')==='Paid' ? 'selected' : '' }}>Paid</option>
+                                <option value="Received" {{ request('status')==='Received' ? 'selected' : '' }}>Received</option>
                                 <option value="Admission cancel" {{ request('status')==='Admission cancel' ? 'selected' : '' }}>Admission cancel</option>
                                 <option value="Active" {{ request('status')==='Active' ? 'selected' : '' }}>Active</option>
                                 <option value="Inactive" {{ request('status')==='Inactive' ? 'selected' : '' }}>Inactive</option>
