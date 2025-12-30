@@ -1474,108 +1474,108 @@
             }, 0);
             return form;
         }
-    });
 
-    // Toggle Academic Verification with confirmation modal
-    let academicVerifyUrl = null;
-    $(document).off('click', '.toggle-academic-verify-btn').on('click', '.toggle-academic-verify-btn', function(e) {
-        e.preventDefault();
-        const $btn = $(this);
-        const url = $btn.data('url');
-        const name = $btn.data('name') || 'this student';
-        const isVerified = String($btn.data('verified')) === '1';
+        // Toggle Academic Verification with confirmation modal
+        let academicVerifyUrl = null;
+        $(document).off('click', '.toggle-academic-verify-btn').on('click', '.toggle-academic-verify-btn', function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const url = $btn.data('url');
+            const name = $btn.data('name') || 'this student';
+            const isVerified = String($btn.data('verified')) === '1';
 
-        academicVerifyUrl = url;
+            academicVerifyUrl = url;
 
-        const actionText = isVerified ? 'unverify' : 'verify';
-        const modalText = `Are you sure you want to ${actionText} academic status for <strong>${name}</strong>?`;
-        $('#academicVerifyModalText').html(modalText);
-        const $confirmBtn = $('#confirmAcademicVerifyBtn');
-        $confirmBtn.removeClass('btn-danger btn-success').addClass(isVerified ? 'btn-danger' : 'btn-success');
-        $('#academicVerifyModal').modal('show');
-    });
+            const actionText = isVerified ? 'unverify' : 'verify';
+            const modalText = `Are you sure you want to ${actionText} academic status for <strong>${name}</strong>?`;
+            $('#academicVerifyModalText').html(modalText);
+            const $confirmBtn = $('#confirmAcademicVerifyBtn');
+            $confirmBtn.removeClass('btn-danger btn-success').addClass(isVerified ? 'btn-danger' : 'btn-success');
+            $('#academicVerifyModal').modal('show');
+        });
 
-    $('#confirmAcademicVerifyBtn').on('click', function() {
-        if (!academicVerifyUrl) return;
-        const $confirmBtn = $(this);
-        const originalHtml = $confirmBtn.html();
-        $confirmBtn.prop('disabled', true).addClass('disabled');
-        $.post(academicVerifyUrl, {
-                _token: '{{ csrf_token() }}'
-            })
-            .done(function(res) {
-                if (res && res.success) {
-                    show_alert('success', res.message || 'Updated');
-                    $('#academicVerifyModal').modal('hide');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 600);
-                } else {
-                    show_alert('error', (res && res.message) ? res.message : 'Failed to update');
-                }
-            })
-            .fail(function(xhr) {
-                let msg = 'Failed to update';
-                if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
-                    msg = xhr.responseJSON.message;
-                }
-                show_alert('error', msg);
-            })
-            .always(function() {
-                $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
-                academicVerifyUrl = null;
-            });
-    });
+        $('#confirmAcademicVerifyBtn').on('click', function() {
+            if (!academicVerifyUrl) return;
+            const $confirmBtn = $(this);
+            const originalHtml = $confirmBtn.html();
+            $confirmBtn.prop('disabled', true).addClass('disabled');
+            $.post(academicVerifyUrl, {
+                    _token: '{{ csrf_token() }}'
+                })
+                .done(function(res) {
+                    if (res && res.success) {
+                        show_alert('success', res.message || 'Updated');
+                        $('#academicVerifyModal').modal('hide');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 600);
+                    } else {
+                        show_alert('error', (res && res.message) ? res.message : 'Failed to update');
+                    }
+                })
+                .fail(function(xhr) {
+                    let msg = 'Failed to update';
+                    if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    }
+                    show_alert('error', msg);
+                })
+                .always(function() {
+                    $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
+                    academicVerifyUrl = null;
+                });
+        });
 
-    // Toggle Support Verification with confirmation modal
-    let supportVerifyUrl = null;
-    $(document).off('click', '.toggle-support-verify-btn').on('click', '.toggle-support-verify-btn', function(e) {
-        e.preventDefault();
-        const $btn = $(this);
-        const url = $btn.data('url');
-        const name = $btn.data('name') || 'this student';
-        const isVerified = String($btn.data('verified')) === '1';
+        // Toggle Support Verification with confirmation modal
+        let supportVerifyUrl = null;
+        $(document).off('click', '.toggle-support-verify-btn').on('click', '.toggle-support-verify-btn', function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const url = $btn.data('url');
+            const name = $btn.data('name') || 'this student';
+            const isVerified = String($btn.data('verified')) === '1';
 
-        supportVerifyUrl = url;
+            supportVerifyUrl = url;
 
-        const actionText = isVerified ? 'unverify' : 'verify';
-        const modalText = `Are you sure you want to ${actionText} support status for <strong>${name}</strong>?`;
-        $('#supportVerifyModalText').html(modalText);
-        const $confirmBtn = $('#confirmSupportVerifyBtn');
-        $confirmBtn.removeClass('btn-danger btn-success').addClass(isVerified ? 'btn-danger' : 'btn-success');
-        $('#supportVerifyModal').modal('show');
-    });
+            const actionText = isVerified ? 'unverify' : 'verify';
+            const modalText = `Are you sure you want to ${actionText} support status for <strong>${name}</strong>?`;
+            $('#supportVerifyModalText').html(modalText);
+            const $confirmBtn = $('#confirmSupportVerifyBtn');
+            $confirmBtn.removeClass('btn-danger btn-success').addClass(isVerified ? 'btn-danger' : 'btn-success');
+            $('#supportVerifyModal').modal('show');
+        });
 
-    $('#confirmSupportVerifyBtn').on('click', function() {
-        if (!supportVerifyUrl) return;
-        const $confirmBtn = $(this);
-        const originalHtml = $confirmBtn.html();
-        $confirmBtn.prop('disabled', true).addClass('disabled');
-        $.post(supportVerifyUrl, {
-                _token: '{{ csrf_token() }}'
-            })
-            .done(function(res) {
-                if (res && res.success) {
-                    show_alert('success', res.message || 'Updated');
-                    $('#supportVerifyModal').modal('hide');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 600);
-                } else {
-                    show_alert('error', (res && res.message) ? res.message : 'Failed to update');
-                }
-            })
-            .fail(function(xhr) {
-                let msg = 'Failed to update';
-                if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
-                    msg = xhr.responseJSON.message;
-                }
-                show_alert('error', msg);
-            })
-            .always(function() {
-                $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
-                supportVerifyUrl = null;
-            });
+        $('#confirmSupportVerifyBtn').on('click', function() {
+            if (!supportVerifyUrl) return;
+            const $confirmBtn = $(this);
+            const originalHtml = $confirmBtn.html();
+            $confirmBtn.prop('disabled', true).addClass('disabled');
+            $.post(supportVerifyUrl, {
+                    _token: '{{ csrf_token() }}'
+                })
+                .done(function(res) {
+                    if (res && res.success) {
+                        show_alert('success', res.message || 'Updated');
+                        $('#supportVerifyModal').modal('hide');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 600);
+                    } else {
+                        show_alert('error', (res && res.message) ? res.message : 'Failed to update');
+                    }
+                })
+                .fail(function(xhr) {
+                    let msg = 'Failed to update';
+                    if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    }
+                    show_alert('error', msg);
+                })
+                .always(function() {
+                    $confirmBtn.prop('disabled', false).removeClass('disabled').html(originalHtml);
+                    supportVerifyUrl = null;
+                });
+        });
     });
 </script>
 @endpush
