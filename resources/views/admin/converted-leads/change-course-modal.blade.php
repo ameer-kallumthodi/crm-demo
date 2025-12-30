@@ -98,7 +98,7 @@
                     </div>
                     <div class="col-6 col-md-3">
                         <small class="text-muted d-block">Additional</small>
-                        <strong id="additionalAmountDisplay">{{ $currentPricing ? $formatCurrency($currentPricing['extra_amount'] + $currentPricing['university_amount']) : '₹0.00' }}</strong>
+                        <strong id="additionalAmountDisplay">{{ $currentPricing ? $formatCurrency(($currentPricing['extra_amount'] ?? 0) + ($currentPricing['university_amount'] ?? 0)) : '₹0.00' }}</strong>
                     </div>
                     <div class="col-6 col-md-3">
                         <small class="text-muted d-block">Total Payable</small>
