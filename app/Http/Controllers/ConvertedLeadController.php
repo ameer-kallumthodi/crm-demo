@@ -25,6 +25,8 @@ use App\Models\ConvertedStudentActivity;
 use App\Models\LeadActivity;
 use App\Services\LeadCallLogService;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ConvertedLeadsExport;
 
 class ConvertedLeadController extends Controller
 {
@@ -180,6 +182,137 @@ class ConvertedLeadController extends Controller
         $country_codes = get_country_code();
 
         return view('admin.converted-leads.index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
+    }
+
+    /**
+     * Export converted leads to Excel
+     */
+    public function export(Request $request)
+    {
+        // Set execution time limit for this operation
+        set_time_limit(config('timeout.max_execution_time', 300));
+
+        // Build the same query as index method
+        $query = ConvertedLead::with([
+            'lead',
+            'course',
+            'academicAssistant',
+            'createdBy',
+            'cancelledBy',
+            'subject',
+            'studentDetails',
+            'leadDetail',
+            'invoices.payments',
+        ]);
+
+        // Apply role-based filtering (same as index method)
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_general_manager()) {
+                // No filtering
+            } elseif (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
+                } else {
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // No additional filtering needed
+            } elseif (RoleHelper::is_academic_assistant()) {
+                // No additional filtering needed
+            } elseif (RoleHelper::is_hod()) {
+                $hodCourseIds = Course::where('hod_id', AuthHelper::getCurrentUserId())
+                    ->pluck('id')
+                    ->toArray();
+                
+                if (!empty($hodCourseIds)) {
+                    $query->whereIn('course_id', $hodCourseIds);
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
+            } elseif (RoleHelper::is_telecaller()) {
+                $query->whereHas('lead', function($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
+            } elseif (RoleHelper::is_support_team()) {
+                $query->where('is_academic_verified', 1);
+            }
+        }
+
+        // Apply filters (same as index method)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('register_number', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('course_id')) {
+            $query->where('course_id', $request->course_id);
+        }
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('reg_fee')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('reg_fee', $request->reg_fee);
+            });
+        }
+
+        if ($request->filled('exam_fee')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('exam_fee', $request->exam_fee);
+            });
+        }
+
+        if ($request->filled('id_card')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('id_card', $request->id_card);
+            });
+        }
+
+        if ($request->filled('tma')) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
+                $q->where('tma', $request->tma);
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Get all matching records (no pagination for export)
+        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
+
+        // Generate filename with date range
+        $dateFrom = $request->filled('date_from') ? $request->date_from : 'all';
+        $dateTo = $request->filled('date_to') ? $request->date_to : 'all';
+        $filename = 'converted_leads_export_' . $dateFrom . '_to_' . $dateTo . '_' . date('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(new ConvertedLeadsExport($convertedLeads), $filename);
     }
 
     /**
