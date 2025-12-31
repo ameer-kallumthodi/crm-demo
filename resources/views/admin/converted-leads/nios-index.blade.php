@@ -274,7 +274,7 @@
                                 value="{{ request('date_to') }}">
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
-                            <label for="status" class="form-label">Status</label>
+                            <label for="status" class="form-label">REG. FEE</label>
                             <select class="form-select" id="status" name="status">
                                 <option value="">All</option>
                                 <option value="Paid" {{ request('status')==='Paid' ? 'selected' : '' }}>Paid</option>
@@ -286,7 +286,7 @@
                         </div>
 
                         <div class="col-12 col-sm-6 col-md-2">
-                            <label for="reg_fee" class="form-label">REG. FEE</label>
+                            <label for="reg_fee" class="form-label">Status</label>
                             <select class="form-select" id="reg_fee" name="reg_fee">
                                 <option value="">All</option>
                                 <option value="Handover -1" {{ request('reg_fee')==='Handover -1' ? 'selected' : '' }}>Handover -1</option>
