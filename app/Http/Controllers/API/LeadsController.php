@@ -408,10 +408,15 @@ class LeadsController extends Controller
             ->orderBy('title')
             ->get(['id', 'title']);
 
+        // Get the most recent status_update activity with a non-empty reason
+        // Only status_update activities have reasons for status changes
         $previousReason = $lead->leadActivities
-            ->firstWhere(function ($activity) {
-                return !empty($activity->reason);
+            ->filter(function ($activity) {
+                return $activity->activity_type === 'status_update' 
+                    && !empty($activity->reason) 
+                    && trim($activity->reason) !== '';
             })
+            ->first()
             ?->reason;
 
         $activityHistory = $lead->leadActivities->map(function ($activity) {
