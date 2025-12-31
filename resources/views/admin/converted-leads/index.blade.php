@@ -219,6 +219,12 @@
                     <a href="{{ route('admin.support-graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Graphic Designing Converted Support List
                     </a>
+                    <a href="{{ route('admin.support-machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Diploma in Machine Learning Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-flutter-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Flutter Converted Support List
+                    </a>
                     <a href="{{ route('admin.support-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Eduthanzeel Converted Support List
                     </a>

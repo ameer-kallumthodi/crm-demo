@@ -310,8 +310,9 @@ class BatchController extends Controller
     public function getByCourse($courseId)
     {
         $batches = Batch::where('course_id', $courseId)
-            ->where('is_active', true)
-            ->select('id', 'title', 'amount', 'sslc_amount', 'plustwo_amount')
+            ->select('id', 'title', 'amount', 'sslc_amount', 'plustwo_amount', 'is_active')
+            ->orderBy('is_active', 'desc')
+            ->orderBy('title')
             ->get();
 
         return response()->json([

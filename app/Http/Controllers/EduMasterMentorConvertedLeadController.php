@@ -144,10 +144,10 @@ class EduMasterMentorConvertedLeadController extends Controller
         $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(50);
 
         // Get filter data
-        $batches = Batch::where('course_id', 23)->where('is_active', 1)->orderBy('title')->get();
+        $batches = Batch::where('course_id', 23)->orderBy('is_active', 'desc')->orderBy('title')->get();
         $admissionBatches = AdmissionBatch::whereHas('batch', function($q) {
-            $q->where('course_id', 23)->where('is_active', 1);
-        })->where('is_active', 1)->orderBy('title')->get();
+            $q->where('course_id', 23);
+        })->orderBy('is_active', 'desc')->orderBy('title')->get();
         $registrationLinks = RegistrationLink::orderBy('title')->get();
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
 

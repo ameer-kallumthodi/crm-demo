@@ -197,8 +197,8 @@ class AdmissionBatchController extends Controller
     public function getByBatch($batchId)
     {
         $admissionBatches = AdmissionBatch::where('batch_id', $batchId)
-            ->where('is_active', 1)
-            ->select('id', 'title')
+            ->select('id', 'title', 'is_active')
+            ->orderBy('is_active', 'desc')
             ->orderBy('title')
             ->get();
 

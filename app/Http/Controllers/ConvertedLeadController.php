@@ -175,8 +175,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
 
         // Country codes for inline phone editor
         $country_codes = get_country_code();
@@ -410,8 +410,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 1)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 1)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
 
         return view('admin.converted-leads.nios-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
@@ -494,8 +494,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 2)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 2)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
 
         return view('admin.converted-leads.bosse-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
@@ -579,8 +579,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 8)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 8)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
 
         return view('admin.converted-leads.hotel-management-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
@@ -667,7 +667,7 @@ class ConvertedLeadController extends Controller
         
         $courses = \App\Models\Course::all();
         $batches = \App\Models\Batch::where('course_id', 16)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
         $registration_links = \App\Models\RegistrationLink::all();
 
@@ -785,7 +785,7 @@ class ConvertedLeadController extends Controller
         
         $courses = \App\Models\Course::all();
         $batches = \App\Models\Batch::where('course_id', 16)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
         $registration_links = \App\Models\RegistrationLink::all();
 
@@ -888,8 +888,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 10)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 10)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
 
         return view('admin.converted-leads.ai-python-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
@@ -997,8 +997,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 11)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 11)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
         
         // Get offline places for location dropdown
@@ -1116,8 +1116,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 12)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 12)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
         
         // Get offline places for location dropdown
@@ -1239,8 +1239,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 13)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 13)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
         
         // Get offline places for location dropdown
@@ -1362,8 +1362,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 14)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 14)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
         
         // Get offline places for location dropdown
@@ -1485,8 +1485,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 15)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 15)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
         
         // Get offline places for location dropdown
@@ -1608,8 +1608,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 20)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 20)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
         
         // Get offline places for location dropdown
@@ -1731,8 +1731,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 21)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 21)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
         
         // Get offline places for location dropdown
@@ -1821,8 +1821,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 6)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 6)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $teachers = \App\Models\User::where('role_id', 10)->where('is_active', 1)->get();
         $sub_courses = \App\Models\SubCourse::where('course_id', 6)->where('is_active', 1)->get();
         $country_codes = get_country_code();
@@ -1920,8 +1920,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
-        $batches = \App\Models\Batch::where('course_id', 5)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 5)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $sub_courses = \App\Models\SubCourse::where('course_id', 5)->where('is_active', 1)->get();
         $subjects = \App\Models\Subject::where('course_id', 5)->where('is_active', 1)->get();
         $teachers = \App\Models\User::where('role_id', 10)->where('is_active', 1)->get();
@@ -2085,8 +2085,8 @@ class ConvertedLeadController extends Controller
 
         // Get filter data
         $universities = \App\Models\University::where('is_active', 1)->orderBy('title')->get();
-        $batches = \App\Models\Batch::where('course_id', 23)->where('is_active', 1)->get();
-        $admission_batches = \App\Models\AdmissionBatch::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::where('course_id', 23)->orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
 
         return view('admin.converted-leads.edumaster-index', compact('convertedLeads', 'universities', 'batches', 'admission_batches', 'country_codes'));
