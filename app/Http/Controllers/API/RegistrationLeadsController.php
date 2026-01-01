@@ -331,11 +331,28 @@ class RegistrationLeadsController extends Controller
         $course = $lead->course;
         $batch = $lead->batch ?: ($lead->studentDetails?->batch);
         $courseAmount = $course ? (float) ($course->amount ?? 0) : 0.0;
-        $batchAmount = $batch ? (float) ($batch->amount ?? 0) : 0.0;
+        $batchAmount = 0.0;
         $extraAmount = 0.0;
         $universityAmount = 0.0;
         $courseType = null;
         $university = $lead->studentDetails?->university;
+        $studentClass = $lead->studentDetails?->class;
+
+        // Determine batch amount based on course rules
+        if ($batch) {
+            if ($lead->course_id == 16) {
+                $normalizedClass = $studentClass ? strtolower($studentClass) : null;
+                if ($normalizedClass === 'sslc' && !is_null($batch->sslc_amount)) {
+                    $batchAmount = (float) $batch->sslc_amount;
+                } elseif (!is_null($batch->plustwo_amount)) {
+                    $batchAmount = (float) $batch->plustwo_amount;
+                } else {
+                    $batchAmount = (float) ($batch->amount ?? 0);
+                }
+            } else {
+                $batchAmount = (float) ($batch->amount ?? 0);
+            }
+        }
 
         if ($lead->course_id == 16 && $lead->studentDetails && $lead->studentDetails->class === 'sslc') {
             $extraAmount = 10000.0;
