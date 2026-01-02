@@ -144,6 +144,25 @@
         <div class="card h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="mb-0 f-w-400 text-muted">Today's Converted Leads</h6>
+                    <a href="{{ route('admin.converted-leads.index', ['date_from' => now()->format('Y-m-d'), 'date_to' => now()->format('Y-m-d')]) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="ti ti-external-link f-12"></i>
+                    </a>
+                </div>
+                <h4 class="mb-2">{{ $todaysConvertedLeads ?? 0 }}</h4>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-light-primary border border-primary me-2">
+                        <i class="ti ti-calendar"></i> {{ now()->format('M d') }}
+                    </span>
+                    <small class="text-muted">Converted today</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
                     <h6 class="mb-0 f-w-400 text-muted">Sale Count</h6>
                     <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-sm btn-outline-info">
                         <i class="ti ti-external-link f-12"></i>

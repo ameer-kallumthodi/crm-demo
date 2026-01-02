@@ -353,7 +353,7 @@ class RegistrationLeadsController extends Controller
                 $batchAmount = (float) ($batch->amount ?? 0);
             }
         }
-
+ 
         if ($lead->course_id == 16 && $lead->studentDetails && $lead->studentDetails->class === 'sslc') {
             $extraAmount = 10000.0;
         }

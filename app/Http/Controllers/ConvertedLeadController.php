@@ -36,6 +36,7 @@ class ConvertedLeadController extends Controller
     public function index(Request $request)
     {
         $query = ConvertedLead::with([
+            'lead.createdBy', // Load the user who created the lead
             'lead',
             'course',
             'academicAssistant',

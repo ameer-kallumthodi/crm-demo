@@ -391,6 +391,7 @@
                                     <th>Cancelled By</th>
                                     <th>REG. FEE</th>
                                     <th>Mail</th>
+                                    <th>Lead Created By</th>
                                     <th>Pending Payment</th>
                                     <th>Actions</th>
                                 </tr>
@@ -536,6 +537,13 @@
                                     </td>
                                     <td>{{ $convertedLead->email ?? 'N/A' }}</td>
                                     <td>
+                                        @if($convertedLead->lead && $convertedLead->lead->createdBy)
+                                            {{ $convertedLead->lead->createdBy->name }}
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         @php
                                         $hasPendingPayment = false;
                                         foreach ($convertedLead->invoices as $invoice) {
@@ -611,7 +619,13 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="18" class="text-center">No converted leads found</td>
+                                    @php
+                                    $colspan = 22; // Base columns (without Parent Phone)
+                                    if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor()) {
+                                        $colspan += 1; // Add Parent Phone column
+                                    }
+                                    @endphp
+                                    <td colspan="{{ $colspan }}" class="text-center">No converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>

@@ -51,6 +51,7 @@ class DashboardController extends Controller
             'recentActivities' => $this->getRecentActivities(),
             'weeklyStats' => $this->getWeeklyStats(),
             'todaysLeads' => $this->getTodaysLeads(),
+            'todaysConvertedLeads' => $this->getTodaysConvertedLeads(),
             'saleCount' => $this->getSaleCount(),
             'weeklySaleCount' => $this->getWeeklySaleCount(),
         ];
@@ -354,6 +355,21 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc');
         
         return $this->applyRoleBasedFilter($query)->get();
+    }
+
+    /**
+     * Get today's converted leads based on user role
+     */
+    private function getTodaysConvertedLeads()
+    {
+        $today = now()->startOfDay();
+        $tomorrow = now()->addDay()->startOfDay();
+        
+        $query = ConvertedLead::query()
+            ->where('created_at', '>=', $today)
+            ->where('created_at', '<', $tomorrow);
+        
+        return $this->applyRoleBasedFilterToConvertedLeads($query)->count();
     }
 
     /**
