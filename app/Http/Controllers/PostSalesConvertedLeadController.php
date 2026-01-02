@@ -151,6 +151,8 @@ class PostSalesConvertedLeadController extends Controller
                     'postsale_followup' => $this->renderPostsaleFollowup($convertedLead),
                     'post_sales_remarks' => $this->renderPostSalesRemarks($convertedLead),
                     'pending_payment' => $this->renderPendingPayment($convertedLead),
+                    'paid_amount' => $this->renderPaidAmount($convertedLead),
+                    'pending_amount' => $this->renderPendingAmount($convertedLead),
             'actions' => $this->renderActions($convertedLead),
             'DT_RowClass' => $this->getRowClass($convertedLead),
                     // Mobile view data
@@ -350,6 +352,42 @@ class PostSalesConvertedLeadController extends Controller
     }
 
     /**
+     * Calculate total paid amount for a converted lead
+     */
+    private function calculateTotalPaidAmount($convertedLead)
+    {
+        $totalPaid = 0;
+        foreach ($convertedLead->invoices as $invoice) {
+            // Sum all approved payments
+            $approvedPayments = $invoice->payments->where('status', 'Approved');
+            foreach ($approvedPayments as $payment) {
+                $totalPaid += (float) $payment->amount_paid;
+            }
+        }
+        return $totalPaid;
+    }
+
+    /**
+     * Calculate total pending amount for a converted lead
+     */
+    private function calculateTotalPendingAmount($convertedLead)
+    {
+        $totalInvoiceAmount = 0;
+        $totalPaid = 0;
+        
+        foreach ($convertedLead->invoices as $invoice) {
+            $totalInvoiceAmount += (float) $invoice->total_amount;
+            // Sum all approved payments
+            $approvedPayments = $invoice->payments->where('status', 'Approved');
+            foreach ($approvedPayments as $payment) {
+                $totalPaid += (float) $payment->amount_paid;
+            }
+        }
+        
+        return $totalInvoiceAmount - $totalPaid;
+    }
+
+    /**
      * Check if converted lead has pending payment
      */
     private function hasPendingPayment($convertedLead)
@@ -371,6 +409,33 @@ class PostSalesConvertedLeadController extends Controller
             return '<span class="badge bg-warning">Pending</span>';
         }
         return '<span class="text-muted">No</span>';
+    }
+
+    /**
+     * Render paid amount column HTML
+     */
+    private function renderPaidAmount($convertedLead)
+    {
+        $paidAmount = $this->calculateTotalPaidAmount($convertedLead);
+        if ($paidAmount > 0) {
+            return '<span class="fw-bold text-success">₹' . number_format($paidAmount, 2) . '</span>';
+        }
+        return '<span class="text-muted">₹0.00</span>';
+    }
+
+    /**
+     * Render pending amount column HTML
+     */
+    private function renderPendingAmount($convertedLead)
+    {
+        $pendingAmount = $this->calculateTotalPendingAmount($convertedLead);
+        if ($pendingAmount > 0) {
+            return '<span class="fw-semibold text-dark">₹' . number_format($pendingAmount, 2) . '</span>';
+        } elseif ($pendingAmount < 0) {
+            // Overpaid case
+            return '<span class="fw-semibold text-info">₹' . number_format(abs($pendingAmount), 2) . ' (Overpaid)</span>';
+        }
+        return '<span class="text-muted">₹0.00</span>';
     }
 
     /**
@@ -458,6 +523,8 @@ class PostSalesConvertedLeadController extends Controller
             'called_date' => $convertedLead->called_date ? $convertedLead->called_date->format('d M Y') : null,
             'called_time' => $convertedLead->called_time ? $convertedLead->called_time->format('h:i A') : null,
             'pending_payment' => $this->hasPendingPayment($convertedLead),
+            'paid_amount' => $this->calculateTotalPaidAmount($convertedLead),
+            'pending_amount' => $this->calculateTotalPendingAmount($convertedLead),
             'routes' => [
                 'view' => route('admin.post-sales.converted-leads.show', $convertedLead->id),
                 'status_update' => route('admin.post-sales.converted-leads.status-update', $convertedLead->id),

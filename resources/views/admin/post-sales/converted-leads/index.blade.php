@@ -138,7 +138,7 @@
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-hover" id="postSalesConvertedTable" style="min-width: 1800px;">
+                        <table class="table table-hover" id="postSalesConvertedTable" style="min-width: 2000px;">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -162,7 +162,9 @@
                                     <th>Call Time</th>
                                     <th>Followup Date</th>
                                     <th>Remark</th>
-                                    <th>Pending Payment</th>
+                                    <th>Has Pending Payment</th>
+                                    <th>Paid Amount</th>
+                                    <th>Pending Amount</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -210,7 +212,6 @@ $columns = array_merge($columns, [
     ['data' => 'admission_batch', 'name' => 'admission_batch', 'orderable' => false, 'searchable' => false],
     ['data' => 'subject', 'name' => 'subject', 'orderable' => false, 'searchable' => false],
     ['data' => 'status', 'name' => 'status', 'orderable' => false, 'searchable' => false],
-    ['data' => 'cancelled_by', 'name' => 'cancelled_by', 'orderable' => false, 'searchable' => false],
     ['data' => 'paid_status', 'name' => 'paid_status', 'orderable' => false, 'searchable' => false],
     ['data' => 'call_status', 'name' => 'call_status', 'orderable' => false, 'searchable' => false],
     ['data' => 'called_date', 'name' => 'called_date', 'orderable' => false, 'searchable' => false],
@@ -218,6 +219,8 @@ $columns = array_merge($columns, [
     ['data' => 'postsale_followup', 'name' => 'postsale_followup', 'orderable' => false, 'searchable' => false],
     ['data' => 'post_sales_remarks', 'name' => 'post_sales_remarks', 'orderable' => false, 'searchable' => false],
     ['data' => 'pending_payment', 'name' => 'pending_payment', 'orderable' => false, 'searchable' => false],
+    ['data' => 'paid_amount', 'name' => 'paid_amount', 'orderable' => false, 'searchable' => false],
+    ['data' => 'pending_amount', 'name' => 'pending_amount', 'orderable' => false, 'searchable' => false],
     ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
 ]);
 @endphp
@@ -888,6 +891,15 @@ $columns = array_merge($columns, [
                     ? '<span class="badge bg-warning">Pending</span>' 
                     : '<span class="text-muted">No</span>';
                 cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-currency-rupee f-12 text-muted me-1"></i><small class="text-muted f-11">Pending Payment: ' + pendingPaymentBadge + '</small></div></div>';
+                // Paid Amount
+                const paidAmount = data.paid_amount || 0;
+                const paidAmountFormatted = '₹' + parseFloat(paidAmount).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-currency-rupee f-12 text-success me-1"></i><small class="fw-bold text-success f-11">Paid: ' + paidAmountFormatted + '</small></div></div>';
+                // Pending Amount
+                const pendingAmount = data.pending_amount || 0;
+                const pendingAmountFormatted = '₹' + parseFloat(pendingAmount).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                const pendingAmountClass = pendingAmount > 0 ? 'text-dark' : 'text-muted';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-currency-rupee f-12 text-dark me-1"></i><small class="fw-semibold ' + pendingAmountClass + ' f-11">Pending: ' + pendingAmountFormatted + '</small></div></div>';
                 if (statusValue === 'cancel') {
                     const cancelStateLabel = isCancelledFlag ? 'Confirmed' : 'Cancelled';
                     const cancelStateClass = isCancelledFlag ? 'bg-danger' : 'bg-secondary';
