@@ -81,7 +81,9 @@ $(function () {
                     alert(response.message);
                 }
                 if ($.fn.DataTable.isDataTable('#postSalesConvertedTable')) {
-                    $('#postSalesConvertedTable').DataTable().ajax.reload();
+                    var table = $('#postSalesConvertedTable').DataTable();
+                    // Preserve current page and state
+                    table.ajax.reload(null, false); // false = don't reset pagination
                 } else {
                     location.reload();
                 }

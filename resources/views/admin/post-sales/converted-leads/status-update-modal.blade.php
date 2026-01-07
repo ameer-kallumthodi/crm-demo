@@ -234,9 +234,11 @@ $(document).ready(function() {
                         alert(response.message);
                     }
                     
-                    // Reload DataTable if it exists
+                    // Reload DataTable if it exists - preserve pagination state
                     if ($.fn.DataTable.isDataTable('#postSalesConvertedTable')) {
-                        $('#postSalesConvertedTable').DataTable().ajax.reload();
+                        var table = $('#postSalesConvertedTable').DataTable();
+                        // Preserve current page and state
+                        table.ajax.reload(null, false); // false = don't reset pagination
                     } else {
                         location.reload();
                     }

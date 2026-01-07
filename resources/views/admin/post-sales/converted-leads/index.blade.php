@@ -35,7 +35,7 @@
                         <div class="col-6 col-md-4 col-lg-3">
                             <label for="search" class="form-label">Search</label>
                             <input type="text" class="form-control form-control-sm" name="search" id="search"
-                                value="{{ request('search') }}" placeholder="Name, phone, email or register no.">
+                                value="{{ request('search') }}" placeholder="Name, phone or register no.">
                         </div>
 
                         <!-- Course -->
@@ -148,7 +148,6 @@
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                     <th>Parent Phone</th>
                                     @endif
-                                    <th>Email</th>
                                     <th>BDE Name</th>
                                     <th>Converted Date</th>
                                     <th>Course</th>
@@ -204,7 +203,6 @@ if (\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelpe
 }
 
 $columns = array_merge($columns, [
-    ['data' => 'email', 'name' => 'email'],
     ['data' => 'bde_name', 'name' => 'bde_name', 'orderable' => false, 'searchable' => false],
     ['data' => 'created_at', 'name' => 'created_at'],
     ['data' => 'course', 'name' => 'course', 'orderable' => false, 'searchable' => false],
@@ -322,7 +320,7 @@ $columns = array_merge($columns, [
             // Get filter values from form
             function getFilterParams() {
                 return {
-                    search: $('#search').val() || '',
+                    filter_search: $('#search').val() || '', // Renamed to avoid conflict with DataTable's search
                     course_id: $('#course_id').val() || '',
                     batch_id: $('#batch_id').val() || '',
                     telecaller_id: $('#telecaller_id').val() || '',
@@ -405,6 +403,7 @@ $columns = array_merge($columns, [
                 dom: "Bfrtip",
                 buttons: ["csv", "excel", "print", "pdf"],
                 stateSave: true,
+                stateDuration: -1, // Persist state indefinitely (like leads page)
                 scrollCollapse: true,
                 // Performance optimizations
                 autoWidth: false,
@@ -874,7 +873,6 @@ $columns = array_merge($columns, [
                 if (data.show_parent_phone && data.parent_phone) {
                     cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-phone-call f-12 text-muted me-1"></i><small class="text-muted f-11">Parent: ' + escapeHtml(data.parent_phone || 'N/A') + '</small></div></div>';
                 }
-                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-mail f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.email || '-') + '</small></div></div>';
                 cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-user f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.bde_name || 'Unassigned') + '</small></div></div>';
                 cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-book f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.course || '-') + '</small></div></div>';
                 if (data.batch && data.batch !== 'N/A') {

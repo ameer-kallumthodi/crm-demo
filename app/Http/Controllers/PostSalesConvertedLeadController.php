@@ -62,21 +62,24 @@ class PostSalesConvertedLeadController extends Controller
             ]);
 
             // Apply filters
+            // Handle DataTable's built-in search box (search.value) - priority for DataTable search box
+            $searchValue = null;
             if ($request->filled('search') && is_array($request->search) && isset($request->search['value']) && !empty($request->search['value'])) {
                 $searchValue = $request->search['value'];
+            } elseif ($request->filled('filter_search')) {
+                // Handle custom filter search input (filter_search) - for custom search input in filter form
+                $searchValue = $request->filter_search;
+            } elseif ($request->filled('search') && !is_array($request->search)) {
+                // Handle search parameter from form submission (for URL compatibility)
+                $searchValue = $request->search;
+            }
+            
+            if ($searchValue) {
                 $query->where(function($q) use ($searchValue) {
                     $q->where('name', 'LIKE', "%{$searchValue}%")
                       ->orWhere('email', 'LIKE', "%{$searchValue}%")
                       ->orWhere('phone', 'LIKE', "%{$searchValue}%")
                       ->orWhere('register_number', 'LIKE', "%{$searchValue}%");
-                });
-            } elseif ($request->filled('search') && !is_array($request->search)) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%")
-                      ->orWhere('phone', 'like', "%{$search}%")
-                      ->orWhere('register_number', 'like', "%{$search}%");
                 });
             }
 
