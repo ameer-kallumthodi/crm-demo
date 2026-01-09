@@ -286,7 +286,7 @@
                             <input type="date" class="form-control" id="date_to" name="date_to"
                                 value="{{ request('date_to') }}">
                         </div>
-                        <div class="col-12 col-sm-6 col-md-2">
+                        <!-- <div class="col-12 col-sm-6 col-md-2">
                             <label for="status" class="form-label">Status</label>
                             <select class="form-select" id="status" name="status">
                                 <option value="">All</option>
@@ -303,6 +303,32 @@
                                 <option value="">All</option>
                                 <option value="Received" {{ request('reg_fee')==='Received' ? 'selected' : '' }}>Received</option>
                                 <option value="Not Received" {{ request('reg_fee')==='Not Received' ? 'selected' : '' }}>Not Received</option>
+                            </select>
+                        </div>  -->
+
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="status" class="form-label">REG. FEE</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">All</option>
+                                <option value="Paid" {{ request('status')==='Paid' ? 'selected' : '' }}>Paid</option>
+                                <option value="Received" {{ request('status')==='Received' ? 'selected' : '' }}>Received</option>
+                                <option value="Admission cancel" {{ request('status')==='Admission cancel' ? 'selected' : '' }}>Admission cancel</option>
+                                <option value="Active" {{ request('status')==='Active' ? 'selected' : '' }}>Active</option>
+                                <option value="Inactive" {{ request('status')==='Inactive' ? 'selected' : '' }}>Inactive</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="reg_fee" class="form-label">Status</label>
+                            <select class="form-select" id="reg_fee" name="reg_fee">
+                                <option value="">All</option>
+                                <option value="Handover -1" {{ request('reg_fee')==='Handover -1' ? 'selected' : '' }}>Handover -1</option>
+                                <option value="Handover - 2" {{ request('reg_fee')==='Handover - 2' ? 'selected' : '' }}>Handover - 2</option>
+                                <option value="Handover - 3" {{ request('reg_fee')==='Handover - 3' ? 'selected' : '' }}>Handover - 3</option>
+                                <option value="Handover - 4" {{ request('reg_fee')==='Handover - 4' ? 'selected' : '' }}>Handover - 4</option>
+                                <option value="Handover - 5" {{ request('reg_fee')==='Handover - 5' ? 'selected' : '' }}>Handover - 5</option>
+                                <option value="Paid" {{ request('reg_fee')==='Paid' ? 'selected' : '' }}>Paid</option>
+                                <option value="Admission cancel" {{ request('reg_fee')==='Admission cancel' ? 'selected' : '' }}>Admission cancel</option>
                             </select>
                         </div>
 
