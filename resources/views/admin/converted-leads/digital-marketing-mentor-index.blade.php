@@ -1692,12 +1692,9 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
         function createDateField(field, currentValue) {
             const value = (currentValue && currentValue !== '-') ? currentValue : '';
             // For class starting and ending dates, allow future dates
-            const maxDate = (field === 'class_starting_date' || field === 'class_ending_date') ? '' : new Date().toISOString().split('T')[0];
-            const maxAttr = maxDate ? `max="${maxDate}"` : '';
-
             return `
                 <div class="edit-form">
-                    <input type="date" ${maxAttr} value="${value}" class="form-control form-control-sm">
+                    <input type="date" value="${value}" class="form-control form-control-sm">
                     <div class="btn-group mt-1">
                         <button class="btn btn-success btn-sm save-edit">Save</button>
                         <button class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
