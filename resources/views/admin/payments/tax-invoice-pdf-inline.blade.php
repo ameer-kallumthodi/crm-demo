@@ -219,7 +219,7 @@
                             </tr>
                             <tr>
                                 <td style="padding: 4px 0; font-size: 10px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 4px 0;">Received</td>
-                                <td style="padding: 4px 0; font-size: 10px; text-align: right; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 4px 0;"><span class="rupee">₹</span> {{ number_format($payment->amount_paid, 2) }}</td>
+                                <td style="padding: 4px 0; font-size: 10px; text-align: right; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 4px 0;"><span class="rupee">₹</span> {{ number_format(round((float) $payment->amount_paid), 0) }}</td>
                             </tr>
                             <!-- <tr>
                                 <td style="padding: 4px 0; font-size: 10px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 4px 0;">Balance</td>
