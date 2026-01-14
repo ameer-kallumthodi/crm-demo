@@ -2912,12 +2912,37 @@ class ConvertedLeadController extends Controller
      */
     public function inlineUpdate(Request $request, $id)
     {
+        $field = $request->input('field');
+
         // Check if user has permission to update
         $isMentor = RoleHelper::is_mentor();
         $isFinance = RoleHelper::is_finance();
         $isHod = RoleHelper::is_hod();
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_academic_assistant() && !RoleHelper::is_admission_counsellor() && !$isMentor && !$isFinance && !$isHod) {
-            return response()->json(['error' => 'Access denied.'], 403);
+
+        // Allow name edits for specific roles only
+        $isTeamLead = RoleHelper::is_team_lead();
+        $isSeniorManager = RoleHelper::is_senior_manager();
+        $isGeneralManager = RoleHelper::is_general_manager();
+        $canEditName = RoleHelper::is_admin_or_super_admin()
+            || RoleHelper::is_finance()
+            || RoleHelper::is_admission_counsellor()
+            || RoleHelper::is_academic_assistant()
+            || $isGeneralManager
+            || $isSeniorManager
+            || $isTeamLead;
+
+        $baseAllowed = RoleHelper::is_admin_or_super_admin()
+            || RoleHelper::is_academic_assistant()
+            || RoleHelper::is_admission_counsellor()
+            || $isMentor
+            || $isFinance
+            || $isHod;
+
+        // If user is not in the usual allowed set, only allow name updates (for GM/SM/TL)
+        if (!$baseAllowed) {
+            if (!($field === 'name' && $canEditName)) {
+                return response()->json(['error' => 'Access denied.'], 403);
+            }
         }
         
         // If mentor, restrict to allowed fields only
@@ -2935,14 +2960,13 @@ class ConvertedLeadController extends Controller
             }
         }
 
-        $field = $request->input('field');
         $value = $request->input('value');
 
         // If mentor, check if field is allowed (check this first before restricted fields check)
         if ($isMentor && !in_array($field, $mentorAllowedFields)) {
             return response()->json(['error' => 'You do not have permission to edit this field.'], 403);
         }
-        if ($isFinance && !in_array($field, $financeAllowedFields)) {
+        if ($isFinance && $field !== 'name' && !in_array($field, $financeAllowedFields)) {
             return response()->json(['error' => 'You do not have permission to edit this field.'], 403);
         }
 
@@ -3002,6 +3026,7 @@ class ConvertedLeadController extends Controller
 
         // Define allowed fields and their validation rules
         $allowedFields = [
+            'name' => 'required|string|max:255',
             'register_number' => 'nullable|string|max:50',
             'sub_course_id' => 'nullable|exists:sub_courses,id',
             'subject_id' => 'nullable|exists:subjects,id',
@@ -3219,6 +3244,10 @@ class ConvertedLeadController extends Controller
             // Update in ConvertedLead
             $convertedLead->{$field} = $value;
             $convertedLead->updated_by = AuthHelper::getCurrentUserId();
+            if ($field === 'name') {
+                $convertedLead->name_updated_by = AuthHelper::getCurrentUserId();
+                $convertedLead->name_updated_at = now();
+            }
             $convertedLead->save();
         }
 

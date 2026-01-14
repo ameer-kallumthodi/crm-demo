@@ -429,6 +429,13 @@
                                     @php
                                     $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
                                     $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                                    $canInlineEditName = \App\Helpers\RoleHelper::is_admin_or_super_admin()
+                                        || \App\Helpers\RoleHelper::is_finance()
+                                        || \App\Helpers\RoleHelper::is_admission_counsellor()
+                                        || \App\Helpers\RoleHelper::is_academic_assistant()
+                                        || \App\Helpers\RoleHelper::is_general_manager()
+                                        || \App\Helpers\RoleHelper::is_senior_manager()
+                                        || \App\Helpers\RoleHelper::is_team_lead();
                                     @endphp
                                     <td>
                                         @include('admin.converted-leads.partials.status-badge', [
@@ -504,10 +511,17 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avtar avtar-s rounded-circle bg-light-success me-2 d-flex align-items-center justify-content-center">
-                                                <span class="f-16 fw-bold text-success">{{ strtoupper(substr($convertedLead->name, 0, 1)) }}</span>
+                                                <span class="f-16 fw-bold text-success js-name-initial">{{ strtoupper(substr($convertedLead->name, 0, 1)) }}</span>
                                             </div>
                                             <div>
-                                                <h6 class="mb-0">{{ $convertedLead->name }}</h6>
+                                                <div class="inline-edit" data-field="name" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->name }}">
+                                                    <h6 class="mb-0 d-inline"><span class="display-value">{{ $convertedLead->name }}</span></h6>
+                                                    @if($canInlineEditName)
+                                                    <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit Name">
+                                                        <i class="ti ti-edit"></i>
+                                                    </button>
+                                                    @endif
+                                                </div>
                                                 <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
                                                 @if($convertedLead->is_cancelled)
                                                 <div>
@@ -1299,6 +1313,17 @@
                         container.find('.display-value').text(displayValue);
                         // Update the data-current attribute with the new display value
                         container.data('current', displayValue);
+                        // Update avatar initial when name changes
+                        if (field === 'name') {
+                            const row = container.closest('tr');
+                            const initialEl = row.find('.js-name-initial').first();
+                            if (initialEl.length) {
+                                const initial = (displayValue && String(displayValue).trim().length)
+                                    ? String(displayValue).trim().charAt(0).toUpperCase()
+                                    : '?';
+                                initialEl.text(initial);
+                            }
+                        }
                         // Update data-current-id for fields that use it (store the ID, not the display value)
                         if (field === 'batch_id' || field === 'admission_batch_id') {
                             container.data('current-id', value || '');
