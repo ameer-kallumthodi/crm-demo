@@ -729,11 +729,7 @@
     <!-- [ Main Content ] end -->
 
     <!-- Country Codes JSON for JavaScript -->
-    <script type="application/json" id="country-codes-json">
-        {
-            !!json_encode($country_codes) !!
-        }
-    </script>
+    <script type="application/json" id="country-codes-json">@json($country_codes ?? [])</script>
     @endsection
 
     @push('styles')
@@ -1100,21 +1096,11 @@
 
                 if (field === 'teacher_id') {
                     @foreach($teachers as $teacher)
-                    const selected {
-                        {
-                            $teacher - > id
-                        }
-                    } = String(currentValue) === '{{ $teacher->id }}' ? 'selected' : '';
-                    options += `<option value="{{ $teacher->id }}" ${selected{{ $teacher->id }}}>{{ $teacher->name }}</option>`;
+                    options += `<option value="{{ $teacher->id }}" ${String(currentValue) === '{{ $teacher->id }}' ? 'selected' : ''}>{{ $teacher->name }}</option>`;
                     @endforeach
                 } else if (field === 'subject_id') {
                     @foreach($subjects as $subject)
-                    const selected {
-                        {
-                            $subject - > id
-                        }
-                    } = String(currentValue) === '{{ $subject->id }}' ? 'selected' : '';
-                    options += `<option value="{{ $subject->id }}" ${selected{{ $subject->id }}}>{{ $subject->title }}</option>`;
+                    options += `<option value="{{ $subject->id }}" ${String(currentValue) === '{{ $subject->id }}' ? 'selected' : ''}>{{ $subject->title }}</option>`;
                     @endforeach
                 } else if (field === 'class_status') {
                     const statuses = ['Active', 'In Progress', 'Inactive', 'Dropped Out', 'Completed', 'Rejoining'];
