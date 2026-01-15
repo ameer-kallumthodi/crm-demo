@@ -729,7 +729,7 @@
     <!-- [ Main Content ] end -->
 
     <!-- Country Codes JSON for JavaScript -->
-    <script type="application/json" id="country-codes-json">@json($country_codes ?? [])</script>
+    <script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
     @endsection
 
     @push('styles')
@@ -866,19 +866,25 @@
                 let editForm = '';
 
                 if (field === 'phone') {
-                    const currentCode = container.siblings('.inline-code-value').data('current') || '';
+                    const currentCode = container.find('.inline-code-value').data('current') || container.siblings('.inline-code-value').data('current') || '';
                     editForm = createPhoneField(currentCode, currentValue);
+                } else if (field === 'teacher_id') {
+                    editForm = createTeacherField(field, currentValue);
+                } else if (field === 'subject_id') {
+                    editForm = createSubjectField(field, currentValue);
                 } else if (['class_status', 'continuing_studies'].includes(field)) {
                     editForm = createSelectField(field, currentValue);
                 } else if (['screening', 'screening_date'].includes(field)) {
                     editForm = createDateField(field, currentValue);
                 } else if (field === 'class_time') {
                     editForm = createTimeField(field, currentValue);
+                } else if (field === 'batch_id') {
+                    const courseId = container.data('course-id');
+                    const currentId = container.data('current-id');
+                    editForm = createBatchSelect(courseId, currentId);
                 } else if (field === 'admission_batch_id') {
                     const batchId = container.data('batch-id');
                     editForm = createAdmissionBatchField(batchId, currentValue);
-                } else if (['teacher_id', 'subject_id'].includes(field)) {
-                    editForm = createSelectField(field, currentValue);
                 } else {
                     editForm = createInputField(field, currentValue);
                 }
@@ -893,10 +899,12 @@
                     loadAdmissionBatchesForEdit($select, batchId, currentValue);
                 }
 
-                // Load options for select fields
-                if (['teacher_id', 'subject_id', 'class_status', 'continuing_studies'].includes(field)) {
+                // Load batches if it's a batch field
+                if (field === 'batch_id') {
+                    const courseId = container.data('course-id');
+                    const currentId = container.data('current-id');
                     const $select = container.find('select');
-                    loadSelectOptions($select, field, currentValue);
+                    loadBatchesForEdit($select, courseId, currentId);
                 }
 
                 container.find('input, select').first().focus();
@@ -958,13 +966,31 @@
                                 container.find('.display-value').text(displayDate);
                                 container.data('current', value);
                             } else {
-                                container.find('.display-value').text(response.value || value);
-                                // Update the data-current attribute with the new value
-                                container.data('current', response.value || value);
+                                const displayText = response.value || value || '-';
+                                container.find('.display-value').text(displayText);
+
+                                // Keep raw values in data-current so edits work correctly (ids, phone, etc.)
+                                let currentForEditing = value;
+                                if (field === 'register_number') {
+                                    currentForEditing = value || '';
+                                }
+                                if (['teacher_id', 'subject_id', 'batch_id', 'admission_batch_id'].includes(field)) {
+                                    currentForEditing = value || '';
+                                }
+                                if (field === 'phone') {
+                                    currentForEditing = value || '';
+                                }
+                                container.data('current', currentForEditing);
                             }
                             if (field === 'phone') {
                                 const codeVal = extra.code || '';
+                                // E-school keeps code marker inside the same container
+                                container.find('.inline-code-value').data('current', codeVal);
+                                // Fallback for pages where it's a sibling element
                                 container.siblings('.inline-code-value').data('current', codeVal);
+                            }
+                            if (field === 'batch_id') {
+                                container.data('current-id', value || '');
                             }
                             toast_success(response.message);
                         } else {
@@ -1045,20 +1071,6 @@
             `;
             }
 
-            function createSelectField(field, currentValue) {
-                return `
-                <div class="edit-form">
-                    <select class="form-select form-select-sm" data-field="${field}">
-                        <option value="">Select ${field.replace('_', ' ')}</option>
-                    </select>
-                    <div class="btn-group mt-1">
-                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
-                    </div>
-                </div>
-            `;
-            }
-
             function createAdmissionBatchField(batchId, currentValue) {
                 return `
                 <div class="edit-form">
@@ -1071,6 +1083,20 @@
                     </div>
                 </div>
             `;
+            }
+
+            function createBatchSelect(courseId, currentId) {
+                return `
+                    <div class="edit-form">
+                        <select class="form-select form-select-sm">
+                            <option value="">Loading...</option>
+                        </select>
+                        <div class="btn-group mt-1">
+                            <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                            <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                        </div>
+                    </div>
+                `;
             }
 
             function loadAdmissionBatchesForEdit($select, batchId, currentValue) {
@@ -1091,32 +1117,103 @@
                 });
             }
 
-            function loadSelectOptions($select, field, currentValue) {
-                let options = `<option value="">Select ${field.replace('_', ' ')}</option>`;
-
-                if (field === 'teacher_id') {
-                    @foreach($teachers as $teacher)
-                    options += `<option value="{{ $teacher->id }}" ${String(currentValue) === '{{ $teacher->id }}' ? 'selected' : ''}>{{ $teacher->name }}</option>`;
-                    @endforeach
-                } else if (field === 'subject_id') {
-                    @foreach($subjects as $subject)
-                    options += `<option value="{{ $subject->id }}" ${String(currentValue) === '{{ $subject->id }}' ? 'selected' : ''}>{{ $subject->title }}</option>`;
-                    @endforeach
-                } else if (field === 'class_status') {
-                    const statuses = ['Active', 'In Progress', 'Inactive', 'Dropped Out', 'Completed', 'Rejoining'];
-                    statuses.forEach(function(status) {
-                        const selected = String(currentValue) === status ? 'selected' : '';
-                        options += `<option value="${status}" ${selected}>${status}</option>`;
-                    });
-                } else if (field === 'continuing_studies') {
-                    const options_list = ['yes', 'no'];
-                    options_list.forEach(function(opt) {
-                        const selected = String(currentValue) === opt ? 'selected' : '';
-                        options += `<option value="${opt}" ${selected}>${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`;
-                    });
+            function loadBatchesForEdit($select, courseId, currentId) {
+                if (!courseId) {
+                    $select.html('<option value="">No course selected</option>');
+                    return;
                 }
 
-                $select.html(options);
+                $.get(`/api/batches/by-course/${courseId}`)
+                    .done(function(response) {
+                        let options = '<option value="">Select Batch</option>';
+                        if (response && response.success && response.batches) {
+                            response.batches.forEach(function(batch) {
+                                const isSelected = (currentId && String(currentId) === String(batch.id)) ? 'selected' : '';
+                                options += `<option value="${batch.id}" ${isSelected}>${batch.title}</option>`;
+                            });
+                        }
+                        $select.html(options);
+                        $select.focus();
+                    })
+                    .fail(function() {
+                        $select.html('<option value="">Error loading batches</option>');
+                    });
+            }
+
+            function createTeacherField(field, currentValue) {
+                let options = `
+                    <option value="">Select Tutor</option>
+                    @foreach($teachers as $teacher)
+                    <option value="{{ $teacher->id }}" ${String(currentValue) === '{{ $teacher->id }}' ? 'selected' : ''}>{{ $teacher->name }}</option>
+                    @endforeach
+                `;
+
+                return `
+                    <div class="edit-form">
+                        <select class="form-select form-select-sm">
+                            ${options}
+                        </select>
+                        <div class="btn-group mt-1">
+                            <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                            <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function createSubjectField(field, currentValue) {
+                let options = `
+                    <option value="">Select Subject</option>
+                    @foreach($subjects as $subject)
+                    <option value="{{ $subject->id }}" ${String(currentValue) === '{{ $subject->id }}' ? 'selected' : ''}>{{ $subject->title }}</option>
+                    @endforeach
+                `;
+
+                return `
+                    <div class="edit-form">
+                        <select class="form-select form-select-sm">
+                            ${options}
+                        </select>
+                        <div class="btn-group mt-1">
+                            <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                            <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function createSelectField(field, currentValue) {
+                let options = '';
+
+                if (field === 'class_status') {
+                    options = `
+                        <option value="">Select Class Status</option>
+                        <option value="Active" ${currentValue === 'Active' ? 'selected' : ''}>Active</option>
+                        <option value="In Progress" ${currentValue === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                        <option value="Inactive" ${currentValue === 'Inactive' ? 'selected' : ''}>Inactive</option>
+                        <option value="Dropped Out" ${currentValue === 'Dropped Out' ? 'selected' : ''}>Dropped Out</option>
+                        <option value="Completed" ${currentValue === 'Completed' ? 'selected' : ''}>Completed</option>
+                        <option value="Rejoining" ${currentValue === 'Rejoining' ? 'selected' : ''}>Rejoining</option>
+                    `;
+                } else if (field === 'continuing_studies') {
+                    options = `
+                        <option value="">Select Continuing Studies</option>
+                        <option value="yes" ${currentValue === 'yes' ? 'selected' : ''}>Yes</option>
+                        <option value="no" ${currentValue === 'no' ? 'selected' : ''}>No</option>
+                    `;
+                }
+
+                return `
+                    <div class="edit-form">
+                        <select class="form-select form-select-sm">
+                            ${options}
+                        </select>
+                        <div class="btn-group mt-1">
+                            <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
+                            <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
+                        </div>
+                    </div>
+                `;
             }
 
             function createPhoneField(currentCode, currentPhone) {
