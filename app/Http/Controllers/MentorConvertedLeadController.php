@@ -179,6 +179,60 @@ class MentorConvertedLeadController extends Controller
             $field = $request->field;
             $value = $request->value;
 
+            // Allow only known fields to prevent SQL errors / mass assignment of unknown columns.
+            // Note: "status" belongs to converted_leads, not converted_student_mentor_details.
+            $allowedMentorFields = [
+                'subject_id',
+                'registration_status',
+                'technology_side',
+                'student_status',
+                'problems',
+                'telegram_group',
+                'app',
+                'whatsapp_group',
+                'call_1',
+                'call_2',
+                'call_3',
+                'call_4',
+                'call_5',
+                'call_6',
+                'call_7',
+                'call_8',
+                'call_9',
+                'mentor_live_1',
+                'mentor_live_2',
+                'mentor_live_3',
+                'mentor_live_4',
+                'mentor_live_5',
+                'first_live',
+                'first_exam_registration',
+                'first_exam',
+                'second_live',
+                'second_exam',
+                'model_exam_live',
+                'model_exam',
+                'practical',
+                'self_registration',
+                'assignment',
+                'mock_test',
+                'admit_card',
+                'exam_subject_1',
+                'exam_subject_2',
+                'exam_subject_3',
+                'exam_subject_4',
+                'exam_subject_5',
+                'exam_subject_6',
+            ];
+
+            $allowedTopLevelFields = ['status'];
+
+            if (!in_array($field, $allowedMentorFields, true) && !in_array($field, $allowedTopLevelFields, true)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Invalid field.'
+                ], 422);
+            }
+
             // Validate the field and value
             $validationRules = $this->getValidationRules($field);
             if ($validationRules) {
@@ -189,6 +243,18 @@ class MentorConvertedLeadController extends Controller
                         'error' => $validator->errors()->first($field)
                     ], 422);
                 }
+            }
+
+            // "status" is a ConvertedLead field (converted_leads table), not mentor_details.
+            if ($field === 'status') {
+                $convertedLead->status = $value ?: null;
+                $convertedLead->save();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Updated successfully',
+                    'value' => $convertedLead->status ?: 'N/A'
+                ]);
             }
 
             // Handle all fields - update in converted_student_mentor_details table
@@ -230,6 +296,7 @@ class MentorConvertedLeadController extends Controller
             'student_status' => 'nullable|in:Low Level,Below Medium,Medium Level,Advanced Level',
             'problems' => 'nullable|string|max:1000',
             'telegram_group' => 'nullable|in:Sent link,task complete',
+            'status' => 'nullable|in:Paid,Received,Admission cancel,Active,Inactive',
         ];
 
         // Add call status rules
