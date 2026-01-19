@@ -666,6 +666,9 @@ class ConvertedLeadsController extends Controller
         // General Manager: Can see ALL converted leads (no filter)
         if ($roleTitle === 'General Manager') {
             // No filtering
+        // Senior Manager: Can see ALL converted leads (no filter)
+        } elseif ($roleId == 3 && $isSeniorManager) {
+            // No filtering - show all converted leads
         // Check team lead next
         } elseif ($isTeamLead) {
             // Team Lead: Can see converted leads from their team
