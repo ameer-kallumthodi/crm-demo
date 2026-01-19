@@ -451,7 +451,7 @@
                                     <td>
                                         <div class="inline-edit" data-field="status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->status }}">
                                             <span class="display-value">{{ $convertedLead->status ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </button>
@@ -478,7 +478,7 @@
                                     <td>
                                         <div class="inline-edit" data-field="subject_id" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->subject_id }}">
                                             <span class="display-value">{{ $convertedLead->mentorDetails?->subject?->title ?? $convertedLead->subject?->title ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </button>
@@ -490,7 +490,7 @@
                                     <td>
                                         <div class="inline-edit" data-field="registration_status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->registration_status }}">
                                             <span class="display-value">{{ $convertedLead->mentorDetails?->registration_status ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor())
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </button>
