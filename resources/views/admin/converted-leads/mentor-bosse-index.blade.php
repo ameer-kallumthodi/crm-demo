@@ -443,7 +443,7 @@
                                         <span class="display-value">{{ $convertedLead->studentDetails?->status ?? 'N/A' }}</span>
                                     </td>
                                     <td>
-                                        <span class="display-value">{{ $convertedLead->studentDetails?->enroll_no ?? 'N/A' }}</span>
+                                        <span class="display-value">{{ $convertedLead->studentDetails?->board_registration_number ?? 'N/A' }}</span>
                                     </td>
                                     <td>
                                         <span class="display-value">{{ $convertedLead->studentDetails?->application_number ?? 'N/A' }}</span>
