@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'Data Science Course Mentor List')
+@section('title', 'Digital Marketing Course Mentor List')
 
 @section('content')
 @php
@@ -63,7 +63,7 @@ $restrictedFieldsServer = [
         background-color: #fff5f5;
     }
 </style>
-@endphp
+
 <div id="can-edit-restricted-flag" data-value="{{ $canEditRestricted ? 'true' : 'false' }}" style="display:none;"></div>
 @php
 $restrictedSelectorCss = collect($restrictedFieldsServer)
@@ -90,14 +90,14 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Data Science Course Mentor List</h5>
+                    <h5 class="m-b-10">Digital Marketing Course Mentor List</h5>
                 </div>
             </div>
             <div class="col-md-6">
                 <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                    <li class="breadcrumb-item">Data Science Mentor</li>
+                    <li class="breadcrumb-item">Digital Marketing Mentor</li>
                 </ul>
             </div>
         </div>
@@ -286,7 +286,7 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.data-science-mentor-converted-leads.index') }}" id="filterForm">
+                <form method="GET" action="{{ route('admin.digital-marketing-mentor-converted-leads.index') }}" id="filterForm">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
@@ -407,7 +407,7 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5>Data Science Course Mentor List</h5>
+                <h5>Digital Marketing Course Mentor List</h5>
             </div>
             <div class="card-body">
                 <!-- Desktop Table View -->

@@ -63,7 +63,6 @@
         background-color: #fff5f5;
     }
 </style>
-@endphp
 <div id="can-edit-restricted-flag" data-value="{{ $canEditRestricted ? 'true' : 'false' }}" style="display:none;"></div>
 @php
     $restrictedSelectorCss = collect($restrictedFieldsServer)

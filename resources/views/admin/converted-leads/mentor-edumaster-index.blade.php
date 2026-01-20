@@ -81,7 +81,7 @@
                     <a href="{{ route('admin.ugpg-converted-leads.index') }}" class="btn btn-outline-warning">
                         <i class="ti ti-graduation"></i> UG/PG Converted Leads
                     </a>
-                    <a href="{{ route('admin.edumaster-converted-leads.index') }}" class="btn btn-warning">
+                    <a href="{{ route('admin.edumaster-converted-leads.index') }}" class="btn btn-outline-warning">
                         <i class="ti ti-graduation"></i> EduMaster Converted Leads
                     </a>
                     <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-outline-info">
