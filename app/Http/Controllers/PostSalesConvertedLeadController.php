@@ -236,6 +236,9 @@ class PostSalesConvertedLeadController extends Controller
             if ($convertedLead->cancelled_at) {
                 $html .= '<br>' . htmlspecialchars($convertedLead->cancelled_at->format('d-m-Y h:i A'), ENT_QUOTES, 'UTF-8');
             }
+            if ($convertedLead->cancel_remark) {
+                $html .= '<br><strong>Remark:</strong> ' . htmlspecialchars($convertedLead->cancel_remark, ENT_QUOTES, 'UTF-8');
+            }
             $html .= '</small>';
         }
         
@@ -258,6 +261,9 @@ class PostSalesConvertedLeadController extends Controller
         $html .= '<div class="small text-muted mt-1">By: ' . $name;
         if ($cancelledAt) {
             $html .= '<br>' . htmlspecialchars($cancelledAt, ENT_QUOTES, 'UTF-8');
+        }
+        if ($convertedLead->cancel_remark) {
+            $html .= '<br><strong>Remark:</strong> ' . htmlspecialchars($convertedLead->cancel_remark, ENT_QUOTES, 'UTF-8');
         }
         $html .= '</div>';
 
@@ -506,6 +512,7 @@ class PostSalesConvertedLeadController extends Controller
             'is_cancelled' => (bool) $convertedLead->is_cancelled,
             'cancelled_by' => $convertedLead->cancelledBy ? $convertedLead->cancelledBy->name : null,
             'cancelled_at' => $convertedLead->cancelled_at ? $convertedLead->cancelled_at->format('d M Y h:i A') : null,
+            'cancel_remark' => $convertedLead->cancel_remark ?? null,
             'phone' => \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone),
             'whatsapp' => ($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number) 
                 ? \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) 
@@ -891,6 +898,7 @@ class PostSalesConvertedLeadController extends Controller
 
         $validated = $request->validate([
             'is_cancelled' => 'required|boolean',
+            'cancel_remark' => 'nullable|string|max:1000',
         ]);
 
         $convertedLead->is_cancelled = (bool) $validated['is_cancelled'];
@@ -900,10 +908,12 @@ class PostSalesConvertedLeadController extends Controller
         if ($convertedLead->is_cancelled) {
             $convertedLead->cancelled_by = AuthHelper::getCurrentUserId();
             $convertedLead->cancelled_at = now();
+            $convertedLead->cancel_remark = $validated['cancel_remark'] ?? null;
         } else {
             // Clear cancelled_by and cancelled_at when uncancelling
             $convertedLead->cancelled_by = null;
             $convertedLead->cancelled_at = null;
+            $convertedLead->cancel_remark = null;
         }
         
         $convertedLead->save();

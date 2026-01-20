@@ -2622,6 +2622,7 @@ class ConvertedLeadController extends Controller
 
         $validated = $request->validate([
             'is_cancelled' => 'required|boolean',
+            'cancel_remark' => 'nullable|string|max:1000',
         ]);
 
         $convertedLead->is_cancelled = (bool) $validated['is_cancelled'];
@@ -2631,10 +2632,12 @@ class ConvertedLeadController extends Controller
         if ($convertedLead->is_cancelled) {
             $convertedLead->cancelled_by = AuthHelper::getCurrentUserId();
             $convertedLead->cancelled_at = now();
+            $convertedLead->cancel_remark = $validated['cancel_remark'] ?? null;
         } else {
             // Clear cancelled_by and cancelled_at when uncancelling
             $convertedLead->cancelled_by = null;
             $convertedLead->cancelled_at = null;
+            $convertedLead->cancel_remark = null;
         }
         
         $convertedLead->save();

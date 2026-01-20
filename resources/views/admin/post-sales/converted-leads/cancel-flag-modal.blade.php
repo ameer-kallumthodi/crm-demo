@@ -43,6 +43,12 @@
             </div>
         </div>
 
+        <div class="mb-3">
+            <label for="cancel_remark" class="form-label fw-semibold">Cancel Remark <span class="text-muted">(Optional)</span></label>
+            <textarea class="form-control" id="cancel_remark" name="cancel_remark" rows="3" placeholder="Enter cancellation remark...">{{ $convertedLead->cancel_remark ?? '' }}</textarea>
+            <small class="text-muted">Maximum 1000 characters</small>
+        </div>
+
         <div class="mb-0">
             <span class="badge {{ $convertedLead->is_cancelled ? 'bg-danger' : 'bg-secondary' }}">
                 Current flag: {{ $convertedLead->is_cancelled ? 'Confirmed' : 'Cancelled' }}

@@ -24,6 +24,7 @@ class ConvertedLead extends Model
         'is_cancelled',
         'cancelled_by',
         'cancelled_at',
+        'cancel_remark',
         'postsale_followupdate',
         'postsale_followuptime',
         'paid_status',

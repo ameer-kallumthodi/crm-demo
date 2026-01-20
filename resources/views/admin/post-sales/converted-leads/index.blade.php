@@ -909,6 +909,9 @@ $columns = array_merge($columns, [
                         if (data.cancelled_at) {
                             cardHtml += '<br>' + escapeHtml(data.cancelled_at);
                         }
+                        if (data.cancel_remark) {
+                            cardHtml += '<br><strong>Remark:</strong> ' + escapeHtml(data.cancel_remark);
+                        }
                         cardHtml += '</small>';
                     }
                     cardHtml += '</div>';
