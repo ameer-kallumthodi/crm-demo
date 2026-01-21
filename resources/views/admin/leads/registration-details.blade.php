@@ -603,6 +603,30 @@
                             </div>
                             @endif
                             @if($studentDetail->course_id == 16)
+                            @if($studentDetail->class)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-school text-success"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Course Type</label>
+                                        <p class="info-value" data-field="class" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ strtolower($studentDetail->class) }}">
+                                            @php
+                                                $classValue = strtolower($studentDetail->class);
+                                                $displayValue = ($classValue === 'sslc') ? 'SSLC' : (($classValue === 'plustwo') ? 'Plus Two' : ucfirst($studentDetail->class));
+                                            @endphp
+                                            {{ $displayValue }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field-type="select" data-options='{"sslc":"SSLC","plustwo":"Plus Two"}' title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
