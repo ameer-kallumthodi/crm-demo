@@ -2579,7 +2579,7 @@ function saveFieldEdit(field, value, leadDetailId, infoValue) {
                     editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="${fieldName}" data-lead-detail-id="${leadDetailIdValue}" data-course-id="${courseId}" data-current-id="${updatedId}" title="Edit"><i class="ti ti-edit"></i></button>`;
                 } else if (fieldName === 'class_time_id') {
                     editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-class-time-field" title="Edit"><i class="ti ti-edit"></i></button>`;
-                } else if (['gender', 'is_employed', 'programme_type', 'location'].includes(fieldName)) {
+                } else if (['gender', 'is_employed', 'programme_type', 'location', 'class'].includes(fieldName)) {
                     // For select fields, preserve data attributes
                     const dataValue = data.new_value || value;
                     let optionsAttr = '';
@@ -2591,10 +2591,17 @@ function saveFieldEdit(field, value, leadDetailId, infoValue) {
                         optionsAttr = `data-options='{"online":"Online","offline":"Offline"}'`;
                     } else if (fieldName === 'location') {
                         optionsAttr = `data-options='{"Ernakulam":"Ernakulam","Malappuram":"Malappuram"}'`;
+                    } else if (fieldName === 'class') {
+                        optionsAttr = `data-options='{"sslc":"SSLC","plustwo":"Plus Two"}'`;
                     }
                     editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field-type="select" ${optionsAttr} title="Edit"><i class="ti ti-edit"></i></button>`;
                     if (infoValue.dataset) {
-                        infoValue.dataset.value = dataValue;
+                        // For class field, store the lowercase value
+                        if (fieldName === 'class') {
+                            infoValue.dataset.value = value.toLowerCase();
+                        } else {
+                            infoValue.dataset.value = dataValue;
+                        }
                     }
                 } else {
                     editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit"><i class="ti ti-edit"></i></button>`;

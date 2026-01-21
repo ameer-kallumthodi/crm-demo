@@ -606,7 +606,7 @@ class RegistrationLeadsController extends Controller
                 'student_name', 'father_name', 'mother_name', 'date_of_birth', 'gender', 'is_employed',
                 'email', 'phone', 'whatsapp', 'parents_phone', 'father_contact_number', 'father_contact_code',
                 'mother_contact_number', 'mother_contact_code', 'street', 'locality', 'post_office', 'district', 'state', 'pin_code',
-                'message', 'subject_id', 'batch_id', 'sub_course_id', 'passed_year', 'programme_type', 'location', 'class_time_id'
+                'message', 'subject_id', 'batch_id', 'sub_course_id', 'passed_year', 'programme_type', 'location', 'class_time_id', 'class'
             ];
 
             if (!in_array($field, $allowedFields)) {
@@ -859,6 +859,38 @@ class RegistrationLeadsController extends Controller
                     'message' => 'Registration details updated successfully.',
                     'data' => [
                         'new_value' => $value,
+                    ],
+                ]);
+            }
+
+            if ($field === 'class') {
+                // Validate class value (for GMVSS course)
+                $value = strtolower($value);
+                if (!in_array($value, ['sslc', 'plustwo'])) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Invalid class value. Must be SSLC or Plus Two.',
+                    ], 400);
+                }
+
+                // Only allow editing class for GMVSS course (course_id = 16)
+                if ($studentDetail->course_id != 16) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Class field is only applicable for GMVSS course.',
+                    ], 400);
+                }
+
+                $studentDetail->update([$field => $value]);
+
+                // Format display value
+                $displayValue = ($value === 'sslc') ? 'SSLC' : 'Plus Two';
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Registration details updated successfully.',
+                    'data' => [
+                        'new_value' => $displayValue,
                     ],
                 ]);
             }
