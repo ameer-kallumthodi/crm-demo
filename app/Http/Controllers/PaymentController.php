@@ -463,6 +463,14 @@ class PaymentController extends Controller
                 ->with('message_danger', 'Tax invoice PDF can only be generated for approved payments.');
         }
         
+        // Calculate previous balance if not set (for older payments)
+        if ($payment->previous_balance === null) {
+            $payment->previous_balance = Payment::where('invoice_id', $payment->invoice_id)
+                ->where('status', 'Approved')
+                ->where('id', '<', $payment->id)
+                ->sum('amount_paid');
+        }
+        
         // Add number to words conversion
         $payment->amount_in_words = $this->numberToWords($payment->amount_paid);
         $payment->total_amount_in_words = $this->numberToWords($payment->invoice->total_amount);
@@ -530,6 +538,14 @@ class PaymentController extends Controller
         if ($payment->status !== 'Approved') {
             return redirect()->back()
                 ->with('message_danger', 'Payment receipt PDF can only be generated for approved payments.');
+        }
+        
+        // Calculate previous balance if not set (for older payments)
+        if ($payment->previous_balance === null) {
+            $payment->previous_balance = Payment::where('invoice_id', $payment->invoice_id)
+                ->where('status', 'Approved')
+                ->where('id', '<', $payment->id)
+                ->sum('amount_paid');
         }
         
         // Add number to words conversion

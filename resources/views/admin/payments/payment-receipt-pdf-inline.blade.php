@@ -133,8 +133,16 @@
                                 <td style="padding: 4px 0; font-size: 10px; border-bottom: 1px solid #ddd; padding-bottom: 4px; text-align: right;"><span class="rupee">₹</span> {{ number_format($payment->invoice->total_amount, 2) }}</td>
                             </tr>
                             <tr>
+                                <td style="padding: 4px 0; font-size: 10px;">Previous Balance</td>
+                                <td style="padding: 4px 0; font-size: 10px; text-align: right;"><span class="rupee">₹</span> {{ number_format($payment->invoice->total_amount - ($payment->previous_balance ?? 0), 2) }}</td>
+                            </tr>
+                            <tr>
                                 <td style="padding: 4px 0; font-size: 10px;"><strong>Received</strong></td>
                                 <td style="padding: 4px 0; font-size: 10px; text-align: right;"><strong><span class="rupee">₹</span> {{ number_format($payment->amount_paid, 2) }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px 0; font-size: 10px; border-top: 1px solid #ddd; padding: 4px 0;">Balance</td>
+                                <td style="padding: 4px 0; font-size: 10px; text-align: right; border-top: 1px solid #ddd; padding: 4px 0;"><span class="rupee">₹</span> {{ number_format(($payment->invoice->total_amount - ($payment->previous_balance ?? 0)) - $payment->amount_paid, 2) }}</td>
                             </tr>
                             <tr>
                                 <td style="padding: 4px 0; font-size: 10px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 4px 0;">Current Balance</td>
