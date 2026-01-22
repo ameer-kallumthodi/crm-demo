@@ -571,6 +571,139 @@
                                     </div>
                                 </div>
                             </div>
+                            @if($studentDetail->course_id == 23)
+                            @if($studentDetail->course_type)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-certificate text-primary"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Course Type</label>
+                                        <p class="info-value" data-field="course_type" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->course_type }}">
+                                            {{ $studentDetail->course_type }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="course_type" data-lead-detail-id="{{ $studentDetail->id }}" data-field-type="select" data-options='{"UG":"UG","PG":"PG"}' title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if($studentDetail->edumaster_course_name)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-book-2 text-success"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">EduMaster Course Name</label>
+                                        <p class="info-value" data-field="edumaster_course_name" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ e($studentDetail->edumaster_course_name) }}">
+                                            {{ $studentDetail->edumaster_course_name }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="edumaster_course_name" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if($studentDetail->selected_courses)
+                            @php
+                                $selectedCoursesDisplay = null;
+                                $selected = is_string($studentDetail->selected_courses) ? json_decode($studentDetail->selected_courses, true) : $studentDetail->selected_courses;
+                                $selectedCoursesDisplay = is_array($selected) ? implode(', ', $selected) : ($studentDetail->selected_courses ?? '');
+                            @endphp
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-list-check text-info"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Selected Courses</label>
+                                        <p class="info-value" data-field="selected_courses" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ e($selectedCoursesDisplay) }}">
+                                            {{ $selectedCoursesDisplay ?: 'N/A' }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="selected_courses" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if($studentDetail->sslc_back_year)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-calendar-event text-warning"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">SSLC Back Year</label>
+                                        <p class="info-value" data-field="sslc_back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->sslc_back_year }}">
+                                            {{ $studentDetail->sslc_back_year }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="sslc_back_year" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if($studentDetail->plustwo_back_year)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-calendar-event text-warning"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Plus Two Back Year</label>
+                                        <p class="info-value" data-field="plustwo_back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->plustwo_back_year }}">
+                                            {{ $studentDetail->plustwo_back_year }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="plustwo_back_year" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if($studentDetail->back_year)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-calendar-event text-warning"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Back Year</label>
+                                        <p class="info-value" data-field="back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->back_year }}">
+                                            {{ $studentDetail->back_year }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="back_year" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if($studentDetail->degree_back_year)
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-calendar-event text-warning"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Degree Back Year</label>
+                                        <p class="info-value" data-field="degree_back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->degree_back_year }}">
+                                            {{ $studentDetail->degree_back_year }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="degree_back_year" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @endif
                             @if(isset($hasSubCourses) && $hasSubCourses)
                             <div class="col-md-6">
                                 <div class="info-card">
@@ -2398,6 +2531,8 @@ function createEditForm(field, currentValue, leadDetailId) {
         `;
     } else if (field === 'message') {
         inputHtml = `<textarea name="${field}" class="form-control form-control-sm" rows="3">${currentValue}</textarea>`;
+    } else if (['sslc_back_year', 'plustwo_back_year', 'back_year', 'degree_back_year'].includes(field)) {
+        inputHtml = `<input type="number" name="${field}" value="${currentValue}" class="form-control form-control-sm" min="1990" max="2030" placeholder="Year">`;
     } else {
         inputHtml = `<input type="text" name="${field}" value="${currentValue}" class="form-control form-control-sm">`;
     }
@@ -2579,7 +2714,7 @@ function saveFieldEdit(field, value, leadDetailId, infoValue) {
                     editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="${fieldName}" data-lead-detail-id="${leadDetailIdValue}" data-course-id="${courseId}" data-current-id="${updatedId}" title="Edit"><i class="ti ti-edit"></i></button>`;
                 } else if (fieldName === 'class_time_id') {
                     editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-class-time-field" title="Edit"><i class="ti ti-edit"></i></button>`;
-                } else if (['gender', 'is_employed', 'programme_type', 'location', 'class'].includes(fieldName)) {
+                } else if (['gender', 'is_employed', 'programme_type', 'location', 'class', 'course_type'].includes(fieldName)) {
                     // For select fields, preserve data attributes
                     const dataValue = data.new_value || value;
                     let optionsAttr = '';
@@ -2593,8 +2728,10 @@ function saveFieldEdit(field, value, leadDetailId, infoValue) {
                         optionsAttr = `data-options='{"Ernakulam":"Ernakulam","Malappuram":"Malappuram"}'`;
                     } else if (fieldName === 'class') {
                         optionsAttr = `data-options='{"sslc":"SSLC","plustwo":"Plus Two"}'`;
+                    } else if (fieldName === 'course_type') {
+                        optionsAttr = `data-options='{"UG":"UG","PG":"PG"}'`;
                     }
-                    editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field-type="select" ${optionsAttr} title="Edit"><i class="ti ti-edit"></i></button>`;
+                    editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="${fieldName}" data-lead-detail-id="${leadDetailIdValue}" data-field-type="select" ${optionsAttr} title="Edit"><i class="ti ti-edit"></i></button>`;
                     if (infoValue.dataset) {
                         // For class field, store the lowercase value
                         if (fieldName === 'class') {
@@ -2604,10 +2741,13 @@ function saveFieldEdit(field, value, leadDetailId, infoValue) {
                         }
                     }
                 } else {
-                    editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" title="Edit"><i class="ti ti-edit"></i></button>`;
+                    editButton = `<button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="${fieldName}" data-lead-detail-id="${leadDetailIdValue}" title="Edit"><i class="ti ti-edit"></i></button>`;
                 }
                 
                 infoValue.innerHTML = `${displayValue} ${editButton}`;
+                if (infoValue.dataset) {
+                    infoValue.dataset.value = displayValue;
+                }
             }
             
             // Handle location field visibility based on programme_type

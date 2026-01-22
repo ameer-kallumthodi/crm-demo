@@ -4806,7 +4806,7 @@ class LeadController extends Controller
             $request->validate([
                 'lead_detail_id' => 'required|exists:leads_details,id',
                 'field' => 'required|string',
-                'value' => 'nullable|string|max:255'
+                'value' => 'nullable|string|max:1000'
             ]);
 
             $studentDetail = \App\Models\LeadDetail::findOrFail($request->lead_detail_id);
@@ -4818,7 +4818,8 @@ class LeadController extends Controller
                 'student_name', 'father_name', 'mother_name', 'date_of_birth', 'gender', 'is_employed',
                 'email', 'phone', 'whatsapp', 'parents_phone', 'father_contact_number', 'father_contact_code',
                 'mother_contact_number', 'mother_contact_code', 'street', 'locality', 'post_office', 'district', 'state', 'pin_code',
-                'message', 'subject_id', 'batch_id', 'sub_course_id', 'passed_year', 'programme_type', 'location', 'class_time_id', 'class'
+                'message', 'subject_id', 'batch_id', 'sub_course_id', 'passed_year', 'programme_type', 'location', 'class_time_id', 'class',
+                'course_type', 'edumaster_course_name', 'selected_courses', 'sslc_back_year', 'plustwo_back_year', 'back_year', 'degree_back_year'
             ];
 
             if (!in_array($field, $allowedFields)) {
@@ -5074,6 +5075,63 @@ class LeadController extends Controller
                     'message' => 'Registration details updated successfully.',
                     'new_value' => $displayValue
                 ]);
+            } elseif (in_array($field, ['course_type', 'edumaster_course_name', 'selected_courses', 'sslc_back_year', 'plustwo_back_year', 'back_year', 'degree_back_year'])) {
+                // EduMaster fields (course_id = 23 only)
+                if ($studentDetail->course_id != 23) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'These fields are only applicable for EduMaster course.'
+                    ], 400);
+                }
+
+                if ($field === 'course_type') {
+                    if (!in_array($value, ['UG', 'PG'])) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Invalid course type. Must be UG or PG.'
+                        ], 400);
+                    }
+                    $studentDetail->update([$field => $value]);
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Registration details updated successfully.',
+                        'new_value' => $value
+                    ]);
+                }
+
+                if ($field === 'edumaster_course_name') {
+                    $studentDetail->update([$field => $value ?: null]);
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Registration details updated successfully.',
+                        'new_value' => $value ?: 'N/A'
+                    ]);
+                }
+
+                if ($field === 'selected_courses') {
+                    $trimmed = $value ? trim($value) : '';
+                    $arr = $trimmed === '' ? [] : array_map('trim', explode(',', $trimmed));
+                    $encoded = $arr === [] ? null : json_encode($arr);
+                    $studentDetail->update(['selected_courses' => $encoded]);
+                    $display = $arr === [] ? 'N/A' : implode(', ', $arr);
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Registration details updated successfully.',
+                        'new_value' => $display
+                    ]);
+                }
+
+                foreach (['sslc_back_year', 'plustwo_back_year', 'back_year', 'degree_back_year'] as $yearField) {
+                    if ($field === $yearField) {
+                        $year = $value === '' || $value === null ? null : (int) $value;
+                        $studentDetail->update([$field => $year]);
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Registration details updated successfully.',
+                            'new_value' => $year !== null ? (string) $year : 'N/A'
+                        ]);
+                    }
+                }
             } else {
                 $studentDetail->update([$field => $value]);
                 
