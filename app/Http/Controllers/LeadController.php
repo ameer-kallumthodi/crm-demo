@@ -5081,7 +5081,7 @@ class LeadController extends Controller
                     'message' => 'Registration details updated successfully.',
                     'new_value' => $displayValue
                 ]);
-            } elseif (in_array($field, ['course_type', 'edumaster_course_name', 'selected_courses', 'sslc_back_year', 'plustwo_back_year', 'back_year', 'degree_back_year'])) {
+            } elseif (in_array($field, ['course_type', 'edumaster_course_name', 'plustwo_subject', 'selected_courses', 'sslc_back_year', 'plustwo_back_year', 'back_year', 'degree_back_year'])) {
                 // EduMaster fields
                 if ($field === 'course_type') {
                     if (!in_array($value, ['UG', 'PG'])) {
@@ -5099,6 +5099,15 @@ class LeadController extends Controller
                 }
 
                 if ($field === 'edumaster_course_name') {
+                    $studentDetail->update([$field => $value ?: null]);
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Registration details updated successfully.',
+                        'new_value' => $value ?: 'N/A'
+                    ]);
+                }
+
+                if ($field === 'plustwo_subject') {
                     $studentDetail->update([$field => $value ?: null]);
                     return response()->json([
                         'success' => true,

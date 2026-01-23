@@ -40,6 +40,7 @@ class LeadDetail extends Model
         'selected_courses',
         'sslc_back_year',
         'plustwo_back_year',
+        'plustwo_subject',
         'back_year',
         'degree_back_year',
         'subject_id',

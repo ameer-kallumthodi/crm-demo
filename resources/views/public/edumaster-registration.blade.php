@@ -352,6 +352,12 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Plus Two Subject <span class="required">*</span></label>
+                                <input type="text" class="form-control" name="plustwo_subject" id="plustwo_subject" placeholder="Enter Plus Two Subject">
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- University and Course Type (for UG/PG) -->
@@ -577,17 +583,25 @@
                 sslcBackYear.value = '';
             }
             
-            // Show/hide Plus Two back year (only if Plus Two is checked)
+            // Show/hide Plus Two back year and subject (only if Plus Two is checked)
             const plustwoRow = document.getElementById('plustwo_back_year_row');
             const plustwoBackYear = document.getElementById('plustwo_back_year');
+            const plustwoSubject = document.getElementById('plustwo_subject');
             if (plustwoChecked) {
                 plustwoRow.style.display = 'block';
                 plustwoBackYear.required = true;
+                if (plustwoSubject) {
+                    plustwoSubject.required = true;
+                }
                 updatePlusTwoBackYear(); // populate options whenever Plus Two is selected (this also calls updateDegreeBackYear)
             } else {
                 plustwoRow.style.display = 'none';
                 plustwoBackYear.required = false;
                 plustwoBackYear.value = '';
+                if (plustwoSubject) {
+                    plustwoSubject.required = false;
+                    plustwoSubject.value = '';
+                }
                 // Update Degree Back Year when Plus Two is unchecked
                 updateDegreeBackYear();
             }

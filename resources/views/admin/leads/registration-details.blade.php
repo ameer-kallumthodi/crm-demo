@@ -667,6 +667,23 @@
                                     </div>
                                 </div>
                             </div>
+                            {{-- Plus Two Subject --}}
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="ti ti-book text-info"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <label class="info-label">Plus Two Subject</label>
+                                        <p class="info-value" data-field="plustwo_subject" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ isset($studentDetail->plustwo_subject) ? e($studentDetail->plustwo_subject) : '' }}">
+                                            {{ isset($studentDetail->plustwo_subject) && $studentDetail->plustwo_subject ? $studentDetail->plustwo_subject : 'N/A' }}
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="plustwo_subject" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                             {{-- Back Year --}}
                             <div class="col-md-6">
                                 <div class="info-card">
@@ -2603,6 +2620,10 @@ function createEditForm(field, currentValue, leadDetailId) {
         // Remove "N/A" from input value for EduMaster Course Name
         const inputValue = (currentValue && currentValue !== 'N/A') ? currentValue : '';
         inputHtml = `<input type="text" name="${field}" value="${inputValue}" class="form-control form-control-sm" placeholder="Enter course name">`;
+    } else if (field === 'plustwo_subject') {
+        // Remove "N/A" from input value for Plus Two Subject
+        const inputValue = (currentValue && currentValue !== 'N/A') ? currentValue : '';
+        inputHtml = `<input type="text" name="${field}" value="${inputValue}" class="form-control form-control-sm" placeholder="Enter Plus Two Subject">`;
     } else {
         inputHtml = `<input type="text" name="${field}" value="${currentValue}" class="form-control form-control-sm">`;
     }

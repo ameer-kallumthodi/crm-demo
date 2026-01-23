@@ -95,6 +95,7 @@ class LeadEduMasterRegistrationController extends Controller
         // Conditional validation for Plus Two
         if ($hasPlusTwo) {
             $rules['plustwo_back_year'] = 'required|integer|min:2018|max:' . date('Y');
+            $rules['plustwo_subject'] = 'required|string|max:255';
             $rules['sslc_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:1024';
             
             // Plus Two back year must be at least 2 years after SSLC back year
@@ -178,6 +179,9 @@ class LeadEduMasterRegistrationController extends Controller
             'sslc_back_year.required' => 'SSLC back year is required.',
             'plustwo_back_year.required' => 'Plus Two back year is required.',
             'plustwo_back_year.min' => 'Plus Two back year must be at least 2 years after SSLC back year.',
+            'plustwo_subject.required' => 'Plus Two Subject is required.',
+            'plustwo_subject.string' => 'Plus Two Subject must be a valid text.',
+            'plustwo_subject.max' => 'Plus Two Subject must not exceed 255 characters.',
             'university_id.required' => 'University selection is required.',
             'university_id.exists' => 'Selected university is invalid.',
             'back_year.required_if' => 'Back year is required for the selected university.',
@@ -297,6 +301,7 @@ class LeadEduMasterRegistrationController extends Controller
             
             if ($hasPlusTwo) {
                 $detailData['plustwo_back_year'] = $request->plustwo_back_year;
+                $detailData['plustwo_subject'] = $request->plustwo_subject;
                 $detailData['sslc_certificate'] = $filePaths['sslc_certificate'] ?? null;
             }
             
