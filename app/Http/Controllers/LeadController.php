@@ -5082,14 +5082,7 @@ class LeadController extends Controller
                     'new_value' => $displayValue
                 ]);
             } elseif (in_array($field, ['course_type', 'edumaster_course_name', 'selected_courses', 'sslc_back_year', 'plustwo_back_year', 'back_year', 'degree_back_year'])) {
-                // EduMaster fields (course_id = 23 only)
-                if ($studentDetail->course_id != 23) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'These fields are only applicable for EduMaster course.'
-                    ], 400);
-                }
-
+                // EduMaster fields
                 if ($field === 'course_type') {
                     if (!in_array($value, ['UG', 'PG'])) {
                         return response()->json([

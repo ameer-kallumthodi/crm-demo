@@ -1843,6 +1843,31 @@
             padding-right: 0.5rem;
         }
     }
+    
+    /* Checkbox group styling for selected courses */
+    .checkbox-group {
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 0.375rem;
+        border: 1px solid #dee2e6;
+    }
+    
+    .checkbox-group .form-check {
+        margin-bottom: 0.25rem;
+    }
+    
+    .checkbox-group .form-check:last-child {
+        margin-bottom: 0;
+    }
+    
+    .checkbox-group .form-check-label {
+        margin-left: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .edit-form {
+        width: 100%;
+    }
 </style>
 @endpush
 
@@ -2457,6 +2482,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     const code = infoValue.querySelector('select[name="code"]').value;
                     const number = infoValue.querySelector('input[name="phone_number"]').value;
                     value = code + '|' + number;
+                } else if (field === 'selected_courses') {
+                    // Handle checkboxes for selected_courses
+                    const checkboxes = infoValue.querySelectorAll('input[name="selected_courses[]"]:checked');
+                    const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+                    value = selectedValues.join(', ');
                 } else {
                     const input = infoValue.querySelector('input, textarea, select');
                     value = input ? input.value : '';
@@ -2529,8 +2559,50 @@ function createEditForm(field, currentValue, leadDetailId) {
         `;
     } else if (field === 'message') {
         inputHtml = `<textarea name="${field}" class="form-control form-control-sm" rows="3">${currentValue}</textarea>`;
+    } else if (field === 'selected_courses') {
+        // Parse current value - could be comma-separated string or array
+        let selectedArray = [];
+        if (currentValue && currentValue !== 'N/A') {
+            if (typeof currentValue === 'string') {
+                selectedArray = currentValue.split(',').map(s => s.trim()).filter(s => s);
+            } else if (Array.isArray(currentValue)) {
+                selectedArray = currentValue;
+            }
+        }
+        
+        inputHtml = `
+            <div class="checkbox-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="selected_courses[]" value="SSLC" id="edit_course_sslc" ${selectedArray.includes('SSLC') ? 'checked' : ''}>
+                    <label class="form-check-label" for="edit_course_sslc">SSLC</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="selected_courses[]" value="Plus two" id="edit_course_plustwo" ${selectedArray.includes('Plus two') ? 'checked' : ''}>
+                    <label class="form-check-label" for="edit_course_plustwo">Plus two</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="selected_courses[]" value="UG" id="edit_course_ug" ${selectedArray.includes('UG') ? 'checked' : ''}>
+                    <label class="form-check-label" for="edit_course_ug">UG</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="selected_courses[]" value="PG" id="edit_course_pg" ${selectedArray.includes('PG') ? 'checked' : ''}>
+                    <label class="form-check-label" for="edit_course_pg">PG</label>
+                </div>
+            </div>
+        `;
     } else if (['sslc_back_year', 'plustwo_back_year', 'back_year', 'degree_back_year'].includes(field)) {
-        inputHtml = `<input type="number" name="${field}" value="${currentValue}" class="form-control form-control-sm" min="1990" max="2030" placeholder="Year">`;
+        // Create year dropdown from 2018 to current year
+        const currentYear = new Date().getFullYear();
+        let yearOptions = '<option value="">Select Back Year</option>';
+        for (let year = 2018; year <= currentYear; year++) {
+            const selected = currentValue == year ? 'selected' : '';
+            yearOptions += `<option value="${year}" ${selected}>${year}</option>`;
+        }
+        inputHtml = `<select name="${field}" class="form-select form-select-sm">${yearOptions}</select>`;
+    } else if (field === 'edumaster_course_name') {
+        // Remove "N/A" from input value for EduMaster Course Name
+        const inputValue = (currentValue && currentValue !== 'N/A') ? currentValue : '';
+        inputHtml = `<input type="text" name="${field}" value="${inputValue}" class="form-control form-control-sm" placeholder="Enter course name">`;
     } else {
         inputHtml = `<input type="text" name="${field}" value="${currentValue}" class="form-control form-control-sm">`;
     }
