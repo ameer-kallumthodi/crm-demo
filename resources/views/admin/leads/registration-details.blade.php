@@ -572,7 +572,6 @@
                                 </div>
                             </div>
                             @if($studentDetail->course_id == 23)
-                            @if($studentDetail->course_type)
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -589,8 +588,6 @@
                                     </div>
                                 </div>
                             </div>
-                            @endif
-                            @if($studentDetail->edumaster_course_name)
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -608,7 +605,6 @@
                                 </div>
                             </div>
                             @endif
-                            @if($studentDetail->selected_courses)
                             @php
                                 $selectedCoursesDisplay = null;
                                 $selected = is_string($studentDetail->selected_courses) ? json_decode($studentDetail->selected_courses, true) : $studentDetail->selected_courses;
@@ -630,8 +626,6 @@
                                     </div>
                                 </div>
                             </div>
-                            @endif
-                            @if($studentDetail->sslc_back_year)
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -648,8 +642,6 @@
                                     </div>
                                 </div>
                             </div>
-                            @endif
-                            @if($studentDetail->plustwo_back_year)
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -666,8 +658,6 @@
                                     </div>
                                 </div>
                             </div>
-                            @endif
-                            @if($studentDetail->back_year)
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -684,8 +674,6 @@
                                     </div>
                                 </div>
                             </div>
-                            @endif
-                            @if($studentDetail->degree_back_year)
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -702,7 +690,6 @@
                                     </div>
                                 </div>
                             </div>
-                            @endif
                             @endif
                             @if(isset($hasSubCourses) && $hasSubCourses)
                             <div class="col-md-6">
