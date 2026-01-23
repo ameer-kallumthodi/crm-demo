@@ -2687,10 +2687,16 @@ class LeadController extends Controller
             
             $data['updated_by'] = AuthHelper::getCurrentUserId();
 
-            // Store old telecaller_id before update
+            // Store old telecaller_id and course_id before update
             $oldTelecallerId = $lead->telecaller_id;
+            $oldCourseId = $lead->course_id;
 
             if ($lead->update($data)) {
+                // If course_id was changed, sync to leads_details for this lead
+                if (isset($data['course_id']) && (string) $data['course_id'] !== (string) $oldCourseId) {
+                    LeadDetail::where('lead_id', $lead->id)->update(['course_id' => $data['course_id']]);
+                }
+
                 // If telecaller was changed, create activity log
                 if ($isReassignment && isset($data['telecaller_id'])) {
                     $fromTelecaller = $oldTelecallerId ? \App\Models\User::find($oldTelecallerId) : null;

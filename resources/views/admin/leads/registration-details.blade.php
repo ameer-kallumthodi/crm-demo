@@ -537,7 +537,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @if(in_array($studentDetail->course_id, [1, 2]))
+                            @if(in_array($lead->course_id, [1, 2]))
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -571,7 +571,8 @@
                                     </div>
                                 </div>
                             </div>
-                            @if($studentDetail->course_id == 23)
+                            @if($lead->course_id == 23 || $lead->course_id == '23')
+                            {{-- Course Type --}}
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -579,8 +580,8 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Course Type</label>
-                                        <p class="info-value" data-field="course_type" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->course_type }}">
-                                            {{ $studentDetail->course_type }}
+                                        <p class="info-value" data-field="course_type" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ isset($studentDetail->course_type) ? $studentDetail->course_type : '' }}">
+                                            {{ isset($studentDetail->course_type) && $studentDetail->course_type ? $studentDetail->course_type : 'N/A' }}
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="course_type" data-lead-detail-id="{{ $studentDetail->id }}" data-field-type="select" data-options='{"UG":"UG","PG":"PG"}' title="Edit"><i class="ti ti-edit"></i></button>
                                             @endif
@@ -588,6 +589,7 @@
                                     </div>
                                 </div>
                             </div>
+                            {{-- EduMaster Course Name --}}
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -595,8 +597,8 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">EduMaster Course Name</label>
-                                        <p class="info-value" data-field="edumaster_course_name" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ e($studentDetail->edumaster_course_name) }}">
-                                            {{ $studentDetail->edumaster_course_name }}
+                                        <p class="info-value" data-field="edumaster_course_name" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ isset($studentDetail->edumaster_course_name) ? e($studentDetail->edumaster_course_name) : '' }}">
+                                            {{ isset($studentDetail->edumaster_course_name) && $studentDetail->edumaster_course_name ? $studentDetail->edumaster_course_name : 'N/A' }}
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="edumaster_course_name" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
                                             @endif
@@ -604,10 +606,16 @@
                                     </div>
                                 </div>
                             </div>
+                            {{-- Selected Courses --}}
                             @php
-                                $selectedCoursesDisplay = null;
-                                $selected = is_string($studentDetail->selected_courses) ? json_decode($studentDetail->selected_courses, true) : $studentDetail->selected_courses;
-                                $selectedCoursesDisplay = is_array($selected) ? implode(', ', $selected) : ($studentDetail->selected_courses ?? '');
+                                $selectedCoursesDisplay = 'N/A';
+                                if (isset($studentDetail->selected_courses) && $studentDetail->selected_courses) {
+                                    $selected = is_string($studentDetail->selected_courses) ? json_decode($studentDetail->selected_courses, true) : $studentDetail->selected_courses;
+                                    $selectedCoursesDisplay = is_array($selected) ? implode(', ', $selected) : ($studentDetail->selected_courses ?? 'N/A');
+                                    if (empty($selectedCoursesDisplay)) {
+                                        $selectedCoursesDisplay = 'N/A';
+                                    }
+                                }
                             @endphp
                             <div class="col-md-6">
                                 <div class="info-card">
@@ -617,7 +625,7 @@
                                     <div class="info-content">
                                         <label class="info-label">Selected Courses</label>
                                         <p class="info-value" data-field="selected_courses" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ e($selectedCoursesDisplay) }}">
-                                            {{ $selectedCoursesDisplay ?: 'N/A' }}
+                                            {{ $selectedCoursesDisplay }}
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="selected_courses" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
                                             @endif
@@ -625,6 +633,7 @@
                                     </div>
                                 </div>
                             </div>
+                            {{-- SSLC Back Year --}}
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -632,8 +641,8 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">SSLC Back Year</label>
-                                        <p class="info-value" data-field="sslc_back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->sslc_back_year }}">
-                                            {{ $studentDetail->sslc_back_year }}
+                                        <p class="info-value" data-field="sslc_back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ isset($studentDetail->sslc_back_year) ? $studentDetail->sslc_back_year : '' }}">
+                                            {{ isset($studentDetail->sslc_back_year) && $studentDetail->sslc_back_year ? $studentDetail->sslc_back_year : 'N/A' }}
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="sslc_back_year" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
                                             @endif
@@ -641,6 +650,7 @@
                                     </div>
                                 </div>
                             </div>
+                            {{-- Plus Two Back Year --}}
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -648,8 +658,8 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Plus Two Back Year</label>
-                                        <p class="info-value" data-field="plustwo_back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->plustwo_back_year }}">
-                                            {{ $studentDetail->plustwo_back_year }}
+                                        <p class="info-value" data-field="plustwo_back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ isset($studentDetail->plustwo_back_year) ? $studentDetail->plustwo_back_year : '' }}">
+                                            {{ isset($studentDetail->plustwo_back_year) && $studentDetail->plustwo_back_year ? $studentDetail->plustwo_back_year : 'N/A' }}
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="plustwo_back_year" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
                                             @endif
@@ -657,6 +667,7 @@
                                     </div>
                                 </div>
                             </div>
+                            {{-- Back Year --}}
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -664,8 +675,8 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Back Year</label>
-                                        <p class="info-value" data-field="back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->back_year }}">
-                                            {{ $studentDetail->back_year }}
+                                        <p class="info-value" data-field="back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ isset($studentDetail->back_year) ? $studentDetail->back_year : '' }}">
+                                            {{ isset($studentDetail->back_year) && $studentDetail->back_year ? $studentDetail->back_year : 'N/A' }}
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="back_year" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
                                             @endif
@@ -673,6 +684,7 @@
                                     </div>
                                 </div>
                             </div>
+                            {{-- Degree Back Year --}}
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-icon">
@@ -680,8 +692,8 @@
                                     </div>
                                     <div class="info-content">
                                         <label class="info-label">Degree Back Year</label>
-                                        <p class="info-value" data-field="degree_back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ $studentDetail->degree_back_year }}">
-                                            {{ $studentDetail->degree_back_year }}
+                                        <p class="info-value" data-field="degree_back_year" data-lead-detail-id="{{ $studentDetail->id }}" data-value="{{ isset($studentDetail->degree_back_year) ? $studentDetail->degree_back_year : '' }}">
+                                            {{ isset($studentDetail->degree_back_year) && $studentDetail->degree_back_year ? $studentDetail->degree_back_year : 'N/A' }}
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-primary ms-2 edit-field" data-field="degree_back_year" data-lead-detail-id="{{ $studentDetail->id }}" title="Edit"><i class="ti ti-edit"></i></button>
                                             @endif
@@ -721,7 +733,7 @@
                                 </div>
                             </div>
                             @endif
-                            @if($studentDetail->course_id == 16)
+                            @if($lead->course_id == 16)
                             @if($studentDetail->class)
                             <div class="col-md-6">
                                 <div class="info-card">
