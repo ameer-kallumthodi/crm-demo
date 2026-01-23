@@ -604,7 +604,6 @@
                                     </div>
                                 </div>
                             </div>
-                            @endif
                             @php
                                 $selectedCoursesDisplay = null;
                                 $selected = is_string($studentDetail->selected_courses) ? json_decode($studentDetail->selected_courses, true) : $studentDetail->selected_courses;
