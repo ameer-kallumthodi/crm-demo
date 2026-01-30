@@ -110,7 +110,7 @@ class LeadEduMasterRegistrationController extends Controller
             $rules['university_id'] = 'required|exists:universities,id';
             $rules['course_type'] = 'required|in:UG';
             $rules['edumaster_course_name'] = 'required|string|max:255';
-            $rules['degree_back_year'] = 'required_if:university_id,1|integer|min:2018|max:' . date('Y');
+            $rules['degree_back_year'] = 'required|integer|min:2018|max:' . date('Y');
             $rules['plustwo_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:1024';
         }
         
@@ -119,7 +119,7 @@ class LeadEduMasterRegistrationController extends Controller
             $rules['university_id'] = 'required|exists:universities,id';
             $rules['course_type'] = 'required|in:PG';
             $rules['edumaster_course_name'] = 'required|string|max:255';
-            $rules['degree_back_year'] = 'required_if:university_id,1|integer|min:2018|max:' . date('Y');
+            $rules['degree_back_year'] = 'required|integer|min:2018|max:' . date('Y');
             $rules['ug_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:1024';
         }
         
@@ -129,18 +129,16 @@ class LeadEduMasterRegistrationController extends Controller
             $rules['university_id'] = 'required|exists:universities,id';
             $rules['course_type'] = 'required|in:UG,PG';
             $rules['edumaster_course_name'] = 'required|string|max:255';
-            $rules['degree_back_year'] = 'required_if:university_id,1|integer|min:2018|max:' . date('Y');
+            $rules['degree_back_year'] = 'required|integer|min:2018|max:' . date('Y');
             // Both certificates are required when both UG and PG are selected
             $rules['plustwo_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:1024';
             $rules['ug_certificate'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:1024';
         }
         
-        // Degree Back Year must be at least 2 years after Plus Two Back Year (when university_id == 1)
-        if (($hasUG || $hasPG) && $request->has('university_id') && $request->university_id == 1) {
-            if ($hasPlusTwo && $request->has('plustwo_back_year')) {
-                $plustwoBackYear = (int) $request->plustwo_back_year;
-                $rules['degree_back_year'] .= '|min:' . ($plustwoBackYear + 2);
-            }
+        // Degree Back Year must be at least 2 years after Plus Two Back Year (when provided)
+        if (($hasUG || $hasPG) && $hasPlusTwo && $request->has('plustwo_back_year')) {
+            $plustwoBackYear = (int) $request->plustwo_back_year;
+            $rules['degree_back_year'] .= '|min:' . ($plustwoBackYear + 2);
         }
         
         // Add batch validation if needed
@@ -174,7 +172,7 @@ class LeadEduMasterRegistrationController extends Controller
             'residential_address.required' => 'Residential address is required.',
             'selected_courses.required' => 'Please select at least one course.',
             'selected_courses.min' => 'Please select at least one course.',
-            'degree_back_year.required_if' => 'Degree back year is required for the selected university.',
+            'degree_back_year.required' => 'Degree back year is required.',
             'degree_back_year.min' => 'Degree back year must be at least 2 years after Plus Two back year.',
             'sslc_back_year.required' => 'SSLC back year is required.',
             'plustwo_back_year.required' => 'Plus Two back year is required.',
@@ -348,7 +346,7 @@ class LeadEduMasterRegistrationController extends Controller
                 ]);
             } catch (\Exception $e) {
                 // Log error but don't fail the registration
-                \Log::error('Failed to create lead activity for EduMaster registration: ' . $e->getMessage());
+                Log::error('Failed to create lead activity for EduMaster registration: ' . $e->getMessage());
             }
             
             return response()->json([

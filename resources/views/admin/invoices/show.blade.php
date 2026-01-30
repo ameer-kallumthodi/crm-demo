@@ -78,6 +78,55 @@
                                     <td>₹{{ number_format(round($invoice->pending_amount)) }}</td>
                                 </tr>
                             </table>
+
+                            @if($invoice->invoice_type === 'course' && (int) ($invoice->course_id ?? 0) === 23)
+                                @php
+                                    $feeBreakdown = [
+                                        'PG' => (float) ($invoice->fee_pg_amount ?? 0),
+                                        'UG' => (float) ($invoice->fee_ug_amount ?? 0),
+                                        'PLUS_TWO' => (float) ($invoice->fee_plustwo_amount ?? 0),
+                                        'SSLC' => (float) ($invoice->fee_sslc_amount ?? 0),
+                                    ];
+                                    $feeHeadLabels = [
+                                        'PG' => 'PG',
+                                        'UG' => 'UG',
+                                        'PLUS_TWO' => 'Plus Two',
+                                        'SSLC' => 'SSLC',
+                                    ];
+                                @endphp
+
+                                <h6 class="mt-3">EduMaster Fee Breakdown</h6>
+                                <table class="table table-sm table-bordered mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Fee Head</th>
+                                            <th class="text-end">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{{ $feeHeadLabels['PG'] }}</td>
+                                            <td class="text-end">₹{{ number_format(round($feeBreakdown['PG'])) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ $feeHeadLabels['UG'] }}</td>
+                                            <td class="text-end">₹{{ number_format(round($feeBreakdown['UG'])) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ $feeHeadLabels['PLUS_TWO'] }}</td>
+                                            <td class="text-end">₹{{ number_format(round($feeBreakdown['PLUS_TWO'])) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ $feeHeadLabels['SSLC'] }}</td>
+                                            <td class="text-end">₹{{ number_format(round($feeBreakdown['SSLC'])) }}</td>
+                                        </tr>
+                                        <tr class="table-light">
+                                            <td><strong>Total</strong></td>
+                                            <td class="text-end"><strong>₹{{ number_format(round($invoice->total_amount)) }}</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            @endif
                         </div>
                         <div class="col-md-6">
                             <h6>Student Information</h6>
@@ -163,6 +212,8 @@
                                             <th>#</th>
                                             <th>Payment Date</th>
                                             <th>Amount</th>
+                                            <th>Fee Head</th>
+                                            <th>Fee Amount</th>
                                             <th>Payment Type</th>
                                             <th>Transaction ID</th>
                                             <th>Status</th>
@@ -173,6 +224,24 @@
                                     </thead>
                                     <tbody>
                                         @forelse($invoice->payments as $index => $payment)
+                                        @php
+                                            $feeHeadLabels = [
+                                                'PG' => 'PG',
+                                                'UG' => 'UG',
+                                                'PLUS_TWO' => 'Plus Two',
+                                                'SSLC' => 'SSLC',
+                                            ];
+                                            $feeHeadToAmount = [
+                                                'PG' => (float) ($invoice->fee_pg_amount ?? 0),
+                                                'UG' => (float) ($invoice->fee_ug_amount ?? 0),
+                                                'PLUS_TWO' => (float) ($invoice->fee_plustwo_amount ?? 0),
+                                                'SSLC' => (float) ($invoice->fee_sslc_amount ?? 0),
+                                            ];
+                                            $paymentFeeHead = $payment->fee_head;
+                                            $paymentFeeAmount = ($invoice->invoice_type === 'course' && (int) ($invoice->course_id ?? 0) === 23 && $paymentFeeHead && isset($feeHeadToAmount[$paymentFeeHead]))
+                                                ? $feeHeadToAmount[$paymentFeeHead]
+                                                : null;
+                                        @endphp
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>
@@ -184,6 +253,20 @@
                                                 <br><small class="text-muted">{{ $payment->created_at->format('h:i A') }}</small>
                                             </td>
                                             <td>₹{{ number_format(round($payment->amount_paid)) }}</td>
+                                            <td>
+                                                @if($payment->fee_head)
+                                                    <span class="badge bg-primary">{{ $feeHeadLabels[$payment->fee_head] ?? $payment->fee_head }}</span>
+                                                @else
+                                                    <span class="text-muted">N/A</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if(!is_null($paymentFeeAmount))
+                                                    ₹{{ number_format(round($paymentFeeAmount)) }}
+                                                @else
+                                                    <span class="text-muted">N/A</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $payment->payment_type }}</td>
                                             <td>{{ $payment->transaction_id ?? 'N/A' }}</td>
                                             <td>
@@ -260,7 +343,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="9" class="text-center">No payments found for this invoice.</td>
+                                            <td colspan="11" class="text-center">No payments found for this invoice.</td>
                                         </tr>
                                         @endforelse
                                     </tbody>

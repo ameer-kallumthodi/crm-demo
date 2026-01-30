@@ -1,6 +1,12 @@
 @php
     $isEduThanzeel = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 6);
     $isESchool = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 5);
+    $isEduMaster = $payment->invoice->invoice_type === 'course' && ((int) ($payment->invoice->course_id ?? 0) === 23);
+    $taxInvoiceTotal = isset($payment->tax_invoice_total) ? (float) $payment->tax_invoice_total : (float) ($payment->invoice->total_amount ?? 0);
+    $taxableAmount = isset($payment->tax_invoice_taxable) ? (float) $payment->tax_invoice_taxable : ($taxInvoiceTotal / 1.18);
+    $gstAmount = isset($payment->tax_invoice_gst) ? (float) $payment->tax_invoice_gst : ($taxableAmount * 0.18);
+    $feeHeadBalance = max($taxInvoiceTotal - (float) ($payment->amount_paid ?? 0), 0);
+    $courseCurrentBalance = (float) (($payment->invoice->total_amount ?? 0) - ($payment->invoice->paid_amount ?? 0));
 @endphp
 
 @extends('layouts.mantis')
@@ -77,6 +83,17 @@
                             <h6 class="mb-2" style="color: #000; font-weight: bold;font-size: 12px !important;"><strong>Invoice Details:</strong></h6>
                             <p class="mb-1" style="font-size: 12px !important;">Invoice No.: {{ $payment->invoice->invoice_number }}</p>
                             <p class="mb-0" style="font-size: 12px !important;">Date: {{ $payment->created_at->format('d-m-Y') }}</p>
+                            @if((int) ($payment->invoice->course_id ?? 0) === 23 && $payment->fee_head)
+                                <p class="mb-0" style="font-size: 12px !important;">
+                                    Fee Head:
+                                    <strong>{{ $payment->fee_head === 'PLUS_TWO' ? 'Plus Two' : $payment->fee_head }}</strong>
+                                </p>
+                            @endif
+                            @if($isEduMaster)
+                                <p class="mb-0" style="font-size: 12px !important;">
+                                    Full Course Amount: <strong>₹{{ number_format((float) ($payment->invoice->total_amount ?? 0), 2) }}</strong>
+                                </p>
+                            @endif
                         </div>
                     </div>
 
@@ -98,7 +115,9 @@
                                 <tr>
                                     <td class="table-cell">1</td>
                                     <td class="table-cell" style="font-weight: bold !important;">
-                                        @if($payment->invoice->invoice_type === 'course')
+                                        @if($isEduMaster && $payment->fee_head)
+                                            {{ $payment->fee_head === 'PLUS_TWO' ? 'Plus Two' : $payment->fee_head }}
+                                        @elseif($payment->invoice->invoice_type === 'course')
                                             @if($payment->invoice->course_id == 9 && $payment->invoice->student->leadDetail)
                                                 @php
                                                     $studentDetail = $payment->invoice->student->leadDetail;
@@ -131,16 +150,16 @@
                                         @endif
                                     </td>
                                     <td class="table-cell">1</td>
-                                    <td class="table-cell">₹{{ number_format($payment->invoice->total_amount / 1.18, 2) }}</td>
-                                    <td class="table-cell">₹{{ number_format(($payment->invoice->total_amount / 1.18) * 0.18, 2) }} (18%)</td>
-                                    <td class="table-cell">₹{{ number_format($payment->invoice->total_amount, 2) }}</td>
+                                    <td class="table-cell">₹{{ number_format($taxableAmount, 2) }}</td>
+                                    <td class="table-cell">₹{{ number_format($gstAmount, 2) }} (18%)</td>
+                                    <td class="table-cell">₹{{ number_format($taxInvoiceTotal, 2) }}</td>
                                 </tr>
                                 <tr class="total-row">
                                     <td class="table-cell" colspan="3"><strong>Total</strong></td>
                                     <td class="table-cell">1</td>
-                                    <td class="table-cell">₹{{ number_format($payment->invoice->total_amount / 1.18, 2) }}</td>
-                                    <td class="table-cell">₹{{ number_format(($payment->invoice->total_amount / 1.18) * 0.18, 2) }}</td>
-                                    <td class="table-cell"><strong>₹{{ number_format($payment->invoice->total_amount, 2) }}</strong></td>
+                                    <td class="table-cell">₹{{ number_format($taxableAmount, 2) }}</td>
+                                    <td class="table-cell">₹{{ number_format($gstAmount, 2) }}</td>
+                                    <td class="table-cell"><strong>₹{{ number_format($taxInvoiceTotal, 2) }}</strong></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -164,15 +183,15 @@
                                     <tbody>
                                         <tr>
                                             <td style="padding: 5px; font-size: 12px !important;">SGST</td>
-                                            <td style="padding: 5px; font-size: 12px !important;">₹{{ number_format($payment->invoice->total_amount / 1.18, 2) }}</td>
+                                            <td style="padding: 5px; font-size: 12px !important;">₹{{ number_format($taxableAmount, 2) }}</td>
                                             <td style="padding: 5px; font-size: 12px !important;">9%</td>
-                                            <td style="padding: 5px; font-size: 12px !important;">₹{{ number_format(($payment->invoice->total_amount / 1.18) * 0.09, 2) }}</td>
+                                            <td style="padding: 5px; font-size: 12px !important;">₹{{ number_format($gstAmount * 0.5, 2) }}</td>
                                         </tr>
                                         <tr>
                                             <td style="padding: 5px; font-size: 12px !important;">CGST</td>
-                                            <td style="padding: 5px; font-size: 12px !important;">₹{{ number_format($payment->invoice->total_amount / 1.18, 2) }}</td>
+                                            <td style="padding: 5px; font-size: 12px !important;">₹{{ number_format($taxableAmount, 2) }}</td>
                                             <td style="padding: 5px; font-size: 12px !important;">9%</td>
-                                            <td style="padding: 5px; font-size: 12px !important;">₹{{ number_format(($payment->invoice->total_amount / 1.18) * 0.09, 2) }}</td>
+                                            <td style="padding: 5px; font-size: 12px !important;">₹{{ number_format($gstAmount * 0.5, 2) }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -190,15 +209,25 @@
                                         <p class="mb-1" style="font-size: 12px !important;"><strong>Received:</strong></p>
                                         <!-- <p class="mb-1" style="font-size: 12px !important; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;"><strong>Balance:</strong></p>
                                         <p class="mb-1" style="font-size: 12px !important;"><strong>Previous Balance:</strong></p> -->
-                                        <p class="mb-0" style="font-size: 12px !important;border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;"><strong>Current Balance:</strong></p>
+                                        @if($isEduMaster && $payment->fee_head)
+                                            <p class="mb-1" style="font-size: 12px !important;"><strong>Fee Head Balance:</strong></p>
+                                            <p class="mb-0" style="font-size: 12px !important;border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;"><strong>Course Current Balance:</strong></p>
+                                        @else
+                                            <p class="mb-0" style="font-size: 12px !important;border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;"><strong>Current Balance:</strong></p>
+                                        @endif
                                     </div>
                                     <div class="col-6 text-end">
-                                        <p class="mb-1" style="font-size: 12px !important; border-bottom: 1px solid #ddd; padding-bottom: 5px;">₹{{ number_format($payment->invoice->total_amount / 1.18, 2) }}</p>
-                                        <p class="mb-1" style="font-size: 12px !important;"><strong>₹{{ number_format($payment->invoice->total_amount, 2) }}</strong></p>
+                                        <p class="mb-1" style="font-size: 12px !important; border-bottom: 1px solid #ddd; padding-bottom: 5px;">₹{{ number_format($taxableAmount, 2) }}</p>
+                                        <p class="mb-1" style="font-size: 12px !important;"><strong>₹{{ number_format($taxInvoiceTotal, 2) }}</strong></p>
                                         <p class="mb-1" style="font-size: 12px !important;">₹{{ number_format(round((float) $payment->amount_paid), 0) }}</p>
                                         <!-- <p class="mb-1" style="font-size: 12px !important; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;">₹{{ number_format($payment->invoice->total_amount - $payment->amount_paid, 2) }}</p> -->
                                         <!-- <p class="mb-1" style="font-size: 12px !important;">₹{{ number_format($payment->previous_balance, 2) }}</p> -->
-                                        <p class="mb-0" style="font-size: 12px !important;border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;">₹{{ number_format($payment->invoice->total_amount - $payment->invoice->paid_amount, 2) }}</p>
+                                        @if($isEduMaster && $payment->fee_head)
+                                            <p class="mb-1" style="font-size: 12px !important;">₹{{ number_format($feeHeadBalance, 2) }}</p>
+                                            <p class="mb-0" style="font-size: 12px !important;border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;">₹{{ number_format($courseCurrentBalance, 2) }}</p>
+                                        @else
+                                            <p class="mb-0" style="font-size: 12px !important;border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;">₹{{ number_format($courseCurrentBalance, 2) }}</p>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

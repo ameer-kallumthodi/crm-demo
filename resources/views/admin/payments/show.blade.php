@@ -50,6 +50,10 @@
                                     <td>₹{{ number_format(round($payment->amount_paid)) }}</td>
                                 </tr>
                                 <tr>
+                                    <td><strong>Fee Head:</strong></td>
+                                    <td>{{ $payment->fee_head ?? 'N/A' }}</td>
+                                </tr>
+                                <tr>
                                     <td><strong>Payment Type:</strong></td>
                                     <td>{{ $payment->payment_type }}</td>
                                 </tr>

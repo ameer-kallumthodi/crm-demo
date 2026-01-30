@@ -74,19 +74,178 @@
 
                     <form action="{{ route('admin.payments.store', $invoice->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        @php
+                            $isCourse23 = (int) ($invoice->course_id ?? 0) === 23;
+                            $feeBreakdown = [
+                                'PG' => (float) ($invoice->fee_pg_amount ?? 0),
+                                'UG' => (float) ($invoice->fee_ug_amount ?? 0),
+                                'PLUS_TWO' => (float) ($invoice->fee_plustwo_amount ?? 0),
+                                'SSLC' => (float) ($invoice->fee_sslc_amount ?? 0),
+                            ];
+                            $feeHeadLabels = [
+                                'PG' => 'PG',
+                                'UG' => 'UG',
+                                'PLUS_TWO' => 'Plus Two',
+                                'SSLC' => 'SSLC',
+                            ];
+                            $approvedPayments = $invoice->payments ?? collect();
+                            $paidByHead = [
+                                'PG' => (float) $approvedPayments->where('fee_head', 'PG')->sum('amount_paid'),
+                                'UG' => (float) $approvedPayments->where('fee_head', 'UG')->sum('amount_paid'),
+                                'PLUS_TWO' => (float) $approvedPayments->where('fee_head', 'PLUS_TWO')->sum('amount_paid'),
+                                'SSLC' => (float) $approvedPayments->where('fee_head', 'SSLC')->sum('amount_paid'),
+                            ];
+                            $remainingByHead = [
+                                'PG' => max($feeBreakdown['PG'] - $paidByHead['PG'], 0),
+                                'UG' => max($feeBreakdown['UG'] - $paidByHead['UG'], 0),
+                                'PLUS_TWO' => max($feeBreakdown['PLUS_TWO'] - $paidByHead['PLUS_TWO'], 0),
+                                'SSLC' => max($feeBreakdown['SSLC'] - $paidByHead['SSLC'], 0),
+                            ];
+                        @endphp
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="amount_paid" class="form-label">Payment Amount <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control @error('amount_paid') is-invalid @enderror" 
-                                           name="amount_paid" id="amount_paid" step="0.01" min="0.01" 
-                                           max="{{ $invoice->pending_amount }}" value="{{ old('amount_paid') }}" required>
-                                    <div class="form-text">Maximum amount: ₹{{ number_format(round($invoice->pending_amount)) }}</div>
-                                    @error('amount_paid')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                            @if($isCourse23)
+                                <div class="col-12">
+                                    <div class="alert alert-info mb-0">
+                                        Enter the paid amount for each category and upload the corresponding payment proof.
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div class="col-12">
+                                    <h6 class="mb-2">Fee Breakdown (EduMaster)</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Fee Head</th>
+                                                    <th class="text-end">Total</th>
+                                                    <th class="text-end">Paid</th>
+                                                    <th class="text-end">Remaining</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach(['PG','UG','PLUS_TWO','SSLC'] as $head)
+                                                    <tr>
+                                                        <td>{{ $feeHeadLabels[$head] }}</td>
+                                                        <td class="text-end">₹{{ number_format($feeBreakdown[$head], 2) }}</td>
+                                                        <td class="text-end">₹{{ number_format($paidByHead[$head], 2) }}</td>
+                                                        <td class="text-end">₹{{ number_format($remainingByHead[$head], 2) }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="payment_pg_amount" class="form-label">PG Paid Amount</label>
+                                        <input type="number" class="form-control @error('payment_pg_amount') is-invalid @enderror"
+                                               name="payment_pg_amount" id="payment_pg_amount" step="0.01" min="0"
+                                               max="{{ $remainingByHead['PG'] }}" value="{{ old('payment_pg_amount') }}">
+                                        <div class="form-text">Max: ₹{{ number_format($remainingByHead['PG'], 2) }}</div>
+                                        @error('payment_pg_amount')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="payment_pg_file" class="form-label">PG Payment Proof</label>
+                                        <input type="file" class="form-control @error('payment_pg_file') is-invalid @enderror"
+                                               name="payment_pg_file" id="payment_pg_file" accept=".pdf,.jpg,.jpeg,.png">
+                                        <div class="form-text">Accepted formats: PDF, JPG, JPEG, PNG (Max: 2MB)</div>
+                                        @error('payment_pg_file')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="payment_ug_amount" class="form-label">UG Paid Amount</label>
+                                        <input type="number" class="form-control @error('payment_ug_amount') is-invalid @enderror"
+                                               name="payment_ug_amount" id="payment_ug_amount" step="0.01" min="0"
+                                               max="{{ $remainingByHead['UG'] }}" value="{{ old('payment_ug_amount') }}">
+                                        <div class="form-text">Max: ₹{{ number_format($remainingByHead['UG'], 2) }}</div>
+                                        @error('payment_ug_amount')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="payment_ug_file" class="form-label">UG Payment Proof</label>
+                                        <input type="file" class="form-control @error('payment_ug_file') is-invalid @enderror"
+                                               name="payment_ug_file" id="payment_ug_file" accept=".pdf,.jpg,.jpeg,.png">
+                                        <div class="form-text">Accepted formats: PDF, JPG, JPEG, PNG (Max: 2MB)</div>
+                                        @error('payment_ug_file')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="payment_plustwo_amount" class="form-label">Plus Two Paid Amount</label>
+                                        <input type="number" class="form-control @error('payment_plustwo_amount') is-invalid @enderror"
+                                               name="payment_plustwo_amount" id="payment_plustwo_amount" step="0.01" min="0"
+                                               max="{{ $remainingByHead['PLUS_TWO'] }}" value="{{ old('payment_plustwo_amount') }}">
+                                        <div class="form-text">Max: ₹{{ number_format($remainingByHead['PLUS_TWO'], 2) }}</div>
+                                        @error('payment_plustwo_amount')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="payment_plustwo_file" class="form-label">Plus Two Payment Proof</label>
+                                        <input type="file" class="form-control @error('payment_plustwo_file') is-invalid @enderror"
+                                               name="payment_plustwo_file" id="payment_plustwo_file" accept=".pdf,.jpg,.jpeg,.png">
+                                        <div class="form-text">Accepted formats: PDF, JPG, JPEG, PNG (Max: 2MB)</div>
+                                        @error('payment_plustwo_file')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="payment_sslc_amount" class="form-label">SSLC Paid Amount</label>
+                                        <input type="number" class="form-control @error('payment_sslc_amount') is-invalid @enderror"
+                                               name="payment_sslc_amount" id="payment_sslc_amount" step="0.01" min="0"
+                                               max="{{ $remainingByHead['SSLC'] }}" value="{{ old('payment_sslc_amount') }}">
+                                        <div class="form-text">Max: ₹{{ number_format($remainingByHead['SSLC'], 2) }}</div>
+                                        @error('payment_sslc_amount')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="payment_sslc_file" class="form-label">SSLC Payment Proof</label>
+                                        <input type="file" class="form-control @error('payment_sslc_file') is-invalid @enderror"
+                                               name="payment_sslc_file" id="payment_sslc_file" accept=".pdf,.jpg,.jpeg,.png">
+                                        <div class="form-text">Accepted formats: PDF, JPG, JPEG, PNG (Max: 2MB)</div>
+                                        @error('payment_sslc_file')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            @else
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="amount_paid" class="form-label">Payment Amount <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control @error('amount_paid') is-invalid @enderror" 
+                                               name="amount_paid" id="amount_paid" step="0.01" min="0.01" 
+                                               max="{{ $invoice->pending_amount }}" value="{{ old('amount_paid') }}" required>
+                                        <input type="hidden" id="pending_amount_value" value="{{ $invoice->pending_amount }}">
+                                        <div class="form-text">Maximum amount: ₹{{ number_format(round($invoice->pending_amount)) }}</div>
+                                        @error('amount_paid')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            @endif
 
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -120,6 +279,18 @@
 
                             <div class="col-md-6">
                                 <div class="mb-3">
+                                    <label for="payment_date" class="form-label">Payment Date</label>
+                                    <input type="date" class="form-control @error('payment_date') is-invalid @enderror"
+                                           name="payment_date" id="payment_date" value="{{ old('payment_date', date('Y-m-d')) }}">
+                                    @error('payment_date')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            @if(!$isCourse23)
+                            <div class="col-md-6">
+                                <div class="mb-3">
                                     <label for="file_upload" class="form-label">Upload Receipt/Proof</label>
                                     <input type="file" class="form-control @error('file_upload') is-invalid @enderror" 
                                            name="file_upload" id="file_upload" accept=".pdf,.jpg,.jpeg,.png">
@@ -129,6 +300,7 @@
                                     @enderror
                                 </div>
                             </div>
+                            @endif
 
                             <div class="col-12">
                                 <button type="submit" class="btn btn-success">
@@ -149,17 +321,18 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const amountInput = document.getElementById('amount_paid');
-    const maxAmount = {{ $invoice->pending_amount }};
-
-    amountInput.addEventListener('input', function() {
-        if (parseFloat(this.value) > maxAmount) {
-            this.value = maxAmount;
-            alert('Payment amount cannot exceed the pending amount of ₹' + maxAmount.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }));
-        }
-    });
+    if (amountInput) {
+        const maxAmount = parseFloat(document.getElementById('pending_amount_value')?.value || '0');
+        amountInput.addEventListener('input', function() {
+            if (parseFloat(this.value) > maxAmount) {
+                this.value = maxAmount;
+                alert('Payment amount cannot exceed the pending amount of ₹' + maxAmount.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }));
+            }
+        });
+    }
 });
 </script>
 @endsection

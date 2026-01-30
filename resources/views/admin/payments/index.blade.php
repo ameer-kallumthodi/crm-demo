@@ -306,6 +306,7 @@
                                             <th class="border-0">#</th>
                                             <th class="border-0">Payment Date</th>
                                             <th class="border-0">Amount</th>
+                                            <th class="border-0">Fee Head</th>
                                             <th class="border-0">Previous Balance</th>
                                             <th class="border-0">Payment Type</th>
                                             <th class="border-0">Transaction ID</th>
@@ -339,6 +340,13 @@
                                             </div>
                                             <span class="fw-bold text-success">₹{{ number_format(round($payment->amount_paid)) }}</span>
                                         </div>
+                                    </td>
+                                    <td>
+                                        @if($payment->fee_head)
+                                            <span class="badge bg-primary">{{ $payment->fee_head }}</span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">

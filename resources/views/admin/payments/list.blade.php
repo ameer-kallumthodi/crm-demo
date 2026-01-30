@@ -135,6 +135,7 @@
                                             <th>Converted Student</th>
                                             <th>Course / Batch</th>
                                             <th class="text-end">Amount</th>
+                                            <th>Fee Head</th>
                                             <th>Payment Type</th>
                                             <th>Transaction ID</th>
                                             <th>Created By</th>
@@ -191,6 +192,13 @@
                                             <td class="text-end">
                                                 <span class="fw-bold text-success">₹{{ number_format(round($payment->amount_paid)) }}</span>
                                             </td>
+                                            <td>
+                                                @if($payment->fee_head)
+                                                    <span class="badge bg-primary">{{ $payment->fee_head }}</span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $payment->payment_type }}</td>
                                             <td>
                                                 @if($payment->transaction_id)
@@ -238,7 +246,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="11" class="text-center py-4">
+                                            <td colspan="12" class="text-center py-4">
                                                 <i class="ti ti-circle-check text-success me-2"></i>No pending payments. Great job!
                                             </td>
                                         </tr>
@@ -260,6 +268,7 @@
                                             <th>Converted Student</th>
                                             <th>Course / Batch</th>
                                             <th class="text-end">Amount</th>
+                                            <th>Fee Head</th>
                                             <th>Payment Type</th>
                                             <th>Transaction ID</th>
                                             <th>Approved By</th>
@@ -322,6 +331,13 @@
                                             <td class="text-end">
                                                 <span class="fw-bold text-success">₹{{ number_format(round($payment->amount_paid)) }}</span>
                                             </td>
+                                            <td>
+                                                @if($payment->fee_head)
+                                                    <span class="badge bg-primary">{{ $payment->fee_head }}</span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $payment->payment_type }}</td>
                                             <td>
                                                 @if($payment->transaction_id)
@@ -355,7 +371,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="11" class="text-center py-4">
+                                            <td colspan="12" class="text-center py-4">
                                                 <i class="ti ti-info-circle text-muted me-2"></i>No approved payments yet.
                                             </td>
                                         </tr>
@@ -377,6 +393,7 @@
                                             <th>Converted Student</th>
                                             <th>Course / Batch</th>
                                             <th class="text-end">Amount</th>
+                                            <th>Fee Head</th>
                                             <th>Payment Type</th>
                                             <th>Transaction ID</th>
                                             <th>Created By</th>
@@ -445,6 +462,13 @@
                                             <td class="text-end">
                                                 <span class="fw-bold text-danger">₹{{ number_format(round($payment->amount_paid)) }}</span>
                                             </td>
+                                            <td>
+                                                @if($payment->fee_head)
+                                                    <span class="badge bg-primary">{{ $payment->fee_head }}</span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $payment->payment_type }}</td>
                                             <td>
                                                 @if($payment->transaction_id)
@@ -480,7 +504,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="13" class="text-center py-4">
+                                            <td colspan="14" class="text-center py-4">
                                                 <i class="ti ti-alert-triangle text-danger me-2"></i>No rejected payments.
                                             </td>
                                         </tr>

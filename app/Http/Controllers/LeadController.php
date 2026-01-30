@@ -4223,7 +4223,7 @@ class LeadController extends Controller
      */
     public function convertSubmit(Request $request, Lead $lead)
     {
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10',
             'phone' => 'required|string|max:20',
@@ -4238,7 +4238,74 @@ class LeadController extends Controller
             'payment_date' => 'nullable|date',
             'payment_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'custom_total_amount' => 'nullable|numeric|min:0',
-        ]);
+        ];
+
+        if ((int) $lead->course_id === 23) {
+            // Fee breakdown inputs (course_id = 23)
+            $rules['fee_pg_amount'] = 'nullable|numeric|min:0';
+            $rules['fee_ug_amount'] = 'nullable|numeric|min:0';
+            $rules['fee_plustwo_amount'] = 'nullable|numeric|min:0';
+            $rules['fee_sslc_amount'] = 'nullable|numeric|min:0';
+
+            // Course 23: payment is split across heads (optional per head)
+            $rules['payment_pg_amount'] = 'nullable|numeric|min:0';
+            $rules['payment_ug_amount'] = 'nullable|numeric|min:0';
+            $rules['payment_plustwo_amount'] = 'nullable|numeric|min:0';
+            $rules['payment_sslc_amount'] = 'nullable|numeric|min:0';
+
+            $rules['payment_pg_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $rules['payment_ug_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $rules['payment_plustwo_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $rules['payment_sslc_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+
+            // Do not force the single payment fields for course 23
+            $rules['payment_amount'] = 'nullable|numeric|min:0';
+            $rules['payment_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        // Additional conditional validations for course_id = 23 split payments
+        $validator->after(function ($validator) use ($request, $lead) {
+            if (!$request->boolean('payment_collected')) {
+                return;
+            }
+
+            if ((int) $lead->course_id !== 23) {
+                return;
+            }
+
+            $pgPaid = (float) ($request->input('payment_pg_amount') ?: 0);
+            $ugPaid = (float) ($request->input('payment_ug_amount') ?: 0);
+            $plustwoPaid = (float) ($request->input('payment_plustwo_amount') ?: 0);
+            $sslcPaid = (float) ($request->input('payment_sslc_amount') ?: 0);
+
+            $totalPaid = $pgPaid + $ugPaid + $plustwoPaid + $sslcPaid;
+
+            if ($totalPaid <= 0) {
+                $validator->errors()->add('payment_pg_amount', 'At least one payment amount (PG/UG/Plus Two/SSLC) is required.');
+            }
+
+            // If total amount is provided, don't allow paid sum to exceed it
+            $customTotal = $request->filled('custom_total_amount') ? (float) $request->input('custom_total_amount') : null;
+            if ($customTotal !== null && $totalPaid > $customTotal) {
+                $validator->errors()->add('custom_total_amount', 'Total paid amount cannot exceed the total amount.');
+            }
+
+            // Require file upload for each head that has a paid amount
+            if ($pgPaid > 0 && !$request->hasFile('payment_pg_file')) {
+                $validator->errors()->add('payment_pg_file', 'PG payment proof file is required when PG paid amount is entered.');
+            }
+            if ($ugPaid > 0 && !$request->hasFile('payment_ug_file')) {
+                $validator->errors()->add('payment_ug_file', 'UG payment proof file is required when UG paid amount is entered.');
+            }
+            if ($plustwoPaid > 0 && !$request->hasFile('payment_plustwo_file')) {
+                $validator->errors()->add('payment_plustwo_file', 'Plus Two payment proof file is required when Plus Two paid amount is entered.');
+            }
+            if ($sslcPaid > 0 && !$request->hasFile('payment_sslc_file')) {
+                $validator->errors()->add('payment_sslc_file', 'SSLC payment proof file is required when SSLC paid amount is entered.');
+            }
+        });
 
         if ($validator->fails()) {
             if (request()->ajax()) {
@@ -4302,25 +4369,72 @@ class LeadController extends Controller
             $invoice = null;
             if ($lead->course_id) {
                 $invoiceController = new \App\Http\Controllers\InvoiceController();
-                // For course_id 23, pass custom_total_amount if provided
                 $customTotalAmount = null;
-                if ($lead->course_id == 23 && $request->filled('custom_total_amount')) {
-                    $customTotalAmount = (float) $request->custom_total_amount;
+                $feeBreakdown = null;
+
+                if ((int) $lead->course_id === 23) {
+                    $feeBreakdown = [
+                        'fee_pg_amount' => $request->filled('fee_pg_amount') ? (float) $request->input('fee_pg_amount') : null,
+                        'fee_ug_amount' => $request->filled('fee_ug_amount') ? (float) $request->input('fee_ug_amount') : null,
+                        'fee_plustwo_amount' => $request->filled('fee_plustwo_amount') ? (float) $request->input('fee_plustwo_amount') : null,
+                        'fee_sslc_amount' => $request->filled('fee_sslc_amount') ? (float) $request->input('fee_sslc_amount') : null,
+                    ];
+
+                    if ($request->filled('custom_total_amount')) {
+                        $customTotalAmount = (float) $request->input('custom_total_amount');
+                    } else {
+                        $customTotalAmount =
+                            (float) (($feeBreakdown['fee_pg_amount'] ?? 0)
+                                + ($feeBreakdown['fee_ug_amount'] ?? 0)
+                                + ($feeBreakdown['fee_plustwo_amount'] ?? 0)
+                                + ($feeBreakdown['fee_sslc_amount'] ?? 0));
+                    }
+                } elseif ($request->filled('custom_total_amount')) {
+                    // Backward compatible: allow custom total (if ever used)
+                    $customTotalAmount = (float) $request->input('custom_total_amount');
                 }
-                $invoice = $invoiceController->autoGenerate($convertedLead->id, $lead->course_id, $customTotalAmount);
+
+                $invoice = $invoiceController->autoGenerate($convertedLead->id, $lead->course_id, $customTotalAmount, $feeBreakdown);
             }
 
             // Process payment if collected
             if ($request->payment_collected && $invoice) {
                 $paymentController = new \App\Http\Controllers\PaymentController();
-                $paymentController->autoCreate(
-                    $invoice->id,
-                    $request->payment_amount,
-                    $request->payment_type,
-                    $request->transaction_id,
-                    $request->file('payment_file'),
-                    $request->payment_date
-                );
+                if ((int) $lead->course_id === 23) {
+                    $paymentDate = $request->payment_date;
+                    $paymentType = $request->payment_type;
+                    $transactionId = $request->transaction_id;
+
+                    $splitPayments = [
+                        'PG' => ['amount' => (float) ($request->input('payment_pg_amount') ?: 0), 'file' => $request->file('payment_pg_file')],
+                        'UG' => ['amount' => (float) ($request->input('payment_ug_amount') ?: 0), 'file' => $request->file('payment_ug_file')],
+                        'PLUS_TWO' => ['amount' => (float) ($request->input('payment_plustwo_amount') ?: 0), 'file' => $request->file('payment_plustwo_file')],
+                        'SSLC' => ['amount' => (float) ($request->input('payment_sslc_amount') ?: 0), 'file' => $request->file('payment_sslc_file')],
+                    ];
+
+                    foreach ($splitPayments as $feeHead => $payload) {
+                        if (($payload['amount'] ?? 0) > 0) {
+                            $paymentController->autoCreate(
+                                $invoice->id,
+                                $payload['amount'],
+                                $paymentType,
+                                $transactionId,
+                                $payload['file'],
+                                $paymentDate,
+                                $feeHead
+                            );
+                        }
+                    }
+                } else {
+                    $paymentController->autoCreate(
+                        $invoice->id,
+                        $request->payment_amount,
+                        $request->payment_type,
+                        $request->transaction_id,
+                        $request->file('payment_file'),
+                        $request->payment_date
+                    );
+                }
             }
 
             DB::commit();

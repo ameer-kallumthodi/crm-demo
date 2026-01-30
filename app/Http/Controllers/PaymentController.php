@@ -134,7 +134,14 @@ class PaymentController extends Controller
      */
     public function create($invoiceId)
     {
-        $invoice = Invoice::with(['course', 'batch', 'student.lead'])->findOrFail($invoiceId);
+        $invoice = Invoice::with([
+            'course',
+            'batch',
+            'student.lead',
+            'payments' => function ($query) {
+                $query->approved()->orderBy('created_at', 'desc');
+            },
+        ])->findOrFail($invoiceId);
         
         // Check permissions
         $this->checkInvoiceAccess($invoice);
@@ -147,13 +154,76 @@ class PaymentController extends Controller
      */
     public function store(Request $request, $invoiceId)
     {
-        $validator = Validator::make($request->all(), [
-            'amount_paid' => 'required|numeric|min:0.01',
+        $invoice = Invoice::with(['payments' => function ($query) {
+            $query->approved();
+        }])->findOrFail($invoiceId);
+
+        // Check permissions
+        $this->checkInvoiceAccess($invoice);
+
+        $isCourse23 = (int) ($invoice->course_id ?? 0) === 23;
+
+        $rules = [
             'payment_type' => 'required|in:Cash,Online,Bank,Cheque,Card,Other,Razorpay',
             'transaction_id' => 'nullable|string|max:255',
             'payment_date' => 'nullable|date',
+
+            // Legacy single-payment fields (non-course23)
+            'amount_paid' => 'required_unless:is_course23,1|numeric|min:0.01',
+            'fee_head' => 'nullable|string|max:50',
             'file_upload' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        ]);
+
+            // Course 23 split-payment fields
+            'payment_pg_amount' => 'nullable|numeric|min:0',
+            'payment_ug_amount' => 'nullable|numeric|min:0',
+            'payment_plustwo_amount' => 'nullable|numeric|min:0',
+            'payment_sslc_amount' => 'nullable|numeric|min:0',
+            'payment_pg_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'payment_ug_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'payment_plustwo_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'payment_sslc_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ];
+
+        // Helper flag for conditional rules (so we can use required_unless)
+        $request->merge(['is_course23' => $isCourse23 ? 1 : 0]);
+
+        $validator = Validator::make($request->all(), $rules);
+
+        $validator->after(function ($validator) use ($request, $invoice, $isCourse23) {
+            if (!$isCourse23) {
+                return;
+            }
+
+            $pgPaid = (float) ($request->input('payment_pg_amount') ?: 0);
+            $ugPaid = (float) ($request->input('payment_ug_amount') ?: 0);
+            $plustwoPaid = (float) ($request->input('payment_plustwo_amount') ?: 0);
+            $sslcPaid = (float) ($request->input('payment_sslc_amount') ?: 0);
+
+            $totalPaid = $pgPaid + $ugPaid + $plustwoPaid + $sslcPaid;
+            if ($totalPaid <= 0) {
+                $validator->errors()->add('payment_pg_amount', 'At least one payment amount (PG/UG/Plus Two/SSLC) is required.');
+                return;
+            }
+
+            $remainingBalance = (float) ($invoice->total_amount - $invoice->paid_amount);
+            if ($totalPaid > $remainingBalance) {
+                $validator->errors()->add('payment_pg_amount', 'Total payment amount cannot exceed the remaining balance of ' . number_format($remainingBalance, 2) . '.');
+            }
+
+            // Require file upload for each head that has a paid amount
+            if ($pgPaid > 0 && !$request->hasFile('payment_pg_file')) {
+                $validator->errors()->add('payment_pg_file', 'PG payment proof file is required when PG paid amount is entered.');
+            }
+            if ($ugPaid > 0 && !$request->hasFile('payment_ug_file')) {
+                $validator->errors()->add('payment_ug_file', 'UG payment proof file is required when UG paid amount is entered.');
+            }
+            if ($plustwoPaid > 0 && !$request->hasFile('payment_plustwo_file')) {
+                $validator->errors()->add('payment_plustwo_file', 'Plus Two payment proof file is required when Plus Two paid amount is entered.');
+            }
+            if ($sslcPaid > 0 && !$request->hasFile('payment_sslc_file')) {
+                $validator->errors()->add('payment_sslc_file', 'SSLC payment proof file is required when SSLC paid amount is entered.');
+            }
+        });
 
         if ($validator->fails()) {
             if (request()->ajax()) {
@@ -170,8 +240,6 @@ class PaymentController extends Controller
         }
 
         try {
-            $invoice = Invoice::findOrFail($invoiceId);
-            
             // Check if there's any pending payment
             // COMMENTED OUT: Not needed currently
             /*
@@ -193,57 +261,111 @@ class PaymentController extends Controller
             }
             */
             
-            // Check if payment amount doesn't exceed remaining balance
-            $remainingBalance = $invoice->total_amount - $invoice->paid_amount;
-            if ($request->amount_paid > $remainingBalance) {
-                if (request()->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Payment amount cannot exceed the remaining balance of ' . number_format($remainingBalance, 2)
-                    ], 400);
-                }
-                
-                return redirect()->back()
-                    ->with('message_danger', 'Payment amount cannot exceed the remaining balance of ' . number_format($remainingBalance, 2))
-                    ->withInput();
-            }
+            $remainingBalance = (float) ($invoice->total_amount - $invoice->paid_amount);
 
             // Calculate previous balance (sum of all approved payments)
             $previousBalance = Payment::where('invoice_id', $invoiceId)
                 ->where('status', 'Approved')
                 ->sum('amount_paid');
 
-            $filePath = null;
-            if ($request->hasFile('file_upload')) {
-                $file = $request->file('file_upload');
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = $file->storeAs('payments', $fileName, 'public');
-            }
+            if ($isCourse23) {
+                $splitPayments = [
+                    'PG' => ['amount' => (float) ($request->input('payment_pg_amount') ?: 0), 'file' => $request->file('payment_pg_file')],
+                    'UG' => ['amount' => (float) ($request->input('payment_ug_amount') ?: 0), 'file' => $request->file('payment_ug_file')],
+                    'PLUS_TWO' => ['amount' => (float) ($request->input('payment_plustwo_amount') ?: 0), 'file' => $request->file('payment_plustwo_file')],
+                    'SSLC' => ['amount' => (float) ($request->input('payment_sslc_amount') ?: 0), 'file' => $request->file('payment_sslc_file')],
+                ];
 
-            $payment = Payment::create([
-                'invoice_id' => $invoiceId,
-                'amount_paid' => $request->amount_paid,
-                'previous_balance' => $previousBalance,
-                'payment_type' => $request->payment_type,
-                'transaction_id' => $request->transaction_id,
-                'payment_date' => $request->payment_date ?? now()->toDateString(),
-                'file_upload' => $filePath,
-                'status' => 'Pending Approval',
-                'created_by' => AuthHelper::getCurrentUserId(),
-                'collected_by' => AuthHelper::getCurrentUserId(),
-            ]);
+                $createdCount = 0;
+                foreach ($splitPayments as $feeHead => $payload) {
+                    if (($payload['amount'] ?? 0) <= 0) {
+                        continue;
+                    }
+
+                    if (($payload['amount'] ?? 0) > $remainingBalance) {
+                        return redirect()->back()
+                            ->with('message_danger', 'Payment amount cannot exceed the remaining balance of ' . number_format($remainingBalance, 2))
+                            ->withInput();
+                    }
+
+                    $filePath = null;
+                    if (!empty($payload['file'])) {
+                        $file = $payload['file'];
+                        $fileName = Str::uuid() . '_' . $file->getClientOriginalName();
+                        $filePath = $file->storeAs('payments', $fileName, 'public');
+                    }
+
+                    Payment::create([
+                        'invoice_id' => $invoiceId,
+                        'amount_paid' => $payload['amount'],
+                        'fee_head' => $feeHead,
+                        'previous_balance' => $previousBalance,
+                        'payment_type' => $request->payment_type,
+                        'transaction_id' => $request->transaction_id,
+                        'payment_date' => $request->payment_date ?? now()->toDateString(),
+                        'file_upload' => $filePath,
+                        'status' => 'Pending Approval',
+                        'created_by' => AuthHelper::getCurrentUserId(),
+                        'collected_by' => AuthHelper::getCurrentUserId(),
+                    ]);
+
+                    $createdCount++;
+                }
+
+                if ($createdCount <= 0) {
+                    return redirect()->back()
+                        ->with('message_danger', 'Please enter at least one payment amount.')
+                        ->withInput();
+                }
+            } else {
+                // Check if payment amount doesn't exceed remaining balance
+                if ((float) $request->amount_paid > $remainingBalance) {
+                    if (request()->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Payment amount cannot exceed the remaining balance of ' . number_format($remainingBalance, 2)
+                        ], 400);
+                    }
+                    
+                    return redirect()->back()
+                        ->with('message_danger', 'Payment amount cannot exceed the remaining balance of ' . number_format($remainingBalance, 2))
+                        ->withInput();
+                }
+
+                $filePath = null;
+                if ($request->hasFile('file_upload')) {
+                    $file = $request->file('file_upload');
+                    $fileName = Str::uuid() . '_' . $file->getClientOriginalName();
+                    $filePath = $file->storeAs('payments', $fileName, 'public');
+                }
+
+                $feeHead = null;
+                $payment = Payment::create([
+                    'invoice_id' => $invoiceId,
+                    'amount_paid' => $request->amount_paid,
+                    'fee_head' => $feeHead,
+                    'previous_balance' => $previousBalance,
+                    'payment_type' => $request->payment_type,
+                    'transaction_id' => $request->transaction_id,
+                    'payment_date' => $request->payment_date ?? now()->toDateString(),
+                    'file_upload' => $filePath,
+                    'status' => 'Pending Approval',
+                    'created_by' => AuthHelper::getCurrentUserId(),
+                    'collected_by' => AuthHelper::getCurrentUserId(),
+                ]);
+            }
 
             // Don't update invoice until payment is approved
 
             if (request()->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Payment added successfully!'
+                    'message' => $isCourse23 ? 'Payments added successfully!' : 'Payment added successfully!'
                 ]);
             }
             
             return redirect()->route('admin.payments.index', $invoiceId)
-                ->with('message_success', 'Payment added successfully!');
+                ->with('message_success', $isCourse23 ? 'Payments added successfully!' : 'Payment added successfully!');
 
         } catch (\Exception $e) {
             if (request()->ajax()) {
@@ -432,10 +554,29 @@ class PaymentController extends Controller
             return redirect()->back()
                 ->with('message_danger', 'Tax invoice can only be viewed for approved payments.');
         }
-        
+
         // Add number to words conversion
         $payment->amount_in_words = $this->numberToWords($payment->amount_paid);
-        $payment->total_amount_in_words = $this->numberToWords($payment->invoice->total_amount);
+
+        // For course_id = 23, tax invoice total is based on fee head (if provided)
+        $taxInvoiceTotal = (float) ($payment->invoice->total_amount ?? 0);
+        if ((int) ($payment->invoice->course_id ?? 0) === 23 && $payment->fee_head) {
+            $feeHeadToColumn = [
+                'PG' => 'fee_pg_amount',
+                'UG' => 'fee_ug_amount',
+                'PLUS_TWO' => 'fee_plustwo_amount',
+                'SSLC' => 'fee_sslc_amount',
+            ];
+            $column = $feeHeadToColumn[$payment->fee_head] ?? null;
+            if ($column) {
+                $taxInvoiceTotal = (float) ($payment->invoice->{$column} ?? 0);
+            }
+        }
+
+        $payment->tax_invoice_total = $taxInvoiceTotal;
+        $payment->tax_invoice_taxable = $taxInvoiceTotal > 0 ? ($taxInvoiceTotal / 1.18) : 0.0;
+        $payment->tax_invoice_gst = $payment->tax_invoice_taxable * 0.18;
+        $payment->total_amount_in_words = $this->numberToWords($taxInvoiceTotal);
         
         return view('admin.payments.tax-invoice', compact('payment'));
     }
@@ -473,7 +614,26 @@ class PaymentController extends Controller
         
         // Add number to words conversion
         $payment->amount_in_words = $this->numberToWords($payment->amount_paid);
-        $payment->total_amount_in_words = $this->numberToWords($payment->invoice->total_amount);
+
+        // For course_id = 23, tax invoice total is based on fee head (if provided)
+        $taxInvoiceTotal = (float) ($payment->invoice->total_amount ?? 0);
+        if ((int) ($payment->invoice->course_id ?? 0) === 23 && $payment->fee_head) {
+            $feeHeadToColumn = [
+                'PG' => 'fee_pg_amount',
+                'UG' => 'fee_ug_amount',
+                'PLUS_TWO' => 'fee_plustwo_amount',
+                'SSLC' => 'fee_sslc_amount',
+            ];
+            $column = $feeHeadToColumn[$payment->fee_head] ?? null;
+            if ($column) {
+                $taxInvoiceTotal = (float) ($payment->invoice->{$column} ?? 0);
+            }
+        }
+
+        $payment->tax_invoice_total = $taxInvoiceTotal;
+        $payment->tax_invoice_taxable = $taxInvoiceTotal > 0 ? ($taxInvoiceTotal / 1.18) : 0.0;
+        $payment->tax_invoice_gst = $payment->tax_invoice_taxable * 0.18;
+        $payment->total_amount_in_words = $this->numberToWords($taxInvoiceTotal);
         
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.payments.tax-invoice-pdf-inline', compact('payment'));
         $pdf->setPaper('A4', 'portrait');
@@ -954,7 +1114,7 @@ class PaymentController extends Controller
     /**
      * Auto-create payment during lead conversion
      */
-    public function autoCreate($invoiceId, $amount, $paymentType, $transactionId = null, $fileUpload = null, $paymentDate = null)
+    public function autoCreate($invoiceId, $amount, $paymentType, $transactionId = null, $fileUpload = null, $paymentDate = null, $feeHead = null)
     {
         try {
             $invoice = Invoice::findOrFail($invoiceId);
@@ -966,13 +1126,14 @@ class PaymentController extends Controller
             
             $filePath = null;
             if ($fileUpload) {
-                $fileName = time() . '_' . $fileUpload->getClientOriginalName();
+                $fileName = Str::uuid() . '_' . $fileUpload->getClientOriginalName();
                 $filePath = $fileUpload->storeAs('payments', $fileName, 'public');
             }
 
             $payment = Payment::create([
                 'invoice_id' => $invoiceId,
                 'amount_paid' => $amount,
+                'fee_head' => $feeHead,
                 'previous_balance' => $previousBalance,
                 'payment_type' => $paymentType,
                 'transaction_id' => $transactionId,
@@ -980,6 +1141,7 @@ class PaymentController extends Controller
                 'file_upload' => $filePath,
                 'status' => 'Pending Approval', // Keep as pending for manual approval
                 'created_by' => AuthHelper::getCurrentUserId(),
+                'collected_by' => AuthHelper::getCurrentUserId(),
             ]);
 
             // Don't update invoice until payment is approved
@@ -1272,8 +1434,8 @@ class PaymentController extends Controller
         if (isset($razorpayPayment['amount'])) {
             $razorpayAmount = round(((float) $razorpayPayment['amount']) / 100, 2);
             if ($razorpayAmount > 0 && abs($razorpayAmount - (float) $payment->amount_paid) > 0.01) {
-                /** @phpstan-ignore-next-line */
-                $payment->amount_paid = $razorpayAmount;
+                // Eloquent decimal casts are string-backed; assign as string to avoid type warnings
+                $payment->amount_paid = (string) $razorpayAmount;
             }
         }
 

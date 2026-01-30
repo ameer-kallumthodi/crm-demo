@@ -18,6 +18,10 @@ class Invoice extends Model
         'batch_id',
         'student_id',
         'total_amount',
+        'fee_pg_amount',
+        'fee_ug_amount',
+        'fee_plustwo_amount',
+        'fee_sslc_amount',
         'paid_amount',
         'status',
         'invoice_date',
@@ -31,6 +35,10 @@ class Invoice extends Model
 
     protected $casts = [
         'total_amount' => 'decimal:2',
+        'fee_pg_amount' => 'decimal:2',
+        'fee_ug_amount' => 'decimal:2',
+        'fee_plustwo_amount' => 'decimal:2',
+        'fee_sslc_amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'previous_balance' => 'decimal:2',
         'service_amount' => 'decimal:2',

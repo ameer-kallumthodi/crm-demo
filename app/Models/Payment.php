@@ -13,6 +13,7 @@ class Payment extends Model
     protected $fillable = [
         'invoice_id',
         'amount_paid',
+        'fee_head',
         'previous_balance',
         'payment_type',
         'transaction_id',

@@ -1,6 +1,8 @@
 @php
     $isEduThanzeel = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 6);
     $isESchool = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 5);
+    $isEduMaster = $payment->invoice->invoice_type === 'course' && ((int) ($payment->invoice->course_id ?? 0) === 23);
+    $feeHeadDisplay = $payment->fee_head === 'PLUS_TWO' ? 'Plus Two' : ($payment->fee_head ?? null);
 @endphp
 
 @extends('layouts.mantis')
@@ -77,7 +79,9 @@
                             <p class="mb-1" style="font-size: 12px !important;">Payment ID: #{{ $payment->id }}</p>
                             <p class="mb-0" style="font-size: 12px !important;">
                                 @if($payment->invoice->invoice_type === 'course')
-                                    @if($payment->invoice->course_id == 9 && $payment->invoice->student->leadDetail)
+                                    @if($isEduMaster && $feeHeadDisplay)
+                                        {{ $feeHeadDisplay }}
+                                    @elseif($payment->invoice->course_id == 9 && $payment->invoice->student->leadDetail)
                                         @php
                                             $studentDetail = $payment->invoice->student->leadDetail;
                                             $university = $studentDetail->university;

@@ -570,6 +570,7 @@
             const plustwoChecked = document.getElementById('course_plustwo').checked;
             const ugChecked = document.getElementById('course_ug').checked;
             const pgChecked = document.getElementById('course_pg').checked;
+            const courseTypeEl = document.getElementById('course_type');
             
             // Show/hide SSLC back year
             const sslcRow = document.getElementById('sslc_back_year_row');
@@ -612,18 +613,36 @@
             const courseNameInput = document.getElementById('edumaster_course_name');
             const degreeBackYearRow = document.getElementById('degree_back_year_row');
             const degreeBackYearSelect = document.getElementById('degree_back_year');
-            const universityId = document.getElementById('university_id').value;
+
+            // If only one of UG/PG is selected, auto-set course type to match
+            if (courseTypeEl) {
+                if (ugChecked && !pgChecked) {
+                    courseTypeEl.value = 'UG';
+                } else if (pgChecked && !ugChecked) {
+                    courseTypeEl.value = 'PG';
+                }
+            }
+
+            // If a course is unchecked, clear mismatched course type
+            if (!ugChecked && courseTypeEl && courseTypeEl.value === 'UG') {
+                courseTypeEl.value = '';
+            }
+            if (!pgChecked && courseTypeEl && courseTypeEl.value === 'PG') {
+                courseTypeEl.value = '';
+            }
+
             if (ugChecked || pgChecked) {
                 universityRow.style.display = 'block';
                 courseNameRow.style.display = 'block';
                 document.getElementById('university_id').required = true;
                 document.getElementById('course_type').required = true;
                 courseNameInput.required = true;
-                // Degree Back Year only shows when university_id == 1
+                // Degree Back Year shows only when a Course Type is selected
                 if (degreeBackYearRow && degreeBackYearSelect) {
-                    if (universityId == '1') {
+                    if (courseTypeEl && courseTypeEl.value) {
                         degreeBackYearRow.style.display = 'block';
                         degreeBackYearSelect.required = true;
+                        updateDegreeBackYear();
                     } else {
                         degreeBackYearRow.style.display = 'none';
                         degreeBackYearSelect.required = false;
@@ -694,6 +713,7 @@
             const sslcBackYear = document.getElementById('sslc_back_year').value;
             const plustwoBackYear = document.getElementById('plustwo_back_year');
             const sslcChecked = document.getElementById('course_sslc').checked;
+            const previousValue = plustwoBackYear.value;
             
             // If SSLC is checked and has a back year, calculate Plus Two as 2 years after SSLC
             if (sslcChecked && sslcBackYear) {
@@ -710,16 +730,21 @@
             } else {
                 // If SSLC is not checked, show all years from 2018
                 const minYear = 2018;
-            const maxYear = new Date().getFullYear();
-            
-            plustwoBackYear.innerHTML = '<option value="">Select Back Year</option>';
-            for (let year = minYear; year <= maxYear; year++) {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                plustwoBackYear.appendChild(option);
+                const maxYear = new Date().getFullYear();
+                
+                plustwoBackYear.innerHTML = '<option value="">Select Back Year</option>';
+                for (let year = minYear; year <= maxYear; year++) {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    plustwoBackYear.appendChild(option);
+                }
             }
-        }
+            
+            // Preserve selection (avoid resetting when unrelated fields change)
+            if (previousValue && Array.from(plustwoBackYear.options).some(o => o.value === previousValue)) {
+                plustwoBackYear.value = previousValue;
+            }
         
             // Update Degree Back Year when Plus Two Back Year changes
             updateDegreeBackYear();
@@ -729,60 +754,45 @@
         function updateDegreeBackYear() {
             const plustwoBackYear = document.getElementById('plustwo_back_year').value;
             const degreeBackYearSelect = document.getElementById('degree_back_year');
-            const universityId = document.getElementById('university_id').value;
             const ugChecked = document.getElementById('course_ug').checked;
             const pgChecked = document.getElementById('course_pg').checked;
+            const previousValue = degreeBackYearSelect ? degreeBackYearSelect.value : '';
             
             if (!degreeBackYearSelect) return;
             
-            // Only update if university_id == 1 and UG/PG is checked
-            if (universityId == '1' && (ugChecked || pgChecked)) {
-                if (plustwoBackYear) {
-                    const minYear = parseInt(plustwoBackYear) + 2;
-                    const maxYear = new Date().getFullYear();
-                    
-                    degreeBackYearSelect.innerHTML = '<option value="">Select Back Year</option>';
-                    for (let year = minYear; year <= maxYear; year++) {
-                        const option = document.createElement('option');
-                        option.value = year;
-                        option.textContent = year;
-                        degreeBackYearSelect.appendChild(option);
-                    }
-                } else {
-                    // If Plus Two Back Year is not selected, show all years from 2018
-                    const minYear = 2018;
-                    const maxYear = new Date().getFullYear();
-                    
-                    degreeBackYearSelect.innerHTML = '<option value="">Select Back Year</option>';
-                    for (let year = minYear; year <= maxYear; year++) {
-                        const option = document.createElement('option');
-                        option.value = year;
-                        option.textContent = year;
-                        degreeBackYearSelect.appendChild(option);
-                    }
+            // Only update when UG/PG is checked
+            if (ugChecked || pgChecked) {
+                const maxYear = new Date().getFullYear();
+                const minYear = plustwoBackYear ? (parseInt(plustwoBackYear) + 2) : 2018;
+                
+                degreeBackYearSelect.innerHTML = '<option value="">Select Back Year</option>';
+                for (let year = minYear; year <= maxYear; year++) {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    degreeBackYearSelect.appendChild(option);
                 }
+            }
+            
+            // Preserve selection (avoid losing it when options rebuild)
+            if (previousValue && Array.from(degreeBackYearSelect.options).some(o => o.value === previousValue)) {
+                degreeBackYearSelect.value = previousValue;
             }
         }
         
-        // Handle University selection change (for degree back year only)
+        // Handle University selection change
         function handleUniversityChange() {
             const universityId = document.getElementById('university_id').value;
             const ugChecked = document.getElementById('course_ug').checked;
             const pgChecked = document.getElementById('course_pg').checked;
             
-            // Show/hide Degree Back Year - only for university_id == 1 AND when UG/PG is checked
+            // Degree Back Year is controlled by UG/PG selection; on university change we just keep options in sync
             const degreeBackYearRow = document.getElementById('degree_back_year_row');
             const degreeBackYearSelect = document.getElementById('degree_back_year');
             
             if (degreeBackYearRow && degreeBackYearSelect) {
-                if (universityId == '1' && (ugChecked || pgChecked)) {
-                    degreeBackYearRow.style.display = 'block';
-                    degreeBackYearSelect.required = true;
-                    updateDegreeBackYear(); // Update options based on Plus Two Back Year
-                } else {
-                    degreeBackYearRow.style.display = 'none';
-                    degreeBackYearSelect.required = false;
-                    degreeBackYearSelect.value = '';
+                if (ugChecked || pgChecked) {
+                    updateDegreeBackYear(); // Keep options based on Plus Two Back Year
                 }
             }
         }

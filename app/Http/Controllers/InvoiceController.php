@@ -246,7 +246,7 @@ class InvoiceController extends Controller
     /**
      * Auto-generate invoice when converting a lead
      */
-    public function autoGenerate($studentId, $courseId, $customTotalAmount = null)
+    public function autoGenerate($studentId, $courseId, $customTotalAmount = null, $feeBreakdown = null)
     {
         try {
             $student = ConvertedLead::findOrFail($studentId);
@@ -264,9 +264,25 @@ class InvoiceController extends Controller
             // Get batch_id
             $batchId = $student->batch_id ?? optional($student->leadDetail)->batch_id;
             
-            // For course_id 23, use custom_total_amount if provided
-            if ($courseId == 23 && $customTotalAmount !== null) {
-                $totalAmount = (float) $customTotalAmount;
+            $feePgAmount = null;
+            $feeUgAmount = null;
+            $feePlustwoAmount = null;
+            $feeSslcAmount = null;
+
+            // For course_id 23, store fee breakdown and total (custom or derived)
+            if ($courseId == 23) {
+                if (is_array($feeBreakdown)) {
+                    $feePgAmount = isset($feeBreakdown['fee_pg_amount']) ? (float) $feeBreakdown['fee_pg_amount'] : null;
+                    $feeUgAmount = isset($feeBreakdown['fee_ug_amount']) ? (float) $feeBreakdown['fee_ug_amount'] : null;
+                    $feePlustwoAmount = isset($feeBreakdown['fee_plustwo_amount']) ? (float) $feeBreakdown['fee_plustwo_amount'] : null;
+                    $feeSslcAmount = isset($feeBreakdown['fee_sslc_amount']) ? (float) $feeBreakdown['fee_sslc_amount'] : null;
+                }
+
+                if ($customTotalAmount !== null) {
+                    $totalAmount = (float) $customTotalAmount;
+                } else {
+                    $totalAmount = (float) (($feePgAmount ?? 0) + ($feeUgAmount ?? 0) + ($feePlustwoAmount ?? 0) + ($feeSslcAmount ?? 0));
+                }
             } else {
                 // Calculate total amount
                 $totalAmount = (float) ($course->amount ?? 0);
@@ -322,6 +338,10 @@ class InvoiceController extends Controller
                 'batch_id' => $batchId,
                 'student_id' => $studentId,
                 'total_amount' => $totalAmount,
+                'fee_pg_amount' => $feePgAmount,
+                'fee_ug_amount' => $feeUgAmount,
+                'fee_plustwo_amount' => $feePlustwoAmount,
+                'fee_sslc_amount' => $feeSslcAmount,
                 'invoice_date' => now()->toDateString(),
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
