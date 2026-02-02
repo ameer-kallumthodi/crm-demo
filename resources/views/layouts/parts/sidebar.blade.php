@@ -126,6 +126,17 @@
                 </li>
                 @endif
 
+                @if(has_permission('admin/online-teaching-faculties/index'))
+                <li class="pc-item {{ request()->routeIs('admin.online-teaching-faculties.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.online-teaching-faculties.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-school"></i>
+                        </span>
+                        <span class="pc-mtext">Online Teaching Faculty</span>
+                    </a>
+                </li>
+                @endif
+
                 {{-- User Management Section --}}
                 @if(has_permission('admin/telecallers/index') || has_permission('admin/marketing/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index') || has_permission('admin/teachers/index') || has_permission('admin/support-team/index') || has_permission('admin/mentor/index') || has_permission('admin/finance/index') || has_permission('admin/hod/index'))
                 <li class="pc-item pc-caption">

@@ -23,6 +23,7 @@ use App\Http\Controllers\VoxbayCallLogController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MetaLeadController;
 use App\Http\Controllers\VoxbayCallController;
+use App\Http\Controllers\OnlineTeachingFacultyController;
 
 // Public routes
 Route::get('/', [AuthController::class, 'index'])->name('login');
@@ -337,6 +338,15 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::delete('/registration-links-delete/{id}', [App\Http\Controllers\RegistrationLinkController::class, 'delete'])->name('registration-links.delete');
         Route::put('/universities-update/{university}', [UniversityController::class, 'update'])->name('universities.update');
         Route::delete('/universities-delete/{id}', [UniversityController::class, 'delete'])->name('universities.delete');
+
+        // Online Teaching Faculty module
+        Route::get('/online-teaching-faculties', [OnlineTeachingFacultyController::class, 'index'])->name('online-teaching-faculties.index');
+        Route::get('/online-teaching-faculties/data', [OnlineTeachingFacultyController::class, 'getData'])->name('online-teaching-faculties.data');
+        Route::get('/online-teaching-faculties-add', [OnlineTeachingFacultyController::class, 'ajax_add'])->name('online-teaching-faculties.add');
+        Route::post('/online-teaching-faculties-submit', [OnlineTeachingFacultyController::class, 'submit'])->name('online-teaching-faculties.submit');
+        Route::get('/online-teaching-faculties/{id}', [OnlineTeachingFacultyController::class, 'show'])->name('online-teaching-faculties.show');
+        Route::post('/online-teaching-faculties/{id}/inline-update', [OnlineTeachingFacultyController::class, 'inlineUpdate'])->name('online-teaching-faculties.inline-update');
+        Route::post('/online-teaching-faculties/{id}/upload-document', [OnlineTeachingFacultyController::class, 'uploadDocument'])->name('online-teaching-faculties.upload-document');
 
         // University Courses Routes
         Route::resource('university-courses', App\Http\Controllers\UniversityCourseController::class)->except(['create', 'edit']);
