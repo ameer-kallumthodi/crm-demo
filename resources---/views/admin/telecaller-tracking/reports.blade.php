@@ -1,0 +1,494 @@
+@extends('layouts.mantis')
+
+@section('title', 'Telecaller Tracking Reports')
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('assets/css/telecaller-tracking.css') }}">
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<style>
+    .dropdown-menu {
+        z-index: 1050 !important;
+    }
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+    }
+</style>
+@endpush
+
+@section('content')
+<!-- [ breadcrumb ] start -->
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Detailed Telecaller Reports</h5>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <ul class="breadcrumb d-flex justify-content-end">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                    <li class="breadcrumb-item">Telecaller Tracking</li>
+                    <li class="breadcrumb-item">Reports</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ breadcrumb ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="row">
+    <div class="col-12">
+        <div class="card telecaller-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="avtar avtar-s rounded-circle bg-light-primary me-3 d-flex align-items-center justify-content-center">
+                            <i class="ti ti-chart-bar f-20 text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Session Reports</h5>
+                            <small class="text-muted">Detailed telecaller activity and performance reports</small>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 no-print">
+                        <a href="{{ route('admin.telecaller-tracking.dashboard') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="ti ti-arrow-left"></i> Dashboard
+                        </a>
+                        <button class="btn btn-primary btn-sm" onclick="printTable()">
+                            <i class="ti ti-printer"></i> Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- [ Date Filter ] start -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body bg-light">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="ti ti-filter f-20 text-primary me-2"></i>
+                                    <h6 class="mb-0 text-primary">Filter & Export Reports</h6>
+                                </div>
+                                <form method="GET" action="{{ route('admin.telecaller-tracking.reports') }}" id="dateFilterForm">
+                                    <div class="row align-items-end">
+                                        <div class="col-md-2">
+                                            <label for="start_date" class="form-label fw-semibold">
+                                                <i class="ti ti-calendar-event me-1"></i>From Date
+                                            </label>
+                                            <input type="date" class="form-control form-control-sm" name="start_date" 
+                                                   value="{{ $startDate }}">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label for="end_date" class="form-label fw-semibold">
+                                                <i class="ti ti-calendar-event me-1"></i>To Date
+                                            </label>
+                                            <input type="date" class="form-control form-control-sm" name="end_date" 
+                                                   value="{{ $endDate }}">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label for="telecaller_id" class="form-label fw-semibold">
+                                                <i class="ti ti-user me-1"></i>Telecaller
+                                            </label>
+                                            <select class="form-select form-select-sm" name="telecaller_id" id="telecaller_id">
+                                                <option value="">All Telecallers</option>
+                                                @foreach($telecallers as $telecaller)
+                                                    <option value="{{ $telecaller->id }}" {{ $telecallerId == $telecaller->id ? 'selected' : '' }}>
+                                                        {{ $telecaller->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mt-3">
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <button type="submit" class="btn btn-primary btn-sm">
+                                                    <i class="ti ti-search me-1"></i> Search
+                                                </button>
+                                                <a href="{{ route('admin.telecaller-tracking.reports') }}" class="btn btn-outline-secondary btn-sm">
+                                                    <i class="ti ti-refresh me-1"></i> Reset
+                                                </a>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="ti ti-download me-1"></i> Export
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li><a class="dropdown-item" href="{{ route('admin.telecaller-tracking.export.excel', request()->query()) }}">
+                                                            <i class="ti ti-file-excel text-success me-2"></i>Excel
+                                                        </a></li>
+                                                        <li><a class="dropdown-item" href="{{ route('admin.telecaller-tracking.export.pdf', request()->query()) }}">
+                                                            <i class="ti ti-file-pdf text-danger me-2"></i>PDF
+                                                        </a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- [ Date Filter ] end -->
+
+                <!-- Table -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 telecaller-table" id="sessionsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center">
+                                    <i class="ti ti-hash f-16"></i>
+                                </th>
+                                <th class="text-center">
+                                    <i class="ti ti-settings f-16"></i>
+                                </th>
+                                <th>
+                                    <i class="ti ti-user me-1"></i>Telecaller
+                                </th>
+                                <th>
+                                    <i class="ti ti-login me-1"></i>Login Time
+                                </th>
+                                <th>
+                                    <i class="ti ti-logout me-1"></i>Logout Time
+                                </th>
+                                <th class="text-center">
+                                    <i class="ti ti-clock me-1"></i>Duration
+                                </th>
+                                <th class="text-center">
+                                    <i class="ti ti-activity me-1"></i>Active Time
+                                </th>
+                                <th class="text-center">
+                                    <i class="ti ti-pause me-1"></i>Idle Time
+                                </th>
+                                <th class="text-center">
+                                    <i class="ti ti-power me-1"></i>Logout Type
+                                </th>
+                                <th class="text-center">
+                                    <i class="ti ti-world me-1"></i>IP Address
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($sessions as $index => $session)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ route('admin.telecaller-tracking.telecaller-report', $session->user_id) }}?start_date={{ $startDate }}&end_date={{ $endDate }}" 
+                                           class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="ti ti-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avtar avtar-s rounded-circle bg-light-primary me-2 d-flex align-items-center justify-content-center">
+                                            <span class="f-16 fw-bold text-primary">{{ strtoupper(substr($session->user->name ?? 'U', 0, 1)) }}</span>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ $session->user->name ?? 'Unknown User' }}</h6>
+                                            <small class="text-muted">{{ $session->user->email ?? 'No email' }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @php
+                                        $loginTime = $session->login_time;
+                                        if ($loginTime) {
+                                            $formattedTime = $loginTime->setTimezone('Asia/Kolkata')->format('M d, Y g:i:s A');
+                                        } else {
+                                            $formattedTime = 'N/A';
+                                        }
+                                    @endphp
+                                    {{ $formattedTime }}
+                                </td>
+                                <td>
+                                    @if($session->logout_time)
+                                        @php
+                                            $logoutTime = $session->logout_time;
+                                            $formattedLogoutTime = $logoutTime->setTimezone('Asia/Kolkata')->format('M d, Y g:i:s A');
+                                        @endphp
+                                        {{ $formattedLogoutTime }}
+                                    @else
+                                        <span class="badge bg-success">Active</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @php
+                                        // Calculate total duration more accurately
+                                        if ($session->logout_time) {
+                                            $totalSeconds = $session->login_time->diffInSeconds($session->logout_time);
+                                        } else {
+                                            $totalSeconds = $session->login_time->diffInSeconds(now());
+                                        }
+                                        $hours = floor($totalSeconds / 3600);
+                                        $minutes = floor(($totalSeconds % 3600) / 60);
+                                        $seconds = $totalSeconds % 60;
+                                    @endphp
+                                    {{ $hours }}h {{ $minutes }}m {{ $seconds }}s
+                                </td>
+                                <td>
+                                    @php
+                                        // Calculate active duration (total duration - idle time)
+                                        $totalDurationSeconds = $session->logout_time ? 
+                                            $session->login_time->diffInSeconds($session->logout_time) : 
+                                            $session->login_time->diffInSeconds(now());
+                                        
+                                        $idleSeconds = $session->idleTimes()->sum('idle_duration_seconds');
+                                        $activeSeconds = max(0, $totalDurationSeconds - $idleSeconds);
+                                        
+                                        $hours = floor($activeSeconds / 3600);
+                                        $minutes = floor(($activeSeconds % 3600) / 60);
+                                        $seconds = $activeSeconds % 60;
+                                    @endphp
+                                    {{ $hours }}h {{ $minutes }}m {{ $seconds }}s
+                                </td>
+                                <td>
+                                    @php
+                                        // Calculate idle time more accurately
+                                        $idleSeconds = $session->idleTimes()->sum('idle_duration_seconds');
+                                        
+                                        // If no idle time recorded, try to calculate from session data
+                                        if ($idleSeconds == 0 && $session->idle_duration_minutes) {
+                                            $idleSeconds = $session->idle_duration_minutes * 60;
+                                        }
+                                        
+                                        $hours = floor($idleSeconds / 3600);
+                                        $minutes = floor(($idleSeconds % 3600) / 60);
+                                        $seconds = $idleSeconds % 60;
+                                    @endphp
+                                    {{ $hours }}h {{ $minutes }}m {{ $seconds }}s
+                                </td>
+                                <td>
+                                    <span class="badge {{ $session->logout_type == 'manual' ? 'bg-primary' : ($session->logout_type == 'auto' ? 'bg-warning' : 'bg-secondary') }}">
+                                        {{ ucfirst($session->logout_type) }}
+                                    </span>
+                                </td>
+                                <td>{{ $session->ip_address ?? 'N/A' }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="10" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="ti ti-inbox f-48 mb-3 d-block"></i>
+                                        No sessions found
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                        </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+@endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Add a small delay to ensure global scripts have finished loading
+    setTimeout(function() {
+        // Initialize DataTable for telecaller reports
+        if ($('#sessionsTable').length) {
+            // Destroy existing DataTable if it exists
+            if ($.fn.DataTable.isDataTable('#sessionsTable')) {
+                $('#sessionsTable').DataTable().destroy();
+            }
+            
+            try {
+            $('#sessionsTable').DataTable({
+                "processing": true,
+                "serverSide": false,
+                "responsive": true,
+                "pageLength": 25,
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": [0, 1] }, // Disable sorting on serial number and actions columns
+                    { "searchable": false, "targets": [0, 1] }, // Disable searching on serial number and actions columns
+                    { "className": "text-center", "targets": [0, 1, 5, 6, 7, 8, 9] } // Center align specific columns
+                ],
+                "language": {
+                    "processing": "Loading sessions...",
+                    "emptyTable": "No sessions found",
+                    "zeroRecords": "No matching sessions found",
+                    "search": "Search:",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                    "paginate": {
+                        "first": "First",
+                        "last": "Last",
+                        "next": "Next",
+                        "previous": "Previous"
+                    }
+                }
+            });
+            } catch (error) {
+                console.error('Error initializing DataTable:', error);
+            }
+        }
+    }, 100); // 100ms delay
+});
+
+// Print function for the print button
+function printTable() {
+    // Get the current date range from the form or use default values
+    var startDate = $('input[name="start_date"]').val() || '{{ $startDate ?? \Carbon\Carbon::now()->subDays(30)->format("Y-m-d") }}';
+    var endDate = $('input[name="end_date"]').val() || '{{ $endDate ?? \Carbon\Carbon::now()->format("Y-m-d") }}';
+    
+    // Get the table content
+    var table = $('#sessionsTable').clone();
+    
+    // Remove columns that shouldn't be printed
+    table.find('th:first, td:first').remove(); // Remove serial number column
+    table.find('th:nth-child(2), td:nth-child(2)').remove(); // Remove actions column
+    
+    // Create a new window for printing
+    var printWindow = window.open('', '_blank', 'width=800,height=600');
+    
+    if (printWindow) {
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Telecaller Sessions Report</title>
+                <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        margin: 20px; 
+                        color: #333;
+                    }
+                    .header { 
+                        text-align: center; 
+                        margin-bottom: 30px; 
+                        border-bottom: 2px solid #333; 
+                        padding-bottom: 20px; 
+                    }
+                    .header h2 { 
+                        margin: 0 0 10px 0; 
+                        color: #333; 
+                        font-size: 24px; 
+                    }
+                    .date-range { 
+                        margin-bottom: 10px; 
+                        color: #666; 
+                        font-size: 14px;
+                    }
+                    table { 
+                        width: 100%; 
+                        border-collapse: collapse; 
+                        margin-top: 20px; 
+                        font-size: 12px;
+                    }
+                    th, td { 
+                        border: 1px solid #ddd; 
+                        padding: 8px; 
+                        text-align: left; 
+                    }
+                    th { 
+                        background-color: #f2f2f2; 
+                        font-weight: bold; 
+                        color: #333;
+                    }
+                    tr:nth-child(even) { 
+                        background-color: #f9f9f9; 
+                    }
+                    .footer { 
+                        margin-top: 30px; 
+                        text-align: center; 
+                        font-size: 10px; 
+                        color: #666; 
+                        border-top: 1px solid #ddd; 
+                        padding-top: 10px; 
+                    }
+                    @media print {
+                        body { margin: 0; }
+                        .header { page-break-after: avoid; }
+                        table { page-break-inside: avoid; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>Telecaller Sessions Report</h2>
+                    <div class="date-range">
+                        Report Period: ${startDate} to ${endDate}
+                    </div>
+                    <div class="date-range">
+                        Generated on: ${new Date().toLocaleDateString()}
+                    </div>
+                </div>
+                ${table[0].outerHTML}
+                <div class="footer">
+                    <p>Generated by Skillpark CRM System</p>
+                </div>
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+        
+        // Wait for content to load before printing
+        printWindow.onload = function() {
+            printWindow.focus();
+            printWindow.print();
+            // Don't close immediately, let user see the print dialog
+            setTimeout(function() {
+                printWindow.close();
+            }, 1000);
+        };
+    } else {
+        // Fallback if popup is blocked - use browser's print function
+        console.log('Popup blocked, using fallback print method');
+        fallbackPrint();
+    }
+}
+
+// Fallback print function if popup is blocked
+function fallbackPrint() {
+    // Hide elements that shouldn't be printed
+    $('.no-print').hide();
+    
+    // Get the table content
+    var table = $('#sessionsTable').clone();
+    table.find('th:first, td:first').remove(); // Remove serial number column
+    table.find('th:nth-child(2), td:nth-child(2)').remove(); // Remove actions column
+    
+    // Create a temporary container for printing
+    var printContainer = $('<div id="print-container" style="display: none;"></div>');
+    printContainer.html(`
+        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px;">
+            <h2 style="margin: 0 0 10px 0; color: #333; font-size: 24px;">Telecaller Sessions Report</h2>
+            <div style="margin-bottom: 10px; color: #666; font-size: 14px;">
+                Report Period: ${$('input[name="start_date"]').val() || '{{ $startDate }}'} to ${$('input[name="end_date"]').val() || '{{ $endDate }}'}
+            </div>
+            <div style="margin-bottom: 10px; color: #666; font-size: 14px;">
+                Generated on: ${new Date().toLocaleDateString()}
+            </div>
+        </div>
+        ${table[0].outerHTML}
+        <div style="margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 10px;">
+            <p>Generated by Skillpark CRM System</p>
+        </div>
+    `);
+    
+    $('body').append(printContainer);
+    
+    // Print the page
+    window.print();
+    
+    // Clean up
+    printContainer.remove();
+    $('.no-print').show();
+}
+</script>
+@endpush

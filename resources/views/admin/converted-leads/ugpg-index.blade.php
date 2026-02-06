@@ -313,6 +313,7 @@
                                     <th>Converted Date</th>
                                     <th>Register Number</th>
                                     <th>Name</th>
+                                    <th>Type</th>
                                     <th>DOB</th>
                                     <th>Phone</th>
                                     <th>WhatsApp Number</th>
@@ -393,6 +394,7 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td>{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="dob" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->leadDetail?->date_of_birth ? $convertedLead->leadDetail->date_of_birth->format('Y-m-d') : ($convertedLead->dob ?: '') }}">
                                             @php

@@ -337,6 +337,7 @@
                                     <th>Converted Date</th>
                                     <th>Register Number</th>
                                     <th>Name</th>
+                                    <th>Type</th>
                                     <th>DOB</th>
                                     <th>Phone</th>
                                     <th>WhatsApp</th>
@@ -427,6 +428,7 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td>{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="dob" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->dob }}">
                                             @php

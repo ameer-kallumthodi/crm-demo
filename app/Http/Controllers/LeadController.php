@@ -271,6 +271,17 @@ class LeadController extends Controller
             $query->where('rating', $request->rating);
         }
 
+        if ($request->filled('is_b2b')) {
+            $value = $request->is_b2b;
+            if ($value === 'b2b') {
+                $query->where('is_b2b', 1);
+            } elseif ($value === 'in_house') {
+                $query->where(function($q) {
+                    $q->whereNull('is_b2b')->orWhere('is_b2b', 0);
+                });
+            }
+        }
+
         // Lead Type filter (only for Admin/Super Admin, Senior Manager, General Manager)
         $currentUser = AuthHelper::getCurrentUser();
         $isAdminOrSuperAdmin = RoleHelper::is_admin_or_super_admin();
@@ -556,6 +567,7 @@ class LeadController extends Controller
             if ($canViewFirstCreated) {
                 $columns[$columnIndex++] = 'first_created_at'; // First Created At
             }
+            $columns[$columnIndex++] = 'is_b2b'; // Type
             $columns[$columnIndex++] = 'title'; // Name
             $columns[$columnIndex++] = 'id'; // Profile - no sorting
             $columns[$columnIndex++] = 'phone'; // Phone
@@ -622,6 +634,7 @@ class LeadController extends Controller
             if ($canViewFirstCreated) {
                 $columns[$columnIndex++] = 'first_created_at'; // First Created At
             }
+            $columns[$columnIndex++] = 'is_b2b'; // Type
             $columns[$columnIndex++] = 'title'; // Name
             $columns[$columnIndex++] = 'id'; // Profile - no sorting
             $columns[$columnIndex++] = 'phone'; // Phone
@@ -726,6 +739,7 @@ class LeadController extends Controller
                         : '-';
                 }
 
+                $row['type'] = $lead->is_b2b == 1 ? 'B2B' : 'In House';
                 $data[] = $row;
             }
 
@@ -1660,6 +1674,17 @@ class LeadController extends Controller
             $query->where('rating', $request->rating);
         }
 
+        if ($request->filled('is_b2b')) {
+            $value = $request->is_b2b;
+            if ($value === 'b2b') {
+                $query->where('is_b2b', 1);
+            } elseif ($value === 'in_house') {
+                $query->where(function($q) {
+                    $q->whereNull('is_b2b')->orWhere('is_b2b', 0);
+                });
+            }
+        }
+
         // Add registration status filter - default to 'pending' if not provided
         $registrationStatus = $request->get('registration_status', 'pending');
         if ($registrationStatus === 'approved') {
@@ -2055,6 +2080,7 @@ class LeadController extends Controller
             'add_date' => 'nullable|date',
             'add_time' => 'nullable|date_format:H:i',
             'remarks' => 'nullable|string|max:1000',
+            'is_b2b' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -2093,6 +2119,18 @@ class LeadController extends Controller
                 $leadData['created_by'] = $currentUserId;
                 $leadData['updated_by'] = $currentUserId;
                 $leadData['first_created_at'] = now();
+                
+                // Handle is_b2b logic
+                if (RoleHelper::is_admin_or_super_admin() && $request->has('is_b2b')) {
+                    // Admin can manually set is_b2b
+                    $leadData['is_b2b'] = $request->is_b2b ? 1 : 0;
+                } elseif (isset($leadData['telecaller_id'])) {
+                    // Auto-set is_b2b based on telecaller
+                    $telecaller = User::find($leadData['telecaller_id']);
+                    $leadData['is_b2b'] = $telecaller && $telecaller->is_b2b ? 1 : 0;
+                } else {
+                    $leadData['is_b2b'] = 0;
+                }
 
                 $lead = Lead::create($leadData);
 
@@ -2175,6 +2213,18 @@ class LeadController extends Controller
         $data['created_by'] = AuthHelper::getCurrentUserId();
         $data['updated_by'] = AuthHelper::getCurrentUserId();
         $data['first_created_at'] = now();
+        
+        // Handle is_b2b logic
+        if (RoleHelper::is_admin_or_super_admin() && $request->has('is_b2b')) {
+            // Admin can manually set is_b2b
+            $data['is_b2b'] = $request->is_b2b ? 1 : 0;
+        } elseif (isset($data['telecaller_id'])) {
+            // Auto-set is_b2b based on telecaller
+            $telecaller = User::find($data['telecaller_id']);
+            $data['is_b2b'] = $telecaller && $telecaller->is_b2b ? 1 : 0;
+        } else {
+            $data['is_b2b'] = 0;
+        }
 
         $lead = Lead::create($data);
 
@@ -2623,6 +2673,7 @@ class LeadController extends Controller
                 'add_date' => 'nullable|date',
                 'add_time' => 'nullable|date_format:H:i',
                 'remarks' => 'nullable|string|max:1000',
+                'is_b2b' => 'nullable|boolean',
             ]);
 
             if ($validator->fails()) {
@@ -2665,6 +2716,16 @@ class LeadController extends Controller
                 'address', 'telecaller_id', 'team_id', 'place', 'course_id', 'batch_id',
                 'university_id', 'followup_date', 'add_date', 'add_time', 'remarks'
             ]);
+            
+            // Handle is_b2b logic
+            if (RoleHelper::is_admin_or_super_admin() && $request->has('is_b2b')) {
+                // Admin can manually set is_b2b
+                $data['is_b2b'] = $request->is_b2b ? 1 : 0;
+            } elseif (isset($data['telecaller_id'])) {
+                // Auto-set is_b2b based on telecaller
+                $telecaller = User::find($data['telecaller_id']);
+                $data['is_b2b'] = $telecaller && $telecaller->is_b2b ? 1 : 0;
+            }
             
             // Check if telecaller_id is being changed (reassignment)
             $isReassignment = isset($data['telecaller_id']) && 
@@ -3107,6 +3168,7 @@ class LeadController extends Controller
     public function getTelecallersByTeam(Request $request)
     {
         $teamId = $request->get('team_id');
+        $isB2B = $request->get('is_b2b', 0);
         $currentUser = AuthHelper::getCurrentUser();
         $isTeamLead = $currentUser && AuthHelper::isTeamLead();
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
@@ -3126,11 +3188,17 @@ class LeadController extends Controller
                     $teamMemberIds = AuthHelper::getTeamMemberIds($userTeamId);
                     
                     $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
-                    $telecallers = User::whereIn('id', $teamMemberIds)
+                    $query = User::whereIn('id', $teamMemberIds)
                                       ->where('is_active', true)
                                       ->with('team:id,name')
-                                      ->select('id', 'name', 'email', 'team_id')
-                                      ->get();
+                                      ->select('id', 'name', 'email', 'team_id');
+                    
+                    // Filter by is_b2b if requested
+                    if ($isB2B) {
+                        $query->where('is_b2b', 1);
+                    }
+                    
+                    $telecallers = $query->get();
                 } else {
                     $telecallers = collect([$currentUser]); // Only themselves if no team
                 }
@@ -3139,11 +3207,17 @@ class LeadController extends Controller
                 $telecallers = collect([$currentUser]);
             } else {
                 // Admin/Super Admin/Senior Manager/General Manager: Show all telecallers (excluding marketing teams)
-                $telecallers = User::nonMarketingTelecallers()
+                $query = User::nonMarketingTelecallers()
                                   ->where('is_active', true)
                                   ->with('team:id,name')
-                                  ->select('id', 'name', 'email', 'team_id')
-                                  ->get();
+                                  ->select('id', 'name', 'email', 'team_id');
+                
+                // Filter by is_b2b if requested
+                if ($isB2B) {
+                    $query->where('is_b2b', 1);
+                }
+                
+                $telecallers = $query->get();
             }
         } else {
             // Get telecallers from specific team (with role filtering)
@@ -3152,6 +3226,11 @@ class LeadController extends Controller
                         ->where('is_active', true)
                         ->with('team:id,name')
                         ->select('id', 'name', 'email', 'team_id');
+            
+            // Filter by is_b2b if requested
+            if ($isB2B) {
+                $query->where('is_b2b', 1);
+            }
             
             if ($isTeamLead && !$isSeniorManager) {
                 // Team Lead (not senior manager): Only show if it's their team
@@ -4057,6 +4136,7 @@ class LeadController extends Controller
                     'email' => $lead->email,
                     'dob' => $dob,
                     'subject_id' => $subjectId,
+                    'is_b2b' => $lead->is_b2b ?? 0,
                     'remarks' => $request->remarks ?? 'Converted via bulk operation',
                     'created_by' => AuthHelper::getCurrentUserId(),
                 ]);
@@ -4353,6 +4433,7 @@ class LeadController extends Controller
                 'batch_id' => $lead->batch_id,
                 'board_id' => $request->board_id,
                 'subject_id' => $subjectId,
+                'is_b2b' => $lead->is_b2b ?? 0,
                 'candidate_status_id' => 1,
                 'remarks' => $request->remarks,
                 'created_by' => AuthHelper::getCurrentUserId(),
@@ -5379,3 +5460,5 @@ class LeadController extends Controller
     }
 
 }
+
+

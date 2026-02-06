@@ -32,12 +32,14 @@ class TeamController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'marketing_team' => 'nullable|boolean',
+            'is_b2b' => 'nullable|boolean',
         ]);
 
         $team = Team::create([
             'name' => $request->name,
             'description' => $request->description,
             'marketing_team' => $request->has('marketing_team') ? (bool)$request->marketing_team : false,
+            'is_b2b' => $request->has('is_b2b') ? (bool)$request->is_b2b : false,
             'created_by' => AuthHelper::getCurrentUserId(),
         ]);
 
@@ -101,12 +103,14 @@ class TeamController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'marketing_team' => 'nullable|boolean',
+            'is_b2b' => 'nullable|boolean',
         ]);
 
         $team = Team::create([
             'name' => $request->name,
             'description' => $request->description,
             'marketing_team' => $request->has('marketing_team') ? (bool)$request->marketing_team : false,
+            'is_b2b' => $request->has('is_b2b') ? (bool)$request->is_b2b : false,
             'created_by' => AuthHelper::getCurrentUserId(),
         ]);
 
@@ -144,6 +148,7 @@ class TeamController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'marketing_team' => 'nullable|boolean',
+            'is_b2b' => 'nullable|boolean',
         ]);
 
         $team = Team::findOrFail($id);
@@ -151,6 +156,7 @@ class TeamController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'marketing_team' => $request->has('marketing_team') ? (bool)$request->marketing_team : false,
+            'is_b2b' => $request->has('is_b2b') ? (bool)$request->is_b2b : false,
             'updated_by' => AuthHelper::getCurrentUserId(),
         ]);
 

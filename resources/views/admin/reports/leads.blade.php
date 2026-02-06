@@ -401,6 +401,60 @@
         </div>
     </div>
 
+    <!-- B2B Report -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="ti ti-chart-pie me-2"></i>B2B Report
+                </h5>
+                <a href="{{ route('admin.reports.b2b', ['date_from' => $fromDate, 'date_to' => $toDate]) }}" 
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="ti ti-eye"></i> Detailed Report
+                </a>
+            </div>
+            <div class="card-body">
+                @if($reports['b2b']->count() > 0)
+                    <div class="table-responsive">
+                        <table id="b2bTable" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th class="text-end">Count</th>
+                                    <th class="text-end">Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($reports['b2b'] as $item)
+                                    @php
+                                        $total = $reports['b2b']->sum('count');
+                                        $percentage = $total > 0 ? round(($item->count / $total) * 100, 1) : 0;
+                                    @endphp
+                                    <tr>
+                                        <td>
+                                            @if($item->title == 'B2B')
+                                                <span class="badge bg-info text-dark">B2B</span>
+                                            @else
+                                                <span class="badge bg-secondary text-white">In House</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end fw-bold">{{ $item->count }}</td>
+                                        <td class="text-end">{{ $percentage }}%</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-center text-muted py-4">
+                        <i class="ti ti-chart-pie f-48 mb-3"></i>
+                        <p>No data available for the selected date range</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
 </div>
 <!-- [ Reports Content ] end -->
 </div>
@@ -533,6 +587,30 @@ $(document).ready(function() {
             }
         }
     });
+
+    // Initialize DataTable for B2B
+    if ($.fn.DataTable.isDataTable('#b2bTable')) {
+        $('#b2bTable').DataTable().destroy();
+    }
+    $('#b2bTable').DataTable({
+        responsive: true,
+        pageLength: 5,
+        lengthMenu: [[5, 10, 25, -1], [5, 10, 25, "All"]],
+        order: [[1, 'desc']], // Sort by count descending
+        language: {
+            search: "Search:",
+            lengthMenu: "Show _MENU_ items per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ items",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        }
+    });
+    
+
 });
 
 function printReport() {

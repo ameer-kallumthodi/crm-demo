@@ -27,6 +27,18 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_b2b" id="is_b2b" value="1">
+                        <label class="form-check-label" for="is_b2b">
+                            <i class="ti ti-building me-1"></i>B2B Team
+                        </label>
+                        <small class="form-text text-muted d-block">B2B teams handle business-to-business leads.</small>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="d-flex justify-content-end gap-2">

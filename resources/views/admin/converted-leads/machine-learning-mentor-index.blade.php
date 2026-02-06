@@ -421,6 +421,7 @@
                                     <th>Converted Date</th>
                                     <th>Register Number</th>
                                     <th>Name</th>
+                                    <th>Type</th>
                                     <th>Phone</th>
                                     <th>WhatsApp</th>
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
@@ -520,6 +521,7 @@
                                         </div>
                                         @endif
                                     </td>
+                                    <td>{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</td>
                                     <td>
                                         <div class="inline-edit" data-field="phone" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->phone }}">
                                             <span class="display-value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</span>

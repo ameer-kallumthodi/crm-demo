@@ -335,6 +335,7 @@
                             <thead>
                                 <tr>
                                     <th>SL No</th>
+                                    <th>Type</th>
                                     <th>Academic</th>
                                     <th>Support</th>
                                     <th>Converted Date</th>
@@ -365,6 +366,7 @@
                                     $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
                                     @endphp
                                     <td>{{ $index + 1 }}</td>
+                                    <td>{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</td>
                                     <td>
                                         @include('admin.converted-leads.partials.status-badge', [
                                         'convertedLead' => $convertedLead,

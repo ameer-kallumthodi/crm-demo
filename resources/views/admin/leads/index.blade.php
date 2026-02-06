@@ -139,6 +139,17 @@
                         </div>
                         @endif
 
+
+                        <!-- B2B/In House Filter -->
+                        <div class="col-6 col-md-4 col-lg-2">
+                             <label for="is_b2b" class="form-label">Type (B2B/In House)</label>
+                             <select class="form-select form-select-sm" name="is_b2b" id="is_b2b">
+                                 <option value="">All Types</option>
+                                 <option value="b2b" {{ request('is_b2b') == 'b2b' ? 'selected' : '' }}>B2B</option>
+                                 <option value="in_house" {{ request('is_b2b') == 'in_house' ? 'selected' : '' }}>In House</option>
+                             </select>
+                        </div>
+
                         <!-- Action Buttons -->
                         <div class="col-12 col-lg-2">
                             <div class="d-flex gap-2 flex-wrap">
@@ -295,6 +306,7 @@ $canViewFirstCreated = $isAdminOrSuperAdmin || $isGeneralManager;
                                     @if($canViewFirstCreated)
                                     <th>First Created At</th>
                                     @endif
+                                    <th>Type</th>
                                     <th>Name</th>
                                     <th>Profile</th>
                                     <th>Phone</th>
@@ -354,6 +366,8 @@ $columns = array_merge($columns, [
 if ($canViewFirstCreated) {
     $columns[] = ['data' => 'first_created_at', 'name' => 'first_created_at'];
 }
+
+$columns[] = ['data' => 'type', 'name' => 'type'];
 
 $columns = array_merge($columns, [
     ['data' => 'name', 'name' => 'name'],
@@ -583,10 +597,14 @@ $columns = array_merge($columns, [
                     search_key: getUrlParameter('search_key') || '{{ request('search_key') }}' || ''
                 };
                 
-                // Add lead_type if the field exists (only for admin/super admin, senior manager, general manager)
                 if ($('#lead_type').length > 0) {
                     params.lead_type = $('#lead_type').val() || '';
                 }
+
+                // Add is_b2b filter
+                 if ($('#is_b2b').length > 0) {
+                     params.is_b2b = $('#is_b2b').val() || '';
+                 }
                 
                 return params;
             }

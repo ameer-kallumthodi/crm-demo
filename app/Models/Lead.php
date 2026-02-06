@@ -44,6 +44,7 @@ class Lead extends Model
         'followup_date',
         'remarks',
         'is_converted',
+        'is_b2b',
         'is_pullbacked',
         'first_created_at',
     ];
@@ -51,6 +52,7 @@ class Lead extends Model
     protected $casts = [
         'by_meta' => 'boolean',
         'is_converted' => 'boolean',
+        'is_b2b' => 'boolean',
         'followup_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

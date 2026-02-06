@@ -62,6 +62,12 @@
                     <td class="label">Remarks</td>
                     <td class="value">{{ $convertedLead->remarks ?? 'N/A' }}</td>
                 </tr>
+                <tr>
+                    <td class="label">Lead Type</td>
+                    <td class="value">{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</td>
+                    <td class="label"></td>
+                    <td class="value"></td>
+                </tr>
             </table>
         </div>
 

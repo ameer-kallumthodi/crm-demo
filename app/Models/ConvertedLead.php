@@ -20,6 +20,7 @@ class ConvertedLead extends Model
         'username',
         'password',
         'status',
+        'is_b2b',
         'postsale_status',
         'is_cancelled',
         'cancelled_by',
@@ -74,6 +75,7 @@ class ConvertedLead extends Model
         'is_course_changed' => 'boolean',
         'is_cancelled' => 'boolean',
         'is_postpond_batch' => 'boolean',
+        'is_b2b' => 'boolean',
     ];
 
     // Relationships

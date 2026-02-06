@@ -327,6 +327,7 @@
                                     <th>Conversion Date</th>
                                     <th>Registration Number</th>
                                     <th>Student Name</th>
+                                    <th>Type</th>
                                     <th>DOB</th>
                                     <th>Phone Number</th>
                                     <th>WhatsApp Number</th>
@@ -416,6 +417,7 @@
                                         </div>
                                         @endif
                                     </td>
+                                    <td>{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</td>
                                     <td>
                                         @php
                                         $dobDisplay = '-';

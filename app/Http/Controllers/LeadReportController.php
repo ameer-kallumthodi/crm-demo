@@ -25,25 +25,26 @@ class LeadReportController extends Controller
         // Default date range (last 7 days)
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
-        
+
         // Get filter options
         $leadStatuses = LeadStatus::select('id', 'title', 'color')->get();
         $leadSources = LeadSource::select('id', 'title')->get();
-        $teams = Team::select('id', 'name as title')->nonMarketing()->get();
-        
+        $teams = Team::select('id', 'name')->nonMarketing()->get();
+
         // Get reports data
         $reports = [
             'lead_status' => $this->getLeadStatusReport($fromDate, $toDate),
             'lead_source' => $this->getLeadSourceReport($fromDate, $toDate),
             'team' => $this->getTeamReport($fromDate, $toDate),
             'telecaller' => $this->getTelecallerReport($fromDate, $toDate),
+            'b2b' => $this->getB2BReport($fromDate, $toDate),
         ];
-        
+
         // Get current user role information
         $currentUser = AuthHelper::getCurrentUser();
         $isTeamLead = $currentUser && \App\Helpers\RoleHelper::is_team_lead();
         $isTelecaller = $currentUser && AuthHelper::isTelecaller();
-        
+
         return view('admin.reports.leads', compact(
             'reports', 'leadStatuses', 'leadSources', 'teams', 'fromDate', 'toDate', 'isTeamLead', 'isTelecaller'
         ));
@@ -54,28 +55,28 @@ class LeadReportController extends Controller
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $leadStatusId = $request->get('lead_status_id');
-        
+
         // Get filter options
         $leadStatuses = LeadStatus::select('id', 'title', 'color')->get();
-        
+
         // Get reports data
         $reports = [
             'lead_status' => $this->getLeadStatusReport($fromDate, $toDate),
             'monthly' => $this->getMonthlyReport($fromDate, $toDate),
             'conversion' => $this->getConversionReport($fromDate, $toDate),
         ];
-        
+
         // Get leads data for the detailed view with optional lead status filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($leadStatusId) {
             $leadsQuery->where('lead_status_id', $leadStatusId);
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->paginate(20);
-        
+
         return view('admin.reports.lead-status', compact('reports', 'leads', 'fromDate', 'toDate', 'leadStatuses', 'leadStatusId'));
     }
 
@@ -84,27 +85,27 @@ class LeadReportController extends Controller
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $leadSourceId = $request->get('lead_source_id');
-        
+
         // Get filter options
         $leadSources = LeadSource::select('id', 'title')->get();
-        
+
         // Get reports data
         $reports = [
             'lead_source' => $this->getLeadSourceReport($fromDate, $toDate),
             'monthly' => $this->getMonthlyReport($fromDate, $toDate),
         ];
-        
+
         // Get leads data for the detailed view with optional lead source filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($leadSourceId) {
             $leadsQuery->where('lead_source_id', $leadSourceId);
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
-        
+
         return view('admin.reports.lead-source', compact('reports', 'leads', 'fromDate', 'toDate', 'leadSources', 'leadSourceId'));
     }
 
@@ -114,43 +115,44 @@ class LeadReportController extends Controller
         if (AuthHelper::isTelecaller() && !\App\Helpers\RoleHelper::is_team_lead()) {
             abort(403, 'Access denied. Telecallers cannot access team reports.');
         }
-        
+
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $teamId = $request->get('team_id');
-        
+
         // Get filter options based on role
         $currentUser = AuthHelper::getCurrentUser();
         $isTeamLead = $currentUser && \App\Helpers\RoleHelper::is_team_lead();
-        
+
         if ($isTeamLead) {
             // Team Lead: Show only their team
             $teamId = $currentUser->team_id;
             $teams = Team::where('id', $teamId)->select('id', 'name')->get();
-        } else {
+        }
+        else {
             // Admin/Super Admin: Show all teams
             $teams = Team::select('id', 'name')->nonMarketing()->get();
         }
-        
+
         // Get reports data
         $reports = [
             'team' => $this->getTeamReport($fromDate, $toDate),
             'monthly' => $this->getMonthlyReport($fromDate, $toDate),
         ];
-        
+
         // Get leads data for the detailed view with optional team filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name,team_id', 'telecaller.team:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($teamId) {
-            $leadsQuery->whereHas('telecaller', function($query) use ($teamId) {
+            $leadsQuery->whereHas('telecaller', function ($query) use ($teamId) {
                 $query->where('team_id', $teamId);
             });
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->paginate(20);
-        
+
         return view('admin.reports.team', compact('reports', 'leads', 'fromDate', 'toDate', 'teams', 'teamId'));
     }
 
@@ -160,16 +162,16 @@ class LeadReportController extends Controller
         if (AuthHelper::isTelecaller() && !\App\Helpers\RoleHelper::is_team_lead()) {
             abort(403, 'Access denied. Only team leads can access telecaller reports.');
         }
-        
+
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $telecallerId = $request->get('telecaller_id');
         $teamId = $request->get('team_id');
-        
+
         $currentUser = AuthHelper::getCurrentUser();
         $isTeamLead = $currentUser && \App\Helpers\RoleHelper::is_team_lead();
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
-        
+
         // Get filter options based on role
         if ($isTeamLead) {
             // Team Lead: Show only their team members
@@ -181,13 +183,16 @@ class LeadReportController extends Controller
                     ->where('role_id', 3)
                     ->select('id', 'name', 'phone')
                     ->get();
-            } else {
+            }
+            else {
                 $telecallers = collect([$currentUser]); // Only themselves if no team
             }
-        } elseif ($isTelecaller) {
+        }
+        elseif ($isTelecaller) {
             // Telecaller: Show only themselves
             $telecallers = collect([$currentUser]);
-        } else {
+        }
+        else {
             // Admin/Super Admin: Show all telecallers
             $telecallersQuery = User::where('role_id', 3)->select('id', 'name', 'phone');
             if ($teamId) {
@@ -195,29 +200,72 @@ class LeadReportController extends Controller
             }
             $telecallers = $telecallersQuery->get();
         }
-        
+
         // Get reports data
         $reports = [
             'telecaller' => $this->getTelecallerReport($fromDate, $toDate, $teamId),
             'monthly' => $this->getMonthlyReport($fromDate, $toDate),
         ];
-        
+
         // Get leads data for the detailed view with optional telecaller filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name', 'team:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($telecallerId) {
             $leadsQuery->where('telecaller_id', $telecallerId);
         }
-        
+
         if ($teamId) {
             $leadsQuery->where('team_id', $teamId);
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->paginate(20);
-        
+
         return view('admin.reports.telecaller', compact('reports', 'leads', 'fromDate', 'toDate', 'telecallers', 'telecallerId', 'teamId'));
+    }
+
+    public function b2bReport(Request $request)
+    {
+        $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
+        $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
+
+        // Get reports data
+        $reports = [
+            'b2b' => $this->getB2BReport($fromDate, $toDate),
+            'monthly' => $this->getMonthlyReport($fromDate, $toDate),
+        ];
+
+        // Get leads data for the detailed view
+        $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name'])
+            ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
+
+        $this->applyRoleBasedFilter($leadsQuery);
+        $leads = $leadsQuery->orderBy('created_at', 'desc')->paginate(20);
+
+        return view('admin.reports.b2b', compact('reports', 'leads', 'fromDate', 'toDate'));
+    }
+
+    private function getB2BReport($fromDate, $toDate)
+    {
+        // Get count for B2B (is_b2b = 1)
+        $b2bQuery = Lead::whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59'])
+            ->where('is_b2b', 1);
+        $this->applyRoleBasedFilter($b2bQuery);
+        $b2bCount = $b2bQuery->count();
+
+        // Get count for In House (is_b2b = 0 or null)
+        $inHouseQuery = Lead::whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59'])
+            ->where(function ($q) {
+            $q->whereNull('is_b2b')->orWhere('is_b2b', 0);
+        });
+        $this->applyRoleBasedFilter($inHouseQuery);
+        $inHouseCount = $inHouseQuery->count();
+
+        return collect([
+            (object)['title' => 'B2B', 'count' => $b2bCount, 'is_b2b' => 1],
+            (object)['title' => 'In House', 'count' => $inHouseCount, 'is_b2b' => 0]
+        ]);
     }
 
     private function getLeadStatusReport($fromDate, $toDate)
@@ -226,9 +274,9 @@ class LeadReportController extends Controller
             ->selectRaw('COUNT(leads.id) as count')
             ->join('lead_statuses', 'leads.lead_status_id', '=', 'lead_statuses.id')
             ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         $this->applyRoleBasedFilter($query);
-        
+
         return $query->groupBy('lead_statuses.id', 'lead_statuses.title')
             ->orderBy('count', 'desc')
             ->get();
@@ -240,9 +288,9 @@ class LeadReportController extends Controller
             ->selectRaw('COUNT(leads.id) as count')
             ->join('lead_sources', 'leads.lead_source_id', '=', 'lead_sources.id')
             ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         $this->applyRoleBasedFilter($query);
-        
+
         return $query->groupBy('lead_sources.id', 'lead_sources.title')
             ->orderBy('count', 'desc')
             ->get();
@@ -252,12 +300,12 @@ class LeadReportController extends Controller
     {
         $currentUser = AuthHelper::getCurrentUser();
         $teams = collect();
-        
+
         if ($currentUser && \App\Helpers\RoleHelper::is_team_lead()) {
             // Team Lead: Only show their own team
             $teamId = $currentUser->team_id;
             if ($teamId) {
-                $team = Team::select('id', 'name as title')->find($teamId);
+                $team = Team::select('id', 'name')->find($teamId);
                 if ($team) {
                     // Get lead count for this team through telecallers
                     $leadCountQuery = Lead::join('users', 'leads.telecaller_id', '=', 'users.id')
@@ -265,7 +313,7 @@ class LeadReportController extends Controller
                         ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
                     $this->applyRoleBasedFilter($leadCountQuery);
                     $leadCount = $leadCountQuery->count();
-                    
+
                     // Get telecaller data for this team
                     $telecallersQuery = Lead::select('users.id', 'users.name')
                         ->selectRaw('COUNT(leads.id) as lead_count')
@@ -277,17 +325,18 @@ class LeadReportController extends Controller
                     $telecallers = $telecallersQuery->groupBy('users.id', 'users.name')
                         ->orderBy('lead_count', 'desc')
                         ->get();
-                    
+
                     $team->count = $leadCount;
                     $team->telecallers = $telecallers;
-                    
+
                     $teams->push($team);
                 }
             }
-        } else {
+        }
+        else {
             // Admin/Super Admin: Show all teams
-            $allTeams = Team::select('id', 'name as title')->nonMarketing()->get();
-            
+            $allTeams = Team::select('id', 'name')->nonMarketing()->get();
+
             foreach ($allTeams as $team) {
                 // Get lead count for this team through telecallers
                 $leadCountQuery = Lead::join('users', 'leads.telecaller_id', '=', 'users.id')
@@ -295,7 +344,7 @@ class LeadReportController extends Controller
                     ->whereBetween('leads.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
                 $this->applyRoleBasedFilter($leadCountQuery);
                 $leadCount = $leadCountQuery->count();
-                
+
                 // Get telecaller data for this team
                 $telecallersQuery = Lead::select('users.id', 'users.name')
                     ->selectRaw('COUNT(leads.id) as lead_count')
@@ -307,14 +356,14 @@ class LeadReportController extends Controller
                 $telecallers = $telecallersQuery->groupBy('users.id', 'users.name')
                     ->orderBy('lead_count', 'desc')
                     ->get();
-                
+
                 $team->count = $leadCount;
                 $team->telecallers = $telecallers;
-                
+
                 $teams->push($team);
             }
         }
-        
+
         // Sort by lead count descending
         return $teams->sortByDesc('count')->values();
     }
@@ -323,7 +372,7 @@ class LeadReportController extends Controller
     {
         $currentUser = AuthHelper::getCurrentUser();
         $telecallers = collect();
-        
+
         if ($currentUser && \App\Helpers\RoleHelper::is_team_lead()) {
             // Team Lead: Show their team members
             $userTeamId = $currentUser->team_id;
@@ -332,89 +381,91 @@ class LeadReportController extends Controller
                     ->where('team_id', $userTeamId)
                     ->select('id', 'name', 'phone', 'team_id')
                     ->get();
-                
+
                 foreach ($allTelecallers as $telecaller) {
                     // Get lead count for this telecaller in the date range
                     $leadCountQuery = Lead::where('telecaller_id', $telecaller->id)
                         ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
                     $this->applyRoleBasedFilter($leadCountQuery);
                     $leadCount = $leadCountQuery->count();
-                    
+
                     // Get team name for this telecaller
                     $team = Team::where('id', $telecaller->team_id)->first();
                     $teamName = $team ? $team->name : null;
-                    
+
                     // Create telecaller object with count
-                    $telecallerData = (object) [
+                    $telecallerData = (object)[
                         'id' => $telecaller->id,
                         'name' => $telecaller->name,
                         'phone' => $telecaller->phone,
                         'team_name' => $teamName,
                         'count' => $leadCount
                     ];
-                    
+
                     $telecallers->push($telecallerData);
                 }
             }
-        } elseif ($currentUser && AuthHelper::isTelecaller()) {
+        }
+        elseif ($currentUser && AuthHelper::isTelecaller()) {
             // Telecaller: Only show their own data
             $telecaller = $currentUser;
-            
+
             // Get lead count for this telecaller in the date range
             $leadCountQuery = Lead::where('telecaller_id', $telecaller->id)
                 ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
             $this->applyRoleBasedFilter($leadCountQuery);
             $leadCount = $leadCountQuery->count();
-            
+
             // Get team name for this telecaller
             $team = Team::where('id', $telecaller->team_id)->first();
             $teamName = $team ? $team->name : null;
-            
+
             // Create telecaller object with count
-            $telecallerData = (object) [
+            $telecallerData = (object)[
                 'id' => $telecaller->id,
                 'name' => $telecaller->name,
                 'phone' => $telecaller->phone,
                 'team_name' => $teamName,
                 'count' => $leadCount
             ];
-            
+
             $telecallers->push($telecallerData);
-        } else {
+        }
+        else {
             // Admin/Super Admin: Show all telecallers
             $telecallersQuery = User::where('role_id', 3)
                 ->select('id', 'name', 'phone', 'team_id');
-                
+
             if ($teamId) {
                 $telecallersQuery->where('team_id', $teamId);
             }
-            
+
             $allTelecallers = $telecallersQuery->get();
-            
+
             foreach ($allTelecallers as $telecaller) {
                 // Get lead count for this telecaller in the date range
                 $leadCountQuery = Lead::where('telecaller_id', $telecaller->id)
                     ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
                 $this->applyRoleBasedFilter($leadCountQuery);
                 $leadCount = $leadCountQuery->count();
-                
+
                 // Get team name for this telecaller
                 $team = Team::where('id', $telecaller->team_id)->first();
                 $teamName = $team ? $team->name : null;
-                
+
                 // Create telecaller object with count
-                $telecallerData = (object) [
+                $telecallerData = (object)[
                     'id' => $telecaller->id,
                     'name' => $telecaller->name,
                     'phone' => $telecaller->phone,
                     'team_name' => $teamName,
                     'count' => $leadCount
                 ];
-                
+
                 $telecallers->push($telecallerData);
             }
         }
-        
+
         // Sort by lead count descending and return
         return $telecallers->sortByDesc('count')->values();
     }
@@ -447,39 +498,39 @@ class LeadReportController extends Controller
         $months = [];
         $startDate = Carbon::parse($fromDate);
         $endDate = Carbon::parse($toDate);
-        
+
         // Generate all months in the range
         while ($startDate->lte($endDate)) {
             $monthKey = $startDate->format('Y-m');
             $monthName = $startDate->format('M Y');
-            
+
             // Get total leads for this month
             $totalLeadsQuery = Lead::whereYear('created_at', $startDate->year)
                 ->whereMonth('created_at', $startDate->month);
             $this->applyRoleBasedFilter($totalLeadsQuery);
             $totalLeads = $totalLeadsQuery->count();
-            
+
             // Get converted leads for this month
             $convertedLeadsQuery = Lead::whereYear('created_at', $startDate->year)
                 ->whereMonth('created_at', $startDate->month)
                 ->where('is_converted', true);
             $this->applyRoleBasedFilter($convertedLeadsQuery);
             $convertedLeads = $convertedLeadsQuery->count();
-            
+
             // Calculate conversion rate
             $conversionRate = $totalLeads > 0 ? round(($convertedLeads / $totalLeads) * 100, 2) : 0;
-            
-            $months[] = (object) [
+
+            $months[] = (object)[
                 'month' => $monthName,
                 'count' => $totalLeads,
                 'total_leads' => $totalLeads,
                 'converted' => $convertedLeads,
                 'conversion_rate' => $conversionRate
             ];
-            
+
             $startDate->addMonth();
         }
-        
+
         return collect($months);
     }
 
@@ -488,12 +539,12 @@ class LeadReportController extends Controller
         $totalLeadsQuery = Lead::whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
         $this->applyRoleBasedFilter($totalLeadsQuery);
         $totalLeads = $totalLeadsQuery->count();
-        
+
         $convertedLeadsQuery = Lead::whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59'])
             ->where('is_converted', true);
         $this->applyRoleBasedFilter($convertedLeadsQuery);
         $convertedLeads = $convertedLeadsQuery->count();
-        
+
         return [
             'total_leads' => $totalLeads,
             'converted_leads' => $convertedLeads,
@@ -509,26 +560,26 @@ class LeadReportController extends Controller
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $leadStatusId = $request->get('lead_status_id');
-        
+
         // Get leads data for the detailed view with optional lead status filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($leadStatusId) {
             $leadsQuery->where('lead_status_id', $leadStatusId);
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
-        
+
         $export = new \App\Exports\LeadStatusReportExport($leads, $fromDate, $toDate);
         $spreadsheet = $export->export();
-        
+
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        
+
         $filename = 'lead_status_report_' . $fromDate . '_to_' . $toDate . '.xlsx';
-        
-        return response()->streamDownload(function() use ($writer) {
+
+        return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -544,25 +595,25 @@ class LeadReportController extends Controller
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $leadStatusId = $request->get('lead_status_id');
-        
+
         // Get reports data
         $reports = [
             'lead_status' => $this->getLeadStatusReport($fromDate, $toDate),
             'monthly' => $this->getMonthlyReport($fromDate, $toDate),
             'conversion' => $this->getConversionReport($fromDate, $toDate),
         ];
-        
+
         // Get leads data for the detailed view with optional lead status filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($leadStatusId) {
             $leadsQuery->where('lead_status_id', $leadStatusId);
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
-        
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.exports.lead-status-pdf', [
             'reports' => $reports,
             'leads' => $leads,
@@ -571,9 +622,9 @@ class LeadReportController extends Controller
             'reportType' => 'Lead Status Report',
             'generatedAt' => now()->format('Y-m-d H:i:s')
         ]);
-        
+
         $pdf->setPaper('A4', 'landscape');
-        
+
         return $pdf->download('lead_status_report_' . $fromDate . '_to_' . $toDate . '.pdf');
     }
 
@@ -585,26 +636,26 @@ class LeadReportController extends Controller
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $leadSourceId = $request->get('lead_source_id');
-        
+
         // Get leads data for the detailed view with optional lead source filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($leadSourceId) {
             $leadsQuery->where('lead_source_id', $leadSourceId);
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
-        
+
         $export = new \App\Exports\LeadSourceReportExport($leads, $fromDate, $toDate);
         $spreadsheet = $export->export();
-        
+
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        
+
         $filename = 'lead_source_report_' . $fromDate . '_to_' . $toDate . '.xlsx';
-        
-        return response()->streamDownload(function() use ($writer) {
+
+        return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -620,24 +671,24 @@ class LeadReportController extends Controller
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $leadSourceId = $request->get('lead_source_id');
-        
+
         // Get reports data
         $reports = [
             'lead_source' => $this->getLeadSourceReport($fromDate, $toDate),
             'monthly' => $this->getMonthlyReport($fromDate, $toDate),
         ];
-        
+
         // Get leads data for the detailed view with optional lead source filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($leadSourceId) {
             $leadsQuery->where('lead_source_id', $leadSourceId);
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
-        
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.exports.lead-source-pdf', [
             'reports' => $reports,
             'leads' => $leads,
@@ -646,9 +697,9 @@ class LeadReportController extends Controller
             'reportType' => 'Lead Source Report',
             'generatedAt' => now()->format('Y-m-d H:i:s')
         ]);
-        
+
         $pdf->setPaper('A4', 'landscape');
-        
+
         return $pdf->download('lead_source_report_' . $fromDate . '_to_' . $toDate . '.pdf');
     }
 
@@ -660,26 +711,26 @@ class LeadReportController extends Controller
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $teamId = $request->get('team_id');
-        
+
         // Get leads data for the detailed view with optional team filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name', 'team:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($teamId) {
             $leadsQuery->where('team_id', $teamId);
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
-        
+
         $export = new \App\Exports\TeamReportExport($leads, $fromDate, $toDate);
         $spreadsheet = $export->export();
-        
+
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        
+
         $filename = 'team_report_' . $fromDate . '_to_' . $toDate . '.xlsx';
-        
-        return response()->streamDownload(function() use ($writer) {
+
+        return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -695,24 +746,24 @@ class LeadReportController extends Controller
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $teamId = $request->get('team_id');
-        
+
         // Get reports data
         $reports = [
             'team' => $this->getTeamReport($fromDate, $toDate),
             'monthly' => $this->getMonthlyReport($fromDate, $toDate),
         ];
-        
+
         // Get leads data for the detailed view with optional team filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name', 'team:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($teamId) {
             $leadsQuery->where('team_id', $teamId);
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
-        
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.exports.team-pdf', [
             'reports' => $reports,
             'leads' => $leads,
@@ -721,9 +772,9 @@ class LeadReportController extends Controller
             'reportType' => 'Team Report',
             'generatedAt' => now()->format('Y-m-d H:i:s')
         ]);
-        
+
         $pdf->setPaper('A4', 'landscape');
-        
+
         return $pdf->download('team_report_' . $fromDate . '_to_' . $toDate . '.pdf');
     }
 
@@ -736,35 +787,35 @@ class LeadReportController extends Controller
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $telecallerId = $request->get('telecaller_id');
         $teamId = $request->get('team_id');
-        
+
         // Get telecaller report data
         $reports = [
             'telecaller' => $this->getTelecallerReport($fromDate, $toDate, $teamId),
         ];
-        
+
         // Get leads data for the detailed view with optional telecaller filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($telecallerId) {
             $leadsQuery->where('telecaller_id', $telecallerId);
         }
-        
+
         if ($teamId) {
             $leadsQuery->where('team_id', $teamId);
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
-        
+
         $export = new \App\Exports\TelecallerReportExport($reports, $fromDate, $toDate);
         $spreadsheet = $export->export();
-        
+
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        
+
         $filename = 'telecaller_report_' . $fromDate . '_to_' . $toDate . '.xlsx';
-        
-        return response()->streamDownload(function() use ($writer) {
+
+        return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -781,27 +832,27 @@ class LeadReportController extends Controller
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
         $telecallerId = $request->get('telecaller_id');
         $teamId = $request->get('team_id');
-        
+
         // Get telecaller report data
         $reports = [
             'telecaller' => $this->getTelecallerReport($fromDate, $toDate, $teamId),
         ];
-        
+
         // Get leads data for the detailed view with optional telecaller filter
         $leadsQuery = Lead::with(['leadStatus:id,title,color', 'leadSource:id,title', 'telecaller:id,name'])
             ->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
-            
+
         if ($telecallerId) {
             $leadsQuery->where('telecaller_id', $telecallerId);
         }
-        
+
         if ($teamId) {
             $leadsQuery->where('team_id', $teamId);
         }
-        
+
         $this->applyRoleBasedFilter($leadsQuery);
         $leads = $leadsQuery->orderBy('created_at', 'desc')->get();
-        
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.exports.telecaller-pdf', [
             'reports' => $reports,
             'fromDate' => $fromDate,
@@ -809,7 +860,7 @@ class LeadReportController extends Controller
             'reportType' => 'Telecaller Report',
             'generatedAt' => now()->format('Y-m-d H:i:s')
         ]);
-        
+
         $pdf->setPaper('A4', 'landscape');
         return $pdf->download('telecaller_report_' . $fromDate . '_to_' . $toDate . '.pdf');
     }
@@ -821,7 +872,7 @@ class LeadReportController extends Controller
     {
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
-        
+
         // Get reports data
         $reports = [
             'lead_status' => $this->getLeadStatusReport($fromDate, $toDate),
@@ -829,15 +880,15 @@ class LeadReportController extends Controller
             'team' => $this->getTeamReport($fromDate, $toDate),
             'telecaller' => $this->getTelecallerReport($fromDate, $toDate),
         ];
-        
+
         $export = new \App\Exports\MainReportsExport($reports, $fromDate, $toDate);
         $spreadsheet = $export->export();
-        
+
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        
+
         $filename = 'main_reports_' . $fromDate . '_to_' . $toDate . '.xlsx';
-        
-        return response()->streamDownload(function() use ($writer) {
+
+        return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -852,7 +903,7 @@ class LeadReportController extends Controller
     {
         $fromDate = $request->get('date_from', Carbon::now()->subDays(7)->format('Y-m-d'));
         $toDate = $request->get('date_to', Carbon::now()->format('Y-m-d'));
-        
+
         // Get reports data
         $reports = [
             'lead_status' => $this->getLeadStatusReport($fromDate, $toDate),
@@ -860,7 +911,7 @@ class LeadReportController extends Controller
             'team' => $this->getTeamReport($fromDate, $toDate),
             'telecaller' => $this->getTelecallerReport($fromDate, $toDate),
         ];
-        
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.exports.main-reports-pdf', [
             'reports' => $reports,
             'fromDate' => $fromDate,
@@ -868,7 +919,7 @@ class LeadReportController extends Controller
             'reportType' => 'Main Reports',
             'generatedAt' => now()->format('Y-m-d H:i:s')
         ]);
-        
+
         $pdf->setPaper('A4', 'landscape');
         return $pdf->download('main_reports_' . $fromDate . '_to_' . $toDate . '.pdf');
     }
@@ -879,12 +930,12 @@ class LeadReportController extends Controller
     private function applyRoleBasedFilter($query)
     {
         $currentUser = AuthHelper::getCurrentUser();
-        
+
         // If no user is logged in, return all leads (for admin view)
         if (!$currentUser) {
             return $query;
         }
-        
+
         // Check team lead first (higher priority)
         if ($currentUser->is_team_lead == 1) {
             // Team Lead: Can see their own leads + their team members' leads
@@ -893,15 +944,17 @@ class LeadReportController extends Controller
                 $teamMemberIds = AuthHelper::getTeamMemberIds($teamId);
                 $teamMemberIds[] = AuthHelper::getCurrentUserId(); // Include team lead
                 $query->whereIn('telecaller_id', $teamMemberIds);
-            } else {
+            }
+            else {
                 // If no team assigned, only show their own leads
                 $query->where('telecaller_id', AuthHelper::getCurrentUserId());
             }
-        } elseif (AuthHelper::isTelecaller()) {
+        }
+        elseif (AuthHelper::isTelecaller()) {
             // Telecaller: Can only see their own leads
             $query->where('telecaller_id', AuthHelper::getCurrentUserId());
         }
-        
+
         return $query;
     }
 }

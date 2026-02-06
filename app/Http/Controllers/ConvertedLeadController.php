@@ -165,6 +165,17 @@ class ConvertedLeadController extends Controller
                 $q->where('tma', $request->tma);
             });
         }
+        if ($request->filled('is_b2b')) {
+            $value = $request->is_b2b;
+            if ($value === 'b2b') {
+                $query->where('is_b2b', 1);
+            } elseif ($value === 'in_house') {
+                $query->where(function($q) {
+                    $q->whereNull('is_b2b')->orWhere('is_b2b', 0);
+                });
+            }
+        }
+
 
         // Apply date filtering only if dates are explicitly provided
         if ($request->filled('date_from')) {
@@ -299,6 +310,17 @@ class ConvertedLeadController extends Controller
                 $q->where('tma', $request->tma);
             });
         }
+        if ($request->filled('is_b2b')) {
+            $value = $request->is_b2b;
+            if ($value === 'b2b') {
+                $query->where('is_b2b', 1);
+            } elseif ($value === 'in_house') {
+                $query->where(function($q) {
+                    $q->whereNull('is_b2b')->orWhere('is_b2b', 0);
+                });
+            }
+        }
+
 
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
@@ -403,6 +425,17 @@ class ConvertedLeadController extends Controller
                 $q->where('tma', $request->tma);
             });
         }
+        if ($request->filled('is_b2b')) {
+            $value = $request->is_b2b;
+            if ($value === 'b2b') {
+                $query->where('is_b2b', 1);
+            } elseif ($value === 'in_house') {
+                $query->where(function($q) {
+                    $q->whereNull('is_b2b')->orWhere('is_b2b', 0);
+                });
+            }
+        }
+
 
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);

@@ -351,6 +351,7 @@
                                     <th>Support Verified At</th>
                                     <th>Registration Number</th>
                                     <th>Name</th>
+                                    <th>Type</th>
                                     <th>DOB</th>
                                     <th>REG. FEE</th>
                                     <th>EXAM FEE</th>
@@ -447,6 +448,7 @@
                                         </div>
                                         @endif
                                     </td>
+                                    <td>{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</td>
                                     <td>{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</td>
                                     <td>{{ $convertedLead->status ?? 'N/A' }}</td>
                                     <td>{{ $convertedLead->exam_fee ?? 'N/A' }}</td>

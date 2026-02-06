@@ -253,6 +253,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Name</th>
+                                    <th>Type</th>
                                     <th>Phone</th>
                                     <th>Email</th>
                                     <th>Status</th>
@@ -266,6 +267,13 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $lead->title }}</td>
+                                        <td>
+                                            @if($lead->is_b2b)
+                                                <span class="badge bg-info text-dark">B2B</span>
+                                            @else
+                                                <span class="badge bg-secondary text-white">In House</span>
+                                            @endif
+                                        </td>
                                         <td>{{ $lead->phone }}</td>
                                         <td>{{ $lead->email ?? '-' }}</td>
                                         <td>

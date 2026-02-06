@@ -44,6 +44,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Name</th>
+                                <th>Department</th>
                                 <th>Type</th>
                                 <th>Description</th>
                                 <th>Team Lead</th>
@@ -74,6 +75,13 @@
                                         <span class="badge bg-success text-white">
                                             <i class="ti ti-shopping-cart me-1"></i>Sales
                                         </span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($team->is_b2b)
+                                        <span class="badge bg-info text-dark">B2B</span>
+                                    @else
+                                        <span class="badge bg-secondary text-white">In house</span>
                                     @endif
                                 </td>
                                 <td>

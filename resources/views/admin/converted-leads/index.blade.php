@@ -361,6 +361,15 @@
                             </select>
                         </div>
 
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="is_b2b" class="form-label">Type</label>
+                            <select class="form-select" id="is_b2b" name="is_b2b">
+                                <option value="">All Types</option>
+                                <option value="b2b" {{ request('is_b2b') === 'b2b' ? 'selected' : '' }}>B2B</option>
+                                <option value="in_house" {{ request('is_b2b') === 'in_house' ? 'selected' : '' }}>In House</option>
+                            </select>
+                        </div>
+
                         <div class="col-12 col-md-4">
                             <div class="d-flex gap-2 flex-wrap">
                                 <button type="submit" class="btn btn-primary">
@@ -404,6 +413,7 @@
                                     <th>Support Verified At</th>
                                     <th>Register Number</th>
                                     <th>DOB</th>
+                                    <th>Type</th>
                                     <th>Name</th>
                                     <th>Phone</th>
                                     <th>WhatsApp</th>
@@ -508,6 +518,7 @@
                                         @endphp
                                         {{ $dobDisplay }}
                                     </td>
+                                    <td>{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In house' }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avtar avtar-s rounded-circle bg-light-success me-2 d-flex align-items-center justify-content-center">

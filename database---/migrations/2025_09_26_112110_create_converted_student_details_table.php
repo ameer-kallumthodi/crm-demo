@@ -1,0 +1,85 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('converted_student_details', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('converted_lead_id');
+            
+            // Personal Information
+            $table->string('student_name')->nullable();
+            $table->string('father_name')->nullable();
+            $table->string('mother_name')->nullable();
+            $table->date('date_of_birth')->nullable();
+            $table->string('email')->nullable();
+            $table->string('personal_number')->nullable();
+            $table->string('personal_code', 10)->nullable();
+            $table->string('parents_number')->nullable();
+            $table->string('parents_code', 10)->nullable();
+            $table->string('whatsapp_number')->nullable();
+            $table->string('whatsapp_code', 10)->nullable();
+            
+            // Academic Information
+            $table->unsignedBigInteger('subject_id')->nullable();
+            $table->unsignedBigInteger('batch_id')->nullable();
+            $table->enum('class', ['sslc', 'plustwo'])->nullable();
+            $table->enum('second_language', ['malayalam', 'hindi'])->nullable();
+            
+            // Address Information
+            $table->text('street')->nullable();
+            $table->string('locality')->nullable();
+            $table->string('post_office')->nullable();
+            $table->string('district')->nullable();
+            $table->string('state')->nullable();
+            $table->string('pin_code')->nullable();
+            
+            // Document Uploads
+            $table->string('birth_certificate')->nullable();
+            $table->string('passport_photo')->nullable();
+            $table->string('adhar_front')->nullable();
+            $table->string('adhar_back')->nullable();
+            $table->string('signature')->nullable();
+            $table->string('plustwo_certificate')->nullable();
+            $table->string('sslc_certificate')->nullable();
+            
+            // Additional Information
+            $table->text('message')->nullable();
+            
+            // Status and Tracking
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->text('admin_remarks')->nullable();
+            $table->unsignedBigInteger('reviewed_by')->nullable();
+            $table->timestamp('reviewed_at')->nullable();
+            
+            // Course Information
+            $table->unsignedBigInteger('course_id')->nullable();
+            
+            $table->timestamps();
+            $table->softDeletes();
+            
+            // Foreign Keys
+            $table->foreign('converted_lead_id')->references('id')->on('converted_leads')->onDelete('cascade');
+            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('set null');
+            $table->foreign('batch_id')->references('id')->on('batches')->onDelete('set null');
+            $table->foreign('course_id')->references('id')->on('courses')->onDelete('set null');
+            $table->foreign('reviewed_by')->references('id')->on('users')->onDelete('set null');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('converted_student_details');
+    }
+};

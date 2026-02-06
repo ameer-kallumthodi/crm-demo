@@ -156,13 +156,27 @@
             </div>
 
             @if(!$isTelecaller)
+            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin())
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_b2b" id="is_b2b_edit_modal" value="1" {{ old('is_b2b', $lead->is_b2b) ? 'checked' : '' }}>
+                        <label class="form-check-label" for="is_b2b_edit_modal">
+                            <i class="ti ti-building me-1"></i>B2B Lead
+                        </label>
+                        <small class="form-text text-muted d-block">Mark this as a business-to-business lead. This will filter teams and telecallers to show only B2B options.</small>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label" for="team_id">Team</label>
                     <select class="form-select" name="team_id" id="team_id">
                         <option value="">Select Team</option>
                         @foreach($teams as $team)
-                            <option value="{{ $team->id }}" {{ old('team_id', $lead->team_id) == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
+                            <option value="{{ $team->id }}" data-is-b2b="{{ $team->is_b2b ? '1' : '0' }}" {{ old('team_id', $lead->team_id) == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
                         @endforeach
                     </select>
                     <div class="invalid-feedback" id="team_id-error"></div>
@@ -241,10 +255,64 @@ $(document).ready(function() {
     var isTelecaller = $('.container').data('is-telecaller') === 'true';
     
     if (!isTelecaller) {
+        // Store all team options
+        const allTeamOptions = $('#team_id option').clone();
+        
+        // Filter teams based on is_b2b checkbox
+        $('#is_b2b_edit_modal').on('change', function() {
+            const isB2BChecked = $(this).is(':checked');
+            const currentSelectedValue = $('#team_id').val();
+            
+            // Clear current options except the placeholder
+            $('#team_id').find('option:not(:first)').remove();
+            
+            // Filter and add appropriate options
+            allTeamOptions.each(function() {
+                const option = $(this);
+                if (option.val() === '') {
+                    // Skip placeholder (already exists)
+                    return;
+                }
+                
+                const teamIsB2B = option.attr('data-is-b2b') === '1';
+                
+                // Strict filtering:
+                // 1. is_b2b is checked: Team MUST be B2B
+                // 2. is_b2b is NOT checked: Team MUST NOT be B2B
+                if (isB2BChecked) {
+                    if (teamIsB2B) {
+                        $('#team_id').append(option.clone());
+                    }
+                } else {
+                    if (!teamIsB2B) {
+                        $('#team_id').append(option.clone());
+                    }
+                }
+            });
+            
+            // Restore selection if still available, otherwise clear
+            if ($('#team_id option[value="' + currentSelectedValue + '"]').length > 0) {
+                $('#team_id').val(currentSelectedValue);
+            } else {
+                $('#team_id').val('');
+                // Clear telecaller since team was cleared
+                $('#telecaller_id').html('<option value="">Select Team First</option>');
+            }
+            
+            // If team is selected, reload telecallers with B2B filter
+            if ($('#team_id').val()) {
+                $('#team_id').trigger('change');
+            }
+        });
+
+        // Initialize B2B filter
+        $('#is_b2b_edit_modal').trigger('change');
+        
         // Handle team selection change (only for non-telecallers)
         $('#team_id').on('change', function() {
             const teamId = $(this).val();
             const telecallerSelect = $('#telecaller_id');
+            const isB2BChecked = $('#is_b2b_edit_modal').is(':checked');
             
             // Clear existing options
             telecallerSelect.html('<option value="">Loading telecallers...</option>');
@@ -254,7 +322,10 @@ $(document).ready(function() {
                 $.ajax({
                     url: '{{ route("leads.telecallers-by-team") }}',
                     type: 'GET',
-                    data: { team_id: teamId },
+                    data: { 
+                        team_id: teamId,
+                        is_b2b: isB2BChecked ? 1 : 0
+                    },
                     success: function(response) {
                         telecallerSelect.html('<option value="">Select Telecaller</option>');
                         

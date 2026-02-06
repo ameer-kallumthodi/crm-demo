@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>UG/PG Course Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .wizard-container { max-width: 900px; margin: 0 auto; padding: 15px; }
+        .wizard-header { background: linear-gradient(225deg, #abb7ed 0%, #787879 100%); color: white; padding: 40px 30px; border-radius: 15px 15px 0 0; text-align: center; position: relative; overflow: hidden; }
+        .wizard-header h2 { position: relative; z-index: 1; margin-bottom: 10px; font-weight: 700; }
+        .wizard-header p { position: relative; z-index: 1; opacity: 0.9; }
+        .wizard-body { background: white; padding: 50px 40px; border-radius: 0 0 15px 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
+        .progress-container { margin-bottom: 40px; }
+        .progress { height: 8px; border-radius: 10px; background: #f0f0f0; }
+        .progress-bar { background: #829b99; border-radius: 10px; transition: width 0.3s ease; }
+        .step-indicators { display: flex; justify-content: space-between; margin-top: 20px; }
+        .step-indicator { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+        .step-indicator:not(:last-child)::after { content: ''; position: absolute; top: 15px; left: 60%; right: -40%; height: 2px; background: #e0e0e0; z-index: 1; }
+        .step-indicator.active:not(:last-child)::after { background: #829b99; }
+        .step-circle { width: 30px; height: 30px; border-radius: 50%; background: #e0e0e0; color: #999; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; position: relative; z-index: 2; transition: all 0.3s ease; }
+        .step-indicator.active .step-circle { background: #829b99; color: white; }
+        .step-indicator.completed .step-circle { background: #28a745; color: white; }
+        .step-label { margin-top: 8px; font-size: 12px; color: #666; text-align: center; }
+        .step-indicator.active .step-label { color: #829b99; font-weight: 600; }
+        .form-step { display: none; }
+        .form-step.active { display: block; }
+        .form-group { margin-bottom: 25px; }
+        .form-label { font-weight: 600; color: #333; margin-bottom: 8px; display: block; }
+        .required { color: #dc3545; }
+        .form-control { border: 2px solid #e9ecef; border-radius: 8px; padding: 12px 15px; font-size: 14px; transition: all 0.3s ease; }
+        .form-control:focus { border-color: #829b99; box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25); }
+        .btn-wizard { padding: 12px 30px; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; }
+        .btn-primary { background: #829b99; border: none; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); }
+        .btn-success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3); }
+        .btn-secondary { background: #6c757d; border: none; }
+        .btn-secondary:hover { background: #5a6268; transform: translateY(-2px); }
+        .pre-filled-info { background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); border: 1px solid #bbdefb; border-radius: 10px; padding: 20px; margin-bottom: 30px; }
+        .pre-filled-info h6 { color: #1976d2; font-weight: 600; margin-bottom: 15px; }
+        .info-item { display: flex; align-items: center; margin-bottom: 8px; }
+        .info-item i { color: #1976d2; margin-right: 10px; width: 16px; }
+        .file-upload-area { border: 2px dashed #ddd; border-radius: 10px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: #fafafa; }
+        .file-upload-area:hover { border-color: #829b99; background: #f8f9ff; }
+        .file-upload-area.dragover { border-color: #829b99; background: #f0f4ff; }
+        .file-preview { margin-top: 15px; }
+        .file-preview-item { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 10px 15px; margin-bottom: 10px; }
+        .file-preview-item .file-info { display: flex; align-items: center; }
+        .file-preview-item .file-info i { color: #829b99; margin-right: 10px; }
+        .file-preview-item .remove-file { color: #dc3545; cursor: pointer; padding: 5px; }
+        .file-preview-item .remove-file:hover { background: #f8d7da; border-radius: 4px; }
+        .loading { opacity: 0.7; pointer-events: none; }
+        .alert { border-radius: 10px; border: none; padding: 15px 20px; margin-bottom: 20px; }
+        .alert-success { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); color: #155724; }
+        .alert-danger { background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); color: #721c24; }
+        .alert-info { background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); color: #0c5460; }
+        .alert-warning { background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); color: #856404; }
+        .logo-container { display: flex; justify-content: center; align-items: center; }
+        .skill-park-logo { max-height: 100px; max-width: 200px; object-fit: contain; opacity: 0.9; transition: all 0.3s ease; }
+        .skill-park-logo:hover { opacity: 1; transform: scale(1.05); }
+        .form-control.is-invalid { border-color: #dc3545; }
+        @media (max-width: 768px) {
+            .wizard-container { padding: 10px; }
+            .wizard-body { padding: 30px 20px; }
+            .step-indicators { flex-direction: column; gap: 15px; }
+            .step-indicator:not(:last-child)::after { display: none; }
+            .btn-wizard { width: 100%; margin-bottom: 10px; }
+            .skill-park-logo { max-height: 80px; max-width: 150px; }
+        }
+    </style>
+</head>
+<body style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; padding: 20px 0;">
+    <div class="wizard-container">
+        <div class="wizard-header">
+            <div class="logo-container mb-3">
+                <img src="{{ asset('skill-park-logo.png') }}" alt="Skill Park Logo" class="skill-park-logo">
+            </div>
+            <h2><i class="fas fa-graduation-cap me-2"></i>UG/PG Course Registration</h2>
+            <p class="mb-0">Complete your registration in 3 simple steps</p>
+        </div>
+        
+        <div class="wizard-body">
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar" style="width: 25%"></div>
+                </div>
+                <div class="step-indicators">
+                    <div class="step-indicator active" id="step1Indicator">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Personal Details</div>
+                    </div>
+                    <div class="step-indicator" id="step2Indicator">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Communication</div>
+                    </div>
+                    <div class="step-indicator" id="step3Indicator">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Programme</div>
+                    </div>
+                    <div class="step-indicator" id="step4Indicator">
+                        <div class="step-circle">4</div>
+                        <div class="step-label">Documents</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pre-filled Information -->
+            @if($lead)
+            <div class="pre-filled-info">
+                <h6><i class="fas fa-info-circle me-2"></i>Pre-filled Information</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <i class="fas fa-user"></i>
+                            <span><strong>Name:</strong> {{ $lead->title }}</span>
+                        </div>
+                    </div>
+                    @if($lead->email)
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <i class="fas fa-envelope"></i>
+                            <span><strong>Email:</strong> {{ $lead->email }}</span>
+                        </div>
+                    </div>
+                    @endif
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <i class="fas fa-phone"></i>
+                            <span><strong>Phone:</strong> {{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+            
+            <form id="registrationForm" enctype="multipart/form-data" novalidate>
+                @csrf
+                <input type="hidden" name="lead_id" value="{{ $lead->id ?? '' }}">
+                
+                <!-- Step 1: Personal Details -->
+                <div class="form-step active" id="formStep1">
+                    <h4 class="mb-4"><i class="fas fa-user me-2"></i>Personal Details</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Candidate Name <span class="required">*</span></label>
+                                <input type="text" class="form-control" name="student_name" value="{{ $lead->title ?? '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Father's Name <span class="required">*</span></label>
+                                <input type="text" class="form-control" name="father_name" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Mother's Name <span class="required">*</span></label>
+                                <input type="text" class="form-control" name="mother_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Date of Birth <span class="required">*</span></label>
+                                <input type="date" class="form-control" name="date_of_birth" min="{{ date('Y-m-d', strtotime('-100 years')) }}" max="{{ date('Y-m-d') }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Gender <span class="required">*</span></label>
+                                <select class="form-control" name="gender" required>
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Are you employed? <span class="required">*</span></label>
+                                <select class="form-control" name="is_employed" required>
+                                    <option value="">Select</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Step 2: Communication Details -->
+                <div class="form-step" id="formStep2">
+                    <h4 class="mb-4"><i class="fas fa-phone me-2"></i>Communication Details</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Candidate Contact No. <span class="required">*</span></label>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <select class="form-control" name="personal_code" required>
+                                            @foreach($countryCodes as $code => $country)
+                                                <option value="{{ $code }}" {{ ($lead && $lead->code == $code) ? 'selected' : '' }}>{{ $code }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="tel" class="form-control" name="personal_number" value="{{ $lead->phone ?? '' }}" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Candidate WhatsApp No. <span class="required">*</span></label>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <select class="form-control" name="whatsapp_code" required>
+                                            @foreach($countryCodes as $code => $country)
+                                                <option value="{{ $code }}">{{ $code }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="tel" class="form-control" name="whatsapp_number" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Father's Contact No. <span class="required">*</span></label>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <select class="form-control" name="father_code" required>
+                                            @foreach($countryCodes as $code => $country)
+                                                <option value="{{ $code }}">{{ $code }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="tel" class="form-control" name="father_number" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Mother's Contact No. <span class="required">*</span></label>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <select class="form-control" name="mother_code" required>
+                                            @foreach($countryCodes as $code => $country)
+                                                <option value="{{ $code }}">{{ $code }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="tel" class="form-control" name="mother_number" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Email Address <span class="required">*</span></label>
+                                <input type="email" class="form-control" name="email" value="{{ $lead->email ?? '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Residential Address <span class="required">*</span></label>
+                                <textarea class="form-control" name="residential_address" rows="2" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Step 3: Programme Details -->
+                <div class="form-step" id="formStep3">
+                    <h4 class="mb-4"><i class="fas fa-graduation-cap me-2"></i>Programme Details</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Board/University <span class="required">*</span></label>
+                                <select class="form-control" name="university_id" id="university_id" required>
+                                    <option value="">Select Board/University</option>
+                                    @foreach($universities as $university)
+                                        <option value="{{ $university->id }}">{{ $university->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Course Type <span class="required">*</span></label>
+                                <select class="form-control" name="course_type" id="course_type" required>
+                                    <option value="">Select Course Type</option>
+                                    <option value="UG">UG (Under Graduate)</option>
+                                    <option value="PG">PG (Post Graduate)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Course <span class="required">*</span></label>
+                                <select class="form-control" name="university_course_id" id="university_course_id" required>
+                                    <option value="">Select Course</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Batch <span class="required">*</span></label>
+                                <select class="form-control" name="batch_id" required>
+                                    <option value="">Select Batch</option>
+                                    @foreach($batches as $batch)
+                                        <option value="{{ $batch->id }}">{{ $batch->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group" id="back_year_group" style="display: none;">
+                                <label class="form-label">Back Year <span class="required">*</span></label>
+                                <select class="form-control" name="back_year">
+                                    <option value="">Select Back Year</option>
+                                    @for($year = 2023; $year <= date('Y'); $year++)
+                                        <option value="{{ $year }}">{{ $year }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 4: Upload Documents -->
+                <div class="form-step" id="formStep4">
+                    <h4 class="mb-4"><i class="fas fa-upload me-2"></i>Upload Documents</h4>
+                    <p class="text-muted mb-4">Please upload clear scans or photos of the required documents. Max file size: 1MB.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Recent Passport Size Photograph <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('passport_photo').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="passport_photo" name="passport_photo" accept=".jpg,.jpeg,.png" required style="display: none;">
+                                <div class="file-preview" id="passport_photo_preview"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Aadhar Card (Front) <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('adhar_front').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="adhar_front" name="adhar_front" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
+                                <div class="file-preview" id="adhar_front_preview"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Aadhar Card (Back) <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('adhar_back').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="adhar_back" name="adhar_back" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
+                                <div class="file-preview" id="adhar_back_preview"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Signature <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('signature').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="signature" name="signature" accept=".jpg,.jpeg,.png" required style="display: none;">
+                                <div class="file-preview" id="signature_preview"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Secondary (10th) Certificate <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('sslc_certificate').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="sslc_certificate" name="sslc_certificate" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
+                                <div class="file-preview" id="sslc_certificate_preview"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Senior Secondary (12th) Certificate <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('plustwo_certificate').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="plustwo_certificate" name="plustwo_certificate" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
+                                <div class="file-preview" id="plustwo_certificate_preview"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Graduation Certificate (only for PG) -->
+                    <div class="row" id="ug_certificate_row" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Graduation Certificate <span class="required">*</span></label>
+                                <div class="file-upload-area" onclick="document.getElementById('ug_certificate').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="ug_certificate" name="ug_certificate" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                                <div class="file-preview" id="ug_certificate_preview"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Other Relevant Documents</label>
+                                <div class="file-upload-area" onclick="document.getElementById('other_documents').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">Click to upload or drag & drop</p>
+                                    <small class="text-muted">PDF, JPG, PNG (Max 1MB)</small>
+                                </div>
+                                <input type="file" id="other_documents" name="other_documents[]" accept=".pdf,.jpg,.jpeg,.png" multiple style="display: none;">
+                                <div class="file-preview" id="other_documents_preview"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" name="message" rows="3" placeholder="Enter any message or additional details..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Navigation Buttons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-secondary btn-wizard" id="prevBtn" onclick="changeStep(-1)" style="display: none;">
+                        <i class="fas fa-arrow-left me-2"></i>Previous
+                    </button>
+                    <div class="ms-auto">
+                        <button type="button" class="btn btn-primary btn-wizard" id="nextBtn" style="display: inline-block;">
+                            Next<i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                        <button type="submit" class="btn btn-success btn-wizard" id="submitBtn" style="display: none;">
+                            <i class="fas fa-check me-2"></i>Submit Registration
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+        const STORAGE_KEY = 'ugpg_form_data';
+
+        // Handle Course Type selection change
+        function handleCourseTypeChange() {
+            const courseType = document.getElementById('course_type').value;
+            
+            // Show/hide UG certificate field based on selection
+            const ugRow = document.getElementById('ug_certificate_row');
+            const ugInput = document.getElementById('ug_certificate');
+            if (courseType === 'PG') {
+                ugRow.style.display = 'block';
+                ugInput.required = true;
+            } else {
+                ugRow.style.display = 'none';
+                ugInput.required = false;
+                ugInput.value = '';
+                document.getElementById('ug_certificate_preview').innerHTML = '';
+            }
+            
+            // Update course dropdown
+            updateCourseDropdown();
+        }
+        
+        // Handle University selection change
+        function handleUniversityChange() {
+            const universityId = document.getElementById('university_id').value;
+            const backYearGroup = document.getElementById('back_year_group');
+            const backYearSelect = document.querySelector('select[name="back_year"]');
+            
+            if (universityId == 1) {
+                // Show back year field for university ID 1
+                backYearGroup.style.display = 'block';
+                backYearSelect.required = true;
+            } else {
+                // Hide back year field for other universities
+                backYearGroup.style.display = 'none';
+                backYearSelect.required = false;
+                backYearSelect.value = '';
+            }
+            
+            // Update course dropdown
+            updateCourseDropdown();
+        }
+        
+        // Update course dropdown based on university and course type
+        function updateCourseDropdown() {
+            const universityId = document.getElementById('university_id').value;
+            const courseType = document.getElementById('course_type').value;
+            const courseSelect = document.getElementById('university_course_id');
+            
+            // Store current selection
+            const currentValue = courseSelect.value;
+            
+            // Clear existing options
+            courseSelect.innerHTML = '<option value="">Select Course Name</option>';
+            
+            if (!universityId || !courseType) {
+                return;
+            }
+            
+            // Fetch courses from API
+            fetch(`/register/ugpg/courses?university_id=${universityId}&course_type=${courseType}`)
+                .then(response => response.json())
+                .then(courses => {
+                    courses.forEach(course => {
+                        const option = document.createElement('option');
+                        option.value = course.id;
+                        option.textContent = course.title;
+                        courseSelect.appendChild(option);
+                    });
+                    
+                    // Restore previous selection if it exists in the new options
+                    if (currentValue && courseSelect.querySelector(`option[value="${currentValue}"]`)) {
+                        courseSelect.value = currentValue;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching courses:', error);
+                });
+        }
+
+        function loadSavedData() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    Object.keys(data).forEach(key => {
+                        const element = document.querySelector(`[name="${key}"]`);
+                        if (element && element.type !== 'file') {
+                            element.value = data[key];
+                        }
+                    });
+                    // Restore course type selection
+                    if (data.course_type) {
+                        selectCourseType(data.course_type);
+                    }
+                    
+                    // Populate course dropdown if university and course type are selected
+                    if (data.university_id && data.course_type) {
+                        setTimeout(() => {
+                            updateCourseDropdown();
+                            // Restore course selection after dropdown is populated
+                            if (data.university_course_id) {
+                                setTimeout(() => {
+                                    const courseSelect = document.getElementById('university_course_id');
+                                    if (courseSelect) {
+                                        courseSelect.value = data.university_course_id;
+                                    }
+                                }, 500);
+                            }
+                        }, 100);
+                    }
+                } catch (e) {
+                    console.error('Error loading saved data:', e);
+                }
+            }
+        }
+
+        function saveFormData() {
+            const formData = new FormData(document.getElementById('registrationForm'));
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                if (key !== 'lead_id' && key !== '_token') {
+                    data[key] = value;
+                }
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function clearSavedData() {
+            localStorage.removeItem(STORAGE_KEY);
+        }
+
+        function setupAutoSave() {
+            const form = document.getElementById('registrationForm');
+            form.addEventListener('input', saveFormData);
+            form.addEventListener('change', saveFormData);
+            document.getElementById('nextBtn').addEventListener('click', saveFormData);
+            document.getElementById('prevBtn').addEventListener('click', saveFormData);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedData();
+            setupAutoSave();
+            updateStepDisplay();
+            
+            // Check for pre-filled values and populate course dropdown
+            setTimeout(() => {
+                const universityId = document.getElementById('university_id').value;
+                const courseType = document.getElementById('course_type').value;
+                
+                if (universityId && courseType) {
+                    updateCourseDropdown();
+                }
+            }, 200);
+            
+            // Add change event listener to Course Type select
+            document.getElementById('course_type').addEventListener('change', function() {
+                handleCourseTypeChange();
+                // Remove error styling when user makes a selection
+                this.classList.remove('is-invalid');
+            });
+            
+            // Add change event listener to University select
+            document.getElementById('university_id').addEventListener('change', function() {
+                handleUniversityChange();
+                // Remove error styling when user makes a selection
+                this.classList.remove('is-invalid');
+            });
+            
+            // Add click event listener to next button to ensure validation
+            document.getElementById('nextBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Next button clicked, validating step:', currentStep);
+                console.log('Course type value:', document.getElementById('course_type').value);
+                
+                if (!validateCurrentStep()) {
+                    console.log('Validation failed, staying on current step');
+                    return false;
+                }
+                console.log('Validation passed, moving to next step');
+                changeStep(1);
+            });
+            
+            const pinCodeInput = document.querySelector('input[name="pin_code"]');
+            if (pinCodeInput) {
+                pinCodeInput.addEventListener('input', function(e) {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                });
+            }
+        });
+
+        function updateStepDisplay() {
+            document.querySelectorAll('.form-step').forEach(step => step.classList.remove('active'));
+            document.getElementById(`formStep${currentStep}`).classList.add('active');
+            
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+                indicator.classList.remove('active', 'completed');
+                if (index + 1 < currentStep) {
+                    indicator.classList.add('completed');
+                } else if (index + 1 === currentStep) {
+                    indicator.classList.add('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            [prevBtn, nextBtn, submitBtn].forEach(btn => btn.style.display = 'none');
+            
+            if (currentStep === 1) {
+                nextBtn.style.display = 'inline-block';
+            } else if (currentStep === 2) {
+                prevBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'inline-block';
+            } else if (currentStep === 3) {
+                prevBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'inline-block';
+            } else if (currentStep === 4) {
+                prevBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'inline-block';
+            }
+        }
+
+        function changeStep(direction) {
+            const nextStep = currentStep + direction;
+            
+            // Always validate before moving to next step
+            if (direction > 0) {
+                if (!validateCurrentStep()) {
+                    console.log('Validation failed, cannot proceed to next step');
+                    return false;
+                }
+            }
+            
+            if (nextStep >= 1 && nextStep <= totalSteps) {
+                currentStep = nextStep;
+                updateStepDisplay();
+            }
+        }
+
+        function validateCurrentStep() {
+            const currentStepElement = document.getElementById(`formStep${currentStep}`);
+            const requiredFields = currentStepElement.querySelectorAll('[required]');
+            
+            // Validate all required fields in current step
+            for (let field of requiredFields) {
+                if (!field.value || field.value.trim() === '') {
+                    field.classList.add('is-invalid');
+                    showAlert(`Please fill in the required field: ${field.name}`, 'warning');
+                    return false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            }
+            
+            // Validate Course Type selection for step 3 (Programme Details)
+            if (currentStep === 3) {
+                const courseType = document.getElementById('course_type').value;
+                if (!courseType) {
+                    // Add error styling to Course Type select
+                    document.getElementById('course_type').classList.add('is-invalid');
+                    showAlert('Please select a Course Type (UG or PG)', 'warning');
+                    return false;
+                } else {
+                    // Remove error styling when valid
+                    document.getElementById('course_type').classList.remove('is-invalid');
+                }
+                
+                // Validate back year if university is 1
+                const universityId = document.getElementById('university_id').value;
+                const backYearSelect = document.querySelector('select[name="back_year"]');
+                if (universityId == 1) {
+                    if (!backYearSelect.value) {
+                        backYearSelect.classList.add('is-invalid');
+                        showAlert('Please select a Back Year', 'warning');
+                        return false;
+                    } else {
+                        backYearSelect.classList.remove('is-invalid');
+                    }
+                }
+            }
+            
+            if (currentStep === 4) {
+                const fileFieldNames = {
+                    'sslc_certificate': 'Secondary (10th) Certificate',
+                    'plustwo_certificate': 'Senior Secondary (12th) Certificate',
+                    'ug_certificate': 'Graduation Certificate',
+                    'passport_photo': 'Recent Passport Size Photograph',
+                    'adhar_front': 'Aadhar Card (Front)',
+                    'adhar_back': 'Aadhar Card (Back)',
+                    'signature': 'Signature'
+                };
+                
+                const courseType = document.getElementById('course_type').value;
+                const requiredFileFields = ['sslc_certificate', 'plustwo_certificate', 'passport_photo', 'adhar_front', 'adhar_back', 'signature'];
+                if (courseType === 'PG') {
+                    requiredFileFields.push('ug_certificate');
+                }
+                
+                for (let fieldName of requiredFileFields) {
+                    const field = document.getElementById(fieldName);
+                    if (field && (!field.files || field.files.length === 0)) {
+                        const fieldLabel = fileFieldNames[fieldName] || fieldName;
+                        showAlert(`Please upload the required file: ${fieldLabel}`, 'warning');
+                        return false;
+                    }
+                }
+            }
+            
+            for (let field of requiredFields) {
+                if (field.type === 'file') continue;
+                if (!field.value.trim()) {
+                    field.focus();
+                    showAlert('Please fill in all required fields.', 'warning');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        function setupFileUpload(inputId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(inputId + '_preview');
+            
+            input.addEventListener('change', function(e) {
+                handleFileUpload(e, preview, inputId);
+            });
+            
+            const uploadArea = input.previousElementSibling;
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    input.files = files;
+                    handleFileUpload({ target: { files: files } }, preview, inputId);
+                }
+            });
+        }
+
+        function handleFileUpload(event, preview, inputId) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 1 * 1024 * 1024) {
+                    showAlert('File size must be less than 1MB.', 'danger');
+                    return;
+                }
+                
+                const allowedTypes = inputId === 'passport_photo' || inputId === 'signature' 
+                    ? ['image/jpeg', 'image/jpg', 'image/png']
+                    : ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                
+                if (!allowedTypes.includes(file.type)) {
+                    showAlert('Invalid file type. Please upload a valid file.', 'danger');
+                    return;
+                }
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-preview-item';
+                fileInfo.innerHTML = `
+                    <div class="file-info">
+                        <i class="fas fa-file-${file.type.includes('image') ? 'image' : 'pdf'}"></i>
+                        <span>${file.name}</span>
+                    </div>
+                    <div class="remove-file" onclick="removeFile('${inputId}')">
+                        <i class="fas fa-times"></i>
+                    </div>
+                `;
+                
+                preview.innerHTML = '';
+                preview.appendChild(fileInfo);
+            }
+        }
+
+        function removeFile(inputId) {
+            document.getElementById(inputId).value = '';
+            document.getElementById(inputId + '_preview').innerHTML = '';
+        }
+
+        // Setup file uploads
+        setupFileUpload('sslc_certificate');
+        setupFileUpload('plustwo_certificate');
+        setupFileUpload('ug_certificate');
+        setupFileUpload('passport_photo');
+        setupFileUpload('adhar_front');
+        setupFileUpload('adhar_back');
+        setupFileUpload('signature');
+        setupFileUpload('other_documents');
+
+        // Form submission
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateCurrentStep()) {
+                return;
+            }
+            
+            const formData = new FormData(this);
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            
+            fetch('{{ route("public.lead.ugpg.register.store") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(async response => {
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const data = isJson ? await response.json() : null;
+                if (!response.ok) {
+                    if (response.status === 422 && data && data.errors) {
+                        // Collect first validation error message
+                        const firstError = Object.values(data.errors)[0]?.[0] || 'Validation failed.';
+                        throw new Error(firstError);
+                    }
+                    throw new Error(data?.message || 'Request failed.');
+                }
+                return data;
+            })
+            .then(data => {
+                if (data.success) {
+                    clearSavedData();
+                    showAlert(data.message, 'success');
+                    setTimeout(() => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        }
+                    }, 2000);
+                } else {
+                    showAlert(data.message || 'An error occurred. Please try again.', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert(error.message || 'An error occurred while submitting the form. Please try again.', 'danger');
+            })
+            .finally(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+            });
+        });
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const form = document.getElementById('registrationForm');
+            form.insertBefore(alertDiv, form.firstChild);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 10000);
+        }
+    </script>
+</body>
+</html>
+

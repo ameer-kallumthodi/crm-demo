@@ -73,6 +73,7 @@
                                 @endif
                                 <div class="mb-2"><span class="text-muted">Email:</span> <span class="fw-medium">{{ $convertedLead->email ?? '-' }}</span></div>
                                 <div class=""><span class="text-muted">DOB:</span> <span class="fw-medium">{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</span></div>
+                                <div class="mt-2"><span class="text-muted">Type:</span> <span class="fw-medium">{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</span></div>
                             </div>
                         </div>
                     </div>

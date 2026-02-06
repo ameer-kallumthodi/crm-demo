@@ -58,7 +58,7 @@
                     <select class="form-select" id="team_id" name="team_id">
                         <option value="">Select Team</option>
                         @foreach($teams as $team)
-                            <option value="{{ $team->id }}" {{ $edit_data->team_id == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
+                            <option value="{{ $team->id }}" data-is-b2b="{{ $team->is_b2b ? '1' : '0' }}" {{ $edit_data->team_id == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -93,8 +93,59 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_b2b" id="is_b2b" value="1" {{ $edit_data->is_b2b ? 'checked' : '' }}>
+                        <label class="form-check-label" for="is_b2b">
+                            <i class="ti ti-building me-1"></i>B2B Telecaller
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <button type="submit" class="btn btn-success float-end">Update</button>
     </form>
 </div>
+
+<script>
+$(document).ready(function() {
+    // Store all team options
+    const allTeamOptions = $('#team_id option').clone();
+    
+    // Filter teams based on is_b2b checkbox
+    $('#is_b2b').on('change', function() {
+        const isB2BChecked = $(this).is(':checked');
+        const currentSelectedValue = $('#team_id').val();
+        
+        // Clear current options except the placeholder
+        $('#team_id').find('option:not(:first)').remove();
+        
+        // Filter and add appropriate options
+        allTeamOptions.each(function() {
+            const option = $(this);
+            if (option.val() === '') {
+                // Skip placeholder (already exists)
+                return;
+            }
+            
+            const teamIsB2B = option.attr('data-is-b2b') === '1';
+            
+            // Add option if:
+            // 1. is_b2b is checked and team is B2B
+            // 2. is_b2b is not checked (show all teams)
+            if (!isB2BChecked || teamIsB2B) {
+                $('#team_id').append(option.clone());
+            }
+        });
+        
+        // Restore selection if still available
+        if ($('#team_id option[value="' + currentSelectedValue + '"]').length > 0) {
+            $('#team_id').val(currentSelectedValue);
+        } else {
+            $('#team_id').val('');
+        }
+    });
+});
+</script>

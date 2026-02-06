@@ -379,6 +379,7 @@
                                     <th>Register Number</th>
                                     <th>Converted Date</th>
                                     <th>DOB</th>
+                                    <th>Type</th>
                                     <th>Name</th>
                                     <th>Subject</th>
                                     <th>Mobile</th>
@@ -475,6 +476,7 @@
                                             @endif
                                         </div>
                                     </td>
+                                    <td>{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In house' }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avtar avtar-s rounded-circle bg-light-success me-2 d-flex align-items-center justify-content-center">
