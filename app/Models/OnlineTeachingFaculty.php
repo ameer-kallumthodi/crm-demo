@@ -9,6 +9,10 @@ class OnlineTeachingFaculty extends Model
     protected $table = 'online_teaching_faculties';
 
     protected $fillable = [
+        // Form tracking
+        'form_token',
+        'form_filled_at',
+
         // A. Personal Details
         'full_name',
         'date_of_birth',
@@ -60,6 +64,6 @@ class OnlineTeachingFaculty extends Model
         'demo_class_date' => 'date',
         'offer_letter_issued_date' => 'date',
         'joining_date' => 'date',
+        'form_filled_at' => 'datetime',
     ];
 }
-

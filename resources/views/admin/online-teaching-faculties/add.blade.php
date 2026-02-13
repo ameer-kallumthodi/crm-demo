@@ -8,8 +8,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label" for="full_name">Full Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ old('full_name') }}" required>
+                            <label class="form-label" for="full_name">Full Name</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ old('full_name') }}">
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -31,8 +31,8 @@
 
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label" for="primary_mobile_number">Primary Mobile Number</label>
-                            <input type="text" class="form-control" id="primary_mobile_number" name="primary_mobile_number" value="{{ old('primary_mobile_number') }}">
+                            <label class="form-label" for="primary_mobile_number">Primary Mobile Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="primary_mobile_number" name="primary_mobile_number" value="{{ old('primary_mobile_number') }}" required>
                         </div>
                     </div>
                     <div class="col-md-4">

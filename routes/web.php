@@ -30,6 +30,10 @@ Route::get('/', [AuthController::class, 'index'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Public Online Teaching Faculty Form Routes
+Route::get('/faculty-form/{id}', [OnlineTeachingFacultyController::class, 'publicForm'])->name('public.faculty.form');
+Route::post('/faculty-form/{id}', [OnlineTeachingFacultyController::class, 'publicSubmit'])->name('public.faculty.submit');
+
 // Public Voxbay API routes (no authentication required)
 Route::prefix('api/voxbay')->group(function () {
     Route::post('/outgoing-call', [VoxbayController::class, 'outgoingCall'])->name('voxbay.outgoing-call');
@@ -347,6 +351,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/online-teaching-faculties/{id}', [OnlineTeachingFacultyController::class, 'show'])->name('online-teaching-faculties.show');
         Route::post('/online-teaching-faculties/{id}/inline-update', [OnlineTeachingFacultyController::class, 'inlineUpdate'])->name('online-teaching-faculties.inline-update');
         Route::post('/online-teaching-faculties/{id}/upload-document', [OnlineTeachingFacultyController::class, 'uploadDocument'])->name('online-teaching-faculties.upload-document');
+        Route::get('/online-teaching-faculties/{id}/generate-form-link', [OnlineTeachingFacultyController::class, 'generateFormToken'])->name('online-teaching-faculties.generate-form-link');
 
         // University Courses Routes
         Route::resource('university-courses', App\Http\Controllers\UniversityCourseController::class)->except(['create', 'edit']);
@@ -432,6 +437,15 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/teams-members/{id}', [TeamController::class, 'members'])->name('teams.members');
         Route::post('/teams-remove-member', [TeamController::class, 'removeMember'])->name('teams.remove-member');
         Route::post('/teams-add-member', [TeamController::class, 'addMember'])->name('teams.add-member');
+
+        // B2B Services Routes
+        Route::resource('b2b-services', App\Http\Controllers\B2bServiceController::class)->except(['create', 'edit']);
+        Route::get('/b2b-services-add', [App\Http\Controllers\B2bServiceController::class, 'ajax_add'])->name('b2b-services.add');
+        Route::get('/b2b-services-edit/{id}', [App\Http\Controllers\B2bServiceController::class, 'ajax_edit'])->name('b2b-services.edit');
+        Route::post('/b2b-services-submit', [App\Http\Controllers\B2bServiceController::class, 'submit'])->name('b2b-services.submit');
+        Route::put('/b2b-services-update/{id}', [App\Http\Controllers\B2bServiceController::class, 'update'])->name('b2b-services.update');
+        Route::delete('/b2b-services-delete/{id}', [App\Http\Controllers\B2bServiceController::class, 'delete'])->name('b2b-services.delete');
+
 
         Route::resource('telecallers', TelecallerController::class)->except(['create', 'edit']);
         Route::get('/telecallers/{id}/edit', [TelecallerController::class, 'ajax_edit'])->name('telecallers.edit');

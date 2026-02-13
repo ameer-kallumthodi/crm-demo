@@ -75,10 +75,10 @@ class OnlineTeachingFacultyController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'full_name' => 'required|string|max:255',
+            'full_name' => 'nullable|string|max:255',
             'date_of_birth' => 'nullable|date|before_or_equal:today',
             'gender' => 'nullable|string|in:Male,Female',
-            'primary_mobile_number' => 'nullable|string|max:30',
+            'primary_mobile_number' => 'required|string|max:30',
             'alternate_contact_number' => 'nullable|string|max:30',
             'official_email_address' => 'nullable|email|max:255',
             'father_name' => 'nullable|string|max:255',
@@ -133,9 +133,11 @@ class OnlineTeachingFacultyController extends Controller
         $teachingExperience = $request->input('teaching_experience');
         if ($teachingExperience === 'Yes') {
             $data['teaching_experience'] = true;
-        } elseif ($teachingExperience === 'No') {
+        }
+        elseif ($teachingExperience === 'No') {
             $data['teaching_experience'] = false;
-        } else {
+        }
+        else {
             $data['teaching_experience'] = null;
         }
 
@@ -155,7 +157,7 @@ class OnlineTeachingFacultyController extends Controller
         foreach ($docFields as $field) {
             if ($request->hasFile($field)) {
                 $path = $request->file($field)->store("online-teaching-faculties/{$faculty->id}", 'public');
-                $faculty->{$field} = $path;
+                $faculty->{ $field} = $path;
             }
         }
 
@@ -224,13 +226,13 @@ class OnlineTeachingFacultyController extends Controller
         ];
 
         $order = $request->get('order', []);
-        $orderColumn = isset($order[0]['column']) ? (int) $order[0]['column'] : 22;
+        $orderColumn = isset($order[0]['column']) ? (int)$order[0]['column'] : 22;
         $orderDir = isset($order[0]['dir']) ? $order[0]['dir'] : 'desc';
         $orderColumnName = $columns[$orderColumn] ?? 'created_at';
         $query->orderBy($orderColumnName, $orderDir);
 
-        $start = (int) $request->get('start', 0);
-        $length = (int) $request->get('length', 25);
+        $start = (int)$request->get('start', 0);
+        $length = (int)$request->get('length', 25);
         $rows = $query->skip($start)->take($length)->get();
 
         $data = [];
@@ -316,7 +318,7 @@ class OnlineTeachingFacultyController extends Controller
         }
 
         return response()->json([
-            'draw' => (int) $request->get('draw', 1),
+            'draw' => (int)$request->get('draw', 1),
             'recordsTotal' => $totalRecords,
             'recordsFiltered' => $filteredCount,
             'data' => $data,
@@ -330,14 +332,14 @@ class OnlineTeachingFacultyController extends Controller
         }
 
         $faculty = OnlineTeachingFaculty::findOrFail($id);
-        $field = (string) $request->input('field', '');
+        $field = (string)$request->input('field', '');
 
         $allowed = [
             // A fields
-            'full_name' => 'required|string|max:255',
+            'full_name' => 'nullable|string|max:255',
             'date_of_birth' => 'nullable|date|before_or_equal:today',
             'gender' => 'nullable|string|in:Male,Female',
-            'primary_mobile_number' => 'nullable|string|max:30',
+            'primary_mobile_number' => 'required|string|max:30',
             'alternate_contact_number' => 'nullable|string|max:30',
             'official_email_address' => 'nullable|email|max:255',
             'father_name' => 'nullable|string|max:255',
@@ -383,23 +385,27 @@ class OnlineTeachingFacultyController extends Controller
         if ($field === 'teaching_experience') {
             if ($value === '' || $value === null) {
                 $faculty->teaching_experience = null;
-            } else {
+            }
+            else {
                 $faculty->teaching_experience = ($value === '1');
             }
-        } else {
-            $faculty->{$field} = $value === '' ? null : $value;
+        }
+        else {
+            $faculty->{ $field} = $value === '' ? null : $value;
         }
 
         $faculty->save();
 
         // Return display value
-        $displayValue = $faculty->{$field};
+        $displayValue = $faculty->{ $field};
         if ($field === 'teaching_experience') {
             $displayValue = $faculty->teaching_experience === null ? 'N/A' : ($faculty->teaching_experience ? 'Yes' : 'No');
-        } elseif ($field === 'date_of_birth' || $field === 'demo_class_date' || $field === 'offer_letter_issued_date' || $field === 'joining_date') {
-            $displayValue = $faculty->{$field} ? $faculty->{$field}->format('Y-m-d') : 'N/A';
-        } else {
-            $displayValue = ($displayValue === null || $displayValue === '') ? 'N/A' : (string) $displayValue;
+        }
+        elseif ($field === 'date_of_birth' || $field === 'demo_class_date' || $field === 'offer_letter_issued_date' || $field === 'joining_date') {
+            $displayValue = $faculty->{ $field} ? $faculty->{ $field}->format('Y-m-d') : 'N/A';
+        }
+        else {
+            $displayValue = ($displayValue === null || $displayValue === '') ? 'N/A' : (string)$displayValue;
         }
 
         return response()->json([
@@ -426,16 +432,16 @@ class OnlineTeachingFacultyController extends Controller
             return response()->json(['error' => 'Validation failed.', 'errors' => $validator->errors()], 422);
         }
 
-        $field = (string) $request->input('field');
+        $field = (string)$request->input('field');
 
         // Delete old file if exists
-        $old = $faculty->{$field};
+        $old = $faculty->{ $field};
         if ($old) {
             Storage::disk('public')->delete($old);
         }
 
         $path = $request->file('file')->store("online-teaching-faculties/{$faculty->id}", 'public');
-        $faculty->{$field} = $path;
+        $faculty->{ $field} = $path;
         $faculty->save();
 
         return response()->json([
@@ -446,41 +452,41 @@ class OnlineTeachingFacultyController extends Controller
 
     private function renderInlineText(OnlineTeachingFaculty $faculty, string $field): string
     {
-        $value = $faculty->{$field};
-        $display = ($value === null || $value === '') ? 'N/A' : e((string) $value);
+        $value = $faculty->{ $field};
+        $display = ($value === null || $value === '') ? 'N/A' : e((string)$value);
 
         return sprintf(
             '<div class="inline-edit" data-field="%s" data-id="%d" data-current="%s"><span class="display-value">%s</span> <a href="#" class="edit-btn text-muted"><i class="ti ti-edit"></i></a></div>',
             e($field),
-            (int) $faculty->id,
-            e((string) ($value ?? '')),
+            (int)$faculty->id,
+            e((string)($value ?? '')),
             $display
         );
     }
 
     private function renderInlineTextarea(OnlineTeachingFaculty $faculty, string $field): string
     {
-        $value = $faculty->{$field};
-        $display = ($value === null || $value === '') ? 'N/A' : e((string) $value);
+        $value = $faculty->{ $field};
+        $display = ($value === null || $value === '') ? 'N/A' : e((string)$value);
 
         return sprintf(
             '<div class="inline-edit" data-field="%s" data-id="%d" data-type="textarea" data-current="%s"><span class="display-value">%s</span> <a href="#" class="edit-btn text-muted"><i class="ti ti-edit"></i></a></div>',
             e($field),
-            (int) $faculty->id,
-            e((string) ($value ?? '')),
+            (int)$faculty->id,
+            e((string)($value ?? '')),
             $display
         );
     }
 
     private function renderInlineDate(OnlineTeachingFaculty $faculty, string $field): string
     {
-        $value = $faculty->{$field};
+        $value = $faculty->{ $field};
         $display = $value ? $value->format('Y-m-d') : 'N/A';
 
         return sprintf(
             '<div class="inline-edit" data-field="%s" data-id="%d" data-type="date" data-current="%s"><span class="display-value">%s</span> <a href="#" class="edit-btn text-muted"><i class="ti ti-edit"></i></a></div>',
             e($field),
-            (int) $faculty->id,
+            (int)$faculty->id,
             e($value ? $value->format('Y-m-d') : ''),
             e($display)
         );
@@ -491,39 +497,170 @@ class OnlineTeachingFacultyController extends Controller
      */
     private function renderInlineSelect(OnlineTeachingFaculty $faculty, string $field, array $options, ?string $overrideCurrentValue = null): string
     {
-        $raw = $overrideCurrentValue !== null ? $overrideCurrentValue : ($faculty->{$field} ?? '');
-        $rawStr = ($raw === null) ? '' : (string) $raw;
+        $raw = $overrideCurrentValue !== null ? $overrideCurrentValue : ($faculty->{ $field} ?? '');
+        $rawStr = ($raw === null) ? '' : (string)$raw;
 
         $label = $options[$rawStr] ?? (($rawStr === '' || $rawStr === null) ? 'N/A' : $rawStr);
 
         return sprintf(
             '<div class="inline-edit" data-field="%s" data-id="%d" data-type="select" data-current="%s" data-options-json="%s"><span class="display-value">%s</span> <a href="#" class="edit-btn text-muted"><i class="ti ti-edit"></i></a></div>',
             e($field),
-            (int) $faculty->id,
+            (int)$faculty->id,
             e($rawStr),
             e(json_encode($options, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)),
-            e((string) $label)
+            e((string)$label)
         );
     }
 
     private function renderInlineFileUpload(OnlineTeachingFaculty $faculty, string $field): string
     {
-        $value = $faculty->{$field};
+        $value = $faculty->{ $field};
         $hasFile = !empty($value);
-        
-        $html = '<div class="inline-file-upload" data-field="' . e($field) . '" data-id="' . (int) $faculty->id . '">';
-        
+
+        $html = '<div class="inline-file-upload" data-field="' . e($field) . '" data-id="' . (int)$faculty->id . '">';
+
         if ($hasFile) {
             $html .= '<a href="' . e(asset('storage/' . $value)) . '" target="_blank" class="btn btn-outline-primary btn-sm me-1"><i class="ti ti-download"></i></a>';
-        } else {
+        }
+        else {
             $html .= '<span class="text-muted small me-1">No file</span>';
         }
-        
+
         $html .= '<button type="button" class="btn btn-sm btn-outline-secondary js-inline-upload-btn"><i class="ti ti-upload"></i></button>';
-        $html .= '<input type="file" class="d-none js-inline-file-input" data-field="' . e($field) . '" data-id="' . (int) $faculty->id . '" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">';
+        $html .= '<input type="file" class="d-none js-inline-file-input" data-field="' . e($field) . '" data-id="' . (int)$faculty->id . '" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">';
         $html .= '</div>';
-        
+
         return $html;
     }
-}
 
+    /**
+     * Generate form link for a faculty member
+     */
+    public function generateFormToken($id): string
+    {
+        return route('public.faculty.form', ['id' => $id]);
+    }
+
+    /**
+     * Show public form for faculty to fill their details
+     */
+    public function publicForm($id)
+    {
+        $faculty = OnlineTeachingFaculty::findOrFail($id);
+
+        // If form is already filled, show a message
+        if ($faculty->form_filled_at) {
+            return view('public.faculty-form-already-filled', compact('faculty'));
+        }
+
+        return view('public.faculty-form', compact('faculty'));
+    }
+
+    /**
+     * Handle public form submission
+     */
+    public function publicSubmit(Request $request, $id)
+    {
+        $faculty = OnlineTeachingFaculty::findOrFail($id);
+
+        // If form is already filled, redirect with error
+        if ($faculty->form_filled_at) {
+            return redirect()->route('public.faculty.form', $id)
+                ->with('error', 'This form has already been submitted.');
+        }
+
+        // All fields are required in public form
+        $validator = Validator::make($request->all(), [
+            'full_name' => 'required|string|max:255',
+            'date_of_birth' => 'required|date|before_or_equal:today',
+            'gender' => 'required|string|in:Male,Female',
+            'primary_mobile_number' => 'required|string|max:30',
+            'alternate_contact_number' => 'nullable|string|max:30',
+            'official_email_address' => 'required|email|max:255',
+            'father_name' => 'required|string|max:255',
+            'mother_name' => 'required|string|max:255',
+            'address_house_name_flat_no' => 'required|string|max:255',
+            'address_area_locality' => 'required|string|max:255',
+            'address_city' => 'required|string|max:255',
+            'address_district' => 'required|string|max:255',
+            'address_state' => 'required|string|max:255',
+            'address_pin_code' => 'required|string|max:20',
+            'highest_educational_qualification' => 'required|string|max:255',
+            'additional_certifications' => 'nullable|string|max:2000',
+            'teaching_experience' => 'required|string|in:Yes,No',
+            'department_name' => 'required|string|in:E-School,EduThanzeel,Graphic Designing,Digital Marketing,Data Science,Machine Learning',
+
+            // Documents (required only if not already uploaded)
+            'document_resume_cv' => ($faculty->document_resume_cv ? 'nullable' : 'required') . '|file|max:10240',
+            'document_10th_certificate' => ($faculty->document_10th_certificate ? 'nullable' : 'required') . '|file|max:10240',
+            'document_educational_qualification_certificates' => ($faculty->document_educational_qualification_certificates ? 'nullable' : 'required') . '|file|max:10240',
+            'document_aadhaar_front' => ($faculty->document_aadhaar_front ? 'nullable' : 'required') . '|file|max:10240',
+            'document_aadhaar_back' => ($faculty->document_aadhaar_back ? 'nullable' : 'required') . '|file|max:10240',
+            'document_other_1' => 'nullable|file|max:10240',
+            'document_other_2' => 'nullable|file|max:10240',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $data = $request->only([
+            'full_name',
+            'date_of_birth',
+            'gender',
+            'primary_mobile_number',
+            'alternate_contact_number',
+            'official_email_address',
+            'father_name',
+            'mother_name',
+            'address_house_name_flat_no',
+            'address_area_locality',
+            'address_city',
+            'address_district',
+            'address_state',
+            'address_pin_code',
+            'highest_educational_qualification',
+            'additional_certifications',
+            'department_name',
+        ]);
+
+        // Normalize Yes/No to boolean
+        $teachingExperience = $request->input('teaching_experience');
+        if ($teachingExperience === 'Yes') {
+            $data['teaching_experience'] = true;
+        }
+        elseif ($teachingExperience === 'No') {
+            $data['teaching_experience'] = false;
+        }
+
+        // Mark form as filled
+        $data['form_filled_at'] = now();
+
+        // Update faculty data
+        $faculty->update($data);
+
+        // Store documents
+        $docFields = [
+            'document_resume_cv',
+            'document_10th_certificate',
+            'document_educational_qualification_certificates',
+            'document_aadhaar_front',
+            'document_aadhaar_back',
+            'document_other_1',
+            'document_other_2',
+        ];
+
+        foreach ($docFields as $field) {
+            if ($request->hasFile($field)) {
+                $path = $request->file($field)->store("online-teaching-faculties/{$faculty->id}", 'public');
+                $faculty->{ $field} = $path;
+            }
+        }
+
+        $faculty->save();
+
+        return view('public.faculty-form-success', compact('faculty'));
+    }
+}

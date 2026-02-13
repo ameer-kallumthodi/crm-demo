@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class extends Migration 
 {
     public function up(): void
     {
@@ -12,10 +12,10 @@ return new class extends Migration
             $table->id();
 
             // A. Personal Details
-            $table->string('full_name');
+            $table->string('full_name')->nullable();
             $table->date('date_of_birth')->nullable();
             $table->string('gender', 20)->nullable(); // Male / Female
-            $table->string('primary_mobile_number', 30)->nullable();
+            $table->string('primary_mobile_number', 30);
             $table->string('alternate_contact_number', 30)->nullable();
             $table->string('official_email_address')->nullable();
             $table->string('father_name')->nullable();
@@ -67,4 +67,3 @@ return new class extends Migration
         Schema::dropIfExists('online_teaching_faculties');
     }
 };
-
