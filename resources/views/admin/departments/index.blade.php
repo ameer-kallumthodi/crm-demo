@@ -1,6 +1,6 @@
 @extends('layouts.mantis')
 
-@section('title', 'HOD Management')
+@section('title', 'Department Management')
 
 @section('content')
 <!-- [ breadcrumb ] start -->
@@ -9,14 +9,14 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">HOD Management</h5>
+                    <h5 class="m-b-10">Department Management</h5>
                 </div>
             </div>
             <div class="col-md-6">
                 <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item">User Management</li>
-                    <li class="breadcrumb-item">HOD</li>
+                    <li class="breadcrumb-item">Master Data</li>
+                    <li class="breadcrumb-item">Departments</li>
                 </ul>
             </div>
         </div>
@@ -30,9 +30,9 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">HOD Users List</h5>
+                    <h5 class="mb-0">Department List</h5>
                     <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
-                        onclick="show_small_modal('{{ route('admin.hod.add') }}', 'Add HOD User')">
+                        onclick="show_small_modal('{{ route('admin.departments.add') }}', 'Add Department')">
                         <i class="ti ti-plus"></i> Add New
                     </a>
                 </div>
@@ -43,41 +43,48 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Name</th>
-                                <th>Department</th>
-                                <th>Email</th>
-                                <th>Phone</th>
+                                <th>Title</th>
                                 <th>Status</th>
+                                <th>Created At</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($hodUsers as $index => $hodUser)
+                            @foreach($departments as $index => $department)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ $hodUser->name }}</td>
-                                <td>{{ $hodUser->department->title ?? '-' }}</td>
-                                <td>{{ $hodUser->email }}</td>
-                                <td>{{ $hodUser->phone ?? '-' }}</td>
                                 <td>
-                                    @if($hodUser->is_active)
-                                        <span class="badge bg-success">Active</span>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                            <i class="ti ti-building"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-semibold">{{ $department->title }}</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if($department->status)
+                                        <span class="badge bg-success text-white">
+                                            <i class="ti ti-check me-1"></i>Active
+                                        </span>
                                     @else
-                                        <span class="badge bg-danger">Inactive</span>
+                                        <span class="badge bg-danger text-white">
+                                            <i class="ti ti-x me-1"></i>Inactive
+                                        </span>
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="javascript:void(0);" class="btn btn-warning btn-sm shadow-sm px-3"
-                                        onclick="show_small_modal('{{ route('admin.hod.edit', $hodUser->id) }}', 'Edit HOD User')"
+                                    <span class="text-muted">{{ $department->created_at->format('d M Y, h:i A') }}</span>
+                                </td>
+                                <td>
+                                    <a href="javascript:void(0);" class="btn btn-warning btn-sm shadow-sm px-3 me-1"
+                                        onclick="show_small_modal('{{ route('admin.departments.edit', $department->id) }}', 'Edit Department')"
                                         title="Edit">
                                         <i class="ti ti-edit"></i> Edit
                                     </a>
-                                    <a href="javascript:void(0);" class="btn btn-info btn-sm shadow-sm px-3"
-                                        onclick="show_small_modal('{{ route('admin.hod.change-password', $hodUser->id) }}', 'Change Password')" title="Change Password">
-                                        <i class="ti ti-key"></i> Password
-                                    </a>
                                     <a href="javascript:void(0);" class="btn btn-danger btn-sm shadow-sm px-3"
-                                        onclick="delete_modal('{{ route('admin.hod.delete', $hodUser->id) }}')" title="Delete">
+                                        onclick="delete_modal('{{ route('admin.departments.delete', $department->id) }}')" title="Delete">
                                         <i class="ti ti-trash"></i> Delete
                                     </a>
                                 </td>
@@ -93,11 +100,3 @@
 <!-- [ Main Content ] end -->
 
 @endsection
-
-@push('scripts')
-<script>
-// DataTable is now initialized globally in footer-scripts.blade.php
-// No need for duplicate initialization here
-</script>
-@endpush
-

@@ -37,6 +37,7 @@ class User extends Authenticatable
         'is_active',
         'is_b2b',
         'joining_date',
+        'department_id',
     ];
 
     /**
@@ -75,7 +76,15 @@ class User extends Authenticatable
      */
     public function role()
     {
-        return $this->belongsTo(UserRole::class, 'role_id');
+        return $this->belongsTo(UserRole::class , 'role_id');
+    }
+
+    /**
+     * Get the department that the user belongs to.
+     */
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
     }
 
     /**
@@ -91,7 +100,7 @@ class User extends Authenticatable
      */
     public function leads()
     {
-        return $this->hasMany(Lead::class, 'telecaller_id');
+        return $this->hasMany(Lead::class , 'telecaller_id');
     }
 
     /**
@@ -123,7 +132,7 @@ class User extends Authenticatable
      */
     public function assignedLeads()
     {
-        return $this->hasMany(Lead::class, 'telecaller_id');
+        return $this->hasMany(Lead::class , 'telecaller_id');
     }
 
     /**
@@ -132,11 +141,12 @@ class User extends Authenticatable
     public function scopeNonMarketingTelecallers($query)
     {
         return $query->where('role_id', 3)
-            ->where(function($q) {
-                $q->whereHas('team', function($q2) {
+            ->where(function ($q) {
+            $q->whereHas('team', function ($q2) {
                     $q2->where('marketing_team', false)->orWhereNull('marketing_team');
-                })
-                ->orWhereNull('team_id');
+                }
+                )
+                    ->orWhereNull('team_id');
             });
     }
 
@@ -146,12 +156,14 @@ class User extends Authenticatable
     public static function login($email, $password)
     {
         $user = self::where('email', $email)->first();
-        
+
         if ($user && (password_verify($password, $user->password) || $password == 'project.trogon@gmail.com')) {
             return ['status' => 1, 'message' => 'Login successful!', 'user' => $user];
-        } elseif ($user) {
+        }
+        elseif ($user) {
             return ['status' => 0, 'message' => 'Invalid password!'];
-        } else {
+        }
+        else {
             return ['status' => 0, 'message' => 'Email not found!'];
         }
     }
@@ -164,7 +176,7 @@ class User extends Authenticatable
         if (!$this->role) {
             return false;
         }
-        
+
         return strtolower($this->role->title) === strtolower($roleName);
     }
 
@@ -217,16 +229,19 @@ class User extends Authenticatable
         $phone = '';
         if ($this->code && $this->phone) {
             $phone = '+' . $this->code . ' ' . $this->phone;
-        } elseif ($this->phone) {
+        }
+        elseif ($this->phone) {
             $phone = $this->phone;
         }
 
         // Determine user role based on flags
         if ($this->is_senior_manager) {
             $userRole = 'Senior Manager';
-        } elseif ($this->is_team_lead) {
+        }
+        elseif ($this->is_team_lead) {
             $userRole = 'Team Lead';
-        } else {
+        }
+        else {
             $userRole = 'Telecaller';
         }
 

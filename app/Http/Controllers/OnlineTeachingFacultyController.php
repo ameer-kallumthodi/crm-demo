@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\RoleHelper;
+use App\Helpers\AuthHelper;
 use App\Models\Department;
 use App\Models\OnlineTeachingFaculty;
 use Illuminate\Http\JsonResponse;
@@ -66,7 +67,9 @@ class OnlineTeachingFacultyController extends Controller
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
-        return view('admin.online-teaching-faculties.add');
+        // Load active departments
+        $departments = Department::where('status', true)->orderBy('title')->get();
+        return view('admin.online-teaching-faculties.add', compact('departments'));
     }
 
     public function submit(Request $request)
@@ -177,6 +180,22 @@ class OnlineTeachingFacultyController extends Controller
         return view('admin.online-teaching-faculties.show', compact('faculty'));
     }
 
+    public function delete($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return redirect()->route('admin.online-teaching-faculties.index')->with('message_danger', 'Access denied.');
+        }
+
+        $faculty = OnlineTeachingFaculty::findOrFail($id);
+
+        $faculty->deleted_by = AuthHelper::getCurrentUserId();
+        $faculty->save();
+
+        $faculty->delete();
+
+        return redirect()->route('admin.online-teaching-faculties.index')->with('message_success', 'Online Teaching Faculty deleted successfully.');
+    }
+
     public function getData(Request $request): JsonResponse
     {
         if (!$this->canAccessModule()) {
@@ -184,6 +203,14 @@ class OnlineTeachingFacultyController extends Controller
         }
 
         $query = OnlineTeachingFaculty::query();
+
+        // If user is HOD, filter by their department
+        if (RoleHelper::is_hod()) {
+            $user = RoleHelper::is_logged_in() ?\App\Helpers\AuthHelper::getCurrentUser() : null;
+            if ($user && $user->department_id) {
+                $query->where('department_id', $user->department_id);
+            }
+        }
 
         // DataTables global search
         if ($request->filled('search') && is_array($request->search) && !empty($request->search['value'])) {
@@ -354,6 +381,7 @@ class OnlineTeachingFacultyController extends Controller
             'additional_certifications' => 'nullable|string|max:2000',
             'teaching_experience' => 'nullable|string|in:1,0',
             'department_name' => 'nullable|string|in:E-School,EduThanzeel,Graphic Designing,Digital Marketing,Data Science,Machine Learning',
+            'department_id' => 'nullable|exists:departments,id',
 
             // C fields
             'faculty_id' => 'nullable|string|max:255',
@@ -400,6 +428,9 @@ class OnlineTeachingFacultyController extends Controller
         $displayValue = $faculty->{ $field};
         if ($field === 'teaching_experience') {
             $displayValue = $faculty->teaching_experience === null ? 'N/A' : ($faculty->teaching_experience ? 'Yes' : 'No');
+        }
+        elseif ($field === 'department_id') {
+            $displayValue = $faculty->department ? $faculty->department->title : 'N/A';
         }
         elseif ($field === 'date_of_birth' || $field === 'demo_class_date' || $field === 'offer_letter_issued_date' || $field === 'joining_date') {
             $displayValue = $faculty->{ $field} ? $faculty->{ $field}->format('Y-m-d') : 'N/A';
@@ -553,7 +584,9 @@ class OnlineTeachingFacultyController extends Controller
             return view('public.faculty-form-already-filled', compact('faculty'));
         }
 
-        return view('public.faculty-form', compact('faculty'));
+        // Load active departments
+        $departments = Department::where('status', true)->orderBy('title')->get();
+        return view('public.faculty-form', compact('faculty', 'departments'));
     }
 
     /**

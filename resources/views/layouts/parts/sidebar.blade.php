@@ -618,6 +618,16 @@
                     </a>
                 </li>
                 @endif
+                @if(has_permission('admin/departments/index'))
+                <li class="pc-item {{ request()->routeIs('admin.departments.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.departments.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-building"></i>
+                        </span>
+                        <span class="pc-mtext">Departments</span>
+                    </a>
+                </li>
+                @endif
                 @if(has_permission('admin/universities/index'))
                 <li class="pc-item {{ request()->routeIs('admin.universities.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.universities.index') }}" class="pc-link">

@@ -19,6 +19,19 @@
                 </div>
             </div>
 
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <label class="form-label" for="department_id">Department</label>
+                    <select class="form-select" id="department_id" name="department_id">
+                        <option value="">Select Department</option>
+                        @foreach($departments as $id => $title)
+                            <option value="{{ $id }}" {{ (old('department_id', $hodUser->department_id) == $id) ? 'selected' : '' }}>{{ $title }}</option>
+                        @endforeach
+                    </select>
+                    <div class="invalid-feedback" id="department_id-error"></div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\UserRole;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -17,9 +18,9 @@ class HODController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $hodUsers = User::where('role_id', 14)->with(['role'])->get();
+        $hodUsers = User::where('role_id', 14)->with(['role', 'department'])->get();
         $roles = UserRole::all();
-        
+
         return view('admin.hod.index', compact('hodUsers', 'roles'));
     }
 
@@ -35,10 +36,11 @@ class HODController extends Controller
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:10',
             'password' => 'required|string|min:8',
+            'department_id' => 'nullable|exists:departments,id',
         ]);
 
         // Filter only the fields we need
-        $data = $request->only(['name', 'email', 'phone', 'code', 'password']);
+        $data = $request->only(['name', 'email', 'phone', 'code', 'password', 'department_id']);
         $data['password'] = Hash::make($data['password']);
         $data['role_id'] = 14; // Static role for HOD
         $data['is_active'] = 1; // Default to active
@@ -58,7 +60,7 @@ class HODController extends Controller
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
-        return response()->json($hodUser->load('role'));
+        return response()->json($hodUser->load(['role', 'department']));
     }
 
     public function destroy(User $hodUser)
@@ -89,8 +91,9 @@ class HODController extends Controller
         }
 
         $country_codes = get_country_code();
-        
-        return view('admin.hod.add', compact('country_codes'));
+        $departments = Department::where('status', true)->pluck('title', 'id');
+
+        return view('admin.hod.add', compact('country_codes', 'departments'));
     }
 
     public function submit(Request $request)
@@ -106,6 +109,7 @@ class HODController extends Controller
             'code' => 'nullable|string|max:10',
             'password' => 'required|string|min:6',
             'is_active' => 'nullable|boolean',
+            'department_id' => 'nullable|exists:departments,id',
         ]);
 
         if ($validator->fails()) {
@@ -128,6 +132,7 @@ class HODController extends Controller
             'password' => Hash::make($request->password),
             'role_id' => 14, // Static role for HOD
             'is_active' => $request->has('is_active') ? 1 : 0,
+            'department_id' => $request->department_id,
         ]);
 
         if (request()->ajax()) {
@@ -149,8 +154,9 @@ class HODController extends Controller
 
         $hodUser = User::where('id', $id)->where('role_id', 14)->firstOrFail();
         $country_codes = get_country_code();
-        
-        return view('admin.hod.edit', compact('hodUser', 'country_codes'));
+        $departments = Department::where('status', true)->pluck('title', 'id');
+
+        return view('admin.hod.edit', compact('hodUser', 'country_codes', 'departments'));
     }
 
     public function update(Request $request, $id)
@@ -167,6 +173,7 @@ class HODController extends Controller
             'phone' => 'nullable|string|max:20',
             'code' => 'nullable|string|max:10',
             'is_active' => 'nullable|boolean',
+            'department_id' => 'nullable|exists:departments,id',
         ]);
 
         if ($validator->fails()) {
@@ -187,6 +194,7 @@ class HODController extends Controller
             'phone' => $request->phone,
             'code' => $request->code,
             'is_active' => $request->has('is_active') ? 1 : 0,
+            'department_id' => $request->department_id,
         ]);
 
         if (request()->ajax()) {
@@ -225,7 +233,7 @@ class HODController extends Controller
         }
 
         $hodUser = User::where('id', $id)->where('role_id', 14)->firstOrFail();
-        
+
         return view('admin.hod.change-password', compact('hodUser'));
     }
 
@@ -252,7 +260,7 @@ class HODController extends Controller
         }
 
         $hodUser = User::where('id', $id)->where('role_id', 14)->firstOrFail();
-        
+
         $hodUser->update([
             'password' => Hash::make($request->password),
         ]);
@@ -267,4 +275,3 @@ class HODController extends Controller
         return redirect()->route('admin.hod.index')->with('message_success', 'Password updated successfully!');
     }
 }
-

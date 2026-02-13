@@ -352,14 +352,15 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/online-teaching-faculties/{id}/inline-update', [OnlineTeachingFacultyController::class, 'inlineUpdate'])->name('online-teaching-faculties.inline-update');
         Route::post('/online-teaching-faculties/{id}/upload-document', [OnlineTeachingFacultyController::class, 'uploadDocument'])->name('online-teaching-faculties.upload-document');
         Route::get('/online-teaching-faculties/{id}/generate-form-link', [OnlineTeachingFacultyController::class, 'generateFormToken'])->name('online-teaching-faculties.generate-form-link');
+        Route::delete('/online-teaching-faculties/{id}', [OnlineTeachingFacultyController::class, 'delete'])->name('online-teaching-faculties.delete');
 
         // Department Routes
         Route::get('/departments', [App\Http\Controllers\DepartmentController::class, 'index'])->name('departments.index');
-        Route::get('/departments/add', [App\Http\Controllers\DepartmentController::class, 'add'])->name('departments.add');
-        Route::post('/departments/submit', [App\Http\Controllers\DepartmentController::class, 'submit'])->name('departments.submit');
-        Route::get('/departments/edit/{id}', [App\Http\Controllers\DepartmentController::class, 'edit'])->name('departments.edit');
-        Route::put('/departments/update/{id}', [App\Http\Controllers\DepartmentController::class, 'update'])->name('departments.update');
-        Route::delete('/departments/delete/{id}', [App\Http\Controllers\DepartmentController::class, 'delete'])->name('departments.delete');
+        Route::get('/departments-add', [App\Http\Controllers\DepartmentController::class, 'add'])->name('departments.add');
+        Route::post('/departments-submit', [App\Http\Controllers\DepartmentController::class, 'submit'])->name('departments.submit');
+        Route::get('/departments-edit/{id}', [App\Http\Controllers\DepartmentController::class, 'edit'])->name('departments.edit');
+        Route::put('/departments-update/{id}', [App\Http\Controllers\DepartmentController::class, 'update'])->name('departments.update');
+        Route::delete('/departments-delete/{id}', [App\Http\Controllers\DepartmentController::class, 'delete'])->name('departments.delete');
 
         // University Courses Routes
         Route::resource('university-courses', App\Http\Controllers\UniversityCourseController::class)->except(['create', 'edit']);

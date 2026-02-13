@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OnlineTeachingFaculty extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'online_teaching_faculties';
 
     protected $fillable = [
@@ -57,6 +60,7 @@ class OnlineTeachingFaculty extends Model
         'joining_date',
         'remarks',
         'offer_letter_upload',
+        'deleted_by',
     ];
 
     protected $casts = [

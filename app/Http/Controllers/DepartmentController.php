@@ -46,7 +46,7 @@ class DepartmentController extends Controller
             'status' => $request->status,
         ]);
 
-        return redirect()->route('departments.index')
+        return redirect()->route('admin.departments.index')
             ->with('success', 'Department created successfully.');
     }
 
@@ -82,7 +82,7 @@ class DepartmentController extends Controller
             'status' => $request->status,
         ]);
 
-        return redirect()->route('departments.index')
+        return redirect()->route('admin.departments.index')
             ->with('success', 'Department updated successfully.');
     }
 
@@ -94,7 +94,7 @@ class DepartmentController extends Controller
         $department = Department::findOrFail($id);
         $department->delete();
 
-        return redirect()->route('departments.index')
+        return redirect()->route('admin.departments.index')
             ->with('success', 'Department deleted successfully.');
     }
 }
