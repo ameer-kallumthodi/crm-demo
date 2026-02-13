@@ -32,6 +32,7 @@ class OnlineTeachingFaculty extends Model
         'additional_certifications',
         'teaching_experience',
         'department_name',
+        'department_id',
 
         // B. Documents
         'document_resume_cv',
@@ -66,4 +67,12 @@ class OnlineTeachingFaculty extends Model
         'joining_date' => 'date',
         'form_filled_at' => 'datetime',
     ];
+
+    /**
+     * Get the department that the faculty belongs to
+     */
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
 }

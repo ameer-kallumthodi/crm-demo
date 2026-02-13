@@ -186,7 +186,7 @@ class LeadUGPGRegistrationController extends Controller
                 'mother_name' => $request->mother_name,
                 'date_of_birth' => $request->date_of_birth,
                 'gender' => $request->gender,
-                'is_employed' => $request->is_employed,
+                'is_employed' => $request->is_employed === 'Yes', // Convert Yes/No to boolean
                 'email' => $request->email,
                 'personal_number' => $request->personal_number,
                 'personal_code' => $request->personal_code,

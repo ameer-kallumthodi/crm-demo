@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\RoleHelper;
+use App\Models\Department;
 use App\Models\OnlineTeachingFaculty;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -235,6 +236,13 @@ class OnlineTeachingFacultyController extends Controller
         $length = (int)$request->get('length', 25);
         $rows = $query->skip($start)->take($length)->get();
 
+        // Load active departments for inline editing
+        $departments = Department::where('status', true)->orderBy('title')->get();
+        $departmentOptions = ['' => 'N/A'];
+        foreach ($departments as $dept) {
+            $departmentOptions[$dept->id] = $dept->title;
+        }
+
         $data = [];
         foreach ($rows as $idx => $faculty) {
             /** @var \App\Models\OnlineTeachingFaculty $faculty */
@@ -245,15 +253,7 @@ class OnlineTeachingFacultyController extends Controller
                 'full_name' => $this->renderInlineText($faculty, 'full_name'),
                 'primary_mobile_number' => $this->renderInlineText($faculty, 'primary_mobile_number'),
                 'official_email_address' => $this->renderInlineText($faculty, 'official_email_address'),
-                'department_name' => $this->renderInlineSelect($faculty, 'department_name', [
-                    '' => 'N/A',
-                    'E-School' => 'E-School',
-                    'EduThanzeel' => 'EduThanzeel',
-                    'Graphic Designing' => 'Graphic Designing',
-                    'Digital Marketing' => 'Digital Marketing',
-                    'Data Science' => 'Data Science',
-                    'Machine Learning' => 'Machine Learning',
-                ]),
+                'department_name' => $this->renderInlineSelect($faculty, 'department_id', $departmentOptions),
                 'gender' => $this->renderInlineSelect($faculty, 'gender', [
                     '' => 'N/A',
                     'Male' => 'Male',
