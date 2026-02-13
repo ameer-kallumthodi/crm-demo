@@ -100,12 +100,13 @@ document.getElementById('hodAddForm').addEventListener('submit', function(e) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json())
     .then(response => {
-        if (!response.ok) {
-            return response.json().then(data => Promise.reject(data));
-        }
-        return response.json();
+        return response.json().then(data => {
+            if (!response.ok) {
+                return Promise.reject(data);
+            }
+            return data;
+        });
     })
     .then(data => {
         if (data.success) {
