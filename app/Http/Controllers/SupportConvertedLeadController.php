@@ -726,6 +726,7 @@ class SupportConvertedLeadController extends Controller
         ]);
     }
 
+
     /**
      * Display a listing of Hotel Management converted leads for support
      */
@@ -799,31 +800,7 @@ class SupportConvertedLeadController extends Controller
     }
 
     /**
-     * Display a listing of Flutter converted leads for support
-     */
-    public function flutterIndex(Request $request)
-    {
-        return $this->getCourseSupportIndex($request, 21, 'Flutter Converted Support List', 'admin.converted-leads.support-flutter-index');
-    }
-
-    /**
-     * Display a listing of Eduthanzeel converted leads for support
-     */
-    public function eduthanzeelIndex(Request $request)
-    {
-        return $this->getCourseSupportIndex($request, 6, 'Eduthanzeel Converted Support List', 'admin.converted-leads.support-eduthanzeel-index');
-    }
-
-    /**
-     * Display a listing of E-School converted leads for support
-     */
-    public function eSchoolIndex(Request $request)
-    {
-        return $this->getCourseSupportIndex($request, 5, 'E-School Converted Support List', 'admin.converted-leads.support-e-school-index');
-    }
-
-    /**
-     * Generic method to get course support index
+     * Get course support index
      */
     private function getCourseSupportIndex(Request $request, $courseId, $pageTitle, $viewName)
     {
@@ -875,6 +852,7 @@ class SupportConvertedLeadController extends Controller
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('register_number', 'like', "%{$search}%")
                   ->orWhereHas('studentDetails', function($subQ) use ($search) {
                       $subQ->where('application_number', 'like', "%{$search}%");
                   });
@@ -925,6 +903,39 @@ class SupportConvertedLeadController extends Controller
             'country_codes',
             'pageTitle'
         ));
+    }
+
+    /**
+     * Show support converted lead details for Ajax list
+     */
+    public function showAjax($id)
+    {
+        $convertedLead = ConvertedLead::with([
+            'lead',
+            'leadDetail.sslcCertificates.verifiedBy',
+            'leadDetail.sslcVerifiedBy',
+            'leadDetail.plustwoVerifiedBy',
+            'leadDetail.ugVerifiedBy',
+            'leadDetail.passportPhotoVerifiedBy',
+            'leadDetail.adharFrontVerifiedBy',
+            'leadDetail.adharBackVerifiedBy',
+            'leadDetail.signatureVerifiedBy',
+            'leadDetail.birthCertificateVerifiedBy',
+            'leadDetail.otherDocumentVerifiedBy',
+            'course',
+            'academicAssistant',
+            'createdBy',
+            'studentDetails',
+            'supportDetails',
+            'supportFeedbackHistory.createdBy',
+            'subject',
+            'batch',
+            'admissionBatch.mentor'
+        ])->findOrFail($id);
+
+        $backUrl = route('admin.support-ajax-converted-leads.index');
+
+        return view('admin.converted-leads.support-show', compact('convertedLead', 'backUrl'));
     }
 
     /**

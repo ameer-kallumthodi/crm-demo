@@ -1,4 +1,4 @@
-<!-- [ Sidebar Menu ] start -->
+    <!-- [ Sidebar Menu ] start -->
 <nav class="pc-sidebar">
     <div class="navbar-wrapper">
         <div class="m-header">
@@ -70,12 +70,20 @@
 
                 {{-- Converted Leads Section --}}
                 @if(has_permission('admin/converted-leads/index') || \App\Helpers\RoleHelper::is_support_team() || \App\Helpers\RoleHelper::is_hod())
-                <li class="pc-item {{ request()->routeIs('admin.converted-leads.*') || request()->routeIs('admin.support-*-converted-leads.*') ? 'active' : '' }}">
+                <li class="pc-item {{ (request()->routeIs('admin.converted-leads.*') || request()->routeIs('admin.support-*-converted-leads.*')) && !request()->routeIs('admin.support-ajax-converted-leads.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.converted-leads.index') }}" class="pc-link">
                         <span class="pc-micon">
                             <i class="ti ti-user-check"></i>
                         </span>
                         <span class="pc-mtext">Converted Leads</span>
+                    </a>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.support-ajax-converted-leads.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.support-ajax-converted-leads.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-headphones"></i>
+                        </span>
+                        <span class="pc-mtext">Support List</span>
                     </a>
                 </li>
                 @endif

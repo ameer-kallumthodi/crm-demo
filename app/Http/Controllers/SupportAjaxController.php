@@ -1,0 +1,176 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\ConvertedLead;
+use App\Models\Course;
+use App\Models\Batch;
+use App\Models\Subject;
+use Illuminate\Http\Request;
+use App\Helpers\RoleHelper;
+use App\Helpers\AuthHelper;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+
+class SupportAjaxController extends Controller
+{
+    public function index()
+    {
+        $courses = Course::where('is_active', true)->get();
+        $batches = Batch::where('is_active', true)->get();
+
+        return view('admin.converted-leads.support-ajax-index', compact('courses', 'batches'));
+    }
+
+    public function getData(Request $request)
+    {
+        // 1. Base Query
+        $query = ConvertedLead::with([
+            'lead',
+            'leadDetail',
+            'supportDetails',
+            'admissionBatch',
+            'studentDetails'
+        ])->where('is_academic_verified', 1);
+
+        // 2. Role-based Filtering
+        $currentUser = AuthHelper::getCurrentUser();
+        if ($currentUser) {
+            if (RoleHelper::is_team_lead()) {
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereHas('lead', function ($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
+                }
+                else {
+                    $query->whereHas('lead', function ($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
+                }
+            }
+            elseif (RoleHelper::is_telecaller()) {
+                $query->whereHas('lead', function ($q) {
+                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                });
+            }
+        }
+
+        // 3. Apply Filters
+        if ($request->filled('course_id')) {
+            $query->where('course_id', $request->course_id);
+        }
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Search Filter
+        if ($request->filled('search.value')) {
+            $search = $request->input('search.value');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhereHas('studentDetails', function ($subQ) use ($search) {
+                    $subQ->where('application_number', 'like', "%{$search}%")
+                        ->orWhere('register_number', 'like', "%{$search}%");
+                }
+                );
+            });
+        }
+
+        // 4. Sorting
+        $columns = [
+            0 => 'created_at',
+            1 => 'name',
+            2 => 'is_b2b',
+            3 => 'phone',
+            4 => 'whatsapp', // mapped manually
+            5 => 'batch_id', // approximation
+            6 => 'id'
+        ];
+
+        $orderColumn = 'created_at';
+        $orderDir = 'desc';
+
+        if ($request->has('order')) {
+            $order = $request->input('order.0');
+            $columnIdx = $order['column'];
+            $dir = $order['dir'];
+            $columnName = $columns[$columnIdx] ?? 'created_at';
+
+            // Only sort by direct columns on the main table or simple relations
+            if (in_array($columnName, ['created_at', 'name', 'is_b2b', 'phone'])) {
+                $orderColumn = $columnName;
+                $orderDir = $dir;
+            }
+        }
+
+        $query->orderBy($orderColumn, $orderDir);
+
+        // 5. Pagination
+        $filteredRecords = $query->count();
+
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+        $length = $length == -1 ? $filteredRecords : $length;
+
+        $data = $query->skip($start)->take($length)->get();
+
+        // 6. Format Data
+        $formattedData = [];
+        foreach ($data as $index => $row) {
+            $slNo = $start + $index + 1;
+            $convertedDate = $row->created_at->format('d-m-Y');
+            if ($row->studentDetails && $row->studentDetails->converted_date) {
+                try {
+                    $convertedDate = Carbon::parse($row->studentDetails->converted_date)->format('d-m-Y');
+                }
+                catch (\Exception $e) {
+                // Keep created_at if parse fails
+                }
+            }
+
+            $whatsapp = 'N/A';
+            if ($row->leadDetail && $row->leadDetail->whatsapp_number) {
+                $whatsapp = \App\Helpers\PhoneNumberHelper::display($row->leadDetail->whatsapp_code, $row->leadDetail->whatsapp_number);
+            }
+
+            $phone = \App\Helpers\PhoneNumberHelper::display($row->code, $row->phone);
+
+            $action = '
+                <div class="d-flex gap-2">
+                    <a href="' . route('admin.support-ajax-converted-leads.details', $row->id) . '" class="btn btn-sm btn-icon btn-outline-primary" data-bs-toggle="tooltip" title="View Details">
+                        <i class="ti ti-eye"></i>
+                    </a>
+                </div>
+            ';
+
+            $admissionBatchTitle = $row->admissionBatch ? $row->admissionBatch->title : 'N/A';
+
+            $formattedData[] = [
+                $slNo, // Sl No
+                $convertedDate,
+                $row->name,
+                $row->is_b2b == 1 ? 'B2B' : 'In House',
+                $phone,
+                $whatsapp,
+                $admissionBatchTitle,
+                $action
+            ];
+        }
+
+        return response()->json([
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => ConvertedLead::where('is_academic_verified', 1)->count(),
+            'recordsFiltered' => $filteredRecords,
+            'data' => $formattedData
+        ]);
+    }
+}

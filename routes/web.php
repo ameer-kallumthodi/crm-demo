@@ -646,6 +646,11 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/reports/export/excel', [App\Http\Controllers\LeadReportController::class, 'exportMainReportsExcel'])->name('reports.main.excel');
         Route::get('/reports/export/pdf', [App\Http\Controllers\LeadReportController::class, 'exportMainReportsPdf'])->name('reports.main.pdf');
 
+        // Support Ajax Converted Leads (Moved Here)
+        Route::get('/support-ajax-converted-leads', [App\Http\Controllers\SupportAjaxController::class, 'index'])->name('support-ajax-converted-leads.index');
+        Route::get('/support-ajax-converted-leads/data', [App\Http\Controllers\SupportAjaxController::class, 'getData'])->name('support-ajax-converted-leads.data');
+        Route::get('/support-ajax-converted-leads/{id}', [App\Http\Controllers\SupportConvertedLeadController::class, 'showAjax'])->name('support-ajax-converted-leads.details');
+
         // New Super Admin Reports Routes
         Route::middleware(['super.admin'])->group(function () {
             // Lead Source Efficiency Report
@@ -808,6 +813,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // Support Converted Lead Details Route (Unified)
         Route::get('/support-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-converted-leads.details');
         Route::post('/support-converted-leads/{id}/feedback', [App\Http\Controllers\SupportConvertedLeadController::class, 'submitFeedback'])->name('support-converted-leads.feedback');
+
 
         // Back-compat routes (optional): keep if already linked somewhere
         Route::get('/support-bosse-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-bosse-converted-leads.details');

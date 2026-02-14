@@ -17,7 +17,11 @@
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#feedbackModal">
                         <i class="ti ti-message-plus"></i> Feedback Form
                     </button>
-                    @if(($convertedLead->course_id ?? null) === 2)
+                    @if(isset($backUrl))
+                    <a href="{{ $backUrl }}" class="btn btn-secondary">
+                        <i class="ti ti-arrow-left"></i> Back to Support List
+                    </a>
+                    @elseif(($convertedLead->course_id ?? null) === 2)
                     <a href="{{ route('admin.support-bosse-converted-leads.index') }}" class="btn btn-secondary">
                         <i class="ti ti-arrow-left"></i> Back to BOSSE Support
                     </a>
