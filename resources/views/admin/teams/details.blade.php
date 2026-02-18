@@ -29,7 +29,10 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5>Registration Information</h5>
-                 <a href="{{ route('admin.teams.index') }}" class="btn btn-secondary btn-sm">Back to Teams</a>
+                <div>
+                     <a href="{{ route('admin.teams.export-details-pdf', $team->id) }}" class="btn btn-danger btn-sm me-2" target="_blank"><i class="ti ti-file-type-pdf"></i> Export PDF</a>
+                     <a href="{{ route('admin.teams.index') }}" class="btn btn-secondary btn-sm">Back to Teams</a>
+                 </div>
             </div>
             <div class="card-body">
                 <h5 class="mb-3 text-primary">Institutional Legal Details</h5>

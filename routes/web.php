@@ -453,6 +453,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/teams-add-member', [TeamController::class, 'addMember'])->name('teams.add-member');
         Route::get('/teams/{id}/details', [TeamController::class, 'showDetails'])->name('teams.details');
         Route::post('/teams/{id}/update-details', [TeamController::class, 'updateDetails'])->name('teams.update-details');
+        Route::get('/teams/{id}/export-details-pdf', [TeamController::class, 'exportDetailsPdf'])->name('teams.export-details-pdf');
 
         // B2B Services Routes
         Route::resource('b2b-services', App\Http\Controllers\B2bServiceController::class)->except(['create', 'edit']);
@@ -906,6 +907,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/invoices/{id}/update-amount', [App\Http\Controllers\InvoiceController::class, 'updateAmount'])->name('invoices.update-amount');
 
         // Payment Routes
+        Route::get('/payments/export-pdf', [App\Http\Controllers\PaymentController::class, 'exportPdf'])->name('payments.export-pdf');
         Route::get('/payments', [App\Http\Controllers\PaymentController::class, 'listAll'])->name('payments.list');
         Route::get('/payments/invoice/{invoiceId}', [App\Http\Controllers\PaymentController::class, 'index'])->name('payments.index');
         Route::post('/payments/invoice/{invoice}/payment-links', [App\Http\Controllers\PaymentController::class, 'storePaymentLink'])->name('payments.links.store');

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Helpers\RoleHelper;
 use App\Helpers\AuthHelper;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class TeamController extends Controller
 {
@@ -400,5 +401,58 @@ class TeamController extends Controller
             'message' => 'Updated successfully!',
             'value' => $value
         ]);
+    }
+
+    public function exportDetailsPdf($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            abort(403);
+        }
+
+        $team = Team::with('detail')->findOrFail($id);
+
+        if (!$team->is_b2b || !$team->detail) {
+            abort(404);
+        }
+
+        $detail = $team->detail;
+
+        $interestedCourses = [];
+        if ($detail->interested_courses_details && is_array($detail->interested_courses_details)) {
+            $courseIds = array_keys($detail->interested_courses_details);
+            $courses = \App\Models\Course::whereIn('id', $courseIds)->get()->keyBy('id');
+
+            // Collect all structure IDs
+            $allStructureIds = [];
+            foreach ($detail->interested_courses_details as $cId => $sIds) {
+                if (is_array($sIds)) {
+                    $allStructureIds = array_merge($allStructureIds, $sIds);
+                }
+            }
+
+            $structures = \App\Models\AcademicDeliveryStructure::whereIn('id', $allStructureIds)->get()->keyBy('id');
+
+            foreach ($detail->interested_courses_details as $cId => $sIds) {
+                if (isset($courses[$cId])) {
+                    $courseName = $courses[$cId]->title;
+                    $structureNames = [];
+                    if (is_array($sIds)) {
+                        foreach ($sIds as $sId) {
+                            if (isset($structures[$sId])) {
+                                $structureNames[] = $structures[$sId]->title;
+                            }
+                        }
+                    }
+                    $interestedCourses[] = [
+                        'course' => $courseName,
+                        'structures' => $structureNames
+                    ];
+                }
+
+            }
+        }
+
+        $pdf = \PDF::loadView('admin.teams.details_pdf', compact('team', 'detail', 'interestedCourses'));
+        return $pdf->download('team_details_' . $team->id . '.pdf');
     }
 }

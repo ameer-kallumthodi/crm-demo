@@ -123,7 +123,17 @@
                         </ul>
 
                         <div class="tab-content" id="paymentTabsContent">
+                            <!-- Pending Payments Tab -->
                             <div class="tab-pane fade show active" id="pending-payments" role="tabpanel" aria-labelledby="pending-tab">
+                                <div class="row align-items-center mb-3">
+                                    <div class="col-md-6">
+                                    </div>
+                                    <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
+                                        <a href="{{ route('payments.export-pdf', array_merge(request()->query(), ['status' => 'pending'])) }}" class="btn btn-danger btn-sm shadow-sm hover-elevate">
+                                            <i class="ti ti-file-type-pdf me-1"></i>Export PDF
+                                        </a>
+                                    </div>
+                                </div>
                                 <div class="table-responsive border rounded-3 shadow-sm bg-white">
                                     <table class="table table-hover align-middle data_table_basic mb-0" id="pendingPaymentsTable" data-order='[[0,"asc"]]' data-page-length="25">
                                     <thead class="table-light">
@@ -257,6 +267,15 @@
                             </div>
 
                             <div class="tab-pane fade" id="approved-payments" role="tabpanel" aria-labelledby="approved-tab">
+                                <div class="row align-items-center mb-3">
+                                    <div class="col-md-6">
+                                    </div>
+                                    <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
+                                        <a href="{{ route('payments.export-pdf', array_merge(request()->query(), ['status' => 'approved'])) }}" class="btn btn-danger btn-sm shadow-sm hover-elevate">
+                                            <i class="ti ti-file-type-pdf me-1"></i>Export PDF
+                                        </a>
+                                    </div>
+                                </div>
                                 <div class="table-responsive border rounded-3 shadow-sm bg-white">
                                     <table class="table table-hover align-middle data_table_basic mb-0" id="approvedPaymentsTable" data-order='[[0,"asc"]]' data-page-length="25">
                                     <thead class="table-light">
@@ -382,6 +401,15 @@
                             </div>
 
                             <div class="tab-pane fade" id="rejected-payments" role="tabpanel" aria-labelledby="rejected-tab">
+                                <div class="row align-items-center mb-3">
+                                    <div class="col-md-6">
+                                    </div>
+                                    <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
+                                        <a href="{{ route('payments.export-pdf', array_merge(request()->query(), ['status' => 'rejected'])) }}" class="btn btn-danger btn-sm shadow-sm hover-elevate">
+                                            <i class="ti ti-file-type-pdf me-1"></i>Export PDF
+                                        </a>
+                                    </div>
+                                </div>
                                 <div class="table-responsive border rounded-3 shadow-sm bg-white">
                                     <table class="table table-hover align-middle data_table_basic mb-0" id="rejectedPaymentsTable" data-order='[[0,"asc"]]' data-page-length="25">
                                     <thead class="table-light">
