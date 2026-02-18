@@ -277,19 +277,13 @@
                         <div class="course-row card mb-3">
                             <div class="card-body">
                                 <div class="row align-items-end">
-                                    <div class="col-md-5 mb-3 mb-md-0">
+                                    <div class="col-md-10 mb-3 mb-md-0">
                                         <label class="form-label">Course</label>
-                                        <select class="form-select course-select" name="courses[]" required onchange="loadDeliveryStructures(this)">
+                                        <select class="form-select course-select" name="courses[]" required>
                                             <option value="">Select Course</option>
                                             @foreach($courses as $course)
                                                 <option value="{{ $course->id }}">{{ $course->title }}</option>
                                             @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-md-5 mb-3 mb-md-0">
-                                        <label class="form-label">Academic Delivery Structure</label>
-                                        <select class="form-select delivery-structure-select" name="interested_courses_details[]" required disabled>
-                                            <option value="">Select Delivery Structure</option>
                                         </select>
                                     </div>
                                     <div class="col-md-2 text-end">
@@ -302,20 +296,12 @@
                         </div>
                     </div>
 
+
                     <div class="text-end mb-3">
                         <button type="button" class="btn btn-outline-primary btn-sm" onclick="addCourseRow()">
                             <i class="fas fa-plus me-1"></i> Add Another Course
                         </button>
                     </div>
-
-                    <!-- Hidden data for JavaScript -->
-                    <script id="course-structure-data" type="application/json">
-                        @json($courses->mapWithKeys(function($course) {
-                            return [$course->id => $course->academicDeliveryStructures->map(function($structure) {
-                                return ['id' => $structure->id, 'title' => $structure->title];
-                            })];
-                        }))
-                    </script>
                 </div>
 
                 <!-- Navigation Buttons -->
@@ -340,14 +326,9 @@
     <script>
         let currentStep = 1;
         const totalSteps = 4;
-        let courseData = {};
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Parse course data
-            const dataElement = document.getElementById('course-structure-data');
-            if (dataElement) {
-                courseData = JSON.parse(dataElement.textContent);
-            }
+            // Initialization if needed
         });
 
         function removeRow(button) {
@@ -359,38 +340,6 @@
             }
         }
 
-        function loadDeliveryStructures(selectElement) {
-            const courseId = selectElement.value;
-            const row = selectElement.closest('.course-row');
-            
-            // Re-fetch the structure select because it might be a cloned element
-            const structureSelect = row.querySelector('.delivery-structure-select');
-            
-            // Clear existing options
-            structureSelect.innerHTML = '<option value="">Select Delivery Structure</option>';
-            
-            // We need to parse the data again if it's not available in global scope correctly or if it was added dynamically
-            if (Object.keys(courseData).length === 0) {
-                 const dataElement = document.getElementById('course-structure-data');
-                if (dataElement) {
-                    courseData = JSON.parse(dataElement.textContent);
-                }
-            }
-            
-            if (courseId && courseData[courseId]) {
-                const structures = courseData[courseId];
-                structures.forEach(structure => {
-                    const option = document.createElement('option');
-                    option.value = structure.id;
-                    option.textContent = structure.title;
-                    structureSelect.appendChild(option);
-                });
-                structureSelect.disabled = false;
-            } else {
-                structureSelect.disabled = true;
-            }
-        }
-
         function addCourseRow() {
             const container = document.getElementById('course-rows-container');
             const firstRow = container.querySelector('.course-row');
@@ -399,11 +348,6 @@
             // Reset values
             const courseSelect = newRow.querySelector('.course-select');
             courseSelect.value = '';
-            
-            const structureSelect = newRow.querySelector('.delivery-structure-select');
-            structureSelect.innerHTML = '<option value="">Select Delivery Structure</option>';
-            structureSelect.disabled = true;
-            structureSelect.name = "interested_courses_details[]"; // Ensure name is correct
             
             // Show remove button
             const removeBtn = newRow.querySelector('.remove-row-btn');
