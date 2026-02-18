@@ -30,7 +30,7 @@ class Team extends Model
      */
     public function teamLead()
     {
-        return $this->belongsTo(User::class, 'team_lead_id');
+        return $this->belongsTo(User::class , 'team_lead_id');
     }
 
     /**
@@ -43,17 +43,25 @@ class Team extends Model
 
     public function createdBy()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class , 'created_by');
     }
 
     public function updatedBy()
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsTo(User::class , 'updated_by');
     }
 
     public function deletedBy()
     {
-        return $this->belongsTo(User::class, 'deleted_by');
+        return $this->belongsTo(User::class , 'deleted_by');
+    }
+
+    /**
+     * Get the details for the team.
+     */
+    public function detail()
+    {
+        return $this->hasOne(TeamDetail::class);
     }
 
     /**
@@ -79,7 +87,7 @@ class Team extends Model
     {
         $this->deleted_by = \App\Helpers\AuthHelper::getCurrentUserId();
         $this->save();
-        
+
         return parent::delete();
     }
 }

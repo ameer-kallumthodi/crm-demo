@@ -666,6 +666,16 @@
                     </a>
                 </li>
                 @endif
+                @if(has_permission('admin/academic-delivery-structures/index') || \App\Helpers\RoleHelper::is_academic_counselor())
+                <li class="pc-item {{ request()->routeIs('admin.academic-delivery-structures.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.academic-delivery-structures.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-book"></i>
+                        </span>
+                        <span class="pc-mtext">Academic Delivery Structure</span>
+                    </a>
+                </li>
+                @endif
                 @endif
                 
                 {{-- Settings Section --}}

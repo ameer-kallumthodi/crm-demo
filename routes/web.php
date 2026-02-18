@@ -222,6 +222,11 @@ Route::prefix('register')->group(function () {
     Route::post('/flutter', [App\Http\Controllers\Public\LeadFlutterRegistrationController::class, 'store'])->name('public.lead.flutter.register.store');
     Route::get('/flutter/subjects', [App\Http\Controllers\Public\LeadFlutterRegistrationController::class, 'getSubjects'])->name('public.lead.flutter.subjects');
     Route::get('/flutter/batches', [App\Http\Controllers\Public\LeadFlutterRegistrationController::class, 'getBatches'])->name('public.lead.flutter.batches');
+    
+    // B2B Team Registration Routes
+    Route::get('/team/{teamId}', [App\Http\Controllers\Public\TeamRegistrationController::class, 'showForm'])->name('public.team.register');
+    Route::post('/team/{teamId}', [App\Http\Controllers\Public\TeamRegistrationController::class, 'store'])->name('public.team.register.store');
+    Route::get('/team/{teamId}/success', [App\Http\Controllers\Public\TeamRegistrationController::class, 'showSuccess'])->name('public.team.register.success');
 });
 
 
@@ -446,6 +451,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/teams-members/{id}', [TeamController::class, 'members'])->name('teams.members');
         Route::post('/teams-remove-member', [TeamController::class, 'removeMember'])->name('teams.remove-member');
         Route::post('/teams-add-member', [TeamController::class, 'addMember'])->name('teams.add-member');
+        Route::get('/teams/{id}/details', [TeamController::class, 'showDetails'])->name('teams.details');
+        Route::post('/teams/{id}/update-details', [TeamController::class, 'updateDetails'])->name('teams.update-details');
 
         // B2B Services Routes
         Route::resource('b2b-services', App\Http\Controllers\B2bServiceController::class)->except(['create', 'edit']);
@@ -454,6 +461,14 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/b2b-services-submit', [App\Http\Controllers\B2bServiceController::class, 'submit'])->name('b2b-services.submit');
         Route::put('/b2b-services-update/{id}', [App\Http\Controllers\B2bServiceController::class, 'update'])->name('b2b-services.update');
         Route::delete('/b2b-services-delete/{id}', [App\Http\Controllers\B2bServiceController::class, 'delete'])->name('b2b-services.delete');
+
+        // Academic Delivery Structure Routes
+        Route::get('/academic-delivery-structures', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'index'])->name('academic-delivery-structures.index');
+        Route::get('/academic-delivery-structures-add', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'ajax_add'])->name('academic-delivery-structures.add');
+        Route::get('/academic-delivery-structures-edit/{id}', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'ajax_edit'])->name('academic-delivery-structures.edit');
+        Route::post('/academic-delivery-structures-submit', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'submit'])->name('academic-delivery-structures.submit');
+        Route::put('/academic-delivery-structures-update/{id}', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'update'])->name('academic-delivery-structures.update');
+        Route::delete('/academic-delivery-structures-delete/{id}', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'delete'])->name('academic-delivery-structures.delete');
 
 
         Route::resource('telecallers', TelecallerController::class)->except(['create', 'edit']);

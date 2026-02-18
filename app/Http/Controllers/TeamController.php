@@ -16,9 +16,9 @@ class TeamController extends Controller
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $teams = Team::with(['teamLead', 'users'])->get();
+        $teams = Team::with(['teamLead', 'users', 'detail'])->get();
         $teamLeads = User::where('is_team_lead', true)->get();
-        
+
         return view('admin.teams.index', compact('teams', 'teamLeads'));
     }
 
@@ -178,7 +178,7 @@ class TeamController extends Controller
         }
 
         $team = Team::findOrFail($id);
-        
+
         // Check if team has users
         if ($team->users()->count() > 0) {
             return redirect()->route('admin.teams.index')->with('message_error', 'Cannot delete team. It has assigned users.');
@@ -198,29 +198,30 @@ class TeamController extends Controller
         }
 
         $team = Team::with('teamLead')->findOrFail($id);
-        
+
         // Load users based on team type
         if ($team->marketing_team) {
-            $team->load(['users' => function($query) {
+            $team->load(['users' => function ($query) {
                 $query->where('role_id', 13); // Marketing users
             }]);
-        } else {
-            $team->load(['users' => function($query) {
+        }
+        else {
+            $team->load(['users' => function ($query) {
                 $query->where('role_id', 3); // Telecallers
             }]);
         }
 
         // Get all team members including the team lead
         $allTeamMembers = collect();
-        
+
         // Add team lead if exists
         if ($team->teamLead) {
             $allTeamMembers->push($team->teamLead);
         }
-        
+
         // Add regular team members
         $allTeamMembers = $allTeamMembers->merge($team->users);
-        
+
         // Remove duplicates (in case team lead is also in users)
         $allTeamMembers = $allTeamMembers->unique('id');
 
@@ -231,7 +232,8 @@ class TeamController extends Controller
                 ->whereNull('team_id')
                 ->whereNull('deleted_at')
                 ->get();
-        } else {
+        }
+        else {
             // For sales teams, show telecallers (role_id 3)
             $availableUsers = User::where('role_id', 3)
                 ->whereNull('team_id')
@@ -279,7 +281,7 @@ class TeamController extends Controller
         ]);
 
         $user = User::findOrFail($request->user_id);
-        
+
         // Check if user is already assigned to a team
         if ($user->team_id) {
             return response()->json([
@@ -293,6 +295,110 @@ class TeamController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Team member added successfully!'
+        ]);
+    }
+    /**
+     * Show team registration details
+     */
+    public function showDetails($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
+        }
+
+        $team = Team::with('detail')->findOrFail($id);
+
+        // Ensure it is a B2B team or at least has details
+        if (!$team->is_b2b || !$team->detail) {
+            return redirect()->back()->with('message_danger', 'No registration details found for this team.');
+        }
+
+        $detail = $team->detail;
+
+        $interestedCourses = [];
+        if ($detail->interested_courses_details && is_array($detail->interested_courses_details)) {
+            $courseIds = array_keys($detail->interested_courses_details);
+            $courses = \App\Models\Course::whereIn('id', $courseIds)->get()->keyBy('id');
+
+            // Collect all structure IDs
+            $allStructureIds = [];
+            foreach ($detail->interested_courses_details as $cId => $sIds) {
+                if (is_array($sIds)) {
+                    $allStructureIds = array_merge($allStructureIds, $sIds);
+                }
+            }
+
+            $structures = \App\Models\AcademicDeliveryStructure::whereIn('id', $allStructureIds)->get()->keyBy('id');
+
+            foreach ($detail->interested_courses_details as $cId => $sIds) {
+                if (isset($courses[$cId])) {
+                    $courseName = $courses[$cId]->title;
+                    $structureNames = [];
+                    if (is_array($sIds)) {
+                        foreach ($sIds as $sId) {
+                            if (isset($structures[$sId])) {
+                                $structureNames[] = $structures[$sId]->title;
+                            }
+                        }
+                    }
+                    $interestedCourses[] = [
+                        'course' => $courseName,
+                        'structures' => $structureNames
+                    ];
+                }
+
+            }
+        }
+
+
+
+        $allCourses = \App\Models\Course::with(['academicDeliveryStructures' => function ($q) {
+            $q->where('status', 1);
+        }])->where('is_active', 1)->get();
+
+        return view('admin.teams.details', compact('team', 'detail', 'interestedCourses', 'allCourses'));
+    }
+    public function updateDetails(Request $request, $id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $team = Team::with('detail')->findOrFail($id);
+
+        if (!$team->detail) {
+            return response()->json(['error' => 'Registration details not found!'], 404);
+        }
+
+        $request->validate([
+            'field' => 'required|string',
+            'value' => 'nullable',
+        ]);
+
+        $field = $request->field;
+        $value = $request->value;
+
+        // Allowed fields to be updated
+        $allowedFields = [
+            'legal_name', 'institution_category', 'registration_number',
+            'building_name', 'street_name', 'locality_name', 'city', 'district', 'state', 'pin_code', 'country',
+            'comm_officer_name', 'comm_officer_mobile', 'comm_officer_alt_mobile', 'comm_officer_whatsapp', 'comm_officer_email',
+            'auth_person_name', 'auth_person_designation', 'auth_person_mobile', 'auth_person_email',
+            'interested_courses_details'
+        ];
+
+        if (!in_array($field, $allowedFields)) {
+            return response()->json(['error' => 'Invalid field.'], 400);
+        }
+
+        $team->detail->update([
+            $field => $value
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Updated successfully!',
+            'value' => $value
         ]);
     }
 }

@@ -116,7 +116,7 @@ class RoleHelper
         if (!$user) {
             return false;
         }
-        
+
         return $user->role_id == 4;
     }
 
@@ -153,7 +153,7 @@ class RoleHelper
 
         return $user->role_id == 6;
     }
-    
+
     /**
      * Check if current user is Mentor
      */
@@ -353,5 +353,24 @@ class RoleHelper
 
         $role = UserRole::find($user->role_id);
         return $role && $role->title === $roleTitle;
+    }
+
+    /**
+     * Check if current user is Academic Counselor
+     */
+    public static function is_academic_counselor()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        // Assuming Academic Counselor refers to Admission Counsellor (4) or Academic Assistant (5)
+        // Adjust role IDs as per actual requirement if different
+        return in_array($user->role_id, [4, 5]);
     }
 }

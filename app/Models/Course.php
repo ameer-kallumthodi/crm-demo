@@ -50,7 +50,12 @@ class Course extends Model
 
     public function hod()
     {
-        return $this->belongsTo(User::class, 'hod_id');
+        return $this->belongsTo(User::class , 'hod_id');
+    }
+
+    public function academicDeliveryStructures()
+    {
+        return $this->hasMany(AcademicDeliveryStructure::class);
     }
 
     public function scopeActive($query)

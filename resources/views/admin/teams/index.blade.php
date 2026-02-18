@@ -111,6 +111,16 @@
                                     </div>
                                 </td>
                                 <td>
+                                    @if($team->is_b2b)
+                                    <a href="{{ route('public.team.register', $team->id) }}" target="_blank" class="btn btn-primary btn-sm shadow-sm px-3 me-1" title="Public Registration Form">
+                                        <i class="ti ti-external-link"></i> Public Form
+                                    </a>
+                                    @if($team->detail)
+                                    <a href="{{ route('admin.teams.details', $team->id) }}" class="btn btn-dark btn-sm shadow-sm px-3 me-1" title="View Submitted Details">
+                                        <i class="ti ti-file-text"></i> Details
+                                    </a>
+                                    @endif
+                                    @endif
                                     <a href="javascript:void(0);" class="btn btn-info btn-sm shadow-sm px-3 me-1"
                                         onclick="show_ajax_modal('{{ route('admin.teams.members', $team->id) }}', 'Team Members - {{ $team->name }}')"
                                         title="View Members">

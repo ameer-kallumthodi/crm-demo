@@ -16,32 +16,44 @@ class PermissionHelper
         // Check if super admin
         if (RoleHelper::is_super_admin()) {
             return self::has_permission_super_admin($permission);
-        } elseif (RoleHelper::is_admin()) {
+        }
+        elseif (RoleHelper::is_admin()) {
             return self::has_permission_admin($permission);
-        } elseif (RoleHelper::is_telecaller()) {
+        }
+        elseif (RoleHelper::is_telecaller()) {
             return self::has_permission_telecaller($permission);
-        } elseif (RoleHelper::is_admission_counsellor()) {
+        }
+        elseif (RoleHelper::is_admission_counsellor()) {
             return self::has_permission_admission_counsellor($permission);
-        } elseif (RoleHelper::is_academic_assistant()) {
+        }
+        elseif (RoleHelper::is_academic_assistant()) {
             return self::has_permission_academic_assistant($permission);
-        } elseif (RoleHelper::is_finance()) {
+        }
+        elseif (RoleHelper::is_finance()) {
             return self::has_permission_finance($permission);
-        } elseif (RoleHelper::is_post_sales()) {
+        }
+        elseif (RoleHelper::is_post_sales()) {
             return self::has_permission_post_sales($permission);
-        } elseif (RoleHelper::is_support_team()) {
+        }
+        elseif (RoleHelper::is_support_team()) {
             return self::has_permission_support_team($permission);
-        } elseif (RoleHelper::is_general_manager()) {
+        }
+        elseif (RoleHelper::is_general_manager()) {
             return self::has_permission_general_manager($permission);
-		} elseif (RoleHelper::is_mentor()) {
-			return self::has_permission_mentor($permission);
-        } elseif (RoleHelper::is_auditor()) {
+        }
+        elseif (RoleHelper::is_mentor()) {
+            return self::has_permission_mentor($permission);
+        }
+        elseif (RoleHelper::is_auditor()) {
             return self::has_permission_auditor($permission);
-        } elseif (RoleHelper::is_marketing()) {
+        }
+        elseif (RoleHelper::is_marketing()) {
             return self::has_permission_marketing($permission);
-        } elseif (RoleHelper::is_hod()) {
+        }
+        elseif (RoleHelper::is_hod()) {
             return self::has_permission_hod($permission);
         }
-        
+
         return false;
     }
 
@@ -49,22 +61,29 @@ class PermissionHelper
     {
         if (RoleHelper::is_admin_or_super_admin()) {
             return true;
-        } elseif (RoleHelper::is_academic_assistant()) {
+        }
+        elseif (RoleHelper::is_academic_assistant()) {
             return false;
-        } elseif (RoleHelper::is_admission_counsellor()) {
+        }
+        elseif (RoleHelper::is_admission_counsellor()) {
             return false;
-        } elseif (RoleHelper::is_finance()) {
+        }
+        elseif (RoleHelper::is_finance()) {
             return false;
-        } elseif (RoleHelper::is_post_sales()) {
+        }
+        elseif (RoleHelper::is_post_sales()) {
             return false;
-        } elseif (RoleHelper::is_telecaller()) {
+        }
+        elseif (RoleHelper::is_telecaller()) {
             return true;
-        } elseif (RoleHelper::is_general_manager()) {
+        }
+        elseif (RoleHelper::is_general_manager()) {
             return true;
-        } elseif (RoleHelper::is_auditor()) {
+        }
+        elseif (RoleHelper::is_auditor()) {
             return false; // Auditor has view-only, no actions
         }
-        
+
         return false;
     }
 
@@ -150,6 +169,8 @@ class PermissionHelper
             'admin/academic-assistants/index',
             'admin/support-team/index',
             'admin/mentor/index',
+            'admin/b2b-services/index',
+            'admin/departments/index',
         ];
         return in_array($permission, $permissions);
     }
@@ -167,6 +188,9 @@ class PermissionHelper
             'admin/notifications/index',
             'admin/universities/index',
             'leads/registration-form-submitted',
+            'admin/online-teaching-faculties/index',
+            'admin/b2b-services/index',
+            'admin/departments/index',
         ];
         return in_array($permission, $permissions);
     }
@@ -271,19 +295,19 @@ class PermissionHelper
         return in_array($permission, $permissions);
     }
 
-	/**
-	 * Mentor permissions
-	 */
-	public static function has_permission_mentor($permission = '')
-	{
-		$permissions = [
-			'dashboard/index',
-			'leads/index',
-			'admin/converted-leads/index',
+    /**
+     * Mentor permissions
+     */
+    public static function has_permission_mentor($permission = '')
+    {
+        $permissions = [
+            'dashboard/index',
+            'leads/index',
+            'admin/converted-leads/index',
             'profile/index',
-		];
-		return in_array($permission, $permissions);
-	}
+        ];
+        return in_array($permission, $permissions);
+    }
 
     /**
      * Auditor permissions - view only access
@@ -350,26 +374,32 @@ class PermissionHelper
     {
         if ($role_id == 1) { // Super Admin
             return self::get_permission_super_admin_app();
-        } elseif ($role_id == 2) { // Admin
+        }
+        elseif ($role_id == 2) { // Admin
             return self::get_permission_admin_app();
-        } elseif ($role_id == 3) { // Telecaller
+        }
+        elseif ($role_id == 3) { // Telecaller
             if ($is_team_manager == 1) {
                 if ($current_role == 'telecaller') {
                     return self::get_permission_telecaller_app();
-                } else {
+                }
+                else {
                     return self::get_permission_team_manager_app();
                 }
-            } elseif ($is_team_lead == 1) {
+            }
+            elseif ($is_team_lead == 1) {
                 if ($current_role == 'telecaller') {
                     return self::get_permission_telecaller_app();
-                } else {
+                }
+                else {
                     return self::get_permission_team_lead_app();
                 }
-            } else {
+            }
+            else {
                 return self::get_permission_telecaller_app();
             }
         }
-        
+
         return self::get_permission_telecaller_app(); // Default to telecaller permissions
     }
 
