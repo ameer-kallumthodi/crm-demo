@@ -21,8 +21,12 @@ class TeamRegistrationController extends Controller
             abort(404);
         }
 
-        // Get Active Courses
-        $courses = Course::where('is_active', 1)->get();
+        // Get Active Courses with their active Academic Delivery Structures
+        $courses = Course::where('is_active', 1)
+            ->with(['academicDeliveryStructures' => function($query) {
+                $query->where('status', 1);
+            }])
+            ->get();
 
         return view('public.team-registration.form', compact('team', 'courses'));
     }
@@ -61,15 +65,39 @@ class TeamRegistrationController extends Controller
             'auth_person_mobile' => 'required|string|max:20',
             'auth_person_email' => 'required|email|max:255',
 
-            'courses' => 'required|array',
-            'courses.*' => 'exists:courses,id',
+            'interested_courses_details' => 'nullable|array',
         ]);
 
         // Transform input if needed to match JSON structure
-        $data = $request->except(['_token', 'courses', 'interested_courses_details']);
+        $data = $request->except(['_token', 'courses', 'delivery_structures']);
 
-        // Store selected courses
-        $data['interested_courses_details'] = $request->input('courses');
+        // Since we changed the UI to dynamic rows, we need to process 'delivery_structures' 
+        // which now comes as 'interested_courses_details' array of selected values.
+        // However, the blade template now sends `interested_courses_details[]` which are just the delivery structure IDs.
+        // We might want to store it in a structure that maps course -> structures. 
+        // But simply storing the array of structure IDs is also fine if that's what's intended.
+        // Let's refine the input processing to map it back to a structure if needed, or just save the array.
+        
+        // If the request comes from the new dynamic form, `interested_courses_details` might be a flat array of structure IDs.
+        // We should Group them by Course ID for better structure if possible, but the current UI sends just structure IDs.
+        // To keep it structured:
+        
+        $interestedCourses = [];
+        if ($request->has('courses') && $request->has('interested_courses_details')) {
+            $courses = $request->input('courses');
+            $deliveryStructures = $request->input('interested_courses_details');
+            
+            foreach ($courses as $index => $courseId) {
+                if (isset($deliveryStructures[$index]) && $courseId) {
+                    $structureId = $deliveryStructures[$index];
+                    if (!isset($interestedCourses[$courseId])) {
+                        $interestedCourses[$courseId] = [];
+                    }
+                    $interestedCourses[$courseId][] = $structureId;
+                }
+            }
+             $data['interested_courses_details'] = $interestedCourses;
+        }
 
 
         TeamDetail::updateOrCreate(
