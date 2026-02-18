@@ -129,7 +129,7 @@
                                     <div class="col-md-6">
                                     </div>
                                     <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
-                                        <a href="{{ route('payments.export-pdf', array_merge(request()->query(), ['status' => 'pending'])) }}" class="btn btn-danger btn-sm shadow-sm hover-elevate">
+                                        <a href="{{ route('admin.payments.export-pdf', array_merge(request()->query(), ['status' => 'pending'])) }}" class="btn btn-danger btn-sm shadow-sm hover-elevate">
                                             <i class="ti ti-file-type-pdf me-1"></i>Export PDF
                                         </a>
                                     </div>
@@ -271,7 +271,7 @@
                                     <div class="col-md-6">
                                     </div>
                                     <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
-                                        <a href="{{ route('payments.export-pdf', array_merge(request()->query(), ['status' => 'approved'])) }}" class="btn btn-danger btn-sm shadow-sm hover-elevate">
+                                        <a href="{{ route('admin.payments.export-pdf', array_merge(request()->query(), ['status' => 'approved'])) }}" class="btn btn-danger btn-sm shadow-sm hover-elevate">
                                             <i class="ti ti-file-type-pdf me-1"></i>Export PDF
                                         </a>
                                     </div>
@@ -405,7 +405,7 @@
                                     <div class="col-md-6">
                                     </div>
                                     <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
-                                        <a href="{{ route('payments.export-pdf', array_merge(request()->query(), ['status' => 'rejected'])) }}" class="btn btn-danger btn-sm shadow-sm hover-elevate">
+                                        <a href="{{ route('admin.payments.export-pdf', array_merge(request()->query(), ['status' => 'rejected'])) }}" class="btn btn-danger btn-sm shadow-sm hover-elevate">
                                             <i class="ti ti-file-type-pdf me-1"></i>Export PDF
                                         </a>
                                     </div>
