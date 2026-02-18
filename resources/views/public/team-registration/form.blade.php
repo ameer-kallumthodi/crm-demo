@@ -274,12 +274,12 @@
 
                     <div id="course-rows-container">
                         <!-- Initial Row -->
-                        <div class="course-row card mb-3">
+                        <div class="course-row card mb-3" data-row-id="0">
                             <div class="card-body">
-                                <div class="row align-items-end">
+                                <div class="row align-items-start">
                                     <div class="col-md-5 mb-3 mb-md-0">
                                         <label class="form-label">Course</label>
-                                        <select class="form-select course-select" name="courses[]" required onchange="loadDeliveryStructures(this)">
+                                        <select class="form-select course-select" name="items[0][course_id]" required onchange="handleCourseChange(this)">
                                             <option value="">Select Course</option>
                                             @foreach($courses as $course)
                                                 <option value="{{ $course->id }}">{{ $course->title }}</option>
@@ -288,9 +288,9 @@
                                     </div>
                                     <div class="col-md-5 mb-3 mb-md-0">
                                         <label class="form-label">Academic Delivery Structure</label>
-                                        <select class="form-select delivery-structure-select" name="interested_courses_details[]" required disabled>
-                                            <option value="">Select Delivery Structure</option>
-                                        </select>
+                                        <div class="delivery-structure-container p-2 border rounded bg-light" style="min-height: 38px; max-height: 200px; overflow-y: auto;">
+                                            <small class="text-muted">Select a course first</small>
+                                        </div>
                                     </div>
                                     <div class="col-md-2 text-end">
                                         <button type="button" class="btn btn-danger btn-sm remove-row-btn" style="display: none;" onclick="removeRow(this)">
@@ -341,6 +341,7 @@
         let currentStep = 1;
         const totalSteps = 4;
         let courseData = {};
+        let itemsCounter = 0;
 
         document.addEventListener('DOMContentLoaded', function() {
             // Parse course data
@@ -348,7 +349,14 @@
             if (dataElement) {
                 courseData = JSON.parse(dataElement.textContent);
             }
+            // Trigger initial update for available courses
+            updateAvailableCourses();
         });
+
+        function handleCourseChange(selectElement) {
+            loadDeliveryStructures(selectElement);
+            updateAvailableCourses();
+        }
 
         function removeRow(button) {
             const row = button.closest('.course-row');
@@ -356,61 +364,108 @@
             
             if (container.querySelectorAll('.course-row').length > 1) {
                 row.remove();
+                updateAvailableCourses();
             }
+        }
+
+        function updateAvailableCourses() {
+            const selects = document.querySelectorAll('.course-select');
+            
+            selects.forEach(select => {
+                const currentValue = select.value;
+                // Get all selected values EXCLUDING this select
+                const otherSelectedValues = Array.from(selects)
+                    .filter(s => s !== select)
+                    .map(s => s.value)
+                    .filter(v => v);
+                
+                const options = select.querySelectorAll('option');
+                
+                options.forEach(option => {
+                    if (!option.value) return; 
+                    
+                    if (otherSelectedValues.includes(option.value)) {
+                         option.hidden = true;
+                         option.disabled = true;
+                    } else {
+                         option.hidden = false;
+                         option.disabled = false;
+                    }
+                });
+            });
         }
 
         function loadDeliveryStructures(selectElement) {
             const courseId = selectElement.value;
             const row = selectElement.closest('.course-row');
+            const rowId = row.getAttribute('data-row-id');
+            const container = row.querySelector('.delivery-structure-container');
             
-            // Re-fetch the structure select because it might be a cloned element
-            const structureSelect = row.querySelector('.delivery-structure-select');
-            
-            // Clear existing options
-            structureSelect.innerHTML = '<option value="">Select Delivery Structure</option>';
-            
-            // We need to parse the data again if it's not available in global scope correctly or if it was added dynamically
-            if (Object.keys(courseData).length === 0) {
-                 const dataElement = document.getElementById('course-structure-data');
-                if (dataElement) {
-                    courseData = JSON.parse(dataElement.textContent);
-                }
-            }
-            
+            container.innerHTML = ''; // Clear
+
             if (courseId && courseData[courseId]) {
-                const structures = courseData[courseId];
-                structures.forEach(structure => {
-                    const option = document.createElement('option');
-                    option.value = structure.id;
-                    option.textContent = structure.title;
-                    structureSelect.appendChild(option);
-                });
-                structureSelect.disabled = false;
+                 const structures = courseData[courseId];
+                 if (structures.length > 0) {
+                     structures.forEach(structure => {
+                        const div = document.createElement('div');
+                        div.className = 'form-check';
+                        
+                        const input = document.createElement('input');
+                        input.className = 'form-check-input';
+                        input.type = 'checkbox';
+                        input.name = `items[${rowId}][structures][]`;
+                        input.value = structure.id;
+                        input.id = `structure_${rowId}_${structure.id}`;
+                        
+                        // We can't make checkboxes 'required' in a group easily with standard HTML5 required 
+                        // unless we write custom validation. 
+                        // The validateStep function needs to check if at least one is checked.
+                        
+                        const label = document.createElement('label');
+                        label.className = 'form-check-label';
+                        label.htmlFor = `structure_${rowId}_${structure.id}`;
+                        label.textContent = structure.title;
+                        
+                        div.appendChild(input);
+                        div.appendChild(label);
+                        container.appendChild(div);
+                     });
+                 } else {
+                     container.innerHTML = '<small class="text-muted">No structures available</small>';
+                 }
             } else {
-                structureSelect.disabled = true;
+                 container.innerHTML = '<small class="text-muted">Select a course first</small>';
             }
         }
 
         function addCourseRow() {
+            itemsCounter++;
             const container = document.getElementById('course-rows-container');
-            const firstRow = container.querySelector('.course-row');
-            const newRow = firstRow.cloneNode(true);
             
-            // Reset values
+            // Clone the first row to keep the structure
+            const templateRow = container.querySelector('.course-row');
+            const newRow = templateRow.cloneNode(true);
+            
+            newRow.setAttribute('data-row-id', itemsCounter);
+            
+            // Reset Course Select
             const courseSelect = newRow.querySelector('.course-select');
             courseSelect.value = '';
+            courseSelect.name = `items[${itemsCounter}][course_id]`;
+            courseSelect.classList.remove('is-invalid');
             
-            const structureSelect = newRow.querySelector('.delivery-structure-select');
-            structureSelect.innerHTML = '<option value="">Select Delivery Structure</option>';
-            structureSelect.disabled = true;
-            structureSelect.name = "interested_courses_details[]"; // Ensure name is correct
+            // Reset Structure Container
+            const structureContainer = newRow.querySelector('.delivery-structure-container');
+            structureContainer.innerHTML = '<small class="text-muted">Select a course first</small>';
             
             // Show remove button
             const removeBtn = newRow.querySelector('.remove-row-btn');
             removeBtn.style.display = 'inline-block';
-            removeBtn.onclick = function() { removeRow(this); }; // Bind click event explicitly just in case
+            removeBtn.onclick = function() { removeRow(this); };
 
             container.appendChild(newRow);
+            
+            updateAvailableCourses();
         }
 
         function changeStep(direction) {
@@ -458,10 +513,38 @@
                     const checked = stepElement.querySelector(`input[name="${name}"]:checked`);
                     if (!checked) {
                         isValid = false;
-                        // Add error styling to container if needed
                     }
                 }
             });
+
+            // Special validation for checkboxes in Step 4
+            if (step === 4) {
+                const rows = stepElement.querySelectorAll('.course-row');
+                rows.forEach(row => {
+                    // Check if course is selected
+                    const courseSelect = row.querySelector('.course-select');
+                    if (!courseSelect.value) {
+                        isValid = false;
+                        courseSelect.classList.add('is-invalid');
+                    } else {
+                        // If course is selected, check if at least one structure is selected
+                        const checkboxes = row.querySelectorAll('input[type="checkbox"]');
+                        let checked = false;
+                        checkboxes.forEach(cb => {
+                            if (cb.checked) checked = true;
+                        });
+                        
+                        // If there are checkboxes (structures available) and none checked
+                        if (checkboxes.length > 0 && !checked) {
+                            isValid = false;
+                            // Maybe add a visual indicator to the container
+                            row.querySelector('.delivery-structure-container').classList.add('border-danger');
+                        } else {
+                            row.querySelector('.delivery-structure-container').classList.remove('border-danger');
+                        }
+                    }
+                });
+            }
 
             return isValid;
         }
@@ -486,9 +569,7 @@
             }
             
             // Update progress bar
-            const progress = ((step - 1) / (totalSteps - 1)) * 100; // 0, 33, 66, 100
-            // Actually let's make it reflect steps completed: 1=25%, 2=50%, 3=75%, 4=100%
-             document.getElementById('progressBar').style.width = `${(step/totalSteps)*100}%`;
+            document.getElementById('progressBar').style.width = `${(step/totalSteps)*100}%`;
         }
 
         function updateButtons(step) {
