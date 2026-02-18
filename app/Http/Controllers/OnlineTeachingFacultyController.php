@@ -19,7 +19,8 @@ class OnlineTeachingFacultyController extends Controller
         // Admin/Super Admin always, plus Admission Counsellor, HOD.
         return RoleHelper::is_admin_or_super_admin()
             || RoleHelper::is_admission_counsellor()
-            || RoleHelper::is_hod();
+            || RoleHelper::is_hod()
+            || RoleHelper::is_academic_assistant();
     }
 
     public function index()
