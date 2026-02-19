@@ -1441,4 +1441,79 @@ class PaymentController extends Controller
 
         $payment->save();
     }
+
+    /**
+     * Export all payments to PDF based on filters
+     */
+    public function exportPdf(Request $request)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_finance() && !RoleHelper::is_telecaller()) {
+            abort(403, 'Access denied.');
+        }
+
+        $filters = [
+            'from_date' => $request->input('from_date'),
+            'to_date' => $request->input('to_date'),
+            'payment_date_from' => $request->input('payment_date_from'),
+            'payment_date_to' => $request->input('payment_date_to'),
+            'student_id' => $request->input('student_id'),
+            'search' => $request->input('search'),
+        ];
+
+        $status = $request->input('status', 'pending');
+        
+        $withRelations = [
+            'invoice.student.lead',
+            'invoice.course',
+            'invoice.batch',
+            'createdBy',
+        ];
+
+        if ($status === 'approved') {
+            $query = Payment::with(array_merge($withRelations, [
+                'approvedBy',
+                'invoice.payments' => function ($query) {
+                    $query->approved()->orderBy('created_at', 'asc');
+                },
+            ]))
+                ->whereHas('invoice')
+                ->approved();
+            
+            $title = 'Approved Payments Report';
+        } elseif ($status === 'rejected') {
+            $query = Payment::with(array_merge($withRelations, [
+                'rejectedBy',
+            ]))
+                ->whereHas('invoice')
+                ->where('status', 'Rejected');
+            
+            $title = 'Rejected Payments Report';
+        } else {
+            // Default to pending
+            $query = Payment::with($withRelations)
+                ->whereHas('invoice')
+                ->pending();
+            
+            $title = 'Pending Payments Report';
+        }
+        
+        $paymentsQuery = $this->applyFilters($query, $filters, $status);
+        
+        // Apply sorting based on status like in listAll
+        if ($status === 'approved') {
+            $paymentsQuery->orderByDesc('approved_date');
+        } elseif ($status === 'rejected') {
+            $paymentsQuery->orderByDesc('rejected_date');
+        }
+        
+        $payments = $paymentsQuery->orderByDesc('created_at')->get();
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.payments.pdf_export', compact('payments', 'title', 'filters', 'status'));
+        $pdf->setPaper('A4', 'landscape');
+        
+        $filename = Str::slug($title) . '_' . date('Y_m_d_H_i') . '.pdf';
+        
+        return $pdf->download($filename);
+    }
 }
+
