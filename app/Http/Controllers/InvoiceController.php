@@ -292,19 +292,24 @@ class InvoiceController extends Controller
                 if ($batchId) {
                     $batch = Batch::find($batchId);
                     if ($batch) {
-                        if ($courseId == 16) {
-                            $studentClass = optional($student->leadDetail)->class;
-                            $normalizedClass = $studentClass ? strtolower($studentClass) : null;
+                        // If B2B student, prefer batch B2B pricing (fallback to normal rules if not set)
+                        if ((int) ($student->is_b2b ?? 0) === 1 && !is_null($batch->b2b_amount)) {
+                            $batchAmount = (float) $batch->b2b_amount;
+                        } else {
+                            if ($courseId == 16) {
+                                $studentClass = optional($student->leadDetail)->class;
+                                $normalizedClass = $studentClass ? strtolower($studentClass) : null;
 
-                            if ($normalizedClass === 'sslc' && !is_null($batch->sslc_amount)) {
-                                $batchAmount = (float) $batch->sslc_amount;
-                            } elseif (!is_null($batch->plustwo_amount)) {
-                                $batchAmount = (float) $batch->plustwo_amount;
+                                if ($normalizedClass === 'sslc' && !is_null($batch->sslc_amount)) {
+                                    $batchAmount = (float) $batch->sslc_amount;
+                                } elseif (!is_null($batch->plustwo_amount)) {
+                                    $batchAmount = (float) $batch->plustwo_amount;
+                                } elseif ($batch->amount) {
+                                    $batchAmount = (float) $batch->amount;
+                                }
                             } elseif ($batch->amount) {
                                 $batchAmount = (float) $batch->amount;
                             }
-                        } elseif ($batch->amount) {
-                            $batchAmount = (float) $batch->amount;
                         }
                     }
                 }
@@ -488,9 +493,11 @@ class InvoiceController extends Controller
             $leadDetail = \App\Models\LeadDetail::where('lead_id', $student->lead_id)->first();
         }
 
-        // Determine batch amount with class-specific pricing for GMVSS (course 16)
+        // Determine batch amount (B2B pricing overrides; else class-specific pricing for GMVSS (course 16))
         if ($batch) {
-            if ($course && (int) $course->id === 16 && $leadDetail) {
+            if ((int) ($student->is_b2b ?? 0) === 1 && !is_null($batch->b2b_amount)) {
+                $batchAmount = (float) $batch->b2b_amount;
+            } elseif ($course && (int) $course->id === 16 && $leadDetail) {
                 $studentClass = strtolower($leadDetail->class ?? '');
                 if ($studentClass === 'sslc' && !is_null($batch->sslc_amount)) {
                     $batchAmount = (float) $batch->sslc_amount;

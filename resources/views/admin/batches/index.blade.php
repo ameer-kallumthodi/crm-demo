@@ -46,6 +46,7 @@
                                 <th>Title</th>
                                 <th>Course</th>
                                 <th>Amount</th>
+                                <th>B2B Amount</th>
                                 <th>Description</th>
                                 <th>Status</th>
                                 <th>Postponed To Batch</th>
@@ -83,6 +84,13 @@
                                         ₹ {{ number_format($batch->amount, 2) }}
                                     @else
                                         N/A
+                                    @endif
+                                </td>
+                                <td>
+                                    @if(!is_null($batch->b2b_amount))
+                                        ₹ {{ number_format($batch->b2b_amount, 2) }}
+                                    @else
+                                        <span class="text-muted">N/A</span>
                                     @endif
                                 </td>
                                 <td>{{ $batch->description ?? 'N/A' }}</td>

@@ -30,6 +30,7 @@ class BatchController extends Controller
             'amount' => $request->filled('amount') ? $request->amount : null,
             'sslc_amount' => $request->filled('sslc_amount') ? $request->sslc_amount : null,
             'plustwo_amount' => $request->filled('plustwo_amount') ? $request->plustwo_amount : null,
+            'b2b_amount' => $request->filled('b2b_amount') ? $request->b2b_amount : null,
         ]);
 
         $rules = [
@@ -39,6 +40,7 @@ class BatchController extends Controller
             'amount' => 'nullable|numeric|min:0',
             'sslc_amount' => 'nullable|numeric|min:0',
             'plustwo_amount' => 'nullable|numeric|min:0',
+            'b2b_amount' => 'nullable|numeric|min:0',
             'is_active' => 'nullable|boolean',
         ];
 
@@ -51,6 +53,7 @@ class BatchController extends Controller
             'amount' => $request->input('amount'),
             'sslc_amount' => $request->input('sslc_amount'),
             'plustwo_amount' => $request->input('plustwo_amount'),
+            'b2b_amount' => $request->input('b2b_amount'),
             'is_active' => $request->has('is_active'),
             'created_by' => AuthHelper::getCurrentUserId(),
             'updated_by' => AuthHelper::getCurrentUserId(),
@@ -143,6 +146,7 @@ class BatchController extends Controller
                 'amount' => $request->filled('amount') ? $request->amount : null,
                 'sslc_amount' => $request->filled('sslc_amount') ? $request->sslc_amount : null,
                 'plustwo_amount' => $request->filled('plustwo_amount') ? $request->plustwo_amount : null,
+                'b2b_amount' => $request->filled('b2b_amount') ? $request->b2b_amount : null,
                 'is_active' => $request->has('is_active') ? 1 : 0,
             ]);
 
@@ -153,6 +157,7 @@ class BatchController extends Controller
                 'amount' => 'nullable|numeric|min:0',
                 'sslc_amount' => 'nullable|numeric|min:0',
                 'plustwo_amount' => 'nullable|numeric|min:0',
+                'b2b_amount' => 'nullable|numeric|min:0',
                 'is_active' => 'nullable|boolean',
             ];
 
@@ -165,6 +170,7 @@ class BatchController extends Controller
                 'amount' => $request->input('amount'),
                 'sslc_amount' => $request->input('sslc_amount'),
                 'plustwo_amount' => $request->input('plustwo_amount'),
+                'b2b_amount' => $request->input('b2b_amount'),
                 'is_active' => $request->is_active,
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
@@ -199,6 +205,7 @@ class BatchController extends Controller
                 'amount' => $request->filled('amount') ? $request->amount : null,
                 'sslc_amount' => $request->filled('sslc_amount') ? $request->sslc_amount : null,
                 'plustwo_amount' => $request->filled('plustwo_amount') ? $request->plustwo_amount : null,
+                'b2b_amount' => $request->filled('b2b_amount') ? $request->b2b_amount : null,
                 'is_active' => $request->has('is_active') ? 1 : 0,
             ]);
 
@@ -209,6 +216,7 @@ class BatchController extends Controller
                 'amount' => 'nullable|numeric|min:0',
                 'sslc_amount' => 'nullable|numeric|min:0',
                 'plustwo_amount' => 'nullable|numeric|min:0',
+                'b2b_amount' => 'nullable|numeric|min:0',
                 'is_active' => 'nullable|boolean',
             ];
 
@@ -229,6 +237,7 @@ class BatchController extends Controller
                 'amount' => $request->input('amount'),
                 'sslc_amount' => $request->input('sslc_amount'),
                 'plustwo_amount' => $request->input('plustwo_amount'),
+                'b2b_amount' => $request->input('b2b_amount'),
                 'is_active' => $request->is_active,
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ];
@@ -310,7 +319,7 @@ class BatchController extends Controller
     public function getByCourse($courseId)
     {
         $batches = Batch::where('course_id', $courseId)
-            ->select('id', 'title', 'amount', 'sslc_amount', 'plustwo_amount', 'is_active')
+            ->select('id', 'title', 'amount', 'sslc_amount', 'plustwo_amount', 'b2b_amount', 'is_active')
             ->orderBy('is_active', 'desc')
             ->orderBy('title')
             ->get();

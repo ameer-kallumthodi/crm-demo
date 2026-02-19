@@ -52,6 +52,16 @@
 
         <div class="col-lg-6">
             <div class="p-1">
+                <label for="b2b_amount" class="form-label">B2B Amount</label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" step="0.01" min="0" class="form-control" name="b2b_amount" id="b2b_amount" value="{{ old('b2b_amount') }}" placeholder="Enter B2B amount">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="p-1">
                 <label for="is_active" class="form-label">Status</label>
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" name="is_active" id="is_active" checked>

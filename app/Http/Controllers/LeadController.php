@@ -4260,19 +4260,25 @@ class LeadController extends Controller
 
         // Determine batch amount based on course rules
         if ($batch) {
-            if ($lead->course_id == 16) {
-                $normalizedClass = $studentClass ? strtolower($studentClass) : null;
-                if ($normalizedClass === 'sslc' && !is_null($batch->sslc_amount)) {
-                    $batchAmount = (float) $batch->sslc_amount;
-                    $batchAmountLabel = 'SSLC Amount';
-                } elseif (!is_null($batch->plustwo_amount)) {
-                    $batchAmount = (float) $batch->plustwo_amount;
-                    $batchAmountLabel = 'Plus Two Amount';
+            // If B2B lead, prefer batch B2B pricing (fallback to normal rules if not set)
+            if ((int) ($lead->is_b2b ?? 0) === 1 && !is_null($batch->b2b_amount)) {
+                $batchAmount = (float) $batch->b2b_amount;
+                $batchAmountLabel = 'B2B Amount';
+            } else {
+                if ($lead->course_id == 16) {
+                    $normalizedClass = $studentClass ? strtolower($studentClass) : null;
+                    if ($normalizedClass === 'sslc' && !is_null($batch->sslc_amount)) {
+                        $batchAmount = (float) $batch->sslc_amount;
+                        $batchAmountLabel = 'SSLC Amount';
+                    } elseif (!is_null($batch->plustwo_amount)) {
+                        $batchAmount = (float) $batch->plustwo_amount;
+                        $batchAmountLabel = 'Plus Two Amount';
+                    } else {
+                        $batchAmount = (float) ($batch->amount ?? 0);
+                    }
                 } else {
                     $batchAmount = (float) ($batch->amount ?? 0);
                 }
-            } else {
-                $batchAmount = (float) ($batch->amount ?? 0);
             }
         }
 
