@@ -89,6 +89,7 @@
                                 <th>Phone</th>
                                 <th>WhatsApp</th>
                                 <th>Admission Batch</th>
+                                <th>Feedback Count</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -128,7 +129,8 @@
                 { data: 4, name: 'phone' },      // Phone
                 { data: 5, name: 'leadDetail.whatsapp_number' }, // WhatsApp
                 { data: 6, name: 'admissionBatch.title' }, // Admission Batch
-                { data: 7, orderable: false, searchable: false } // Action
+                { data: 7, name: 'support_feedback_history_count', orderable: false, searchable: false }, // Feedback Count
+                { data: 8, orderable: false, searchable: false } // Action
             ],
             order: [[1, 'desc']],
             language: {

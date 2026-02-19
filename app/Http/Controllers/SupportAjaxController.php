@@ -25,13 +25,16 @@ class SupportAjaxController extends Controller
     public function getData(Request $request)
     {
         // 1. Base Query
-        $query = ConvertedLead::with([
+        $query = ConvertedLead::select('converted_leads.*')
+        ->with([
             'lead',
             'leadDetail',
             'supportDetails',
             'admissionBatch',
             'studentDetails'
-        ])->where('is_academic_verified', 1);
+        ])
+        ->withCount('supportFeedbackHistory')
+        ->where('converted_leads.is_academic_verified', 1);
 
         // 2. Role-based Filtering
         $currentUser = AuthHelper::getCurrentUser();
@@ -59,24 +62,24 @@ class SupportAjaxController extends Controller
 
         // 3. Apply Filters
         if ($request->filled('course_id')) {
-            $query->where('course_id', $request->course_id);
+            $query->where('converted_leads.course_id', $request->course_id);
         }
         if ($request->filled('batch_id')) {
-            $query->where('batch_id', $request->batch_id);
+            $query->where('converted_leads.batch_id', $request->batch_id);
         }
         if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
+            $query->whereDate('converted_leads.created_at', '>=', $request->date_from);
         }
         if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            $query->whereDate('converted_leads.created_at', '<=', $request->date_to);
         }
 
         // Search Filter
         if ($request->filled('search.value')) {
             $search = $request->input('search.value');
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
+                $q->where('converted_leads.name', 'like', "%{$search}%")
+                    ->orWhere('converted_leads.phone', 'like', "%{$search}%")
                     ->orWhereHas('studentDetails', function ($subQ) use ($search) {
                     $subQ->where('application_number', 'like', "%{$search}%")
                         ->orWhere('register_number', 'like', "%{$search}%");
@@ -85,34 +88,40 @@ class SupportAjaxController extends Controller
             });
         }
 
-        // 4. Sorting
+        // 4. Sorting - Default sort by last_feedback (most recent feedback first)
+        // Join with support details to enable sorting by last_feedback
+        $query->leftJoin('converted_student_support_details', 'converted_leads.id', '=', 'converted_student_support_details.converted_student_id');
+        
         $columns = [
-            0 => 'created_at',
-            1 => 'name',
-            2 => 'is_b2b',
-            3 => 'phone',
+            0 => 'converted_leads.created_at',
+            1 => 'converted_leads.name',
+            2 => 'converted_leads.is_b2b',
+            3 => 'converted_leads.phone',
             4 => 'whatsapp', // mapped manually
             5 => 'batch_id', // approximation
-            6 => 'id'
+            6 => 'support_feedback_history_count', // feedback count
+            7 => 'converted_leads.id'
         ];
 
-        $orderColumn = 'created_at';
+        $orderColumn = 'converted_student_support_details.last_feedback';
         $orderDir = 'desc';
 
         if ($request->has('order')) {
             $order = $request->input('order.0');
             $columnIdx = $order['column'];
             $dir = $order['dir'];
-            $columnName = $columns[$columnIdx] ?? 'created_at';
+            $columnName = $columns[$columnIdx] ?? 'converted_leads.created_at';
 
             // Only sort by direct columns on the main table or simple relations
-            if (in_array($columnName, ['created_at', 'name', 'is_b2b', 'phone'])) {
+            if (in_array($columnName, ['converted_leads.created_at', 'converted_leads.name', 'converted_leads.is_b2b', 'converted_leads.phone'])) {
                 $orderColumn = $columnName;
                 $orderDir = $dir;
             }
         }
 
-        $query->orderBy($orderColumn, $orderDir);
+        // Primary sort by last_feedback (nulls last), secondary sort by selected column
+        $query->orderByRaw('converted_student_support_details.last_feedback IS NULL')
+              ->orderBy($orderColumn, $orderDir);
 
         // 5. Pagination
         $filteredRecords = $query->count();
@@ -153,6 +162,8 @@ class SupportAjaxController extends Controller
             ';
 
             $admissionBatchTitle = $row->admissionBatch ? $row->admissionBatch->title : 'N/A';
+            
+            $feedbackCount = $row->support_feedback_history_count ?? 0;
 
             $formattedData[] = [
                 $slNo, // Sl No
@@ -162,6 +173,7 @@ class SupportAjaxController extends Controller
                 $phone,
                 $whatsapp,
                 $admissionBatchTitle,
+                $feedbackCount,
                 $action
             ];
         }
