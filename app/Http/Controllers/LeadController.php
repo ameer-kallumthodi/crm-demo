@@ -4260,10 +4260,10 @@ class LeadController extends Controller
 
         // Determine batch amount based on course rules
         if ($batch) {
-            // If B2B lead, prefer batch B2B pricing (fallback to normal rules if not set)
-            if ((int) ($lead->is_b2b ?? 0) === 1 && !is_null($batch->b2b_amount)) {
-                $batchAmount = (float) $batch->b2b_amount;
-                $batchAmountLabel = 'B2B Amount';
+            // B2B lead: use only batch B2B amount (do not show in-house/other amounts)
+            if ((int) ($lead->is_b2b ?? 0) === 1) {
+                $batchAmount = $batch->b2b_amount !== null ? (float) $batch->b2b_amount : 0.0;
+                $batchAmountLabel = $batch->b2b_amount !== null ? 'B2B Amount' : 'B2B Amount (not set)';
             } else {
                 if ($lead->course_id == 16) {
                     $normalizedClass = $studentClass ? strtolower($studentClass) : null;
@@ -4284,7 +4284,14 @@ class LeadController extends Controller
 
         $additionalAmount += (float) $universityAmount;
 
-        $totalAmount = $courseAmount + $batchAmount + $additionalAmount;
+        // B2B: total is only the batch B2B amount (no course amount)
+        if ((int) ($lead->is_b2b ?? 0) === 1) {
+            $courseAmount = 0.0;
+            $additionalAmount = 0.0;
+            $totalAmount = $batchAmount;
+        } else {
+            $totalAmount = $courseAmount + $batchAmount + $additionalAmount;
+        }
 
         return view('admin.leads.convert-modal', compact(
             'lead',

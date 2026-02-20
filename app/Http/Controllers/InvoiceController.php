@@ -285,16 +285,15 @@ class InvoiceController extends Controller
                 }
             } else {
                 // Calculate total amount
-                $totalAmount = (float) ($course->amount ?? 0);
                 $batchAmount = 0.0;
 
                 // Determine batch and add batch amount if available
                 if ($batchId) {
                     $batch = Batch::find($batchId);
                     if ($batch) {
-                        // If B2B student, prefer batch B2B pricing (fallback to normal rules if not set)
-                        if ((int) ($student->is_b2b ?? 0) === 1 && !is_null($batch->b2b_amount)) {
-                            $batchAmount = (float) $batch->b2b_amount;
+                        // B2B student: use only batch B2B amount (do not use in-house amount)
+                        if ((int) ($student->is_b2b ?? 0) === 1) {
+                            $batchAmount = $batch->b2b_amount !== null ? (float) $batch->b2b_amount : 0.0;
                         } else {
                             if ($courseId == 16) {
                                 $studentClass = optional($student->leadDetail)->class;
@@ -313,20 +312,25 @@ class InvoiceController extends Controller
                         }
                     }
                 }
-                $totalAmount += $batchAmount;
-                
-                // Add university amount for UG/PG course (course_id = 9)
-                if ($courseId == 9 && $student->leadDetail) {
-                    $courseType = $student->leadDetail->course_type;
-                    $universityId = $student->leadDetail->university_id;
-                    
-                    if ($universityId && $courseType) {
-                        $university = \App\Models\University::find($universityId);
-                        if ($university) {
-                            if ($courseType === 'UG') {
-                                $totalAmount += $university->ug_amount ?? 0;
-                            } elseif ($courseType === 'PG') {
-                                $totalAmount += $university->pg_amount ?? 0;
+
+                // B2B: total is only the batch B2B amount (no course amount)
+                if ((int) ($student->is_b2b ?? 0) === 1) {
+                    $totalAmount = $batchAmount;
+                } else {
+                    $totalAmount = (float) ($course->amount ?? 0) + $batchAmount;
+                    // Add university amount for UG/PG course (course_id = 9)
+                    if ($courseId == 9 && $student->leadDetail) {
+                        $courseType = $student->leadDetail->course_type;
+                        $universityId = $student->leadDetail->university_id;
+
+                        if ($universityId && $courseType) {
+                            $university = \App\Models\University::find($universityId);
+                            if ($university) {
+                                if ($courseType === 'UG') {
+                                    $totalAmount += $university->ug_amount ?? 0;
+                                } elseif ($courseType === 'PG') {
+                                    $totalAmount += $university->pg_amount ?? 0;
+                                }
                             }
                         }
                     }
@@ -493,10 +497,10 @@ class InvoiceController extends Controller
             $leadDetail = \App\Models\LeadDetail::where('lead_id', $student->lead_id)->first();
         }
 
-        // Determine batch amount (B2B pricing overrides; else class-specific pricing for GMVSS (course 16))
+        // B2B student: use only batch B2B amount; otherwise class-specific pricing for GMVSS (course 16)
         if ($batch) {
-            if ((int) ($student->is_b2b ?? 0) === 1 && !is_null($batch->b2b_amount)) {
-                $batchAmount = (float) $batch->b2b_amount;
+            if ((int) ($student->is_b2b ?? 0) === 1) {
+                $batchAmount = $batch->b2b_amount !== null ? (float) $batch->b2b_amount : 0.0;
             } elseif ($course && (int) $course->id === 16 && $leadDetail) {
                 $studentClass = strtolower($leadDetail->class ?? '');
                 if ($studentClass === 'sslc' && !is_null($batch->sslc_amount)) {
@@ -527,7 +531,12 @@ class InvoiceController extends Controller
             }
         }
 
-        $totalAmount = $courseAmount + $batchAmount + $universityAmount;
+        // B2B: total is only the batch B2B amount (no course or university amount)
+        if ((int) ($student->is_b2b ?? 0) === 1) {
+            $totalAmount = $batchAmount;
+        } else {
+            $totalAmount = $courseAmount + $batchAmount + $universityAmount;
+        }
 
         return $totalAmount;
     }
