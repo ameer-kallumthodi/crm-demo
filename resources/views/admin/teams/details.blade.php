@@ -54,8 +54,8 @@
                         ]) !!}
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="fw-bold text-muted small">Registration Number</label>
-                        {!! renderInlineEdit($detail, 'registration_number', 'text') !!}
+                        <label class="fw-bold text-muted small">Telephone</label>
+                        {!! renderInlineEdit($detail, 'telephone', 'text') !!}
                     </div>
                 </div>
 
@@ -204,6 +204,136 @@
                     </form>
                 </div>
 
+                <hr class="my-4">
+                <h5 class="mb-4 text-primary">OFFICE INFORMATION RECORD</h5>
+
+                <h6 class="mb-3 text-secondary">1. Partner Identification Details - only editable</h6>
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">B2B Partner ID</label>
+                        {!! renderInlineEdit($detail, 'b2b_partner_id', 'text') !!}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">B2B Code</label>
+                        {!! renderInlineEdit($detail, 'b2b_code', 'text') !!}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Date of Joining</label>
+                        {!! renderInlineEdit($detail, 'date_of_joining', 'date') !!}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Partner Status</label>
+                        {!! renderInlineEdit($detail, 'partner_status', 'select', [
+                            'Active' => 'Active',
+                            'Inactive' => 'Inactive',
+                            'Suspended' => 'Suspended'
+                        ]) !!}
+                    </div>
+                </div>
+
+                <h6 class="mb-3 text-secondary">2. Assigned Officer Details</h6>
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">B2B Officer Name</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->b2b_officer_name ?: 'Anshad Tk' }}</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Employee ID</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->employee_id ?: 'FTM010' }}</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Designation</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->designation ?: 'B2B Manager' }}</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Official Contact Number</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->official_contact_number ?: '+91 95679 81443' }}</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">WhatsApp Business Number</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->whatsapp_business_number ?: '+91 95679 81443' }}</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Official Email ID</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->official_email_id ?: 'btob@natdemy.com' }}</div>
+                    </div>
+                </div>
+
+                <h6 class="mb-3 text-secondary">3. Office Address</h6>
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Building Name / Floor / Room Number</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->building_name ?: 'Nisa Pre College of Arts' }}</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Street / Road Name</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->street_name ?: 'Murikkal Road' }}</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Locality / Area Name</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->locality_name ?: 'Palathingal' }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">City</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->city ?: 'Parappanangadi' }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">PIN Code</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->pin_code ?: '676303' }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">District</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->district ?: 'Malappuram' }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">State</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->state ?: 'Kerala' }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Country</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->country ?: 'India' }}</div>
+                    </div>
+                </div>
+
+                <h6 class="mb-3 text-secondary">4. Operational Schedule</h6>
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Working Days</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->working_days ?: 'Monday – Saturday' }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Office Hours</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->office_hours ?: '09:00 AM – 05:00 PM' }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Break Time</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->break_time ?: '01:15 PM – 02:00 PM' }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Public Holiday Policy</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->holiday_policy ?: 'As per Head Office Circular' }}</div>
+                    </div>
+                </div>
+
+                <h6 class="mb-3 text-secondary">6. Banking & Payment Details</h6>
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Account Holder Name</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->account_holder_name ?: 'FUTURE AND TREE EDU OLUTION PVT LTD' }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Bank Name</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->bank_name ?: 'Axis Bank, Kallai Road, Kozhikode' }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">Account Number</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->account_number ?: '921020041902527' }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold text-muted small d-block mb-1">IFSC Code</label>
+                        <div class="p-2 bg-light rounded">{{ $detail->ifsc_code ?: 'UTIB0001908' }}</div>
+                    </div>
+                </div>
 
             </div>
         </div>

@@ -160,8 +160,8 @@
                     </div>
 
                     <div class="form-group mb-3">
-                        <label class="form-label">Registration Number <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="registration_number" required placeholder="As issued by the competent regulatory authority">
+                        <label class="form-label">Telephone</label>
+                        <input type="text" class="form-control" name="telephone" placeholder="Telephone number">
                     </div>
                 </div>
 

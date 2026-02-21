@@ -46,6 +46,10 @@
                                 <th>Name</th>
                                 <th>Department</th>
                                 <th>Type</th>
+                                <th>B2B Partner ID</th>
+                                <th>B2B Code</th>
+                                <th>Date of Joining</th>
+                                <th>Partner Status</th>
                                 <th>Description</th>
                                 <th>Team Lead</th>
                                 <th>Members</th>
@@ -84,6 +88,19 @@
                                         <span class="badge bg-secondary text-white">In house</span>
                                     @endif
                                 </td>
+                                <td>{{ $team->detail->b2b_partner_id ?? 'N/A' }}</td>
+                                <td>{{ $team->detail->b2b_code ?? 'N/A' }}</td>
+                                <td>{{ $team->detail->date_of_joining ?? 'N/A' }}</td>
+                                <td>
+                                    @php
+                                        $status = $team->detail->partner_status ?? 'N/A';
+                                        $badgeClass = 'bg-light text-muted';
+                                        if($status == 'Active') $badgeClass = 'bg-success text-white';
+                                        elseif($status == 'Inactive') $badgeClass = 'bg-warning text-dark';
+                                        elseif($status == 'Suspended') $badgeClass = 'bg-danger text-white';
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">{{ $status }}</span>
+                                </td>
                                 <td>
                                     <span class="text-muted">{{ $team->description ?? 'No description' }}</span>
                                 </td>
@@ -112,6 +129,10 @@
                                 </td>
                                 <td>
                                     @if($team->is_b2b)
+                                    <a href="javascript:void(0);" class="btn btn-outline-secondary btn-sm shadow-sm px-3 me-1" title="Update Terms and Conditions"
+                                        onclick="show_large_modal('{{ route('admin.teams.terms-and-conditions', $team->id) }}', 'Terms and Conditions - {{ addslashes(str_replace(["\r","\n"], '', $team->name)) }}')">
+                                        <i class="ti ti-file-text"></i> Terms
+                                    </a>
                                     <a href="{{ route('public.team.register', $team->id) }}" target="_blank" class="btn btn-primary btn-sm shadow-sm px-3 me-1" title="Public Registration Form">
                                         <i class="ti ti-external-link"></i> Public Form
                                     </a>

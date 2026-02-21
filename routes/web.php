@@ -454,6 +454,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/teams/{id}/details', [TeamController::class, 'showDetails'])->name('teams.details');
         Route::post('/teams/{id}/update-details', [TeamController::class, 'updateDetails'])->name('teams.update-details');
         Route::get('/teams/{id}/export-details-pdf', [TeamController::class, 'exportDetailsPdf'])->name('teams.export-details-pdf');
+        Route::get('/teams/{id}/terms-and-conditions', [TeamController::class, 'termsAndConditions'])->name('teams.terms-and-conditions');
+        Route::post('/teams/{id}/update-terms-and-conditions', [TeamController::class, 'updateTermsAndConditions'])->name('teams.update-terms-and-conditions');
 
         // B2B Services Routes
         Route::resource('b2b-services', App\Http\Controllers\B2bServiceController::class)->except(['create', 'edit']);

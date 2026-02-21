@@ -130,8 +130,8 @@
         </div>
         <div class="row">
             <div class="col">
-                <span class="label">Registration Number</span>
-                <span class="value">{{ $detail->registration_number ?? 'N/A' }}</span>
+                <span class="label">Telephone</span>
+                <span class="value">{{ $detail->telephone ?? 'N/A' }}</span>
             </div>
         </div>
     </div>
@@ -272,6 +272,166 @@
         @else
             <p style="padding: 10px; color: #666; font-style: italic;">No course preferences found.</p>
         @endif
+    </div>
+
+    <div class="page-break"></div>
+    <div class="header">
+        <h1>Office Information Record</h1>
+    </div>
+
+    <!-- Partner Identification Details -->
+    <div class="section">
+        <div class="section-title">1. Partner Identification Details</div>
+        <div class="row">
+            <div class="col">
+                <span class="label">B2B Partner ID</span>
+                <span class="value">{{ $detail->b2b_partner_id ?? 'N/A' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">B2B Code</span>
+                <span class="value">{{ $detail->b2b_code ?? 'N/A' }}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <span class="label">Date of Joining</span>
+                <span class="value">{{ $detail->date_of_joining ?? 'N/A' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">Partner Status</span>
+                <span class="value">{{ $detail->partner_status ?? 'N/A' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assigned Officer Details -->
+    <div class="section">
+        <div class="section-title">2. Assigned Officer Details</div>
+        <div class="row">
+            <div class="col">
+                <span class="label">B2B Officer Name</span>
+                <span class="value">{{ $detail->b2b_officer_name ?: 'Anshad Tk' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">Employee ID</span>
+                <span class="value">{{ $detail->employee_id ?: 'FTM010' }}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <span class="label">Designation</span>
+                <span class="value">{{ $detail->designation ?: 'B2B Manager' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">Official Contact Number</span>
+                <span class="value">{{ $detail->official_contact_number ?: '+91 95679 81443' }}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <span class="label">WhatsApp Business Number</span>
+                <span class="value">{{ $detail->whatsapp_business_number ?: '+91 95679 81443' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">Official Email ID</span>
+                <span class="value">{{ $detail->official_email_id ?: 'btob@natdemy.com' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Office Address -->
+    <div class="section">
+        <div class="section-title">3. Office Address</div>
+        <div class="row">
+            <div class="col">
+                <span class="label">Building Name / Floor / Room Number</span>
+                <span class="value">{{ $detail->building_name ?: 'Nisa Pre College of Arts' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">Street / Road Name</span>
+                <span class="value">{{ $detail->street_name ?: 'Murikkal Road' }}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <span class="label">Locality / Area Name</span>
+                <span class="value">{{ $detail->locality_name ?: 'Palathingal' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">City</span>
+                <span class="value">{{ $detail->city ?: 'Parappanangadi' }}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <span class="label">PIN Code</span>
+                <span class="value">{{ $detail->pin_code ?: '676303' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">District</span>
+                <span class="value">{{ $detail->district ?: 'Malappuram' }}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <span class="label">State</span>
+                <span class="value">{{ $detail->state ?: 'Kerala' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">Country</span>
+                <span class="value">{{ $detail->country ?: 'India' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Operational Schedule -->
+    <div class="section">
+        <div class="section-title">4. Operational Schedule</div>
+        <div class="row">
+            <div class="col">
+                <span class="label">Working Days</span>
+                <span class="value">{{ $detail->working_days ?: 'Monday – Saturday' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">Office Hours</span>
+                <span class="value">{{ $detail->office_hours ?: '09:00 AM – 05:00 PM' }}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <span class="label">Break Time</span>
+                <span class="value">{{ $detail->break_time ?: '01:15 PM – 02:00 PM' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">Public Holiday Policy</span>
+                <span class="value">{{ $detail->holiday_policy ?: 'As per Head Office Circular' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banking & Payment Details -->
+    <div class="section">
+        <div class="section-title">6. Banking & Payment Details</div>
+        <div class="row">
+            <div class="col">
+                <span class="label">Account Holder Name</span>
+                <span class="value">{{ $detail->account_holder_name ?: 'FUTURE AND TREE EDU OLUTION PVT LTD' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">Bank Name</span>
+                <span class="value">{{ $detail->bank_name ?: 'Axis Bank, Kallai Road, Kozhikode' }}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <span class="label">Account Number</span>
+                <span class="value">{{ $detail->account_number ?: '921020041902527' }}</span>
+            </div>
+            <div class="col">
+                <span class="label">IFSC Code</span>
+                <span class="value">{{ $detail->ifsc_code ?: 'UTIB0001908' }}</span>
+            </div>
+        </div>
     </div>
 
     <div class="footer">

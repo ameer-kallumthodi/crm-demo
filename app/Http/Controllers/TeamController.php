@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Team;
+use App\Models\TeamDetail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Helpers\RoleHelper;
@@ -381,11 +382,16 @@ class TeamController extends Controller
 
         // Allowed fields to be updated
         $allowedFields = [
-            'legal_name', 'institution_category', 'registration_number',
+            'legal_name', 'institution_category', 'telephone',
             'building_name', 'street_name', 'locality_name', 'city', 'district', 'state', 'pin_code', 'country',
             'comm_officer_name', 'comm_officer_mobile', 'comm_officer_alt_mobile', 'comm_officer_whatsapp', 'comm_officer_email',
             'auth_person_name', 'auth_person_designation', 'auth_person_mobile', 'auth_person_email',
-            'interested_courses_details'
+            'interested_courses_details',
+            'b2b_partner_id', 'b2b_code', 'date_of_joining', 'partner_status',
+            'b2b_officer_name', 'employee_id', 'designation', 'official_contact_number', 'whatsapp_business_number', 'official_email_id',
+            'working_days', 'office_hours', 'break_time', 'holiday_policy',
+            'account_holder_name', 'bank_name', 'account_number', 'ifsc_code',
+            'terms_and_conditions'
         ];
 
         if (!in_array($field, $allowedFields)) {
@@ -454,5 +460,57 @@ class TeamController extends Controller
 
         $pdf = \PDF::loadView('admin.teams.details_pdf', compact('team', 'detail', 'interestedCourses'));
         return $pdf->download('team_details_' . $team->id . '.pdf');
+    }
+
+    public function termsAndConditions($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $team = Team::with('detail')->findOrFail($id);
+
+        if (!$team->is_b2b) {
+            abort(404);
+        }
+
+        $termsAndConditions = $team->detail?->terms_and_conditions ?? '';
+
+        return view('admin.teams.terms-and-conditions', compact('team', 'termsAndConditions'));
+    }
+
+    public function updateTermsAndConditions(Request $request, $id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $team = Team::with('detail')->findOrFail($id);
+
+        if (!$team->is_b2b) {
+            return response()->json(['error' => 'Invalid team.'], 404);
+        }
+
+        $request->validate([
+            'terms_and_conditions' => 'nullable|string',
+        ]);
+
+        $detail = $team->detail;
+
+        if (!$detail) {
+            $detail = TeamDetail::create([
+                'team_id' => $team->id,
+                'terms_and_conditions' => $request->terms_and_conditions,
+            ]);
+        } else {
+            $detail->update([
+                'terms_and_conditions' => $request->terms_and_conditions,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Terms and conditions updated successfully.',
+        ]);
     }
 }

@@ -43,7 +43,7 @@ class TeamRegistrationController extends Controller
         $validated = $request->validate([
             'legal_name' => 'required|string|max:255',
             'institution_category' => 'required|string|max:255',
-            'registration_number' => 'required|string|max:255',
+            'telephone' => 'nullable|string|max:255',
             
             'building_name' => 'required|string|max:255',
             'street_name' => 'required|string|max:255',
