@@ -207,11 +207,14 @@ class OnlineTeachingFacultyController extends Controller
 
         // If user is HOD, filter by their department
         if (RoleHelper::is_hod()) {
-            $user = RoleHelper::is_logged_in() ?\App\Helpers\AuthHelper::getCurrentUser() : null;
+            $user = RoleHelper::is_logged_in() ? \App\Helpers\AuthHelper::getCurrentUser() : null;
             if ($user && $user->department_id) {
                 $query->where('department_id', $user->department_id);
             }
         }
+
+        // recordsTotal = total count with same role filter (no search)
+        $totalRecords = (clone $query)->count();
 
         // DataTables global search
         if ($request->filled('search') && is_array($request->search) && !empty($request->search['value'])) {
@@ -224,7 +227,6 @@ class OnlineTeachingFacultyController extends Controller
             });
         }
 
-        $totalRecords = OnlineTeachingFaculty::count();
         $filteredCount = $query->count();
 
         // Column mapping for ordering (must match the index blade columns order)
@@ -262,6 +264,9 @@ class OnlineTeachingFacultyController extends Controller
 
         $start = (int)$request->get('start', 0);
         $length = (int)$request->get('length', 25);
+        if ($length < 0) {
+            $length = $filteredCount;
+        }
         $rows = $query->skip($start)->take($length)->get();
 
         // Load active departments for inline editing

@@ -23,6 +23,7 @@
 </div>
 <!-- [ breadcrumb ] end -->
 
+<!-- [ Main Content ] start -->
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -34,13 +35,8 @@
                 </button>
             </div>
             <div class="card-body">
-                <div
-                    id="jsOnlineTeachingFacultyConfig"
-                    data-data-url="{{ route('admin.online-teaching-faculties.data') }}"
-                    data-columns='@json($columns)'
-                ></div>
                 <div class="table-responsive">
-                    <table class="table table-striped table-bordered w-100" id="onlineTeachingFacultyTable">
+                    <table class="table table-hover" id="onlineTeachingFacultyTable" style="width:100%">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -68,31 +64,47 @@
                                 <th>Created At</th>
                             </tr>
                         </thead>
-                        <tbody></tbody>
+                        <tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<!-- [ Main Content ] end -->
 
 @push('styles')
 <style>
-    /* Table cell styling */
+    /* Faculty table - same pattern as other admin DataTables: proper column widths, no collapsing */
+    .card-body .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #onlineTeachingFacultyTable {
+        width: max-content !important;
+        min-width: 100%;
+        margin-bottom: 0;
+        border-collapse: collapse;
+    }
+
     #onlineTeachingFacultyTable thead th {
-        white-space: nowrap;
         background: #f8f9fa;
         font-weight: 600;
         font-size: 12px;
-        padding: 12px 8px;
+        padding: 10px 8px;
         vertical-align: middle;
+        white-space: nowrap;
+        border-bottom: 2px solid #dee2e6;
+        text-align: left;
     }
 
     #onlineTeachingFacultyTable tbody td {
-        white-space: nowrap;
+        font-size: 12px;
+        padding: 8px;
         vertical-align: middle;
-        padding: 10px 8px;
-        font-size: 13px;
+        border-bottom: 1px solid #eee;
     }
 
     #onlineTeachingFacultyTable tbody tr:hover {
@@ -101,82 +113,50 @@
 
     #onlineTeachingFacultyTable td .display-value {
         display: inline-block;
-        max-width: 200px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        max-width: 100%;
         vertical-align: middle;
     }
 
-    /* Fixed column widths for better alignment */
-    #onlineTeachingFacultyTable thead th:nth-child(1),
-    #onlineTeachingFacultyTable tbody td:nth-child(1) { min-width: 50px; max-width: 60px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(2),
-    #onlineTeachingFacultyTable tbody td:nth-child(2) { min-width: 80px; max-width: 100px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(3),
-    #onlineTeachingFacultyTable tbody td:nth-child(3) { min-width: 180px; max-width: 220px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(4),
-    #onlineTeachingFacultyTable tbody td:nth-child(4) { min-width: 120px; max-width: 150px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(5),
-    #onlineTeachingFacultyTable tbody td:nth-child(5) { min-width: 180px; max-width: 220px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(6),
-    #onlineTeachingFacultyTable tbody td:nth-child(6) { min-width: 140px; max-width: 160px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(7),
-    #onlineTeachingFacultyTable tbody td:nth-child(7) { min-width: 80px; max-width: 100px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(8),
-    #onlineTeachingFacultyTable tbody td:nth-child(8) { min-width: 100px; max-width: 120px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(9),
-    #onlineTeachingFacultyTable tbody td:nth-child(9) { min-width: 100px; max-width: 120px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(10),
-    #onlineTeachingFacultyTable tbody td:nth-child(10) { min-width: 120px; max-width: 140px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(11),
-    #onlineTeachingFacultyTable tbody td:nth-child(11) { min-width: 140px; max-width: 160px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(12),
-    #onlineTeachingFacultyTable tbody td:nth-child(12) { min-width: 130px; max-width: 150px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(13),
-    #onlineTeachingFacultyTable tbody td:nth-child(13) { min-width: 120px; max-width: 140px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(14),
-    #onlineTeachingFacultyTable tbody td:nth-child(14) { min-width: 140px; max-width: 160px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(15),
-    #onlineTeachingFacultyTable tbody td:nth-child(15) { min-width: 120px; max-width: 140px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(16),
-    #onlineTeachingFacultyTable tbody td:nth-child(16) { min-width: 100px; max-width: 120px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(17),
-    #onlineTeachingFacultyTable tbody td:nth-child(17) { min-width: 110px; max-width: 130px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(18),
-    #onlineTeachingFacultyTable tbody td:nth-child(18) { min-width: 120px; max-width: 140px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(19),
-    #onlineTeachingFacultyTable tbody td:nth-child(19) { min-width: 110px; max-width: 130px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(20),
-    #onlineTeachingFacultyTable tbody td:nth-child(20) { min-width: 100px; max-width: 120px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(21),
-    #onlineTeachingFacultyTable tbody td:nth-child(21) { min-width: 180px; max-width: 220px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(22),
-    #onlineTeachingFacultyTable tbody td:nth-child(22) { min-width: 120px; max-width: 140px; }
-    
-    #onlineTeachingFacultyTable thead th:nth-child(23),
-    #onlineTeachingFacultyTable tbody td:nth-child(23) { min-width: 140px; max-width: 160px; }
+    /* Column min-widths so fields don't collapse - each column has room to show full content */
+    #onlineTeachingFacultyTable th:nth-child(1),  #onlineTeachingFacultyTable td:nth-child(1)  { min-width: 40px; }   /* # */
+    #onlineTeachingFacultyTable th:nth-child(2),  #onlineTeachingFacultyTable td:nth-child(2)  { min-width: 155px; }  /* Actions */
+    #onlineTeachingFacultyTable th:nth-child(3),  #onlineTeachingFacultyTable td:nth-child(3)  { min-width: 120px; }  /* Full Name */
+    #onlineTeachingFacultyTable th:nth-child(4),  #onlineTeachingFacultyTable td:nth-child(4)  { min-width: 115px; }  /* Primary Mobile */
+    #onlineTeachingFacultyTable th:nth-child(5),  #onlineTeachingFacultyTable td:nth-child(5)  { min-width: 160px; }  /* Official Email */
+    #onlineTeachingFacultyTable th:nth-child(6),  #onlineTeachingFacultyTable td:nth-child(6)  { min-width: 100px; }  /* Department */
+    #onlineTeachingFacultyTable th:nth-child(7),  #onlineTeachingFacultyTable td:nth-child(7)  { min-width: 70px; }   /* Gender */
+    #onlineTeachingFacultyTable th:nth-child(8),  #onlineTeachingFacultyTable td:nth-child(8)  { min-width: 100px; }  /* DOB */
+    #onlineTeachingFacultyTable th:nth-child(9),  #onlineTeachingFacultyTable td:nth-child(9)  { min-width: 95px; }   /* Teaching Exp. */
+    #onlineTeachingFacultyTable th:nth-child(10), #onlineTeachingFacultyTable td:nth-child(10) { min-width: 85px; }   /* Faculty ID */
+    #onlineTeachingFacultyTable th:nth-child(11), #onlineTeachingFacultyTable td:nth-child(11) { min-width: 100px; }  /* Class Level */
+    #onlineTeachingFacultyTable th:nth-child(12), #onlineTeachingFacultyTable td:nth-child(12) { min-width: 115px; }  /* Employment Type */
+    #onlineTeachingFacultyTable th:nth-child(13), #onlineTeachingFacultyTable td:nth-child(13) { min-width: 110px; }  /* Work Schedule */
+    #onlineTeachingFacultyTable th:nth-child(14), #onlineTeachingFacultyTable td:nth-child(14) { min-width: 120px; }  /* Candidate Status */
+    #onlineTeachingFacultyTable th:nth-child(15), #onlineTeachingFacultyTable td:nth-child(15) { min-width: 85px; }   /* Platform */
+    #onlineTeachingFacultyTable th:nth-child(16), #onlineTeachingFacultyTable td:nth-child(16) { min-width: 85px; }   /* Tech Ready */
+    #onlineTeachingFacultyTable th:nth-child(17), #onlineTeachingFacultyTable td:nth-child(17) { min-width: 95px; }   /* Demo Date */
+    #onlineTeachingFacultyTable th:nth-child(18), #onlineTeachingFacultyTable td:nth-child(18) { min-width: 95px; }   /* Demo By */
+    #onlineTeachingFacultyTable th:nth-child(19), #onlineTeachingFacultyTable td:nth-child(19) { min-width: 100px; }  /* Offer Issued */
+    #onlineTeachingFacultyTable th:nth-child(20), #onlineTeachingFacultyTable td:nth-child(20) { min-width: 85px; }   /* Joining */
+    #onlineTeachingFacultyTable th:nth-child(21), #onlineTeachingFacultyTable td:nth-child(21) { min-width: 180px; }  /* Remarks */
+    #onlineTeachingFacultyTable th:nth-child(22), #onlineTeachingFacultyTable td:nth-child(22) { min-width: 100px; }  /* Offer Letter */
+    #onlineTeachingFacultyTable th:nth-child(23), #onlineTeachingFacultyTable td:nth-child(23) { min-width: 115px; }  /* Created At */
+
+    /* Actions - buttons stay on one line */
+    #onlineTeachingFacultyTable td:nth-child(2) .btn-group {
+        display: inline-flex;
+        flex-wrap: nowrap;
+        gap: 4px;
+    }
+    #onlineTeachingFacultyTable td:nth-child(2) .btn-group .btn {
+        flex-shrink: 0;
+    }
+
+    /* Remarks - full text can wrap */
+    #onlineTeachingFacultyTable td:nth-child(21) .display-value {
+        white-space: normal;
+        word-wrap: break-word;
+    }
 
     .spin {
         animation: spin 1s linear infinite;
@@ -281,16 +261,65 @@
         padding: 2px 8px;
     }
 
-    /* Responsive table wrapper */
     .table-responsive {
         border-radius: 6px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 </style>
 @endpush
 
 @push('scripts')
-    <script src="{{ asset('assets/js/online-teaching-faculties.js') }}"></script>
+<script>
+$(document).ready(function() {
+    var dataUrl = @json(route('admin.online-teaching-faculties.data'));
+    var columnsDef = @json($columns);
+
+    if ($.fn.DataTable && $.fn.DataTable.isDataTable('#onlineTeachingFacultyTable')) {
+        $('#onlineTeachingFacultyTable').DataTable().destroy();
+        $('#onlineTeachingFacultyTable tbody').empty();
+    }
+
+    var table = $('#onlineTeachingFacultyTable').DataTable({
+        destroy: true,
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: dataUrl,
+            type: 'GET',
+            error: function(xhr) {
+                if (typeof window.showToast === 'function') {
+                    window.showToast('Error loading data. Please try again.', 'error');
+                }
+            }
+        },
+        columns: columnsDef,
+        order: [[22, 'desc']],
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+        scrollX: false,
+        autoWidth: false,
+        dom: '<"row mb-2"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
+        language: {
+            processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>',
+            emptyTable: 'No faculty records found',
+            zeroRecords: 'No matching records found',
+            lengthMenu: 'Show _MENU_ entries',
+            info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+            infoEmpty: 'Showing 0 to 0 of 0 entries',
+            infoFiltered: '(filtered from _MAX_ total entries)',
+            search: 'Search:',
+            paginate: {
+                first: 'First',
+                last: 'Last',
+                next: 'Next',
+                previous: 'Previous'
+            }
+        }
+    });
+
+    window.ONLINE_TEACHING_FACULTY_TABLE = table;
+});
+</script>
+<script src="{{ asset('assets/js/online-teaching-faculties.js') }}"></script>
 @endpush
 @endsection
 

@@ -21,52 +21,7 @@
     if (typeof window.jQuery === "undefined") return;
     var $ = window.jQuery;
 
-    var $config = $("#jsOnlineTeachingFacultyConfig");
-    if ($config.length === 0) return;
-
-    // Use raw attributes (avoid jQuery auto-parsing)
-    var dataUrl = $config.attr("data-data-url");
-    var columnsRaw = $config.attr("data-columns");
-    var columnsDef = [];
-    if (typeof columnsRaw === "string" && columnsRaw.trim().length) {
-      try {
-        columnsDef = JSON.parse(columnsRaw);
-      } catch (e) {
-        columnsDef = [];
-      }
-    }
-
-    // Guard against double-initialization (some layouts auto-init DataTables)
-    if ($.fn.DataTable && $.fn.DataTable.isDataTable("#onlineTeachingFacultyTable")) {
-      $("#onlineTeachingFacultyTable").DataTable().destroy();
-      $("#onlineTeachingFacultyTable tbody").empty();
-    }
-
-    var table = $("#onlineTeachingFacultyTable").DataTable({
-      destroy: true,
-      processing: true,
-      serverSide: true,
-      ajax: {
-        url: dataUrl,
-        type: "GET",
-        error: function (xhr) {
-          // eslint-disable-next-line no-console
-          console.error(xhr);
-          if (typeof window.showToast === "function") {
-            window.showToast("Error loading data. Please try again.", "error");
-          }
-        },
-      },
-      pageLength: 25,
-      lengthMenu: [
-        [10, 25, 50, 100],
-        [10, 25, 50, 100],
-      ],
-      order: [[22, "desc"]],
-      scrollX: true,
-      autoWidth: false,
-      columns: columnsDef,
-    });
+    // Table is initialized in the blade (window.ONLINE_TEACHING_FACULTY_TABLE); used for reload after file upload
 
     $("#jsAddOnlineTeachingFaculty").on("click", function () {
       var url = $(this).data("url");
@@ -337,8 +292,9 @@
               window.toast_success(successMsg);
             }
             // Reload the table to show the updated file
-            if (table && typeof table.ajax === "object" && typeof table.ajax.reload === "function") {
-              table.ajax.reload(null, false);
+            var dt = window.ONLINE_TEACHING_FACULTY_TABLE;
+            if (dt && typeof dt.ajax === "object" && typeof dt.ajax.reload === "function") {
+              dt.ajax.reload(null, false);
             }
           } else {
             var msg = res && (res.error || res.message) ? res.error || res.message : "Upload failed";
