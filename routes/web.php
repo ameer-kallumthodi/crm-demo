@@ -187,6 +187,11 @@ Route::prefix('register')->group(function () {
     Route::get('/digital-marketing/subjects', [App\Http\Controllers\Public\LeadDigitalMarketingRegistrationController::class, 'getSubjects'])->name('public.lead.digital-marketing.subjects');
     Route::get('/digital-marketing/batches', [App\Http\Controllers\Public\LeadDigitalMarketingRegistrationController::class, 'getBatches'])->name('public.lead.digital-marketing.batches');
 
+    // Junior Vlogger Registration Routes (course_id = 25)
+    Route::get('/junior-vlogger/{leadId?}', [App\Http\Controllers\Public\LeadJuniorVloggerRegistrationController::class, 'showForm'])->name('public.lead.junior-vlogger.register');
+    Route::post('/junior-vlogger', [App\Http\Controllers\Public\LeadJuniorVloggerRegistrationController::class, 'store'])->name('public.lead.junior-vlogger.store');
+    Route::get('/junior-vlogger/{leadId}/success', [App\Http\Controllers\Public\LeadJuniorVloggerRegistrationController::class, 'showSuccess'])->name('public.lead.junior-vlogger.register.success');
+
     // Diploma in Data Science Registration Routes
     Route::get('/diploma-in-data-science/{leadId?}', [App\Http\Controllers\Public\LeadAIAutomationRegistrationController::class, 'showAIAutomationForm'])->name('public.lead.diploma-in-data-science.register');
     Route::post('/diploma-in-data-science', [App\Http\Controllers\Public\LeadAIAutomationRegistrationController::class, 'store'])->name('public.lead.diploma-in-data-science.register.store');

@@ -97,7 +97,7 @@ class OnlineTeachingFacultyController extends Controller
             'highest_educational_qualification' => 'nullable|string|max:255',
             'additional_certifications' => 'nullable|string|max:2000',
             'teaching_experience' => 'nullable|string|in:Yes,No',
-            'department_name' => 'nullable|string|in:E-School,EduThanzeel,Graphic Designing,Digital Marketing,Data Science,Machine Learning',
+            'department_id' => 'nullable|exists:departments,id',
 
             // Documents (optional)
             'document_resume_cv' => 'nullable|file|max:10240',
@@ -131,7 +131,7 @@ class OnlineTeachingFacultyController extends Controller
             'address_pin_code',
             'highest_educational_qualification',
             'additional_certifications',
-            'department_name',
+            'department_id',
         ]);
 
         // Normalize Yes/No to boolean

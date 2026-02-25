@@ -1,441 +1,459 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Team Registration Details - {{ $team->name }}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>TEAM REGISTRATION DETAILS - {{ $team->name }}</title>
     <style>
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
-            font-size: 12px;
+            font-family: 'Helvetica', 'DejaVu Sans', sans-serif;
+            font-size: 11px;
             color: #333;
-            line-height: 1.5;
-        }
-        .header {
-            text-align: center;
-            border-bottom: 2px solid #1e3c72;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            color: #1e3c72;
+            line-height: 1.2;
             margin: 0;
-            font-size: 24px;
-            text-transform: uppercase;
+            padding: 0;
         }
-        .header p {
-            margin: 5px 0 0;
-            color: #666;
+
+        .doc-header {
+            padding-bottom: 8px;
+            margin-bottom: 0;
+            border-bottom: 1px solid #ccc;
         }
-        .section {
-            margin-bottom: 25px;
-            background: #fff;
-        }
-        .section-title {
-            background-color: #f0f4f8;
-            color: #1e3c72;
-            padding: 8px 15px;
-            font-size: 14px;
-            font-weight: bold;
-            border-left: 4px solid #1e3c72;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-        }
-        .row {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        .row:after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-        .col {
-            float: left;
-            width: 50%;
-            box-sizing: border-box;
-            padding-right: 15px;
-            margin-bottom: 10px;
-        }
-        .label {
-            font-weight: bold;
-            color: #555;
-            display: block;
-            margin-bottom: 4px;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .value {
-            color: #000;
-            font-size: 13px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 2px;
-            display: block;
-            min-height: 15px;
-        }
-        table {
+
+        .doc-header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
+
+        .doc-header-table td {
+            vertical-align: middle;
+            padding: 0;
         }
-        th {
-            background-color: #1e3c72;
-            color: #fff;
-            font-size: 12px;
+
+        .doc-header-table td:first-child {
+            width: 15%;
+            padding: 0;
+        }
+
+        .doc-header-table td:nth-child(2) {
+            text-align: center;
+            width: 70%;
+        }
+
+        .doc-header-table td:last-child {
+            text-align: right;
+            width: 15%;
+        }
+
+        .doc-header .logo-img {
+            max-height: 60px;
+            width: auto;
+            display: block;
+            margin-left: auto;
+        }
+
+        .doc-header .org-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #5F26B9;
+            margin: 0;
             text-transform: uppercase;
         }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
+
+        .doc-header .tagline {
+            font-size: 9px;
+            color: #000;
+            margin: 4px 0 0;
         }
-        .footer {
-            position: fixed;
-            bottom: 0px;
-            left: 0px;
-            right: 0px;
-            height: 30px;
-            text-align: center;
+
+        .contact-bar {
+            border-bottom: 1px solid #ddd;
+            padding: 6px 0;
+            margin-bottom: 12px;
             font-size: 10px;
+            color: #555;
+            width: 100%;
+        }
+
+        .contact-bar table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .contact-bar td {
+            padding: 0;
+            vertical-align: middle;
+            color: #555;
+        }
+
+        .contact-bar td:first-child {
+            text-align: left;
+            width: 33%;
+        }
+
+        .contact-bar td:nth-child(2) {
+            text-align: center;
+            width: 34%;
+        }
+
+        .contact-bar td:last-child {
+            text-align: right;
+            width: 33%;
+        }
+
+        .section-bar {
+            background:rgb(110, 52, 202);
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+        }
+
+        .info-table tr {
+            border-bottom: 1px dotted #999;
+        }
+
+        .info-table td {
+            padding: 5px 8px;
+            vertical-align: top;
+        }
+
+        .info-table td:first-child {
+            width: 38%;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .info-table .value {
+            font-weight: normal;
+            color: #000;
+        }
+
+        /* GENERAL INFORMATION: 2 columns per row (Label | Value | Label | Value) */
+        .info-table.info-table-2col td {
+            width: 25%;
+        }
+        .info-table.info-table-2col td:nth-child(1),
+        .info-table.info-table-2col td:nth-child(3) {
+            font-weight: bold;
+            color: #555;
+            width: 22%;
+        }
+        .info-table.info-table-2col td:nth-child(2),
+        .info-table.info-table-2col td:nth-child(4) {
+            font-weight: normal;
+            color: #000;
+            width: 28%;
+        }
+
+        /* Banking values: allow long text to wrap so they show properly in PDF */
+        .info-table .bank-value {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .team-details-row {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+        }
+
+        .team-details-row td {
+            padding: 6px 12px;
+            vertical-align: top;
+            border-bottom: 1px dotted #999;
+            font-size: 11px;
+        }
+
+        .team-details-row .label {
+            color: #555;
+            font-weight: bold;
+        }
+
+        .team-details-row .val {
+            color: #000;
+            font-weight: bold;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+            border: 1px solid #333;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #333;
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background: #e0e0e0;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .data-table td {
+            font-size: 10px;
+        }
+
+        .footer-note {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 28px;
+            text-align: center;
+            font-size: 9px;
             color: #999;
             border-top: 1px solid #eee;
-            padding-top: 10px;
+            padding-top: 8px;
         }
+
         .page-break {
-            page-break-after: always;
+            page-break-before: always;
         }
     </style>
 </head>
+
 <body>
-    <div class="header">
-        <h1>Team Registration Details</h1>
-        <p>Generated on {{ date('d M Y, h:i A') }}</p>
+
+    <!-- Header: NATDEMY centered on page, logo on right (3 columns: spacer | title | logo) -->
+    <div class="doc-header">
+        <table class="doc-header-table">
+            <tr>
+                <td></td>
+                <td>
+                    <h1 class="org-name">Natdemy</h1>
+                    <p class="tagline">Team Registration & Partner Management</p>
+                </td>
+                <td>
+                    @if(file_exists(public_path('images/natdemy-logo.png')))
+                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/natdemy-logo.png'))) }}" alt="Natdemy" class="logo-img" />
+                    @endif
+                </td>
+            </tr>
+        </table>
     </div>
 
-    <!-- Institutional Legal Details -->
-    <div class="section">
-        <div class="section-title">Institutional Legal Details</div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Legal Name</span>
-                <span class="value">{{ $detail->legal_name ?? 'N/A' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Institution Category</span>
-                <span class="value">{{ $detail->institution_category ?? 'N/A' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Telephone</span>
-                <span class="value">{{ $detail->telephone ?? 'N/A' }}</span>
-            </div>
-        </div>
+    <!-- Contact bar -->
+    <div class="contact-bar">
+        <table>
+            <tr>
+                <td>Phone: {{ config('app.contact_phone', '+91 9899108107') }}</td>
+                <td>Website: {{ config('app.contact_website', 'www.natdemy.com') }}</td>
+                <td>Email: {{ config('app.contact_email', 'support@natdemy.com') }}</td>
+            </tr>
+        </table>
     </div>
 
-    <!-- Registered Address -->
-    <div class="section">
-        <div class="section-title">Registered Address</div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Building Name</span>
-                <span class="value">{{ $detail->building_name ?? 'N/A' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Street Name</span>
-                <span class="value">{{ $detail->street_name ?? 'N/A' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Locality</span>
-                <span class="value">{{ $detail->locality_name ?? 'N/A' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">City</span>
-                <span class="value">{{ $detail->city ?? 'N/A' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">District</span>
-                <span class="value">{{ $detail->district ?? 'N/A' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">State</span>
-                <span class="value">{{ $detail->state ?? 'N/A' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">PIN Code</span>
-                <span class="value">{{ $detail->pin_code ?? 'N/A' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Country</span>
-                <span class="value">{{ $detail->country ?? 'N/A' }}</span>
-            </div>
-        </div>
-    </div>
+    <!-- TEAM REGISTRATION DETAILS (full width, left to right) -->
+    <div class="section-bar">TEAM REGISTRATION DETAILS</div>
+    <table class="team-details-row" style="width: 100%;">
+        <tr>
+            <td style="width: 25%;"><span class="label">Team Name</span><br><span class="val">{{ $team->name ?? '—' }}</span></td>
+            <td style="width: 25%;"><span class="label">Generated On</span><br><span class="val">{{ date('d M Y') }}</span></td>
+            <td style="width: 25%;"><span class="label">Partner ID</span><br><span class="val">{{ $detail->b2b_partner_id ?? '—' }}</span></td>
+            <td style="width: 25%;"><span class="label">Category</span><br><span class="val">{{ $detail->institution_category ?? '—' }}</span></td>
+        </tr>
+    </table>
 
-    <!-- Communication Officer Details -->
-    <div class="section">
-        <div class="section-title">Communication Officer Details</div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Name</span>
-                <span class="value">{{ $detail->comm_officer_name ?? 'N/A' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Official Email</span>
-                <span class="value">{{ $detail->comm_officer_email ?? 'N/A' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Mobile Number</span>
-                <span class="value">{{ $detail->comm_officer_mobile ?? 'N/A' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">WhatsApp Number</span>
-                <span class="value">{{ $detail->comm_officer_whatsapp ?? 'N/A' }}</span>
-            </div>
-        </div>
-        @if($detail->comm_officer_alt_mobile)
-        <div class="row">
-            <div class="col">
-                <span class="label">Alternate Mobile</span>
-                <span class="value">{{ $detail->comm_officer_alt_mobile }}</span>
-            </div>
-        </div>
-        @endif
-    </div>
+    <!-- GENERAL INFORMATION (2 columns per row: Label | Value | Label | Value) -->
+    <div class="section-bar">GENERAL INFORMATION</div>
+    <table class="info-table info-table-2col">
+        <tr>
+            <td>Legal Name</td>
+            <td class="value">{{ $detail->legal_name ?? '—' }}</td>
+            <td>Institution Category</td>
+            <td class="value">{{ $detail->institution_category ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>Telephone</td>
+            <td class="value">{{ $detail->telephone ?? '—' }}</td>
+            <td>Building Name</td>
+            <td class="value">{{ $detail->building_name ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>Street Name</td>
+            <td class="value">{{ $detail->street_name ?? '—' }}</td>
+            <td>Locality</td>
+            <td class="value">{{ $detail->locality_name ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>City</td>
+            <td class="value">{{ $detail->city ?? '—' }}</td>
+            <td>District</td>
+            <td class="value">{{ $detail->district ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>State</td>
+            <td class="value">{{ $detail->state ?? '—' }}</td>
+            <td>PIN Code</td>
+            <td class="value">{{ $detail->pin_code ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>Country</td>
+            <td class="value">{{ $detail->country ?? '—' }}</td>
+            <td>Communication Officer Name</td>
+            <td class="value">{{ $detail->comm_officer_name ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>Communication Officer Email</td>
+            <td class="value">{{ $detail->comm_officer_email ?? '—' }}</td>
+            <td>Communication Officer Mobile</td>
+            <td class="value">{{ $detail->comm_officer_mobile ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>Communication Officer WhatsApp</td>
+            <td class="value">{{ $detail->comm_officer_whatsapp ?? '—' }}</td>
+            <td>Alternate Mobile</td>
+            <td class="value">{{ $detail->comm_officer_alt_mobile ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>Authorized Person Name</td>
+            <td class="value">{{ $detail->auth_person_name ?? '—' }}</td>
+            <td>Authorized Person Designation</td>
+            <td class="value">{{ $detail->auth_person_designation ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>Authorized Person Mobile</td>
+            <td class="value">{{ $detail->auth_person_mobile ?? '—' }}</td>
+            <td>Authorized Person Email</td>
+            <td class="value">{{ $detail->auth_person_email ?? '—' }}</td>
+        </tr>
+    </table>
 
-    <!-- Authorized Stakeholder Details -->
-    <div class="section">
-        <div class="section-title">Authorized Stakeholder Details</div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Name</span>
-                <span class="value">{{ $detail->auth_person_name ?? 'N/A' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Designation</span>
-                <span class="value">{{ $detail->auth_person_designation ?? 'N/A' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Mobile Number</span>
-                <span class="value">{{ $detail->auth_person_mobile ?? 'N/A' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Email ID</span>
-                <span class="value">{{ $detail->auth_person_email ?? 'N/A' }}</span>
-            </div>
-        </div>
-    </div>
+    <!-- PARTNER & OFFICE INFORMATION (2 columns per row) -->
+    <div class="section-bar">PARTNER & OFFICE INFORMATION</div>
+    <table class="info-table info-table-2col">
+        <tr>
+            <td>B2B Partner ID</td>
+            <td class="value">{{ $detail->b2b_partner_id ?? '—' }}</td>
+            <td>B2B Code</td>
+            <td class="value">{{ $detail->b2b_code ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>Date of Joining</td>
+            <td class="value">{{ $detail->date_of_joining ?? '—' }}</td>
+            <td>Partner Status</td>
+            <td class="value">{{ $detail->partner_status ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>B2B Officer Name</td>
+            <td class="value">{{ $detail->b2b_officer_name ?: 'Anshad Tk' }}</td>
+            <td>Employee ID</td>
+            <td class="value">{{ $detail->employee_id ?: 'FTM010' }}</td>
+        </tr>
+        <tr>
+            <td>Designation</td>
+            <td class="value">{{ $detail->designation ?: 'B2B Manager' }}</td>
+            <td>Official Contact Number</td>
+            <td class="value">{{ $detail->official_contact_number ?: '+91 95679 81443' }}</td>
+        </tr>
+        <tr>
+            <td>WhatsApp Business Number</td>
+            <td class="value">{{ $detail->whatsapp_business_number ?: '+91 95679 81443' }}</td>
+            <td>Official Email ID</td>
+            <td class="value">{{ $detail->official_email_id ?: 'btob@natdemy.com' }}</td>
+        </tr>
+        <tr>
+            <td>Working Days</td>
+            <td class="value">{{ $detail->working_days ?: 'Monday – Saturday' }}</td>
+            <td>Office Hours</td>
+            <td class="value">{{ $detail->office_hours ?: '09:00 AM – 05:00 PM' }}</td>
+        </tr>
+    </table>
 
-    <!-- Interested Courses -->
-    <div class="section">
-        <div class="section-title">Interested Courses & Delivery Structures</div>
-        @if(count($interestedCourses) > 0)
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 40%">Course</th>
-                        <th style="width: 60%">Delivery Structures</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($interestedCourses as $item)
-                        <tr>
-                            <td><strong>{{ $item['course'] }}</strong></td>
-                            <td>
-                                @if(count($item['structures']) > 0)
-                                    <ul style="margin: 0; padding-left: 20px;">
-                                        @foreach($item['structures'] as $structure)
-                                            <li>{{ $structure }}</li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <span style="color: #999; font-style: italic;">No specific structures selected</span>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @else
-            <p style="padding: 10px; color: #666; font-style: italic;">No course preferences found.</p>
-        @endif
-    </div>
+    <!-- OFFICE ADDRESS (same labels and defaults as details page section 3) -->
+    <div class="section-bar">OFFICE ADDRESS</div>
+    <table class="info-table info-table-2col">
+        <tr>
+            <td>Building Name / Floor / Room Number</td>
+            <td class="value">Nisa Pre College of Arts</td>
+            <td>Street / Road Name</td>
+            <td class="value">Murikkal Road</td>
+        </tr>
+        <tr>
+            <td>Locality / Area Name</td>
+            <td class="value">Palathingal</td>
+            <td>City</td>
+            <td class="value">Parappanangadi</td>
+        </tr>
+        <tr>
+            <td>PIN Code</td>
+            <td class="value">676303</td>
+            <td>District</td>
+            <td class="value">Malappuram</td>
+        </tr>
+        <tr>
+            <td>State</td>
+            <td class="value">Kerala</td>
+            <td>Country</td>
+            <td class="value">India</td>
+        </tr>
+    </table>
 
-    <div class="page-break"></div>
-    <div class="header">
-        <h1>Office Information Record</h1>
-    </div>
+    <!-- BANKING & PAYMENT DETAILS (separate section so it shows properly) -->
+    <div class="section-bar page-break">BANKING & PAYMENT DETAILS</div>
+    <table class="info-table info-table-2col">
+        <tr>
+            <td>Account Holder Name</td>
+            <td class="value bank-value">FUTURE AND TREE EDU OLUTION PVT LTD</td>
+            <td>Bank Name</td>
+            <td class="value bank-value">Axis Bank, Kallai Road, Kozhikode</td>
+        </tr>
+        <tr>
+            <td>Account Number</td>
+            <td class="value bank-value">921020041902527</td>
+            <td>IFSC Code</td>
+            <td class="value bank-value">UTIB0001908</td>
+        </tr>
+    </table>
 
-    <!-- Partner Identification Details -->
-    <div class="section">
-        <div class="section-title">1. Partner Identification Details</div>
-        <div class="row">
-            <div class="col">
-                <span class="label">B2B Partner ID</span>
-                <span class="value">{{ $detail->b2b_partner_id ?? 'N/A' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">B2B Code</span>
-                <span class="value">{{ $detail->b2b_code ?? 'N/A' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Date of Joining</span>
-                <span class="value">{{ $detail->date_of_joining ?? 'N/A' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Partner Status</span>
-                <span class="value">{{ $detail->partner_status ?? 'N/A' }}</span>
-            </div>
-        </div>
-    </div>
+    <!-- INTERESTED COURSES & DELIVERY STRUCTURES (table like Qualification Information) -->
+    <div class="section-bar">INTERESTED COURSES & DELIVERY STRUCTURES</div>
+    @if(count($interestedCourses) > 0)
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 35%">Course</th>
+                <th style="width: 65%">Delivery Structures</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($interestedCourses as $item)
+            <tr>
+                <td><strong>{{ $item['course'] }}</strong></td>
+                <td>
+                    @if(count($item['structures']) > 0)
+                    {{ implode(', ', $item['structures']) }}
+                    @else
+                    —
+                    @endif
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @else
+    <p style="padding: 8px 0; color: #666; font-style: italic;">No course preferences recorded.</p>
+    @endif
 
-    <!-- Assigned Officer Details -->
-    <div class="section">
-        <div class="section-title">2. Assigned Officer Details</div>
-        <div class="row">
-            <div class="col">
-                <span class="label">B2B Officer Name</span>
-                <span class="value">{{ $detail->b2b_officer_name ?: 'Anshad Tk' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Employee ID</span>
-                <span class="value">{{ $detail->employee_id ?: 'FTM010' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Designation</span>
-                <span class="value">{{ $detail->designation ?: 'B2B Manager' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Official Contact Number</span>
-                <span class="value">{{ $detail->official_contact_number ?: '+91 95679 81443' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">WhatsApp Business Number</span>
-                <span class="value">{{ $detail->whatsapp_business_number ?: '+91 95679 81443' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Official Email ID</span>
-                <span class="value">{{ $detail->official_email_id ?: 'btob@natdemy.com' }}</span>
-            </div>
-        </div>
-    </div>
 
-    <!-- Office Address -->
-    <div class="section">
-        <div class="section-title">3. Office Address</div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Building Name / Floor / Room Number</span>
-                <span class="value">{{ $detail->building_name ?: 'Nisa Pre College of Arts' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Street / Road Name</span>
-                <span class="value">{{ $detail->street_name ?: 'Murikkal Road' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Locality / Area Name</span>
-                <span class="value">{{ $detail->locality_name ?: 'Palathingal' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">City</span>
-                <span class="value">{{ $detail->city ?: 'Parappanangadi' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">PIN Code</span>
-                <span class="value">{{ $detail->pin_code ?: '676303' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">District</span>
-                <span class="value">{{ $detail->district ?: 'Malappuram' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">State</span>
-                <span class="value">{{ $detail->state ?: 'Kerala' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Country</span>
-                <span class="value">{{ $detail->country ?: 'India' }}</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Operational Schedule -->
-    <div class="section">
-        <div class="section-title">4. Operational Schedule</div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Working Days</span>
-                <span class="value">{{ $detail->working_days ?: 'Monday – Saturday' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Office Hours</span>
-                <span class="value">{{ $detail->office_hours ?: '09:00 AM – 05:00 PM' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Break Time</span>
-                <span class="value">{{ $detail->break_time ?: '01:15 PM – 02:00 PM' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Public Holiday Policy</span>
-                <span class="value">{{ $detail->holiday_policy ?: 'As per Head Office Circular' }}</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Banking & Payment Details -->
-    <div class="section">
-        <div class="section-title">6. Banking & Payment Details</div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Account Holder Name</span>
-                <span class="value">{{ $detail->account_holder_name ?: 'FUTURE AND TREE EDU OLUTION PVT LTD' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">Bank Name</span>
-                <span class="value">{{ $detail->bank_name ?: 'Axis Bank, Kallai Road, Kozhikode' }}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <span class="label">Account Number</span>
-                <span class="value">{{ $detail->account_number ?: '921020041902527' }}</span>
-            </div>
-            <div class="col">
-                <span class="label">IFSC Code</span>
-                <span class="value">{{ $detail->ifsc_code ?: 'UTIB0001908' }}</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer">
-        <p>This document was automatically generated by Skill Park CRM. &copy; {{ date('Y') }} All rights reserved.</p>
+    <div class="footer-note">
+        This document was generated by Natdemy. &copy; {{ date('Y') }} All rights reserved.
     </div>
 </body>
+
 </html>

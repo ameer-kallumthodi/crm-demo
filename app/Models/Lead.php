@@ -213,6 +213,11 @@ class Lead extends Model
         return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 12);
     }
 
+    public function juniorVloggerStudentDetails()
+    {
+        return $this->hasOne(LeadDetail::class, 'lead_id')->where('course_id', 25);
+    }
+
     // Scopes
     public function scopeWithStatusCount($query)
     {

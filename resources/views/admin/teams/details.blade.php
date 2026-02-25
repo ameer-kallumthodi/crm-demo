@@ -64,36 +64,36 @@
                 <h5 class="mb-3 text-primary">Registered Address</h5>
                 <div class="row mb-4">
                     <div class="col-md-4 mb-3">
-                        <label class="fw-bold text-muted small">Building Name</label>
-                        {!! renderInlineEdit($detail, 'building_name', 'text') !!}
+                        <label class="fw-bold text-muted small d-block mb-1">Building Name</label>
+                        <div class="p-2 bg-light rounded">Nisa Pre College of Arts</div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="fw-bold text-muted small">Street Name</label>
-                        {!! renderInlineEdit($detail, 'street_name', 'text') !!}
+                        <label class="fw-bold text-muted small d-block mb-1">Street Name</label>
+                        <div class="p-2 bg-light rounded">Murikkal Road</div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="fw-bold text-muted small">Locality</label>
-                        {!! renderInlineEdit($detail, 'locality_name', 'text') !!}
+                        <label class="fw-bold text-muted small d-block mb-1">Locality</label>
+                        <div class="p-2 bg-light rounded">Palathingal</div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="fw-bold text-muted small">City</label>
-                        {!! renderInlineEdit($detail, 'city', 'text') !!}
+                        <label class="fw-bold text-muted small d-block mb-1">City</label>
+                        <div class="p-2 bg-light rounded">Parappanangadi</div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="fw-bold text-muted small">District</label>
-                        {!! renderInlineEdit($detail, 'district', 'text') !!}
+                        <label class="fw-bold text-muted small d-block mb-1">District</label>
+                        <div class="p-2 bg-light rounded">Malappuram</div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="fw-bold text-muted small">State</label>
-                        {!! renderInlineEdit($detail, 'state', 'text') !!}
+                        <label class="fw-bold text-muted small d-block mb-1">State</label>
+                        <div class="p-2 bg-light rounded">Kerala</div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="fw-bold text-muted small">PIN Code</label>
-                        {!! renderInlineEdit($detail, 'pin_code', 'text') !!}
+                        <label class="fw-bold text-muted small d-block mb-1">PIN Code</label>
+                        <div class="p-2 bg-light rounded">676303</div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="fw-bold text-muted small">Country</label>
-                        {!! renderInlineEdit($detail, 'country', 'text') !!}
+                        <label class="fw-bold text-muted small d-block mb-1">Country</label>
+                        <div class="p-2 bg-light rounded">India</div>
                     </div>
                 </div>
 
@@ -263,35 +263,35 @@
                 <div class="row mb-4">
                     <div class="col-md-4 mb-3">
                         <label class="fw-bold text-muted small d-block mb-1">Building Name / Floor / Room Number</label>
-                        <div class="p-2 bg-light rounded">{{ $detail->building_name ?: 'Nisa Pre College of Arts' }}</div>
+                        <div class="p-2 bg-light rounded">Nisa Pre College of Arts</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="fw-bold text-muted small d-block mb-1">Street / Road Name</label>
-                        <div class="p-2 bg-light rounded">{{ $detail->street_name ?: 'Murikkal Road' }}</div>
+                        <div class="p-2 bg-light rounded">Murikkal Road</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="fw-bold text-muted small d-block mb-1">Locality / Area Name</label>
-                        <div class="p-2 bg-light rounded">{{ $detail->locality_name ?: 'Palathingal' }}</div>
+                        <div class="p-2 bg-light rounded">Palathingal</div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="fw-bold text-muted small d-block mb-1">City</label>
-                        <div class="p-2 bg-light rounded">{{ $detail->city ?: 'Parappanangadi' }}</div>
+                        <div class="p-2 bg-light rounded">Parappanangadi</div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="fw-bold text-muted small d-block mb-1">PIN Code</label>
-                        <div class="p-2 bg-light rounded">{{ $detail->pin_code ?: '676303' }}</div>
+                        <div class="p-2 bg-light rounded">676303</div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="fw-bold text-muted small d-block mb-1">District</label>
-                        <div class="p-2 bg-light rounded">{{ $detail->district ?: 'Malappuram' }}</div>
+                        <div class="p-2 bg-light rounded">Malappuram</div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="fw-bold text-muted small d-block mb-1">State</label>
-                        <div class="p-2 bg-light rounded">{{ $detail->state ?: 'Kerala' }}</div>
+                        <div class="p-2 bg-light rounded">Kerala</div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="fw-bold text-muted small d-block mb-1">Country</label>
-                        <div class="p-2 bg-light rounded">{{ $detail->country ?: 'India' }}</div>
+                        <div class="p-2 bg-light rounded">India</div>
                     </div>
                 </div>
 

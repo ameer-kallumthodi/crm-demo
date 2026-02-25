@@ -459,7 +459,7 @@ class TeamController extends Controller
         }
 
         $pdf = \PDF::loadView('admin.teams.details_pdf', compact('team', 'detail', 'interestedCourses'));
-        return $pdf->download('team_details_' . $team->id . '.pdf');
+        return $pdf->stream('team_details_' . $team->id . '.pdf', ['Attachment' => false]);
     }
 
     public function termsAndConditions($id)

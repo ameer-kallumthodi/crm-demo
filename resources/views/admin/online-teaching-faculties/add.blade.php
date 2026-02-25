@@ -126,15 +126,12 @@
                     </div>
                     <div class="col-md-8">
                         <div class="mb-3">
-                            <label class="form-label" for="department_name">Department Name</label>
-                            <select class="form-select" id="department_name" name="department_name">
+                            <label class="form-label" for="department_id">Department</label>
+                            <select class="form-select" id="department_id" name="department_id">
                                 <option value="">Select</option>
-                                <option value="E-School" {{ old('department_name') === 'E-School' ? 'selected' : '' }}>E-School</option>
-                                <option value="EduThanzeel" {{ old('department_name') === 'EduThanzeel' ? 'selected' : '' }}>EduThanzeel</option>
-                                <option value="Graphic Designing" {{ old('department_name') === 'Graphic Designing' ? 'selected' : '' }}>Graphic Designing</option>
-                                <option value="Digital Marketing" {{ old('department_name') === 'Digital Marketing' ? 'selected' : '' }}>Digital Marketing</option>
-                                <option value="Data Science" {{ old('department_name') === 'Data Science' ? 'selected' : '' }}>Data Science</option>
-                                <option value="Machine Learning" {{ old('department_name') === 'Machine Learning' ? 'selected' : '' }}>Machine Learning</option>
+                                @foreach($departments as $dept)
+                                    <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->title }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
