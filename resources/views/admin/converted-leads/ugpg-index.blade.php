@@ -905,12 +905,8 @@
         function createUniversitySelect(currentValue) {
             let options = '<option value="">Select University</option>';
             @foreach($universities as $university)
-            const selected {
-                {
-                    $university - > id
-                }
-            } = String(currentValue) === '{{ $university->id }}' ? 'selected' : '';
-            options += `<option value="{{ $university->id }}" ${selected{{ $university->id }}}>{{ $university->title }}</option>`;
+            const selected_{{ $university->id }} = String(currentValue) === '{{ $university->id }}' ? 'selected' : '';
+            options += `<option value="{{ $university->id }}" ${selected_{{ $university->id }}}>{{ $university->title }}</option>`;
             @endforeach
             return `
                 <div class="edit-form">
@@ -1112,6 +1108,16 @@
         e.preventDefault();
         const url = $(this).data('cancel-url');
         const title = $(this).data('modal-title') || 'Cancellation Confirmation';
+        if (typeof show_ajax_modal === 'function' && url) {
+            show_ajax_modal(url, title);
+        }
+    });
+
+    // Update Register Number button – open modal
+    $(document).on('click', '.update-register-btn', function(e) {
+        e.preventDefault();
+        const url = $(this).data('url');
+        const title = $(this).data('title') || 'Update Register Number';
         if (typeof show_ajax_modal === 'function' && url) {
             show_ajax_modal(url, title);
         }
