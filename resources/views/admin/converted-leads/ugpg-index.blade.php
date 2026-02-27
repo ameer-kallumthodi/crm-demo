@@ -645,6 +645,11 @@
         z-index: 5;
         background: #fff;
         box-shadow: inset 0 -1px 0 #e9ecef;
+        pointer-events: none;
+    }
+
+    #ugpgTable thead th * {
+        pointer-events: auto;
     }
 
     #ugpgTable tbody tr:hover {
