@@ -15,7 +15,7 @@ class TelecallerController extends Controller
 {
     public function index()
     {
-        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager() || RoleHelper::is_admission_counsellor())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -28,7 +28,7 @@ class TelecallerController extends Controller
 
     public function store(Request $request)
     {
-        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager() || RoleHelper::is_admission_counsellor())) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -57,7 +57,7 @@ class TelecallerController extends Controller
 
     public function show(User $telecaller)
     {
-        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager() || RoleHelper::is_admission_counsellor())) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -67,7 +67,7 @@ class TelecallerController extends Controller
 
     public function destroy(User $telecaller)
     {
-        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager() || RoleHelper::is_admission_counsellor())) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -89,7 +89,7 @@ class TelecallerController extends Controller
 
     public function ajax_add(Request $request)
     {
-        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager() || RoleHelper::is_admission_counsellor())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -102,7 +102,7 @@ class TelecallerController extends Controller
 
     public function submit(Request $request)
     {
-        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager() || RoleHelper::is_admission_counsellor())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -157,7 +157,7 @@ class TelecallerController extends Controller
 
     public function ajax_edit($id)
     {
-        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager() || RoleHelper::is_admission_counsellor())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -169,7 +169,7 @@ class TelecallerController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager() || RoleHelper::is_admission_counsellor())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -226,7 +226,7 @@ class TelecallerController extends Controller
 
     public function delete($id)
     {
-        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager())) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager() || RoleHelper::is_admission_counsellor())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -243,7 +243,7 @@ class TelecallerController extends Controller
 
     public function changePassword(Request $request, $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager() || RoleHelper::is_admission_counsellor())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -253,7 +253,7 @@ class TelecallerController extends Controller
 
     public function updatePassword(Request $request, $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin()) {
+        if (!(RoleHelper::is_admin_or_super_admin() || RoleHelper::is_general_manager() || RoleHelper::is_admission_counsellor())) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 

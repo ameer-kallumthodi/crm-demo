@@ -171,6 +171,7 @@ class PermissionHelper
             'admin/mentor/index',
             'admin/b2b-services/index',
             'admin/departments/index',
+            'admin/telecallers/index',
         ];
         return in_array($permission, $permissions);
     }
