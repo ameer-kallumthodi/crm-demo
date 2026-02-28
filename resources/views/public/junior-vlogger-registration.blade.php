@@ -333,6 +333,7 @@
                     </div>
                 </div>
 
+                @include('public.partials.terms-and-conditions')
                 <div class="d-flex justify-content-between mt-4">
                     <button type="button" class="btn btn-secondary btn-wizard" id="prevBtn" onclick="changeStep(-1)" style="display: none;">
                         <i class="fas fa-arrow-left me-2"></i>Previous
@@ -405,6 +406,7 @@
             document.getElementById('prevBtn').style.display = currentStep === 1 ? 'none' : 'inline-block';
             document.getElementById('nextBtn').style.display = currentStep === totalSteps ? 'none' : 'inline-block';
             document.getElementById('submitBtn').style.display = currentStep === totalSteps ? 'inline-block' : 'none';
+            if (typeof window.applyTermsCheckboxVisibility === 'function') window.applyTermsCheckboxVisibility();
         }
 
         function validateCurrentStep() {

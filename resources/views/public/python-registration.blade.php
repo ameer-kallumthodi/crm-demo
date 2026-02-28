@@ -754,7 +754,8 @@
                         </div>
                     </div>
                 </div>
-                    
+
+                @include('public.partials.terms-and-conditions')
                     <!-- Navigation Buttons -->
                     <div class="d-flex justify-content-between mt-4">
                         <button type="button" class="btn btn-outline-secondary btn-wizard" id="prevBtn" onclick="changeStep(-1)" style="display: none;">
@@ -1065,6 +1066,7 @@
                     if (prevBtn) prevBtn.style.display = 'inline-block';
                     if (submitBtn) submitBtn.style.display = 'inline-block';
                 }
+            if (typeof window.applyTermsCheckboxVisibility === 'function') window.applyTermsCheckboxVisibility();
                 
                 // Mark previous steps as completed
                 for (let i = 1; i < currentStep; i++) {

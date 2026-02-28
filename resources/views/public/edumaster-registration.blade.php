@@ -539,7 +539,8 @@
                         <textarea class="form-control" name="message" rows="3" placeholder="Enter any message or additional details..."></textarea>
                     </div>
                 </div>
-                
+
+                @include('public.partials.terms-and-conditions')
                 <!-- Navigation Buttons -->
                 <div class="d-flex justify-content-between mt-4">
                     <button type="button" class="btn btn-outline-secondary btn-wizard" id="prevBtn" onclick="changeStep(-1)" style="display: none;">
@@ -964,6 +965,7 @@
                 prevBtn.style.display = 'inline-block';
                 submitBtn.style.display = 'inline-block';
             }
+            if (typeof window.applyTermsCheckboxVisibility === 'function') window.applyTermsCheckboxVisibility();
         }
 
         function changeStep(direction) {
