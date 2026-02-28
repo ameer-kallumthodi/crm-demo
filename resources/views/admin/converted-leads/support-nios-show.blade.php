@@ -49,7 +49,7 @@
                         @endif
                         <div><strong>Email:</strong> {{ $convertedLead->email ?? '-' }}</div>
                         <div><strong>DOB:</strong> {{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</div>
-                        <div><strong>Type:</strong> {{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</div>
+                        <div><strong>Type:</strong> {{ $convertedLead->is_b2b == 1 ? ('B2B' . ($convertedLead->lead?->team?->name ? ' (' . $convertedLead->lead->team->name . ')' : '')) : 'In House' }}</div>
                     </div>
                     <div class="col-md-4">
                         <h6 class="text-muted">Course</h6>

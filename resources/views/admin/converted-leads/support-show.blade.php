@@ -67,7 +67,7 @@
                         @endif
                         <div class="mb-1"><strong>Email:</strong> {{ $convertedLead->email ?? '-' }}</div>
                         <div class="mb-1"><strong>DOB:</strong> {{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</div>
-                        <div class="mb-1"><strong>Type:</strong> {{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</div>
+                        <div class="mb-1"><strong>Type:</strong> {{ $convertedLead->is_b2b == 1 ? ('B2B' . ($convertedLead->lead?->team?->name ? ' (' . $convertedLead->lead->team->name . ')' : '')) : 'In House' }}</div>
                     </div>
                     <div class="col-lg-4">
                         <h6 class="text-muted mb-2"><i class="ti ti-book me-1"></i> Course</h6>

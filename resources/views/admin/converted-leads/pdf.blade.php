@@ -64,7 +64,7 @@
                 </tr>
                 <tr>
                     <td class="label">Lead Type</td>
-                    <td class="value">{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</td>
+                    <td class="value">{{ $convertedLead->is_b2b == 1 ? ('B2B' . ($convertedLead->lead?->team?->name ? ' (' . $convertedLead->lead->team->name . ')' : '')) : 'In House' }}</td>
                     <td class="label"></td>
                     <td class="value"></td>
                 </tr>

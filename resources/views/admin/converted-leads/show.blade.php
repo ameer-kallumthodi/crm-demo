@@ -112,7 +112,7 @@
                             </div>
                             <div class="col-6">
                                 <label class="form-label text-muted">Lead Type</label>
-                                <p class="fw-bold">{{ $convertedLead->is_b2b == 1 ? 'B2B' : 'In House' }}</p>
+                                <p class="fw-bold">{{ $convertedLead->is_b2b == 1 ? ('B2B' . ($convertedLead->lead?->team?->name ? ' (' . $convertedLead->lead->team->name . ')' : '')) : 'In House' }}</p>
                             </div>
                             @if($convertedLead->post_sales_remarks)
                             <div class="col-12">

@@ -34,7 +34,8 @@ class ConvertedLeadsController extends Controller
 
         // Base query with relationships
         $query = ConvertedLead::with([
-            'lead:id,telecaller_id',
+            'lead:id,telecaller_id,team_id',
+            'lead.team:id,name',
             'course:id,title',
             'academicAssistant:id,name',
             'createdBy:id,name',
@@ -172,6 +173,7 @@ class ConvertedLeadsController extends Controller
         // Load converted lead with all relationships (same as web controller)
         $convertedLead = ConvertedLead::with([
             'lead',
+            'lead.team:id,name',
             'lead.telecaller:id,name',
             'leadDetail.sslcCertificates.verifiedBy:id,name',
             'leadDetail.sslcVerifiedBy:id,name',
@@ -852,7 +854,13 @@ class ConvertedLeadsController extends Controller
             // Created by
             'created_by_id' => $convertedLead->created_by,
             'created_by_name' => $convertedLead->createdBy ? $convertedLead->createdBy->name : null,
-            
+
+            // Type (B2B / In House) with team name for B2B from lead
+            'is_b2b' => (bool) ($convertedLead->is_b2b ?? false),
+            'type_display' => $convertedLead->is_b2b
+                ? ('B2B' . ($convertedLead->lead?->team?->name ? ' (' . $convertedLead->lead->team->name . ')' : ''))
+                : 'In House',
+
             // Pending payment
             'pending_payment' => $this->hasPendingPayment($convertedLead),
         ];
