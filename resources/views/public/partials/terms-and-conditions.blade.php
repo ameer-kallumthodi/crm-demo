@@ -128,9 +128,13 @@
         var isBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 20;
         if (isBottom) {
             termsRead = true;
-            if (termsCheckbox) termsCheckbox.disabled = false;
+            if (termsCheckbox) {
+                termsCheckbox.disabled = false;
+                termsCheckbox.checked = true;
+            }
+            updateSubmitButton();
             var hint = document.getElementById('termsScrollHint');
-            if (hint) hint.textContent = 'You have read the terms. You may now close this and check the box to accept.';
+            if (hint) hint.textContent = 'You have read the terms. Accepted. You may close and submit the form.';
         }
     }
 

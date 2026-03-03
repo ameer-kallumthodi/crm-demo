@@ -226,6 +226,7 @@ class ConvertedLeadController extends Controller
         $currentUser = AuthHelper::getCurrentUser();
         if ($currentUser) {
             if (RoleHelper::is_general_manager()) {
+                
                 // No filtering
             } elseif (RoleHelper::is_team_lead()) {
                 $teamId = $currentUser->team_id;
@@ -322,7 +323,6 @@ class ConvertedLeadController extends Controller
                 });
             }
         }
-
 
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
