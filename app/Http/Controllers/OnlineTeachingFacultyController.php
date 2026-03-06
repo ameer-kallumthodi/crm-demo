@@ -738,10 +738,13 @@ class OnlineTeachingFacultyController extends Controller
             'Teaching Experience' => $teachingExp,
             'Department' => $faculty->department_name,
         ];
+        $cellStyle = "padding: 10px 14px; border: 1px solid #dee2e6; vertical-align: top;";
+        $labelStyle = $cellStyle . " width: 38%; background-color: #f8f9fa; font-weight: 600; color: #495057;";
+        $valueStyle = $cellStyle . " color: #212529;";
         $rows = '';
         foreach ($details as $label => $value) {
             if ((string) $value !== '') {
-                $rows .= "<tr><td style='padding:6px 12px; border:1px solid #ddd;'><b>{$label}</b></td><td style='padding:6px 12px; border:1px solid #ddd;'>" . e($value) . "</td></tr>";
+                $rows .= "<tr><td style='{$labelStyle}'>{$label}</td><td style='{$valueStyle}'>" . e($value) . "</td></tr>";
             }
         }
         $docLabels = [
@@ -753,32 +756,49 @@ class OnlineTeachingFacultyController extends Controller
             'document_other_1' => 'Other Document 1',
             'document_other_2' => 'Other Document 2',
         ];
-        $docList = '';
+        $docRows = '';
         foreach ($docLabels as $field => $label) {
             if (!empty($faculty->$field)) {
-                $docList .= "<li><b>{$label}:</b> Uploaded</li>";
+                $docRows .= "<tr><td style='{$labelStyle}'>{$label}</td><td style='{$valueStyle}'>Uploaded</td></tr>";
             }
         }
-        $docList = $docList ? "<ul>{$docList}</ul>" : '<p>No documents attached.</p>';
+        $docTable = $docRows
+            ? "<table style='width:100%; border-collapse: collapse; margin: 0;'><tbody>{$docRows}</tbody></table>"
+            : "<p style='margin: 0; padding: 10px 0; color: #6c757d;'>No documents attached.</p>";
+        $submittedAt = $faculty->form_filled_at
+            ? \Carbon\Carbon::parse($faculty->form_filled_at)->format('d-m-Y h:i A')
+            : now()->format('d-m-Y h:i A');
 
         return "
+        <!DOCTYPE html>
         <html>
-        <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
-            <div style='max-width: 700px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;'>
-                <h2 style='color: #2c3e50; text-align: center;'>Online Teaching Faculty Form Submitted</h2>
-                <p>Dear CAO Team,</p>
-                <p>A faculty has submitted the online teaching faculty form. Details and uploaded documents are below.</p>
-                <hr style='margin:20px 0;'/>
-                <h3 style='color: #2c3e50;'>Submitted Details</h3>
-                <table style='width:100%; border-collapse: collapse;'>
-                    {$rows}
-                </table>
-                <h3 style='color: #2c3e50; margin-top:20px;'>Uploaded Documents</h3>
-                {$docList}
-                <p style='margin-top:20px;'><b>Submitted at:</b> " . ($faculty->form_filled_at ? \Carbon\Carbon::parse($faculty->form_filled_at)->format('d-m-Y h:i A') : now()->format('d-m-Y h:i A')) . "</p>
-                <hr style='margin:20px 0;'/>
-                <p>Best regards,<br/><b>CRM</b></p>
-            </div>
+        <head><meta charset='UTF-8'></head>
+        <body style='margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 15px; line-height: 1.5; color: #333;'>
+            <table role='presentation' style='width: 100%; max-width: 700px; margin: 0 auto; border-collapse: collapse;'>
+                <tr>
+                    <td style='padding: 24px; border: 1px solid #dee2e6; border-radius: 8px; background-color: #ffffff;'>
+                        <h2 style='margin: 0 0 20px 0; color: #2c3e50; text-align: center; font-size: 22px;'>Online Teaching Faculty Form Submitted</h2>
+                        <p style='margin: 0 0 12px 0;'>Dear CAO Team,</p>
+                        <p style='margin: 0 0 20px 0;'>A faculty has submitted the online teaching faculty form. Details and uploaded documents are below.</p>
+                        <hr style='margin: 24px 0; border: none; border-top: 1px solid #dee2e6;'/>
+                        <h3 style='margin: 0 0 12px 0; color: #2c3e50; font-size: 17px;'>Submitted Details</h3>
+                        <table style='width: 100%; border-collapse: collapse; margin: 0 0 24px 0;'>
+                            <thead>
+                                <tr>
+                                    <th style='padding: 10px 14px; border: 1px solid #dee2e6; background-color: #e9ecef; text-align: left; font-weight: 600; color: #495057; width: 38%;'>Field</th>
+                                    <th style='padding: 10px 14px; border: 1px solid #dee2e6; background-color: #e9ecef; text-align: left; font-weight: 600; color: #495057;'>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>{$rows}</tbody>
+                        </table>
+                        <h3 style='margin: 0 0 12px 0; color: #2c3e50; font-size: 17px;'>Uploaded Documents</h3>
+                        {$docTable}
+                        <p style='margin: 20px 0 0 0; padding-top: 16px;'><strong>Submitted at:</strong> {$submittedAt}</p>
+                        <hr style='margin: 24px 0; border: none; border-top: 1px solid #dee2e6;'/>
+                        <p style='margin: 0;'>Best regards,<br/><strong>CRM</strong></p>
+                    </td>
+                </tr>
+            </table>
         </body>
         </html>";
     }
