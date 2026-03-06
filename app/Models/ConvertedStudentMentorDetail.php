@@ -191,6 +191,31 @@ class ConvertedStudentMentorDetail extends Model
         'degree_certificate_distribution_date',
         'degree_courier_tracking_number',
         'degree_remarks',
+        // Junior Vlogger mentor fields
+        'total_class_days',
+        'first_term_fee_status',
+        'first_term_start_date',
+        'first_term_trainer_name_phone',
+        'first_term_task_1_date',
+        'first_term_task_2_date',
+        'first_term_number_of_days',
+        'first_term_completion_date',
+        'second_term_fee_status',
+        'second_term_start_date',
+        'second_term_trainer_name_phone',
+        'second_term_task_1_date',
+        'second_term_task_2_date',
+        'second_term_number_of_days',
+        'second_term_completion_date',
+        'third_term_fee_status',
+        'third_term_start_date',
+        'third_term_trainer_name_phone',
+        'third_term_project_1_date',
+        'third_term_project_2_date',
+        'third_term_project_3_date',
+        'third_term_number_of_days',
+        'third_term_completion_date',
+        'jv_feedback_notes',
     ];
 
     protected $casts = [
@@ -253,6 +278,20 @@ class ConvertedStudentMentorDetail extends Model
         'degree_certificate_publication_date' => 'date',
         'degree_certificate_issued_date' => 'date',
         'degree_certificate_distribution_date' => 'date',
+        // Junior Vlogger mentor date fields
+        'first_term_start_date' => 'date',
+        'first_term_task_1_date' => 'date',
+        'first_term_task_2_date' => 'date',
+        'first_term_completion_date' => 'date',
+        'second_term_start_date' => 'date',
+        'second_term_task_1_date' => 'date',
+        'second_term_task_2_date' => 'date',
+        'second_term_completion_date' => 'date',
+        'third_term_start_date' => 'date',
+        'third_term_project_1_date' => 'date',
+        'third_term_project_2_date' => 'date',
+        'third_term_project_3_date' => 'date',
+        'third_term_completion_date' => 'date',
     ];
 
     // Relationships

@@ -10,6 +10,8 @@ use App\Models\SupportFeedbackHistory;
 use App\Models\Subject;
 use App\Models\Batch;
 use App\Models\AdmissionBatch;
+use App\Models\LeadDetail;
+use App\Models\ClassTime;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
 use Illuminate\Support\Facades\Validator;
@@ -536,7 +538,7 @@ class SupportConvertedLeadController extends Controller
             $value = $request->value;
 
             // Validate the field and value
-            $validationRules = $this->getValidationRules($field);
+            $validationRules = $this->getValidationRules($field, $convertedLead->course_id);
             if ($validationRules) {
                 $validator = Validator::make([$field => $value], [$field => $validationRules]);
                 if ($validator->fails()) {
@@ -547,17 +549,42 @@ class SupportConvertedLeadController extends Controller
                 }
             }
 
-            // Handle all fields - update in converted_student_support_details table
-            $supportDetails = $convertedLead->supportDetails;
-            if (!$supportDetails) {
-                $supportDetails = new ConvertedStudentSupportDetail();
-                $supportDetails->converted_student_id = $id;
-            }
-            $supportDetails->$field = $value;
-            $supportDetails->save();
+            $courseId = (int) $convertedLead->course_id;
+            $convertedLeadFields = ['register_number', 'name', 'phone', 'batch_id', 'admission_batch_id'];
+            $leadDetailFields = ['whatsapp_number', 'whatsapp_code', 'class_time_id', 'parents_number', 'parents_code'];
 
-            // Format the response value
-            $responseValue = $this->formatResponseValue($field, $value);
+            if ($courseId === 25 && in_array($field, $convertedLeadFields)) {
+                if ($field === 'phone') {
+                    $convertedLead->phone = $value;
+                    if ($request->has('code')) {
+                        $convertedLead->code = $request->code;
+                    }
+                } else {
+                    $convertedLead->$field = $value;
+                }
+                $convertedLead->save();
+                $responseValue = $this->formatSupportResponseValue($field, $value, $convertedLead);
+            } elseif ($courseId === 25 && in_array($field, $leadDetailFields)) {
+                $leadDetail = LeadDetail::where('lead_id', $convertedLead->lead_id)->where('course_id', 25)->first();
+                if (!$leadDetail) {
+                    $leadDetail = new LeadDetail();
+                    $leadDetail->lead_id = $convertedLead->lead_id;
+                    $leadDetail->course_id = 25;
+                }
+                $leadDetail->$field = $value;
+                $leadDetail->save();
+                $responseValue = $this->formatSupportResponseValue($field, $value, $convertedLead);
+            } else {
+                // Handle all other fields in converted_student_support_details
+                $supportDetails = $convertedLead->supportDetails;
+                if (!$supportDetails) {
+                    $supportDetails = new ConvertedStudentSupportDetail();
+                    $supportDetails->converted_student_id = $id;
+                }
+                $supportDetails->$field = $value;
+                $supportDetails->save();
+                $responseValue = $this->formatResponseValue($field, $value);
+            }
 
             return response()->json([
                 'success' => true,
@@ -575,9 +602,39 @@ class SupportConvertedLeadController extends Controller
     }
 
     /**
+     * Format response value for JV support fields (batch, admission batch, phone, class time)
+     */
+    private function formatSupportResponseValue($field, $value, ConvertedLead $convertedLead)
+    {
+        if ($field === 'batch_id' && $value) {
+            $batch = Batch::find($value);
+            return $batch ? $batch->title : $value;
+        }
+        if ($field === 'admission_batch_id' && $value) {
+            $ab = AdmissionBatch::find($value);
+            return $ab ? $ab->title : $value;
+        }
+        if ($field === 'phone' && $convertedLead) {
+            return \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone);
+        }
+        if ($field === 'class_time_id' && $value) {
+            $ct = ClassTime::find($value);
+            if ($ct) {
+                return \Carbon\Carbon::parse($ct->from_time)->format('h:i A') . ' - ' . \Carbon\Carbon::parse($ct->to_time)->format('h:i A');
+            }
+        }
+        if (in_array($field, ['whatsapp_number', 'parents_number']) && $value) {
+            $jv = $convertedLead->lead->juniorVloggerStudentDetails ?? null;
+            $code = $jv ? ($field === 'whatsapp_number' ? ($jv->whatsapp_code ?? '') : ($jv->parents_code ?? '')) : '';
+            return \App\Helpers\PhoneNumberHelper::display($code, $value);
+        }
+        return $value;
+    }
+
+    /**
      * Get validation rules for specific fields
      */
-    private function getValidationRules($field)
+    private function getValidationRules($field, $courseId = null)
     {
         $rules = [
             'registration_status' => 'nullable|string|max:255',
@@ -591,6 +648,14 @@ class SupportConvertedLeadController extends Controller
             'support_notes' => 'nullable|string|max:1000',
             'support_status' => 'nullable|string|max:255',
             'support_priority' => 'nullable|string|max:255',
+            'register_number' => 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:50',
+            'batch_id' => 'nullable|exists:batches,id',
+            'admission_batch_id' => 'nullable|exists:admission_batches,id',
+            'whatsapp_number' => 'nullable|string|max:50',
+            'class_time_id' => 'nullable|exists:class_times,id',
+            'parents_number' => 'nullable|string|max:50',
         ];
 
         return $rules[$field] ?? null;
@@ -800,12 +865,23 @@ class SupportConvertedLeadController extends Controller
     }
 
     /**
+     * Display Junior Vlogger – Course Support list (course_id = 25)
+     */
+    public function juniorVloggerIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 25, 'Junior Vlogger – Course Support List', 'admin.converted-leads.support-junior-vlogger-index');
+    }
+
+    /**
      * Get course support index
      */
     private function getCourseSupportIndex(Request $request, $courseId, $pageTitle, $viewName)
     {
         $query = ConvertedLead::with([
             'lead',
+            'lead.team',
+            'lead.team.detail',
+            'lead.juniorVloggerStudentDetails.classTime',
             'leadDetail',
             'course',
             'academicAssistant',

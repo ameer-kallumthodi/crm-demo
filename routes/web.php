@@ -834,6 +834,10 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/graphic-designing-mentor-converted-leads', [App\Http\Controllers\GraphicDesigningMentorController::class, 'index'])->name('graphic-designing-mentor-converted-leads.index');
         Route::post('/graphic-designing-mentor-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\GraphicDesigningMentorController::class, 'updateMentorDetails'])->name('graphic-designing-mentor-converted-leads.update-mentor-details');
 
+        // Junior Vlogger Mentor Converted Leads Routes
+        Route::get('/junior-vlogger-mentor-converted-leads', [App\Http\Controllers\JuniorVloggerMentorController::class, 'index'])->name('junior-vlogger-mentor-converted-leads.index');
+        Route::post('/junior-vlogger-mentor-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\JuniorVloggerMentorController::class, 'updateMentorDetails'])->name('junior-vlogger-mentor-converted-leads.update-mentor-details');
+
         // Support Converted Lead Details Route (Unified)
         Route::get('/support-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-converted-leads.details');
         Route::post('/support-converted-leads/{id}/feedback', [App\Http\Controllers\SupportConvertedLeadController::class, 'submitFeedback'])->name('support-converted-leads.feedback');
@@ -905,6 +909,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         // E-School Support Converted Leads Routes
         Route::get('/support-e-school-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'eSchoolIndex'])->name('support-e-school-converted-leads.index');
         Route::post('/support-e-school-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-e-school-converted-leads.update-support-details');
+
+        Route::get('/support-junior-vlogger-converted-leads', [App\Http\Controllers\SupportConvertedLeadController::class, 'juniorVloggerIndex'])->name('support-junior-vlogger-converted-leads.index');
+        Route::post('/support-junior-vlogger-converted-leads/{id}/update-support-details', [App\Http\Controllers\SupportConvertedLeadController::class, 'updateSupportDetails'])->name('support-junior-vlogger-converted-leads.update-support-details');
 
         // Invoice Routes
         Route::get('/invoices/student/{studentId}', [App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');

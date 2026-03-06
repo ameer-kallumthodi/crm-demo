@@ -702,7 +702,7 @@ class OnlineTeachingFacultyController extends Controller
 
         // Send email to CAO with submitted details and documents
         if (function_exists('send_email')) {
-            $subject = 'Online Teaching Faculty Form Submitted – ' . ($faculty->full_name ?? 'Faculty');
+            $subject = 'Online Teaching Faculty';
             $body = $this->buildFacultySubmissionEmailBody($faculty);
             $attachments = $this->getFacultyDocumentAttachments($faculty);
             send_email('cao@natdemy.com', 'CAO', $subject, $body, $attachments, 'CRM');
