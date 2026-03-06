@@ -1,0 +1,585 @@
+@extends('layouts.mantis')
+
+@section('title', 'Junior Vlogger Converted Leads')
+
+@section('content')
+@php $appTimezone = config('app.timezone'); @endphp
+<style>
+    .table td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    .table td .btn-group { white-space: nowrap; }
+    .table td .inline-edit { white-space: nowrap; }
+    .table td .display-value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+        display: inline-block;
+    }
+    .cancelled-row>td { background-color: #fff1f0 !important; }
+    .cancelled-card { border: 1px solid #f5c2c7; background-color: #fff5f5; }
+</style>
+<!-- [ breadcrumb ] start -->
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Junior Vlogger Converted Leads Management</h5>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <ul class="breadcrumb d-flex justify-content-end">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
+                    <li class="breadcrumb-item">Junior Vlogger</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ breadcrumb ] end -->
+
+<!-- [ Course Filter Buttons ] start -->
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance())
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-3">Filter by Course</h6>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-list"></i> All Converted Leads
+                    </a>
+                    <a href="{{ route('admin.nios-converted-leads.index') }}" class="btn btn-outline-success">
+                        <i class="ti ti-school"></i> NIOS Converted Leads
+                    </a>
+                    <a href="{{ route('admin.bosse-converted-leads.index') }}" class="btn btn-outline-warning">
+                        <i class="ti ti-school-2"></i> BOSSE Converted Leads
+                    </a>
+                    <a href="{{ route('admin.ugpg-converted-leads.index') }}" class="btn btn-outline-warning">
+                        <i class="ti ti-graduation"></i> UG/PG Converted Leads
+                    </a>
+                    <a href="{{ route('admin.edumaster-converted-leads.index') }}" class="btn btn-outline-warning">
+                        <i class="ti ti-graduation"></i> EduMaster Converted Leads
+                    </a>
+                    <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-outline-info">
+                        <i class="ti ti-building"></i> Hotel Management Converted Leads
+                    </a>
+                    <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
+                        <i class="ti ti-certificate"></i> GMVSS Converted Leads
+                    </a>
+                    <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-database"></i> Diploma in Data Science Converted Leads
+                    </a>
+                    <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-world"></i> Web Development & Designing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-desktop"></i> Vibe Coding Converted Leads
+                    </a>
+                    <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-palette"></i> Graphic Designing Converted Leads
+                    </a>
+                    <a href="{{ route('admin.machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-brain"></i> Diploma in Machine Learning Converted Leads
+                    </a>
+                    <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-mobile"></i> Flutter Converted Leads
+                    </a>
+                    <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-school"></i> Eduthanzeel Converted Leads
+                    </a>
+                    <a href="{{ route('admin.e-school-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-device-laptop"></i> E-School Converted Leads
+                    </a>
+                    <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-primary active">
+                        <i class="ti ti-video"></i> Junior Vlogger Converted Leads
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+<!-- [ Course Filter Buttons ] end -->
+
+<!-- [ Mentor List ] start -->
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-3">Mentor List</h6>
+                <div class="d-flex gap-2 flex-wrap">
+                    @if(\App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_telecaller() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_senior_manager() || \App\Helpers\RoleHelper::is_hod())
+                    <a href="{{ route('admin.converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-list"></i> All Converted Leads
+                    </a>
+                    @endif
+                    <a href="{{ route('admin.mentor-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Bosse Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-nios-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> NIOS Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> UG/PG Mentor Converted List
+                    </a>
+                    <a href="{{ route('admin.mentor-edumaster-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> EduMaster Mentor Converted List
+                    </a>
+                    <a href="{{ route('admin.mentor-eschool-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> E-School Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.mentor-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Eduthanzeel Converted Mentor List
+                    </a>
+                    <a href="{{ route('admin.gmvss-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> GMVSS Mentor List
+                    </a>
+                    <a href="{{ route('admin.digital-marketing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Digital Marketing Mentor List
+                    </a>
+                    <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Data Science Course Mentor List
+                    </a>
+                    <a href="{{ route('admin.graphic-designing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Graphic Designing Mentor List
+                    </a>
+                    <a href="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Machine Learning Mentor List
+                    </a>
+                    <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-video"></i> Junior Vlogger Converted Leads
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+<!-- [ Mentor List ] end -->
+
+<!-- [ Support List ] start -->
+@if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="mb-3">Support List</h6>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ route('admin.support-bosse-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Bosse Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-nios-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> NIOS Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> UG/PG Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-edumaster-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> EduMaster Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-hotel-management-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Hotel Management Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-gmvss-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> GMVSS Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Digital Marketing Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Diploma in Data Science Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-web-development-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Web Development & Designing Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Vibe Coding Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Graphic Designing Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Diploma in Machine Learning Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-flutter-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Flutter Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> Eduthanzeel Converted Support List
+                    </a>
+                    <a href="{{ route('admin.support-e-school-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-headphones"></i> E-School Converted Support List
+                    </a>
+                    <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-video"></i> Junior Vlogger Converted Leads
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+<!-- [ Support List ] end -->
+
+<!-- [ Filter Section ] start -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Filter Junior Vlogger Converted Leads</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ route('admin.junior-vlogger-converted-leads.index') }}" id="filterForm">
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="search" name="search"
+                                value="{{ request('search') }}" placeholder="Name, Phone, Email, Register Number">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="batch_id" class="form-label">Batch</label>
+                            <select class="form-select" id="batch_id" name="batch_id">
+                                <option value="">All Batches</option>
+                                @foreach($batches as $batch)
+                                <option value="{{ $batch->id }}" {{ request('batch_id') == $batch->id ? 'selected' : '' }}>{{ $batch->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="admission_batch_id" class="form-label">Academic Batch</label>
+                            <select class="form-select" id="admission_batch_id" name="admission_batch_id" data-selected="{{ request('admission_batch_id') }}">
+                                <option value="">All Admission Batches</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="date_from" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="date_to" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request('date_to') }}">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">All</option>
+                                <option value="Active" {{ request('status') === 'Active' ? 'selected' : '' }}>Active</option>
+                                <option value="Inactive" {{ request('status') === 'Inactive' ? 'selected' : '' }}>Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <label for="is_b2b" class="form-label">B2B / In House</label>
+                            <select class="form-select" id="is_b2b" name="is_b2b">
+                                <option value="">All</option>
+                                <option value="b2b" {{ request('is_b2b') === 'b2b' ? 'selected' : '' }}>B2B</option>
+                                <option value="in_house" {{ request('is_b2b') === 'in_house' ? 'selected' : '' }}>In House</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-2">
+                            <div class="d-flex gap-2 flex-wrap align-items-end">
+                                <button type="submit" class="btn btn-primary"><i class="ti ti-search"></i> Filter</button>
+                                <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-secondary"><i class="ti ti-x"></i> Clear</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Filter Section ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Junior Vlogger Converted Leads List</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-none d-lg-block">
+                    <div class="table-responsive">
+                        <table class="table table-hover data_table_basic" id="juniorVloggerTable">
+                            <thead>
+                                <tr>
+                                    <th>SL No</th>
+                                    <th>Academic</th>
+                                    <th>Support</th>
+                                    <th>Registration Number</th>
+                                    <th>Conversion Date</th>
+                                    <th>B2B Team</th>
+                                    <th>Batch</th>
+                                    <th>Class Time</th>
+                                    <th>Academic Batch</th>
+                                    <th>Full Name</th>
+                                    <th>Date of Birth</th>
+                                    <th>Age</th>
+                                    <th>Email ID</th>
+                                    <th>Primary Mobile Number</th>
+                                    <th>Medium of Study</th>
+                                    <th>Previous Qualification</th>
+                                    <th>Technology Performance Level</th>
+                                    <th>Course Completion Date</th>
+                                    <th>Certificate Issued Date</th>
+                                    <th>B2B Partner Id</th>
+                                    <th>B2B Code</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($convertedLeads as $index => $convertedLead)
+                                @php
+                                    $leadDetailJv = $convertedLead->lead ? $convertedLead->lead->juniorVloggerStudentDetails : null;
+                                    $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                                    $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                                    $age = $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->age : null;
+                                @endphp
+                                <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
+                                            'convertedLead' => $convertedLead,
+                                            'type' => 'academic',
+                                            'showToggle' => $canToggleAcademic,
+                                            'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null,
+                                            'title' => 'academic',
+                                            'useModal' => true
+                                        ])
+                                    </td>
+                                    <td>
+                                        @include('admin.converted-leads.partials.status-badge', [
+                                            'convertedLead' => $convertedLead,
+                                            'type' => 'support',
+                                            'showToggle' => $canToggleSupport,
+                                            'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null,
+                                            'title' => 'support',
+                                            'useModal' => true
+                                        ])
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit" data-field="register_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->register_number }}">
+                                            <span class="display-value">{{ $convertedLead->register_number ?? '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>{{ $convertedLead->created_at ? $convertedLead->created_at->format('d-m-Y') : '-' }}</td>
+                                    <td>{{ $convertedLead->is_b2b == 1 && $convertedLead->lead && $convertedLead->lead->team ? $convertedLead->lead->team->name : ($convertedLead->is_b2b == 1 ? 'B2B' : 'In House') }}</td>
+                                    <td>{{ $convertedLead->batch ? $convertedLead->batch->title : '-' }}</td>
+                                    <td>
+                                        @if($leadDetailJv && $leadDetailJv->classTime)
+                                        @php
+                                            $fromTime = \Carbon\Carbon::parse($leadDetailJv->classTime->from_time)->format('h:i A');
+                                            $toTime = \Carbon\Carbon::parse($leadDetailJv->classTime->to_time)->format('h:i A');
+                                        @endphp
+                                        {{ $fromTime }} - {{ $toTime }}
+                                        @else
+                                        -
+                                        @endif
+                                    </td>
+                                    <td>{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : '-' }}</td>
+                                    <td>
+                                        {{ $convertedLead->name }}
+                                        @if($convertedLead->is_cancelled)
+                                        <div><span class="badge bg-danger ms-2">Cancelled</span></div>
+                                        @endif
+                                    </td>
+                                    <td>{{ $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->format('d-m-Y') : '-' }}</td>
+                                    <td>{{ $age !== null ? $age : '-' }}</td>
+                                    <td>{{ $convertedLead->email ?? '-' }}</td>
+                                    <td>{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</td>
+                                    <td>{{ $leadDetailJv && $leadDetailJv->medium_of_study ? ucfirst(str_replace('_', ' ', $leadDetailJv->medium_of_study)) : '-' }}</td>
+                                    <td>{{ $leadDetailJv && $leadDetailJv->previous_qualification ? ucfirst(str_replace('_', ' ', $leadDetailJv->previous_qualification)) : '-' }}</td>
+                                    <td>{{ $leadDetailJv && $leadDetailJv->technology_performance_category ? ucfirst(str_replace('_', ' ', $leadDetailJv->technology_performance_category)) : '-' }}</td>
+                                    <td>-</td>
+                                    <td>{{ $convertedLead->studentDetails && $convertedLead->studentDetails->certificate_issued_date ? \Carbon\Carbon::parse($convertedLead->studentDetails->certificate_issued_date)->format('d-m-Y') : '-' }}</td>
+                                    <td>{{ $convertedLead->lead && $convertedLead->lead->team && $convertedLead->lead->team->detail ? ($convertedLead->lead->team->detail->b2b_partner_id ?? '-') : '-' }}</td>
+                                    <td>{{ $convertedLead->lead && $convertedLead->lead->team && $convertedLead->lead->team->detail ? ($convertedLead->lead->team->detail->b2b_code ?? '-') : '-' }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details"><i class="ti ti-eye"></i></a>
+                                            <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice"><i class="ti ti-receipt"></i></a>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                            <button type="button" class="btn btn-sm {{ $convertedLead->is_cancelled ? 'btn-danger' : 'btn-outline-danger' }} js-cancel-flag" title="Cancellation"
+                                                data-cancel-url="{{ route('admin.converted-leads.cancel-flag', $convertedLead->id) }}"
+                                                data-modal-title="Cancellation Confirmation"><i class="ti ti-ban"></i></button>
+                                            @endif
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
+                                            <button type="button" class="btn btn-sm btn-info update-register-btn" title="Update Register Number"
+                                                data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
+                                                data-title="Update Register Number"><i class="ti ti-edit"></i></button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="23" class="text-center">No Junior Vlogger converted leads found</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="d-lg-none">
+                    @forelse($convertedLeads as $index => $convertedLead)
+                    @php
+                        $leadDetailJv = $convertedLead->lead ? $convertedLead->lead->juniorVloggerStudentDetails : null;
+                        $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
+                        $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
+                        $age = $convertedLead->dob ? \Carbon\Carbon::parse($convertedLead->dob)->age : null;
+                    @endphp
+                    <div class="card mb-3 {{ $convertedLead->is_cancelled ? 'cancelled-card' : '' }}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-0">{{ $convertedLead->name }}</h6>
+                                    @if($convertedLead->is_cancelled)<span class="badge bg-danger ms-2">Cancelled</span>@endif
+                                </div>
+                                <span class="badge bg-primary">#{{ $index + 1 }}</span>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><small class="text-muted d-block">Registration Number</small><span class="fw-medium">{{ $convertedLead->register_number ?? '-' }}</span></div>
+                                <div class="col-6"><small class="text-muted d-block">Conversion Date</small><span class="fw-medium">{{ $convertedLead->created_at ? $convertedLead->created_at->format('d-m-Y') : '-' }}</span></div>
+                                <div class="col-6"><small class="text-muted d-block">Batch</small><span class="fw-medium">{{ $convertedLead->batch ? $convertedLead->batch->title : '-' }}</span></div>
+                                <div class="col-6"><small class="text-muted d-block">Academic Batch</small><span class="fw-medium">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : '-' }}</span></div>
+                                <div class="col-6"><small class="text-muted d-block">Email</small><span class="fw-medium">{{ $convertedLead->email ?? '-' }}</span></div>
+                                <div class="col-6"><small class="text-muted d-block">Phone</small><span class="fw-medium">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</span></div>
+                                <div class="col-6"><small class="text-muted d-block">Academic</small>
+                                    @include('admin.converted-leads.partials.status-badge', ['convertedLead' => $convertedLead, 'type' => 'academic', 'showToggle' => $canToggleAcademic, 'toggleUrl' => $canToggleAcademic ? route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) : null])
+                                </div>
+                                <div class="col-6"><small class="text-muted d-block">Support</small>
+                                    @include('admin.converted-leads.partials.status-badge', ['convertedLead' => $convertedLead, 'type' => 'support', 'showToggle' => $canToggleSupport, 'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null])
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary"><i class="ti ti-eye"></i> View</a>
+                                <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success"><i class="ti ti-receipt"></i> Invoice</a>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-4">
+                        <i class="ti ti-inbox fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">No Junior Vlogger converted leads found</p>
+                    </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+
+<script type="application/json" id="country-codes-json">@json($country_codes)</script>
+@endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    function loadAdmissionBatchesByBatch(batchId, selectedId) {
+        var $admission = $('#admission_batch_id');
+        $admission.html('<option value="">Loading...</option>');
+        if (!batchId) {
+            $admission.html('<option value="">All Admission Batches</option>');
+            return;
+        }
+        $.get('/api/admission-batches/by-batch/' + batchId).done(function(list) {
+            var opts = '<option value="">All Admission Batches</option>';
+            if (list && list.length) {
+                list.forEach(function(i) {
+                    var sel = String(selectedId) === String(i.id) ? 'selected' : '';
+                    opts += '<option value="' + i.id + '" ' + sel + '>' + i.title + '</option>';
+                });
+            }
+            $admission.html(opts);
+        }).fail(function() {
+            $admission.html('<option value="">All Admission Batches</option>');
+        });
+    }
+    var initialBatchId = $('#batch_id').val();
+    var initialAdmissionBatchId = $('#admission_batch_id').data('selected');
+    if (initialBatchId) loadAdmissionBatchesByBatch(initialBatchId, initialAdmissionBatchId);
+    $('#batch_id').on('change', function() {
+        loadAdmissionBatchesByBatch($(this).val(), '');
+        setTimeout(function() { $('#filterForm').submit(); }, 100);
+    });
+
+    // Inline edit for register_number
+    $(document).on('click', '.edit-btn', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var container = $(this).closest('.inline-edit');
+        var field = container.data('field');
+        var currentValue = container.data('current') || '';
+        container.find('.edit-form').remove();
+        $('.inline-edit').removeClass('editing');
+        $('.edit-form').remove();
+        var editForm = '<div class="edit-form"><input type="text" value="' + (currentValue && currentValue !== '-' ? currentValue : '') + '" class="form-control form-control-sm"><div class="btn-group mt-1"><button type="button" class="btn btn-success btn-sm save-edit">Save</button><button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button></div></div>';
+        container.addClass('editing').append(editForm);
+        container.find('input').focus();
+    });
+    $(document).off('click.saveInline').on('click.saveInline', '.save-edit', function(e) {
+        e.preventDefault();
+        var container = $(this).closest('.inline-edit');
+        var field = container.data('field');
+        var id = container.data('id');
+        var value = container.find('input').val();
+        var btn = $(this);
+        if (btn.data('busy')) return;
+        btn.data('busy', true).prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
+        $.ajax({
+            url: '{{ route("admin.converted-leads.inline-update", ":id") }}'.replace(':id', id),
+            method: 'POST',
+            data: { field: field, value: value, _token: '{{ csrf_token() }}' },
+            success: function(response) {
+                if (response.success) {
+                    container.find('.display-value').text(response.value || 'N/A');
+                    container.data('current', response.value || '');
+                    if (typeof toast_success === 'function') toast_success(response.message);
+                } else {
+                    if (typeof toast_error === 'function') toast_error(response.error || 'Update failed');
+                }
+            },
+            error: function(xhr) {
+                var msg = (xhr.responseJSON && xhr.responseJSON.error) || (xhr.responseJSON && xhr.responseJSON.message) || 'Update failed';
+                if (typeof toast_error === 'function') toast_error(msg);
+            },
+            complete: function() {
+                btn.data('busy', false).prop('disabled', false).html('Save');
+                container.removeClass('editing').find('.edit-form').remove();
+            }
+        });
+    });
+    $(document).off('click.cancelInline').on('click.cancelInline', '.cancel-edit', function(e) {
+        e.preventDefault();
+        $(this).closest('.inline-edit').removeClass('editing').find('.edit-form').remove();
+    });
+
+    $('.update-register-btn').on('click', function(e) {
+        e.preventDefault();
+        var url = $(this).data('url');
+        var title = $(this).data('title');
+        if (typeof show_small_modal === 'function' && url) show_small_modal(url, title);
+    });
+    $(document).on('click', '.js-cancel-flag', function(e) {
+        e.preventDefault();
+        var url = $(this).data('cancel-url');
+        var title = $(this).data('modal-title') || 'Cancellation';
+        if (typeof show_ajax_modal === 'function' && url) show_ajax_modal(url, title);
+    });
+});
+</script>
+@endpush

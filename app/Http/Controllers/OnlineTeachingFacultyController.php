@@ -700,6 +700,112 @@ class OnlineTeachingFacultyController extends Controller
 
         $faculty->save();
 
+        // Send email to CAO with submitted details and documents
+        if (function_exists('send_email')) {
+            $subject = 'Online Teaching Faculty Form Submitted – ' . ($faculty->full_name ?? 'Faculty');
+            $body = $this->buildFacultySubmissionEmailBody($faculty);
+            $attachments = $this->getFacultyDocumentAttachments($faculty);
+            send_email('cao@natdemy.com', 'CAO', $subject, $body, $attachments, 'CRM');
+        }
+
         return view('public.faculty-form-success', compact('faculty'));
+    }
+
+    /**
+     * Build HTML email body for CAO with faculty submission details.
+     */
+    private function buildFacultySubmissionEmailBody(OnlineTeachingFaculty $faculty): string
+    {
+        $dob = $faculty->date_of_birth ? \Carbon\Carbon::parse($faculty->date_of_birth)->format('d-m-Y') : '';
+        $teachingExp = $faculty->teaching_experience === true ? 'Yes' : ($faculty->teaching_experience === false ? 'No' : '');
+        $details = [
+            'Full Name' => $faculty->full_name,
+            'Date of Birth' => $dob,
+            'Gender' => $faculty->gender,
+            'Primary Mobile' => $faculty->primary_mobile_number,
+            'Alternate Contact' => $faculty->alternate_contact_number,
+            'Official Email' => $faculty->official_email_address,
+            'Father Name' => $faculty->father_name,
+            'Mother Name' => $faculty->mother_name,
+            'House/Flat No.' => $faculty->address_house_name_flat_no,
+            'Area/Locality' => $faculty->address_area_locality,
+            'City' => $faculty->address_city,
+            'District' => $faculty->address_district,
+            'State' => $faculty->address_state,
+            'PIN Code' => $faculty->address_pin_code,
+            'Highest Qualification' => $faculty->highest_educational_qualification,
+            'Additional Certifications' => $faculty->additional_certifications,
+            'Teaching Experience' => $teachingExp,
+            'Department' => $faculty->department_name,
+        ];
+        $rows = '';
+        foreach ($details as $label => $value) {
+            if ((string) $value !== '') {
+                $rows .= "<tr><td style='padding:6px 12px; border:1px solid #ddd;'><b>{$label}</b></td><td style='padding:6px 12px; border:1px solid #ddd;'>" . e($value) . "</td></tr>";
+            }
+        }
+        $docLabels = [
+            'document_resume_cv' => 'Resume/CV',
+            'document_10th_certificate' => '10th Certificate',
+            'document_educational_qualification_certificates' => 'Educational Qualification Certificates',
+            'document_aadhaar_front' => 'Aadhaar (Front)',
+            'document_aadhaar_back' => 'Aadhaar (Back)',
+            'document_other_1' => 'Other Document 1',
+            'document_other_2' => 'Other Document 2',
+        ];
+        $docList = '';
+        foreach ($docLabels as $field => $label) {
+            if (!empty($faculty->$field)) {
+                $docList .= "<li><b>{$label}:</b> Uploaded</li>";
+            }
+        }
+        $docList = $docList ? "<ul>{$docList}</ul>" : '<p>No documents attached.</p>';
+
+        return "
+        <html>
+        <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+            <div style='max-width: 700px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;'>
+                <h2 style='color: #2c3e50; text-align: center;'>Online Teaching Faculty Form Submitted</h2>
+                <p>Dear CAO Team,</p>
+                <p>A faculty has submitted the online teaching faculty form. Details and uploaded documents are below.</p>
+                <hr style='margin:20px 0;'/>
+                <h3 style='color: #2c3e50;'>Submitted Details</h3>
+                <table style='width:100%; border-collapse: collapse;'>
+                    {$rows}
+                </table>
+                <h3 style='color: #2c3e50; margin-top:20px;'>Uploaded Documents</h3>
+                {$docList}
+                <p style='margin-top:20px;'><b>Submitted at:</b> " . ($faculty->form_filled_at ? \Carbon\Carbon::parse($faculty->form_filled_at)->format('d-m-Y h:i A') : now()->format('d-m-Y h:i A')) . "</p>
+                <hr style='margin:20px 0;'/>
+                <p>Best regards,<br/><b>CRM</b></p>
+            </div>
+        </body>
+        </html>";
+    }
+
+    /**
+     * Get full file paths of faculty documents for email attachments.
+     */
+    private function getFacultyDocumentAttachments(OnlineTeachingFaculty $faculty): array
+    {
+        $docFields = [
+            'document_resume_cv',
+            'document_10th_certificate',
+            'document_educational_qualification_certificates',
+            'document_aadhaar_front',
+            'document_aadhaar_back',
+            'document_other_1',
+            'document_other_2',
+        ];
+        $attachments = [];
+        foreach ($docFields as $field) {
+            if (!empty($faculty->$field)) {
+                $path = storage_path('app/public/' . $faculty->$field);
+                if (file_exists($path)) {
+                    $attachments[] = $path;
+                }
+            }
+        }
+        return $attachments;
     }
 }

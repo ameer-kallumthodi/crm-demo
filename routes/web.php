@@ -30,7 +30,7 @@ Route::get('/', [AuthController::class, 'index'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Public Online Teaching Faculty Form Routes
+// Public Online Teaching Faculty Form Routes 
 Route::get('/faculty-form/{id}', [OnlineTeachingFacultyController::class, 'publicForm'])->name('public.faculty.form');
 Route::post('/faculty-form/{id}', [OnlineTeachingFacultyController::class, 'publicSubmit'])->name('public.faculty.submit');
 
@@ -787,6 +787,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/flutter-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'flutterIndex'])->name('flutter-converted-leads.index');
         Route::get('/eduthanzeel-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'eduthanzeelIndex'])->name('eduthanzeel-converted-leads.index');
         Route::get('/e-school-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'eschoolIndex'])->name('e-school-converted-leads.index');
+        Route::get('/junior-vlogger-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'juniorVloggerIndex'])->name('junior-vlogger-converted-leads.index');
         Route::get('/converted-leads/{id}/update-register-number-modal', [App\Http\Controllers\ConvertedLeadController::class, 'showUpdateRegisterNumberModal'])->name('converted-leads.update-register-number-modal');
         Route::post('/converted-leads/{id}/update-register-number', [App\Http\Controllers\ConvertedLeadController::class, 'updateRegisterNumber'])->name('converted-leads.update-register-number');
         Route::put('/converted-leads/{id}/update-documents', [App\Http\Controllers\ConvertedLeadController::class, 'updateDocuments'])->name('converted-leads.update-documents');

@@ -104,6 +104,9 @@
                     <a href="{{ route('admin.e-school-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-device-laptop"></i> E-School Converted Leads
                     </a>
+                    <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-video"></i> Junior Vlogger Converted Leads
+                    </a>
                 </div>
             </div>
         </div>
@@ -153,6 +156,9 @@
                     </a>
                     <a href="{{ route('admin.graphic-designing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Graphic Designing Mentor List
+                    </a>
+                    <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-video"></i> Junior Vlogger Converted Leads
                     </a>
                 </div>
             </div>
@@ -219,6 +225,9 @@
                     </a>
                     <a href="{{ route('admin.support-e-school-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> E-School Converted Support List
+                    </a>
+                    <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-video"></i> Junior Vlogger Converted Leads
                     </a>
                 </div>
             </div>
