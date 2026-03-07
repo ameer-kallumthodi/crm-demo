@@ -114,12 +114,6 @@
                     <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-video"></i> Junior Vlogger Converted Leads
                     </a>
-                    <a href="{{ route('admin.junior-vlogger-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List
-                    </a>
-                    <a href="{{ route('admin.support-junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Junior Vlogger – Course Support List
-                    </a>
                 </div>
             </div>
         </div>
@@ -171,14 +165,8 @@
                     <a href="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Machine Learning Mentor List
                     </a>
-                    <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-video"></i> Junior Vlogger Converted Leads
-                    </a>
                     <a href="{{ route('admin.junior-vlogger-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List
-                    </a>
-                    <a href="{{ route('admin.support-junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Junior Vlogger – Course Support List
                     </a>
                 </div>
             </div>
@@ -240,12 +228,6 @@
                     </a>
                     <a href="{{ route('admin.support-e-school-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> E-School Converted Support List
-                    </a>
-                    <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-video"></i> Junior Vlogger Converted Leads
-                    </a>
-                    <a href="{{ route('admin.junior-vlogger-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List
                     </a>
                     <a href="{{ route('admin.support-junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Junior Vlogger – Course Support List
