@@ -146,7 +146,7 @@
                 @endif
 
                 {{-- User Management Section --}}
-                @if(has_permission('admin/telecallers/index') || has_permission('admin/marketing/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index') || has_permission('admin/teachers/index') || has_permission('admin/support-team/index') || has_permission('admin/mentor/index') || has_permission('admin/finance/index') || has_permission('admin/hod/index'))
+                @if(has_permission('admin/telecallers/index') || has_permission('admin/marketing/index') || has_permission('admin/admins/index') || has_permission('admin/admission-counsellors/index') || has_permission('admin/academic-assistants/index') || has_permission('admin/teachers/index') || has_permission('admin/support-team/index') || has_permission('admin/mentor/index') || has_permission('admin/finance/index') || has_permission('admin/hod/index') || has_permission('admin/placement-officers/index'))
                 <li class="pc-item pc-caption">
                     <label>User Management</label>
                 </li>
@@ -197,6 +197,16 @@
                             <i class="ti ti-clipboard-list"></i>
                         </span>
                         <span class="pc-mtext">Auditors</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/placement-officers/index'))
+                <li class="pc-item {{ request()->routeIs('admin.placement-officers.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.placement-officers.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-briefcase"></i>
+                        </span>
+                        <span class="pc-mtext">Placement Officers</span>
                     </a>
                 </li>
                 @endif

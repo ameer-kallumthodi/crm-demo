@@ -310,6 +310,23 @@ class RoleHelper
         return $user->role_id == 14;
     }
 
+    /**
+     * Check if current user is Placement Officer
+     */
+    public static function is_placement_officer()
+    {
+        if (!self::is_logged_in()) {
+            return false;
+        }
+
+        $user = AuthHelper::getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        return $user->role_id == 15;
+    }
+
 
     /**
      * Check if current user has admin or super admin role

@@ -4195,6 +4195,7 @@ class LeadController extends Controller
         ->where('lead_source_id', $request->lead_source_id)
         ->where('telecaller_id', $request->tele_caller_id)
         ->where('lead_status_id', $request->lead_status_id)
+        ->where('is_converted', 0)
         ->where('created_at', '>=', $fromDate)
         ->where('created_at', '<=', $toDate);
         

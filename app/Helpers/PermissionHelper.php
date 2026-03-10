@@ -53,6 +53,9 @@ class PermissionHelper
         elseif (RoleHelper::is_hod()) {
             return self::has_permission_hod($permission);
         }
+        elseif (RoleHelper::is_placement_officer()) {
+            return self::has_permission_placement_officer($permission);
+        }
 
         return false;
     }
@@ -364,6 +367,18 @@ class PermissionHelper
             'admin/mentor-eduthanzeel-converted-leads/index',
             'admin/gmvss-mentor-converted-leads/index',
         ];
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * Placement Officer permissions
+     */
+    public static function has_permission_placement_officer($permission = '')
+    {
+        $permissions = [
+            'dashboard/index',
+        ];
+
         return in_array($permission, $permissions);
     }
 

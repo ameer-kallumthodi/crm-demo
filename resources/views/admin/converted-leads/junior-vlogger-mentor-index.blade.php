@@ -316,21 +316,21 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
                                 <th>Technology Perf.</th>
                                 <th>Reg. & First Term Fee Status</th>
                                 <th>First Term Start Date</th>
-                                <th>1st Term Trainer & Ph</th>
+                                <th>1st Term Trainer</th>
                                 <th>1st Task 1 Date</th>
                                 <th>1st Task 2 Date</th>
                                 <th>1st No. of Days</th>
                                 <th>1st Completion Date</th>
                                 <th>Second Term Fee Status</th>
                                 <th>Second Term Start Date</th>
-                                <th>2nd Term Trainer & Ph</th>
+                                <th>2nd Term Trainer</th>
                                 <th>2nd Task 1 Date</th>
                                 <th>2nd Task 2 Date</th>
                                 <th>2nd No. of Days</th>
                                 <th>2nd Completion Date</th>
                                 <th>Third Term Fee Status</th>
                                 <th>Third Term Start Date</th>
-                                <th>3rd Term Trainer & Ph</th>
+                                <th>3rd Term Trainer</th>
                                 <th>Project 1 Date</th>
                                 <th>Project 2 Date</th>
                                 <th>Project 3 Date</th>

@@ -548,6 +548,16 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/auditors-change-password/{id}', [App\Http\Controllers\AuditorController::class, 'changePassword'])->name('auditors.change-password');
         Route::post('/auditors-update-password/{id}', [App\Http\Controllers\AuditorController::class, 'updatePassword'])->name('auditors.update-password');
 
+        // Placement Officer routes (role_id = 15)
+        Route::resource('placement-officers', App\Http\Controllers\PlacementOfficerController::class)->except(['create', 'edit']);
+        Route::get('/placement-officers-add', [App\Http\Controllers\PlacementOfficerController::class, 'ajax_add'])->name('placement-officers.add');
+        Route::get('/placement-officers-edit/{id}', [App\Http\Controllers\PlacementOfficerController::class, 'ajax_edit'])->name('placement-officers.edit');
+        Route::post('/placement-officers-submit', [App\Http\Controllers\PlacementOfficerController::class, 'submit'])->name('placement-officers.submit');
+        Route::put('/placement-officers-update/{id}', [App\Http\Controllers\PlacementOfficerController::class, 'update'])->name('placement-officers.update');
+        Route::delete('/placement-officers-delete/{id}', [App\Http\Controllers\PlacementOfficerController::class, 'delete'])->name('placement-officers.delete');
+        Route::get('/placement-officers-change-password/{id}', [App\Http\Controllers\PlacementOfficerController::class, 'changePassword'])->name('placement-officers.change-password');
+        Route::post('/placement-officers-update-password/{id}', [App\Http\Controllers\PlacementOfficerController::class, 'updatePassword'])->name('placement-officers.update-password');
+
         // Academic Assistant routes (role_id = 5)
         Route::resource('academic-assistants', App\Http\Controllers\AcademicAssistantController::class)->except(['create', 'edit']);
         Route::get('/academic-assistants-add', [App\Http\Controllers\AcademicAssistantController::class, 'ajax_add'])->name('academic-assistants.add');
