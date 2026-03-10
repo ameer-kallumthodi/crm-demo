@@ -375,19 +375,45 @@
                                     </td>
                                     <td>{{ $convertedLead->created_at ? $convertedLead->created_at->format('d-m-Y') : '-' }}</td>
                                     <td>{{ $convertedLead->is_b2b == 1 && $convertedLead->lead && $convertedLead->lead->team ? $convertedLead->lead->team->name : ($convertedLead->is_b2b == 1 ? 'B2B' : 'In House') }}</td>
-                                    <td>{{ $convertedLead->batch ? $convertedLead->batch->title : '-' }}</td>
+                                    <td>
+                                        <div class="inline-edit"
+                                             data-field="batch_id"
+                                             data-id="{{ $convertedLead->id }}"
+                                             data-course-id="{{ $convertedLead->course_id }}"
+                                             data-current-id="{{ $convertedLead->batch_id }}">
+                                            <span class="display-value">{{ $convertedLead->batch ? $convertedLead->batch->title : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td>
                                         @if($leadDetailJv && $leadDetailJv->classTime)
-                                        @php
-                                            $fromTime = \Carbon\Carbon::parse($leadDetailJv->classTime->from_time)->format('h:i A');
-                                            $toTime = \Carbon\Carbon::parse($leadDetailJv->classTime->to_time)->format('h:i A');
-                                        @endphp
-                                        {{ $fromTime }} - {{ $toTime }}
+                                            @php
+                                                $fromTime = \Carbon\Carbon::parse($leadDetailJv->classTime->from_time)->format('h:i A');
+                                                $toTime = \Carbon\Carbon::parse($leadDetailJv->classTime->to_time)->format('h:i A');
+                                            @endphp
+                                            {{ $fromTime }} - {{ $toTime }}
                                         @else
-                                        -
+                                            -
                                         @endif
                                     </td>
-                                    <td>{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : '-' }}</td>
+                                    <td>
+                                        <div class="inline-edit"
+                                             data-field="admission_batch_id"
+                                             data-id="{{ $convertedLead->id }}"
+                                             data-batch-id="{{ $convertedLead->batch_id }}"
+                                             data-current-id="{{ $convertedLead->admission_batch_id }}">
+                                            <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : '-' }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td>
                                         {{ $convertedLead->name }}
                                         @if($convertedLead->is_cancelled)
@@ -401,8 +427,42 @@
                                     <td>{{ $leadDetailJv && $leadDetailJv->medium_of_study ? ucfirst(str_replace('_', ' ', $leadDetailJv->medium_of_study)) : '-' }}</td>
                                     <td>{{ $leadDetailJv && $leadDetailJv->previous_qualification ? ucfirst(str_replace('_', ' ', $leadDetailJv->previous_qualification)) : '-' }}</td>
                                     <td>{{ $leadDetailJv && $leadDetailJv->technology_performance_category ? ucfirst(str_replace('_', ' ', $leadDetailJv->technology_performance_category)) : '-' }}</td>
-                                    <td>-</td>
-                                    <td>{{ $convertedLead->studentDetails && $convertedLead->studentDetails->certificate_issued_date ? \Carbon\Carbon::parse($convertedLead->studentDetails->certificate_issued_date)->format('d-m-Y') : '-' }}</td>
+                                    <td>
+                                        <div class="inline-edit"
+                                             data-field="class_ending_date"
+                                             data-id="{{ $convertedLead->id }}"
+                                             data-current="{{ $convertedLead->studentDetails && $convertedLead->studentDetails->class_ending_date ? ( $convertedLead->studentDetails->class_ending_date instanceof \Carbon\Carbon ? $convertedLead->studentDetails->class_ending_date->format('Y-m-d') : $convertedLead->studentDetails->class_ending_date ) : '' }}">
+                                            @php
+                                                $completionDate = $convertedLead->studentDetails && $convertedLead->studentDetails->class_ending_date
+                                                    ? \Carbon\Carbon::parse($convertedLead->studentDetails->class_ending_date)->format('d-m-Y')
+                                                    : '-';
+                                            @endphp
+                                            <span class="display-value">{{ $completionDate }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="inline-edit"
+                                             data-field="certificate_issued_date"
+                                             data-id="{{ $convertedLead->id }}"
+                                             data-current="{{ $convertedLead->studentDetails && $convertedLead->studentDetails->certificate_issued_date ? ( $convertedLead->studentDetails->certificate_issued_date instanceof \Carbon\Carbon ? $convertedLead->studentDetails->certificate_issued_date->format('Y-m-d') : $convertedLead->studentDetails->certificate_issued_date ) : '' }}">
+                                            @php
+                                                $issuedDate = $convertedLead->studentDetails && $convertedLead->studentDetails->certificate_issued_date
+                                                    ? \Carbon\Carbon::parse($convertedLead->studentDetails->certificate_issued_date)->format('d-m-Y')
+                                                    : '-';
+                                            @endphp
+                                            <span class="display-value">{{ $issuedDate }}</span>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
+                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td>{{ $convertedLead->lead && $convertedLead->lead->team && $convertedLead->lead->team->detail ? ($convertedLead->lead->team->detail->b2b_partner_id ?? '-') : '-' }}</td>
                                     <td>{{ $convertedLead->lead && $convertedLead->lead->team && $convertedLead->lead->team->detail ? ($convertedLead->lead->team->detail->b2b_code ?? '-') : '-' }}</td>
                                     <td>
@@ -517,37 +577,179 @@ $(document).ready(function() {
         setTimeout(function() { $('#filterForm').submit(); }, 100);
     });
 
-    // Inline edit for register_number
+    // Inline edit handlers (batch, academic batch, course completion & certificate issued date, register number, etc.)
+    var inlineDateFields = ['class_ending_date', 'certificate_issued_date'];
+
+    function createInlineInputField(field, currentValue) {
+        var displayValue = (currentValue && currentValue !== '-' && currentValue !== 'N/A') ? currentValue : '';
+        return '' +
+            '<div class="edit-form">' +
+                '<input type="text" value="' + displayValue + '" class="form-control form-control-sm" autocomplete="off" autocapitalize="off" spellcheck="false">' +
+                '<div class="btn-group mt-1">' +
+                    '<button type="button" class="btn btn-success btn-sm save-edit">Save</button>' +
+                    '<button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>' +
+                '</div>' +
+            '</div>';
+    }
+
+    function createInlineDateField(currentValue) {
+        var value = (currentValue && currentValue !== '-' && currentValue !== 'N/A') ? currentValue : '';
+        return '' +
+            '<div class="edit-form">' +
+                '<input type="date" value="' + value + '" class="form-control form-control-sm">' +
+                '<div class="btn-group mt-1">' +
+                    '<button type="button" class="btn btn-success btn-sm save-edit">Save</button>' +
+                    '<button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>' +
+                '</div>' +
+            '</div>';
+    }
+
+    function createInlineBatchSelect() {
+        return '' +
+            '<div class="edit-form">' +
+                '<select class="form-select form-select-sm">' +
+                    '<option value="">Loading...</option>' +
+                '</select>' +
+                '<div class="btn-group mt-1">' +
+                    '<button type="button" class="btn btn-success btn-sm save-edit">Save</button>' +
+                    '<button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>' +
+                '</div>' +
+            '</div>';
+    }
+
+    function createInlineAdmissionBatchSelect() {
+        return '' +
+            '<div class="edit-form">' +
+                '<select class="form-select form-select-sm">' +
+                    '<option value="">Loading...</option>' +
+                '</select>' +
+                '<div class="btn-group mt-1">' +
+                    '<button type="button" class="btn btn-success btn-sm save-edit">Save</button>' +
+                    '<button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>' +
+                '</div>' +
+            '</div>';
+    }
+
+    function loadInlineBatches(courseId, $select, currentId) {
+        if (!courseId) {
+            $select.html('<option value="">No course selected</option>');
+            return;
+        }
+        $.get('/api/batches/by-course/' + courseId)
+            .done(function (response) {
+                var options = '<option value="">Select Batch</option>';
+                if (response.success && response.batches) {
+                    response.batches.forEach(function (batch) {
+                        var isSelected = (currentId && String(currentId) === String(batch.id)) ? 'selected' : '';
+                        options += '<option value="' + batch.id + '" ' + isSelected + '>' + batch.title + '</option>';
+                    });
+                }
+                $select.html(options).focus();
+            })
+            .fail(function () {
+                $select.html('<option value="">Error loading batches</option>');
+            });
+    }
+
+    function loadInlineAdmissionBatches(batchId, $select, currentId) {
+        if (!batchId) {
+            $select.html('<option value="">No batch selected</option>');
+            return;
+        }
+        $.get('/api/admission-batches/by-batch/' + batchId)
+            .done(function (list) {
+                var options = '<option value="">Select Admission Batch</option>';
+                if (list && list.length) {
+                    list.forEach(function (item) {
+                        var selected = String(currentId) === String(item.id) ? 'selected' : '';
+                        options += '<option value="' + item.id + '" ' + selected + '>' + item.title + '</option>';
+                    });
+                }
+                $select.html(options).focus();
+            })
+            .fail(function () {
+                $select.html('<option value="">Error loading admission batches</option>');
+            });
+    }
+
     $(document).on('click', '.edit-btn', function(e) {
         e.preventDefault();
         e.stopPropagation();
+
         var container = $(this).closest('.inline-edit');
         var field = container.data('field');
-        var currentValue = container.data('current') || '';
-        container.find('.edit-form').remove();
-        $('.inline-edit').removeClass('editing');
-        $('.edit-form').remove();
-        var editForm = '<div class="edit-form"><input type="text" value="' + (currentValue && currentValue !== '-' ? currentValue : '') + '" class="form-control form-control-sm"><div class="btn-group mt-1"><button type="button" class="btn btn-success btn-sm save-edit">Save</button><button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button></div></div>';
-        container.addClass('editing').append(editForm);
-        container.find('input').focus();
+        var currentValue = container.data('current') !== undefined
+            ? String(container.data('current')).trim()
+            : container.find('.display-value').text().trim();
+        var currentId = container.data('current-id') !== undefined
+            ? String(container.data('current-id')).trim()
+            : '';
+
+        if (container.hasClass('editing')) {
+            return;
+        }
+
+        $('.inline-edit.editing').each(function () {
+            $(this).removeClass('editing');
+            $(this).find('.edit-form').remove();
+        });
+
+        var editForm = '';
+        if (field === 'batch_id') {
+            editForm = createInlineBatchSelect();
+        } else if (field === 'admission_batch_id') {
+            editForm = createInlineAdmissionBatchSelect();
+        } else if (inlineDateFields.indexOf(field) !== -1) {
+            editForm = createInlineDateField(currentValue);
+        } else {
+            editForm = createInlineInputField(field, currentValue);
+        }
+
+        container.addClass('editing');
+        container.append(editForm);
+
+        if (field === 'batch_id') {
+            var courseId = container.data('course-id');
+            var select = container.find('select');
+            loadInlineBatches(courseId, select, currentId);
+        } else if (field === 'admission_batch_id') {
+            var batchId = container.data('batch-id');
+            var selectAb = container.find('select');
+            loadInlineAdmissionBatches(batchId, selectAb, currentId);
+        } else {
+            container.find('input, select').first().focus();
+        }
     });
+
     $(document).off('click.saveInline').on('click.saveInline', '.save-edit', function(e) {
         e.preventDefault();
+        e.stopPropagation();
+
         var container = $(this).closest('.inline-edit');
         var field = container.data('field');
         var id = container.data('id');
-        var value = container.find('input').val();
+        var value = container.find('input, select').val();
         var btn = $(this);
+
         if (btn.data('busy')) return;
         btn.data('busy', true).prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i>');
+
         $.ajax({
             url: '{{ route("admin.converted-leads.inline-update", ":id") }}'.replace(':id', id),
             method: 'POST',
-            data: { field: field, value: value, _token: '{{ csrf_token() }}' },
+            data: {
+                field: field,
+                value: value,
+                _token: '{{ csrf_token() }}'
+            },
             success: function(response) {
                 if (response.success) {
-                    container.find('.display-value').text(response.value || 'N/A');
-                    container.data('current', response.value || '');
+                    var displayValue = response.value || 'N/A';
+                    container.find('.display-value').text(displayValue);
+                    container.data('current', (inlineDateFields.indexOf(field) !== -1) ? value : displayValue);
+                    if (field === 'batch_id' || field === 'admission_batch_id') {
+                        container.data('current-id', value || '');
+                    }
                     if (typeof toast_success === 'function') toast_success(response.message);
                 } else {
                     if (typeof toast_error === 'function') toast_error(response.error || 'Update failed');
@@ -563,9 +765,12 @@ $(document).ready(function() {
             }
         });
     });
+
     $(document).off('click.cancelInline').on('click.cancelInline', '.cancel-edit', function(e) {
         e.preventDefault();
-        $(this).closest('.inline-edit').removeClass('editing').find('.edit-form').remove();
+        e.stopPropagation();
+        var container = $(this).closest('.inline-edit');
+        container.removeClass('editing').find('.edit-form').remove();
     });
 
     $('.update-register-btn').on('click', function(e) {

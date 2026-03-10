@@ -5,14 +5,55 @@
 @section('content')
 @php $appTimezone = config('app.timezone'); @endphp
 <style>
-    .table td { white-space: nowrap; vertical-align: middle; }
-    .table td .inline-edit { white-space: nowrap; }
-    .table td .display-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; display: inline-block; }
-    .cancelled-row > td { background-color: #fff1f0 !important; }
+    .table td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    .table td .btn-group {
+        white-space: nowrap;
+    }
+    .table td .inline-edit {
+        white-space: nowrap;
+    }
+    .table td .display-value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+        display: inline-block;
+    }
+    .cancelled-row > td {
+        background-color: #fff1f0 !important;
+    }
+    .cancelled-card {
+        border: 1px solid #f5c2c7;
+        background-color: #fff5f5;
+    }
     .inline-edit .edit-form { display: none; }
     .inline-edit.editing .edit-form { display: block; }
     .inline-edit.editing .display-value { display: none !important; }
     .inline-edit.editing .edit-btn { display: none !important; }
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #supportJvTable thead th,
+    #supportJvTable tbody td {
+        white-space: nowrap;
+    }
+    #supportJvTable thead th {
+        position: sticky;
+        top: 0;
+        background: #f8f9fa;
+        z-index: 1;
+        box-shadow: 0 1px 0 #dee2e6;
+    }
+    #supportJvTable tbody tr:hover {
+        background: #fafbff;
+    }
+    #supportJvTable td .display-value {
+        display: inline-block;
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 </style>
 
 <!-- [ breadcrumb ] start -->
@@ -280,7 +321,7 @@
 </div>
 <!-- [ Filter ] end -->
 
-<!-- [ Main table ] start -->
+<!-- [ Main Content ] start -->
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -292,10 +333,12 @@
                     $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team();
                     $course = \App\Models\Course::find(25);
                 @endphp
-                <div class="table-responsive">
-                    <table class="table table-hover table-bordered" id="supportJvTable">
-                        <thead class="table-light">
-                            <tr>
+                <!-- Desktop Table View -->
+                <div class="d-none d-lg-block">
+                    <div class="table-responsive">
+                        <table class="table table-hover data_table_basic" id="supportJvTable">
+                            <thead>
+                                <tr>
                                 <th>SL</th>
                                 <th>Academic</th>
                                 <th>Support</th>
@@ -325,7 +368,7 @@
                                 $age = $lead->dob ? \Carbon\Carbon::parse($lead->dob)->age : null;
                             @endphp
                             <tr class="{{ $lead->is_cancelled ? 'cancelled-row' : '' }}">
-                                <td>{{ $convertedLeads->firstItem() + $index }}</td>
+                                <td>{{ $index + 1 }}</td>
                                 <td>
                                     @include('admin.converted-leads.partials.status-badge', [
                                         'convertedLead' => $lead,
@@ -480,19 +523,49 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="d-flex justify-content-center mt-3">
-                    {{ $convertedLeads->withQueryString()->links() }}
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="d-lg-none">
+                    @forelse($convertedLeads as $index => $lead)
+                    @php
+                        $jv = $lead->lead ? $lead->lead->juniorVloggerStudentDetails : null;
+                        $age = $lead->dob ? \Carbon\Carbon::parse($lead->dob)->age : null;
+                    @endphp
+                    <div class="card mb-3 {{ $lead->is_cancelled ? 'cancelled-card' : '' }}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">{{ $lead->name }}</h6>
+                                @if($lead->is_cancelled)<span class="badge bg-danger">Cancelled</span>@endif
+                            </div>
+                            <div class="row g-2 mb-2 small">
+                                <div class="col-6"><span class="text-muted">Reg. No</span><br>{{ $lead->register_number ?? '-' }}</div>
+                                <div class="col-6"><span class="text-muted">Batch</span><br>{{ $lead->batch ? $lead->batch->title : '-' }}</div>
+                                <div class="col-6"><span class="text-muted">Phone</span><br>{{ \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone) }}</div>
+                                <div class="col-6"><span class="text-muted">Conversion</span><br>{{ $lead->created_at ? $lead->created_at->format('d-m-Y') : '-' }}</div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('admin.support-converted-leads.details', $lead->id) }}" class="btn btn-sm btn-primary"><i class="ti ti-eye"></i> Details</a>
+                                <a href="{{ route('admin.invoices.index', $lead->id) }}" class="btn btn-sm btn-success"><i class="ti ti-receipt"></i> Invoice</a>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-4 text-muted">No records found.</div>
+                    @endforelse
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- [ Main table ] end -->
+<!-- [ Main Content ] end -->
 @endsection
 
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // DataTable is automatically initialized by layout for tables with 'data_table_basic' class
+
     var updateUrl = '{{ route("admin.support-junior-vlogger-converted-leads.update-support-details", ":id") }}';
 
     function loadAdmissionBatches(batchId, selectedId) {
