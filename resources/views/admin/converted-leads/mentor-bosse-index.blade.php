@@ -409,6 +409,7 @@
                                     <th>Exam Subject - 4</th>
                                     <th>Exam Subject - 5</th>
                                     <th>Exam Subject - 6</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -895,10 +896,34 @@
                                             @endif
                                         </div>
                                     </td>
+                                    <td>
+                                        @if($convertedLead->mentorDetails?->is_placement_passed)
+                                            <span class="badge bg-success">Placement Passed</span>
+                                            @if($convertedLead->mentorDetails?->is_placement_passed_at)
+                                                <br><small class="text-muted">{{ $convertedLead->mentorDetails->is_placement_passed_at->format('d M Y') }}</small>
+                                            @endif
+                                            @if($convertedLead->mentorDetails?->placement_resume)
+                                                <br><a href="{{ asset('storage/' . $convertedLead->mentorDetails->placement_resume) }}" target="_blank" class="btn btn-sm btn-link p-0 small"><i class="ti ti-file-text"></i> View Resume</a>
+                                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                                    <br><a href="javascript:void(0);" class="btn btn-sm {{ $convertedLead->mentorDetails->is_resume_verified ? 'btn-success' : 'btn-outline-success' }} px-2 py-0"
+                                                        onclick="show_small_modal('{{ route('admin.converted-leads.verify-resume-modal', $convertedLead->id) }}', 'Resume Verification')"
+                                                        title="Resume Verification">
+                                                        <i class="ti ti-circle-check"></i> {{ $convertedLead->mentorDetails->is_resume_verified ? 'Resume Verified' : 'Verify Resume' }}@if($convertedLead->mentorDetails->is_resume_verified && $convertedLead->mentorDetails->resume_verified_at) ({{ $convertedLead->mentorDetails->resume_verified_at->format('d M Y') }})@endif
+                                                    </a>
+                                                @endif
+                                            @endif
+                                        @else
+                                            <a href="javascript:void(0);" class="btn btn-outline-primary btn-sm px-2"
+                                                onclick="show_small_modal('{{ route('admin.converted-leads.move-to-placement', $convertedLead->id) }}', 'Move to Placement')"
+                                                title="Move to Placement">
+                                                <i class="ti ti-user-check"></i> Move to Placement
+                                            </a>
+                                        @endif
+                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="50" class="text-center">No converted leads found for mentoring</td>
+                                    <td colspan="51" class="text-center">No converted leads found for mentoring</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -1186,6 +1211,7 @@
 @endpush
 
 @push('scripts')
+@include('admin.converted-leads.partials.placement-modal-reopen-script')
 <script>
     $(document).ready(function() {
         // DataTable is automatically initialized by layout for tables with 'data_table_basic' class

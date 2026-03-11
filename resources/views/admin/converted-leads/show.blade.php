@@ -150,6 +150,71 @@
                         </div>
                     </div>
 
+                    <!-- Placement (Mentor) -->
+                    @if($convertedLead->mentorDetails && ($convertedLead->mentorDetails->is_placement_passed || $convertedLead->mentorDetails->placement_resume))
+                    <div class="col-12">
+                        <hr>
+                        <h6 class="text-primary mb-3 d-flex align-items-center gap-2"><i class="ti ti-briefcase"></i> Placement</h6>
+                        <div class="row g-3">
+                            @if($convertedLead->mentorDetails->is_placement_passed)
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Placement Passed</label>
+                                <p class="fw-bold"><span class="badge bg-success">Yes</span></p>
+                            </div>
+                            @if($convertedLead->mentorDetails->is_placement_passed_at)
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Passed At</label>
+                                <p class="fw-bold">{{ $convertedLead->mentorDetails->is_placement_passed_at->format('d M Y h:i A') }}</p>
+                            </div>
+                            @endif
+                            @if($convertedLead->mentorDetails->placementPassedBy)
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Passed By</label>
+                                <p class="fw-bold">{{ $convertedLead->mentorDetails->placementPassedBy->name }}</p>
+                            </div>
+                            @endif
+                            @endif
+                            @if($convertedLead->mentorDetails->placement_resume)
+                            @php
+                                $resumePath = $convertedLead->mentorDetails->placement_resume;
+                                $resumeExists = $resumePath ? \Illuminate\Support\Facades\Storage::disk('public')->exists($resumePath) : false;
+                                $resumeUrl = $resumeExists ? asset('storage/' . $resumePath) : null;
+                            @endphp
+                            <div class="col-12">
+                                <label class="form-label text-muted">Resume</label>
+                                <p class="fw-bold">
+                                    @if($resumeUrl)
+                                        <a href="{{ $resumeUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+                                            <i class="ti ti-file-text"></i> View / Download Resume
+                                        </a>
+                                    @else
+                                        <span class="text-muted">File not found</span>
+                                    @endif
+                                </p>
+                            </div>
+                            @if($convertedLead->mentorDetails->is_resume_verified)
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Resume Verified</label>
+                                <p class="fw-bold"><span class="badge bg-success">Yes</span></p>
+                            </div>
+                            @if($convertedLead->mentorDetails->resume_verified_at)
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Resume Verified At</label>
+                                <p class="fw-bold">{{ $convertedLead->mentorDetails->resume_verified_at->format('d M Y h:i A') }}</p>
+                            </div>
+                            @endif
+                            @if($convertedLead->mentorDetails->resumeVerifiedBy)
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Resume Verified By</label>
+                                <p class="fw-bold">{{ $convertedLead->mentorDetails->resumeVerifiedBy->name }}</p>
+                            </div>
+                            @endif
+                            @endif
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Lead Information -->
                     @if($convertedLead->lead)
                     <div class="col-12">

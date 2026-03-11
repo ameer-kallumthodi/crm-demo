@@ -185,6 +185,34 @@ class ConvertedLead extends Model
         return $this->hasOne(ConvertedStudentMentorDetail::class, 'converted_student_id');
     }
 
+    public function placementMockTestDetails()
+    {
+        return $this->hasMany(PlacementMockTestDetail::class, 'converted_lead_id')->orderByDesc('created_at');
+    }
+
+    public function placementScheduledInterviews()
+    {
+        return $this->hasMany(PlacementScheduledInterview::class, 'converted_lead_id')->orderByDesc('interview_date')->orderByDesc('created_at');
+    }
+
+    /**
+     * Placement stage: Placed if any interview is placed; else based on the latest (most recent) mock test only:
+     * latest total >= 35 → Passed Mock Test, latest total < 35 → Need Mock Test; if no mock tests → Pending.
+     * Requires placementScheduledInterviews and placementMockTestDetails to be loaded.
+     */
+    public function getPlacementStage(): string
+    {
+        if ($this->relationLoaded('placementScheduledInterviews') && $this->placementScheduledInterviews->where('status', PlacementScheduledInterview::STATUS_PLACED)->isNotEmpty()) {
+            return 'Placed';
+        }
+        if ($this->relationLoaded('placementMockTestDetails') && $this->placementMockTestDetails->isNotEmpty()) {
+            $latestMock = $this->placementMockTestDetails->first(); // relation already ordered by created_at desc
+            $total = $latestMock->speaking_capacity + $latestMock->presentation_skill + $latestMock->character + $latestMock->dedication;
+            return $total >= 35 ? 'Passed Mock Test' : 'Need Mock Test';
+        }
+        return 'Pending';
+    }
+
     public function supportDetails()
     {
         return $this->hasOne(ConvertedStudentSupportDetail::class, 'converted_student_id');

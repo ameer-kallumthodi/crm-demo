@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ConvertedLead;
+use App\Models\ConvertedStudentMentorDetail;
+use App\Models\PlacementMockTestDetail;
+use App\Models\PlacementScheduledInterview;
 use App\Models\Lead;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
@@ -2290,7 +2293,9 @@ class ConvertedLeadController extends Controller
             'subject',
             'academicAssistant',
             'createdBy',
-            'studentDetails.registrationLink'
+            'studentDetails.registrationLink',
+            'mentorDetails.placementPassedBy',
+            'mentorDetails.resumeVerifiedBy'
         ])->findOrFail($id);
 
         // Apply role-based access control
@@ -2794,6 +2799,338 @@ class ConvertedLeadController extends Controller
             'success' => true,
             'message' => $message,
             'is_cancelled' => $convertedLead->is_cancelled
+        ]);
+    }
+
+    /**
+     * Show modal for move to placement (resume upload).
+     */
+    public function moveToPlacementModal($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor() && !RoleHelper::is_academic_assistant()) {
+            abort(403, 'Access denied.');
+        }
+
+        $convertedLead = ConvertedLead::with('mentorDetails')->findOrFail($id);
+        return view('admin.converted-leads.move-to-placement-modal', compact('convertedLead'));
+    }
+
+    /**
+     * Submit move to placement: upload resume and set is_placement_passed on mentor details.
+     */
+    public function moveToPlacementSubmit(Request $request, $id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor() && !RoleHelper::is_academic_assistant()) {
+            return redirect()->back()->with('message_danger', 'Access denied.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'placement_resume' => 'required|file|mimes:pdf,doc,docx|max:10240',
+        ], [
+            'placement_resume.required' => 'Resume upload is required.',
+            'placement_resume.mimes' => 'Resume must be PDF, DOC or DOCX.',
+            'placement_resume.max' => 'Resume must not exceed 10MB.',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->with('placement_modal_converted_lead_id', $id);
+        }
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+        $mentorDetails = $convertedLead->mentorDetails;
+        if (!$mentorDetails) {
+            $mentorDetails = new ConvertedStudentMentorDetail();
+            $mentorDetails->converted_student_id = $id;
+            $mentorDetails->save();
+        }
+
+        $resumePath = null;
+        if ($request->hasFile('placement_resume')) {
+            $file = $request->file('placement_resume');
+            $fileName = 'placement-resume-' . $convertedLead->id . '-' . time() . '.' . $file->getClientOriginalExtension();
+            $resumePath = $file->storeAs('mentor-placement-resumes', $fileName, 'public');
+        }
+
+        $mentorDetails->update([
+            'is_placement_passed' => 1,
+            'is_placement_passed_by' => AuthHelper::getCurrentUserId(),
+            'is_placement_passed_at' => now(),
+            'placement_resume' => $resumePath,
+        ]);
+
+        $referer = $request->header('referer') ?: route('admin.converted-leads.index');
+        return redirect($referer)->with('message_success', 'Moved to placement successfully!');
+    }
+
+    /**
+     * Show resume verification modal (admin / admission counsellor only). Verify / Unverify options.
+     */
+    public function verifyResumeModal($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            abort(403, 'Access denied.');
+        }
+
+        $convertedLead = ConvertedLead::with(['mentorDetails.resumeVerifiedBy'])->findOrFail($id);
+        return view('admin.converted-leads.verify-resume-modal', compact('convertedLead'));
+    }
+
+    /**
+     * Verify resume (admin / admission counsellor only). Sets is_resume_verified, resume_verified_at, resume_verified_by.
+     */
+    public function verifyResume($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return redirect()->back()->with('message_danger', 'Access denied.');
+        }
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+        $mentorDetails = $convertedLead->mentorDetails;
+        if (!$mentorDetails || !$mentorDetails->placement_resume) {
+            return redirect()->back()->with('message_danger', 'No resume found to verify.');
+        }
+
+        $mentorDetails->update([
+            'is_resume_verified' => 1,
+            'resume_verified_at' => now(),
+            'resume_verified_by' => AuthHelper::getCurrentUserId(),
+        ]);
+
+        return redirect()->back()->with('message_success', 'Resume verified successfully!');
+    }
+
+    /**
+     * Unverify resume (admin / admission counsellor only). Clears is_resume_verified, resume_verified_at, resume_verified_by.
+     */
+    public function unverifyResume($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            return redirect()->back()->with('message_danger', 'Access denied.');
+        }
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+        $mentorDetails = $convertedLead->mentorDetails;
+        if (!$mentorDetails) {
+            return redirect()->back()->with('message_danger', 'No mentor details found.');
+        }
+
+        $mentorDetails->update([
+            'is_resume_verified' => 0,
+            'resume_verified_at' => null,
+            'resume_verified_by' => null,
+        ]);
+
+        return redirect()->back()->with('message_success', 'Resume unverified.');
+    }
+
+    /**
+     * Placement list: converted students with is_placement_passed = 1.
+     * Page loads empty; data is loaded via AJAX (placementListData).
+     */
+    public function placementList(Request $request)
+    {
+        return view('admin.placement-list.index');
+    }
+
+    /**
+     * Placement details page: name, phone, email, course, batch, resume (only if verified), mock test entries.
+     */
+    public function placementDetails($id)
+    {
+        $convertedLead = ConvertedLead::with(['mentorDetails', 'course', 'batch', 'placementMockTestDetails', 'placementScheduledInterviews'])
+            ->whereHas('mentorDetails', function ($q) {
+                $q->where('is_placement_passed', 1);
+            })
+            ->findOrFail($id);
+
+        return view('admin.placement-list.show', compact('convertedLead'));
+    }
+
+    /**
+     * Store a new mock test detail entry for a placement (inserts new row each time).
+     */
+    public function storeMockTestDetails(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'speaking_capacity' => 'required|integer|min:1|max:10',
+            'presentation_skill' => 'required|integer|min:1|max:10',
+            'character' => 'required|integer|min:1|max:10',
+            'dedication' => 'required|integer|min:1|max:10',
+            'remark' => 'nullable|string|max:2000',
+        ]);
+
+        $convertedLead = ConvertedLead::whereHas('mentorDetails', function ($q) {
+            $q->where('is_placement_passed', 1);
+        })->findOrFail($id);
+
+        PlacementMockTestDetail::create([
+            'converted_lead_id' => $convertedLead->id,
+            'speaking_capacity' => $validated['speaking_capacity'],
+            'presentation_skill' => $validated['presentation_skill'],
+            'character' => $validated['character'],
+            'dedication' => $validated['dedication'],
+            'remark' => $validated['remark'] ?? null,
+        ]);
+
+        return redirect()->route('admin.placement-list.show', $id)
+            ->with('message_success', 'Mock test details added successfully.');
+    }
+
+    /**
+     * Store a new scheduled interview (inserts new row each time).
+     */
+    public function storeScheduleInterview(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'company_name' => 'required|string|max:255',
+            'place' => 'required|string|max:255',
+            'interview_date' => 'required|date',
+        ]);
+
+        $convertedLead = ConvertedLead::whereHas('mentorDetails', function ($q) {
+            $q->where('is_placement_passed', 1);
+        })->findOrFail($id);
+
+        PlacementScheduledInterview::create([
+            'converted_lead_id' => $convertedLead->id,
+            'company_name' => $validated['company_name'],
+            'place' => $validated['place'],
+            'interview_date' => $validated['interview_date'],
+            'status' => PlacementScheduledInterview::STATUS_PENDING,
+        ]);
+
+        return redirect()->route('admin.placement-list.show', $id)
+            ->with('message_success', 'Interview scheduled successfully.');
+    }
+
+    /**
+     * Update scheduled interview status (pending, placed, not_placed).
+     */
+    public function updateInterviewStatus(Request $request, $id, $interviewId)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,placed,not_placed',
+        ]);
+
+        $convertedLead = ConvertedLead::whereHas('mentorDetails', function ($q) {
+            $q->where('is_placement_passed', 1);
+        })->findOrFail($id);
+
+        $interview = PlacementScheduledInterview::where('converted_lead_id', $convertedLead->id)
+            ->findOrFail($interviewId);
+        $interview->status = $validated['status'];
+        $interview->save();
+
+        return response()->json(['success' => true, 'status' => $interview->status]);
+    }
+
+    /**
+     * Update specialization for a placement list entry (mentor details).
+     */
+    public function updatePlacementSpecialization(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'specialization' => 'nullable|string|max:500',
+        ]);
+
+        $convertedLead = ConvertedLead::with('mentorDetails')->findOrFail($id);
+        $mentorDetails = $convertedLead->mentorDetails;
+        if (!$mentorDetails) {
+            $mentorDetails = new ConvertedStudentMentorDetail();
+            $mentorDetails->converted_student_id = $id;
+            $mentorDetails->save();
+        }
+        $mentorDetails->specialization = $validated['specialization'] ?? null;
+        $mentorDetails->save();
+
+        return response()->json([
+            'success' => true,
+            'specialization' => $mentorDetails->specialization ?? '',
+        ]);
+    }
+
+    /**
+     * AJAX endpoint for DataTables: placement list data (is_placement_passed = 1).
+     * Columns: slno, name, phone, email, course, batch, specialization, resume, actions.
+     * Resume link is only shown if it is verified.
+     */
+    public function placementListData(Request $request)
+    {
+        $query = ConvertedLead::with(['mentorDetails', 'course', 'batch', 'placementScheduledInterviews', 'placementMockTestDetails'])
+            ->whereHas('mentorDetails', function ($q) {
+                $q->where('is_placement_passed', 1);
+            });
+
+        // DataTables search
+        $searchValue = null;
+        if ($request->filled('search') && is_array($request->search) && isset($request->search['value'])) {
+            $searchValue = $request->search['value'];
+        }
+        if ($searchValue !== null && $searchValue !== '') {
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('name', 'LIKE', '%' . $searchValue . '%')
+                    ->orWhere('phone', 'LIKE', '%' . $searchValue . '%')
+                    ->orWhere('email', 'LIKE', '%' . $searchValue . '%');
+            });
+        }
+
+        $totalRecords = ConvertedLead::whereHas('mentorDetails', function ($q) {
+            $q->where('is_placement_passed', 1);
+        })->count();
+        $filteredCount = $query->count();
+
+        // Ordering: 0=index, 1=name, 2=phone, 3=email, 4=course, 5=batch, 6=specialization, 7=resume, 8=stage, 9=actions
+        $orderCol = (int) $request->get('order.0.column', 0);
+        $orderDir = $request->get('order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
+        $orderColumns = ['id', 'name', 'phone', 'email', null, null, null, null, null, null];
+        $orderBy = isset($orderColumns[$orderCol]) ? $orderColumns[$orderCol] : 'id';
+        $query->orderBy($orderBy, $orderDir);
+
+        $start = (int) $request->get('start', 0);
+        $length = (int) $request->get('length', 25);
+        if ($length > 100) {
+            $length = 100;
+        }
+        if ($length < 1) {
+            $length = 25;
+        }
+        $leads = $query->skip($start)->take($length)->get();
+
+        $data = [];
+        foreach ($leads as $index => $lead) {
+            $resumeHtml = '—';
+            if ($lead->mentorDetails && $lead->mentorDetails->is_resume_verified && $lead->mentorDetails->placement_resume) {
+                $url = asset('storage/' . $lead->mentorDetails->placement_resume);
+                $resumeHtml = '<a href="' . e($url) . '" target="_blank" class="btn btn-sm btn-outline-primary"><i class="ti ti-file-text"></i> View Resume</a>';
+            }
+
+            $viewUrl = route('admin.placement-list.show', $lead->id);
+            $actionsHtml = '<a href="' . e($viewUrl) . '" class="btn btn-sm btn-light-primary" title="View Details"><i class="ti ti-eye"></i></a>';
+
+            $stage = $lead->getPlacementStage();
+
+            $data[] = [
+                'id' => $lead->id,
+                'index' => $start + $index + 1,
+                'name' => $lead->name ?? '—',
+                'phone' => $lead->phone ?? '—',
+                'email' => $lead->email ?? '—',
+                'course' => $lead->course?->title ?? '—',
+                'batch' => $lead->batch?->title ?? '—',
+                'specialization' => $lead->mentorDetails->specialization ?? '',
+                'resume' => $resumeHtml,
+                'stage' => $stage,
+                'actions' => $actionsHtml,
+            ];
+        }
+
+        return response()->json([
+            'draw' => (int) $request->get('draw', 1),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $filteredCount,
+            'data' => $data,
         ]);
     }
 

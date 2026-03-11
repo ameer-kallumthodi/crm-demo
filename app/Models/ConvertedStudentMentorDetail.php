@@ -216,6 +216,14 @@ class ConvertedStudentMentorDetail extends Model
         'third_term_number_of_days',
         'third_term_completion_date',
         'jv_feedback_notes',
+        'is_placement_passed',
+        'is_placement_passed_by',
+        'is_placement_passed_at',
+        'placement_resume',
+        'specialization',
+        'is_resume_verified',
+        'resume_verified_at',
+        'resume_verified_by',
     ];
 
     protected $casts = [
@@ -292,6 +300,10 @@ class ConvertedStudentMentorDetail extends Model
         'third_term_project_2_date' => 'date',
         'third_term_project_3_date' => 'date',
         'third_term_completion_date' => 'date',
+        'is_placement_passed' => 'boolean',
+        'is_placement_passed_at' => 'datetime',
+        'is_resume_verified' => 'boolean',
+        'resume_verified_at' => 'datetime',
     ];
 
     // Relationships
@@ -313,5 +325,15 @@ class ConvertedStudentMentorDetail extends Model
     public function plustwoRegistrationLink()
     {
         return $this->belongsTo(RegistrationLink::class, 'plustwo_registration_link_id');
+    }
+
+    public function placementPassedBy()
+    {
+        return $this->belongsTo(User::class, 'is_placement_passed_by');
+    }
+
+    public function resumeVerifiedBy()
+    {
+        return $this->belongsTo(User::class, 'resume_verified_by');
     }
 }

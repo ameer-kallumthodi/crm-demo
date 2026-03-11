@@ -383,6 +383,7 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
                                 <th>B2B Code</th>
                                 <th>Feedback / Notes</th>
                                 <th>Actions</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -641,10 +642,34 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
                                     <a href="{{ route('admin.converted-leads.show', $lead->id) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="ti ti-eye"></i></a>
                                     <a href="{{ route('admin.invoices.index', $lead->id) }}" class="btn btn-sm btn-success" title="Invoice"><i class="ti ti-receipt"></i></a>
                                 </td>
+                                <td>
+                                    @if($lead->mentorDetails?->is_placement_passed)
+                                        <span class="badge bg-success">Placement Passed</span>
+                                        @if($lead->mentorDetails?->is_placement_passed_at)
+                                            <br><small class="text-muted">{{ $lead->mentorDetails->is_placement_passed_at->format('d M Y') }}</small>
+                                        @endif
+                                        @if($lead->mentorDetails?->placement_resume)
+                                            <br><a href="{{ asset('storage/' . $lead->mentorDetails->placement_resume) }}" target="_blank" class="btn btn-sm btn-link p-0 small"><i class="ti ti-file-text"></i> View Resume</a>
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                                                <br><a href="javascript:void(0);" class="btn btn-sm {{ $lead->mentorDetails->is_resume_verified ? 'btn-success' : 'btn-outline-success' }} px-2 py-0"
+                                                    onclick="show_small_modal('{{ route('admin.converted-leads.verify-resume-modal', $lead->id) }}', 'Resume Verification')"
+                                                    title="Resume Verification">
+                                                    <i class="ti ti-circle-check"></i> {{ $lead->mentorDetails->is_resume_verified ? 'Resume Verified' : 'Verify Resume' }}@if($lead->mentorDetails->is_resume_verified && $lead->mentorDetails->resume_verified_at) ({{ $lead->mentorDetails->resume_verified_at->format('d M Y') }})@endif
+                                                </a>
+                                            @endif
+                                        @endif
+                                    @else
+                                        <a href="javascript:void(0);" class="btn btn-outline-primary btn-sm px-2"
+                                            onclick="show_small_modal('{{ route('admin.converted-leads.move-to-placement', $lead->id) }}', 'Move to Placement')"
+                                            title="Move to Placement">
+                                            <i class="ti ti-user-check"></i> Move to Placement
+                                        </a>
+                                    @endif
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="52" class="text-center">No records found.</td>
+                                <td colspan="53" class="text-center">No records found.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -688,6 +713,7 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
 @endsection
 
 @push('scripts')
+@include('admin.converted-leads.partials.placement-modal-reopen-script')
 <script type="application/json" id="country-codes-json">@json($country_codes)</script>
 <script>
 $(document).ready(function() {

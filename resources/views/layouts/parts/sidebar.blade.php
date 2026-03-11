@@ -69,7 +69,12 @@
                 @endif
 
                 {{-- Converted Leads Section --}}
-                @if(has_permission('admin/converted-leads/index') || \App\Helpers\RoleHelper::is_support_team() || \App\Helpers\RoleHelper::is_hod())
+                @if(
+                    has_permission('admin/converted-leads/index')
+                    || \App\Helpers\RoleHelper::is_support_team()
+                    || \App\Helpers\RoleHelper::is_hod()
+                    || \App\Helpers\RoleHelper::is_placement_officer()
+                )
                 <li class="pc-item {{ (request()->routeIs('admin.converted-leads.*') || request()->routeIs('admin.support-*-converted-leads.*')) && !request()->routeIs('admin.support-ajax-converted-leads.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.converted-leads.index') }}" class="pc-link">
                         <span class="pc-micon">
@@ -84,6 +89,14 @@
                             <i class="ti ti-headphones"></i>
                         </span>
                         <span class="pc-mtext">Support List</span>
+                    </a>
+                </li>
+                <li class="pc-item {{ request()->routeIs('admin.placement-list.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.placement-list.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-briefcase"></i>
+                        </span>
+                        <span class="pc-mtext">Placement List</span>
                     </a>
                 </li>
                 @endif

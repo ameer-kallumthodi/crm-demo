@@ -755,6 +755,20 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/converted-leads/{id}/course-pricing', [App\Http\Controllers\ConvertedLeadController::class, 'coursePricing'])->name('converted-leads.course-pricing');
         Route::get('/converted-leads/{id}/cancel-flag', [App\Http\Controllers\ConvertedLeadController::class, 'cancelFlag'])->name('converted-leads.cancel-flag');
         Route::post('/converted-leads/{id}/cancel-flag', [App\Http\Controllers\ConvertedLeadController::class, 'cancelFlagSubmit'])->name('converted-leads.cancel-flag-submit');
+        Route::get('/converted-leads/{id}/move-to-placement', [App\Http\Controllers\ConvertedLeadController::class, 'moveToPlacementModal'])->name('converted-leads.move-to-placement');
+        Route::post('/converted-leads/{id}/move-to-placement', [App\Http\Controllers\ConvertedLeadController::class, 'moveToPlacementSubmit'])->name('converted-leads.move-to-placement.submit');
+        Route::get('/converted-leads/{id}/verify-resume-modal', [App\Http\Controllers\ConvertedLeadController::class, 'verifyResumeModal'])->name('converted-leads.verify-resume-modal');
+        Route::post('/converted-leads/{id}/verify-resume', [App\Http\Controllers\ConvertedLeadController::class, 'verifyResume'])->name('converted-leads.verify-resume');
+        Route::post('/converted-leads/{id}/unverify-resume', [App\Http\Controllers\ConvertedLeadController::class, 'unverifyResume'])->name('converted-leads.unverify-resume');
+
+        // Placement list (converted students with is_placement_passed = 1)
+        Route::get('/placement-list', [App\Http\Controllers\ConvertedLeadController::class, 'placementList'])->name('placement-list.index');
+        Route::get('/placement-list/data', [App\Http\Controllers\ConvertedLeadController::class, 'placementListData'])->name('placement-list.data');
+        Route::get('/placement-list/{id}', [App\Http\Controllers\ConvertedLeadController::class, 'placementDetails'])->name('placement-list.show');
+        Route::patch('/placement-list/{id}/specialization', [App\Http\Controllers\ConvertedLeadController::class, 'updatePlacementSpecialization'])->name('placement-list.update-specialization');
+        Route::post('/placement-list/{id}/mock-test-details', [App\Http\Controllers\ConvertedLeadController::class, 'storeMockTestDetails'])->name('placement-list.mock-test-details.store');
+        Route::post('/placement-list/{id}/interviews', [App\Http\Controllers\ConvertedLeadController::class, 'storeScheduleInterview'])->name('placement-list.interviews.store');
+        Route::patch('/placement-list/{id}/interviews/{interviewId}/status', [App\Http\Controllers\ConvertedLeadController::class, 'updateInterviewStatus'])->name('placement-list.interviews.status');
 
         // NIOS Converted Leads Routes
         Route::get('/nios-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'niosIndex'])->name('nios-converted-leads.index');
