@@ -111,6 +111,40 @@
             background-color: #1e3c72;
             border-color: #1e3c72;
         }
+        .structure-title-toggle {
+            cursor: pointer;
+            user-select: none;
+            padding: 2px 0;
+        }
+        .structure-title-toggle:hover {
+            color: #1e3c72;
+        }
+        .structure-title-toggle.no-descriptions {
+            cursor: default;
+        }
+        .structure-title-toggle.no-descriptions:hover {
+            color: inherit;
+        }
+        .structure-title-toggle .toggle-icon {
+            font-size: 0.75em;
+            margin-left: 4px;
+            transition: transform 0.2s ease;
+        }
+        .structure-title-toggle.expanded .toggle-icon {
+            transform: rotate(90deg);
+        }
+        .structure-descriptions {
+            display: none;
+            margin: 6px 0 8px 1.2em;
+            padding-left: 0.5em;
+            border-left: 2px solid #1e3c72;
+        }
+        .structure-descriptions ul {
+            margin: 0;
+            padding-left: 1em;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
     </style>
 </head>
 <body style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; padding: 20px 0;">
@@ -312,7 +346,7 @@
                     <script id="course-structure-data" type="application/json">
                         @json($courses->mapWithKeys(function($course) {
                             return [$course->id => $course->academicDeliveryStructures->map(function($structure) {
-                                return ['id' => $structure->id, 'title' => $structure->title];
+                                return ['id' => $structure->id, 'title' => $structure->title, 'descriptions' => $structure->descriptions ?? []];
                             })];
                         }))
                     </script>
@@ -409,7 +443,7 @@
                  if (structures.length > 0) {
                      structures.forEach(structure => {
                         const div = document.createElement('div');
-                        div.className = 'form-check';
+                        div.className = 'form-check mb-2';
                         
                         const input = document.createElement('input');
                         input.className = 'form-check-input';
@@ -418,17 +452,40 @@
                         input.value = structure.id;
                         input.id = `structure_${rowId}_${structure.id}`;
                         
-                        // We can't make checkboxes 'required' in a group easily with standard HTML5 required 
-                        // unless we write custom validation. 
-                        // The validateStep function needs to check if at least one is checked.
+                        const labelWrap = document.createElement('label');
+                        labelWrap.className = 'form-check-label d-block';
+                        labelWrap.htmlFor = `structure_${rowId}_${structure.id}`;
                         
-                        const label = document.createElement('label');
-                        label.className = 'form-check-label';
-                        label.htmlFor = `structure_${rowId}_${structure.id}`;
-                        label.textContent = structure.title;
+                        const titleSpan = document.createElement('span');
+                        titleSpan.className = 'structure-title-toggle' + (structure.descriptions && structure.descriptions.length ? '' : ' no-descriptions');
+                        titleSpan.innerHTML = structure.title + (structure.descriptions && structure.descriptions.length ? ' <span class="toggle-icon">&#9654;</span>' : '');
+                        titleSpan.addEventListener('click', function(e) {
+                            if (!structure.descriptions || structure.descriptions.length === 0) return;
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const descEl = div.querySelector('.structure-descriptions');
+                            if (!descEl) return;
+                            const isHidden = descEl.style.display === 'none' || !descEl.style.display;
+                            descEl.style.display = isHidden ? 'block' : 'none';
+                            titleSpan.classList.toggle('expanded', isHidden);
+                        });
                         
+                        const descDiv = document.createElement('div');
+                        descDiv.className = 'structure-descriptions';
+                        if (structure.descriptions && structure.descriptions.length > 0) {
+                            const ul = document.createElement('ul');
+                            structure.descriptions.forEach(function(d) {
+                                const li = document.createElement('li');
+                                li.textContent = d;
+                                ul.appendChild(li);
+                            });
+                            descDiv.appendChild(ul);
+                        }
+                        
+                        labelWrap.appendChild(titleSpan);
+                        labelWrap.appendChild(descDiv);
                         div.appendChild(input);
-                        div.appendChild(label);
+                        div.appendChild(labelWrap);
                         container.appendChild(div);
                      });
                  } else {

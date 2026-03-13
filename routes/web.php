@@ -474,6 +474,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/academic-delivery-structures', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'index'])->name('academic-delivery-structures.index');
         Route::get('/academic-delivery-structures-add', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'ajax_add'])->name('academic-delivery-structures.add');
         Route::get('/academic-delivery-structures-edit/{id}', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'ajax_edit'])->name('academic-delivery-structures.edit');
+        Route::get('/academic-delivery-structures-view/{id}', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'ajax_view'])->name('academic-delivery-structures.view');
         Route::post('/academic-delivery-structures-submit', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'submit'])->name('academic-delivery-structures.submit');
         Route::put('/academic-delivery-structures-update/{id}', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'update'])->name('academic-delivery-structures.update');
         Route::delete('/academic-delivery-structures-delete/{id}', [App\Http\Controllers\AcademicDeliveryStructureController::class, 'delete'])->name('academic-delivery-structures.delete');

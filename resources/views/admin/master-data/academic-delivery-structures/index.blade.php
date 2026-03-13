@@ -47,6 +47,7 @@
                                 <th>#</th>
                                 <th>Title</th>
                                 <th>Course</th>
+                                <th>Descriptions</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -57,6 +58,23 @@
                                 <td>{{ $structure->title }}</td>
                                 <td>{{ $structure->course ? $structure->course->title : '-' }}</td>
                                 <td>
+                                    @php $descriptions = $structure->descriptions ?? []; @endphp
+                                    @if(count($descriptions) > 0)
+                                        <ul class="mb-0 ps-3 list-unstyled">
+                                            @foreach($descriptions as $desc)
+                                                <li class="mb-1">• {{ $desc }}</li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <a href="javascript:void(0);" class="btn btn-info btn-sm shadow-sm px-3 me-1"
+                                        onclick="show_small_modal('{{ route('admin.academic-delivery-structures.view', $structure->id) }}', 'View Academic Delivery Structure')"
+                                        title="View">
+                                        <i class="ti ti-eye"></i> View
+                                    </a>
                                     @if(has_permission('admin/academic-delivery-structures/index') || \App\Helpers\RoleHelper::is_academic_counselor())
                                     <a href="javascript:void(0);" class="btn btn-warning btn-sm shadow-sm px-3 me-1"
                                         onclick="show_small_modal('{{ route('admin.academic-delivery-structures.edit', $structure->id) }}', 'Edit Academic Delivery Structure')"

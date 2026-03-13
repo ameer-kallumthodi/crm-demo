@@ -30,9 +30,12 @@ class AcademicDeliveryStructureController extends Controller
             'course_id' => 'required',
         ]);
 
+        $descriptions = array_values(array_filter((array) $request->input('descriptions', [])));
+
         AcademicDeliveryStructure::create([
             'title' => $request->title,
             'course_id' => $request->course_id,
+            'descriptions' => $descriptions,
             'status' => 1,
             'created_by' => auth()->id(),
         ]);
@@ -47,6 +50,12 @@ class AcademicDeliveryStructureController extends Controller
         return view('admin.master-data.academic-delivery-structures.edit', compact('academicDeliveryStructure', 'courses'));
     }
 
+    public function ajax_view($id)
+    {
+        $academicDeliveryStructure = AcademicDeliveryStructure::with('course')->find($id);
+        return view('admin.master-data.academic-delivery-structures.view', compact('academicDeliveryStructure'));
+    }
+
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -54,10 +63,13 @@ class AcademicDeliveryStructureController extends Controller
             'course_id' => 'required',
         ]);
 
+        $descriptions = array_values(array_filter((array) $request->input('descriptions', [])));
+
         $academicDeliveryStructure = AcademicDeliveryStructure::find($id);
         $academicDeliveryStructure->update([
             'title' => $request->title,
             'course_id' => $request->course_id,
+            'descriptions' => $descriptions,
             'updated_by' => auth()->id(),
         ]);
 

@@ -14,10 +14,15 @@ class AcademicDeliveryStructure extends Model
     protected $fillable = [
         'title',
         'course_id',
+        'descriptions',
         'status',
         'created_by',
         'updated_by',
         'deleted_by',
+    ];
+
+    protected $casts = [
+        'descriptions' => 'array',
     ];
 
     public function course()

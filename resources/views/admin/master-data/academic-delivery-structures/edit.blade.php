@@ -20,6 +20,30 @@
                     <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" value="{{ $academicDeliveryStructure->title }}" required placeholder="Enter Title">
                 </div>
             </div>
+            <div class="col-md-12">
+                <div class="form-group mb-3">
+                    <label class="form-label">Descriptions</label>
+                    <div id="descriptions-container">
+                        @php $descriptions = $academicDeliveryStructure->descriptions ?? []; @endphp
+                        @if(count($descriptions) > 0)
+                            @foreach($descriptions as $desc)
+                                <div class="input-group mb-2 description-row">
+                                    <input type="text" class="form-control" name="descriptions[]" placeholder="Enter description" value="{{ $desc }}">
+                                    <button type="button" class="btn btn-outline-danger btn-remove-description" title="Remove"><i class="ti ti-trash"></i></button>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="input-group mb-2 description-row">
+                                <input type="text" class="form-control" name="descriptions[]" placeholder="Enter description">
+                                <button type="button" class="btn btn-outline-danger btn-remove-description" title="Remove"><i class="ti ti-trash"></i></button>
+                            </div>
+                        @endif
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-1" id="add-description-btn">
+                        <i class="ti ti-plus"></i> Add Description
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     <div class="modal-footer">
@@ -27,3 +51,22 @@
         <button type="submit" class="btn btn-primary">Update</button>
     </div>
 </form>
+<script>
+(function() {
+    var container = document.getElementById('descriptions-container');
+    var addBtn = document.getElementById('add-description-btn');
+    if (!container || !addBtn) return;
+    addBtn.addEventListener('click', function() {
+        var row = document.createElement('div');
+        row.className = 'input-group mb-2 description-row';
+        row.innerHTML = '<input type="text" class="form-control" name="descriptions[]" placeholder="Enter description"><button type="button" class="btn btn-outline-danger btn-remove-description" title="Remove"><i class="ti ti-trash"></i></button>';
+        container.appendChild(row);
+    });
+    container.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-remove-description')) {
+            var row = e.target.closest('.description-row');
+            if (container.querySelectorAll('.description-row').length > 1) row.remove();
+        }
+    });
+})();
+</script>
