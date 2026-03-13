@@ -175,6 +175,7 @@ class PermissionHelper
             'admin/b2b-services/index',
             'admin/departments/index',
             'admin/telecallers/index',
+            'admin/placement-list/index',
         ];
         return in_array($permission, $permissions);
     }
@@ -242,6 +243,7 @@ class PermissionHelper
             'profile/index',
             'admin/converted-leads/index',
             'admin/post-sales-converted-leads/index',
+            'admin/payments/list',
         ];
         return in_array($permission, $permissions);
     }
@@ -377,6 +379,7 @@ class PermissionHelper
     {
         $permissions = [
             'dashboard/index',
+            'admin/placement-list/index',
         ];
 
         return in_array($permission, $permissions);
