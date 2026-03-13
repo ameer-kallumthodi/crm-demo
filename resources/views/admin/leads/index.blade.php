@@ -191,6 +191,7 @@
                             onclick="show_ajax_modal('{{ route('leads.add') }}', 'Add New Lead')">
                             <i class="ti ti-plus"></i> Add Lead
                         </a>
+                        @if(empty($hasB2BLeadRestrictions))
                         <a href="javascript:void(0);" class="btn btn-outline-primary btn-sm px-3"
                             onclick="show_ajax_modal('{{ route('leads.bulk-upload.test') }}', 'Bulk Upload Leads')">
                             <i class="ti ti-upload"></i> Bulk Upload
@@ -199,6 +200,7 @@
                             onclick="show_large_modal('{{ route('admin.leads.bulk-reassign') }}', 'Bulk Reassign Leads')">
                             <i class="ti ti-users"></i> Bulk Reassign
                         </a>
+                        @endif
                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_general_manager())
                         <a href="javascript:void(0);" class="btn btn-outline-danger btn-sm px-3"
                             onclick="show_large_modal('{{ route('admin.leads.pullback') }}', 'Pullback Lead')">
@@ -210,10 +212,12 @@
                             onclick="show_large_modal('{{ route('admin.leads.followup') }}', 'Followup Leads')">
                             <i class="ti ti-calendar-event"></i> Followup Leads
                         </a>
+                        @if(empty($hasB2BLeadRestrictions))
                         <a href="javascript:void(0);" class="btn btn-outline-danger btn-sm px-3"
                             onclick="show_ajax_modal('{{ route('admin.leads.bulk-delete') }}', 'Bulk Delete Leads')">
                             <i class="ti ti-trash"></i> Bulk Delete
                         </a>
+                        @endif
                         @endif
                         @endif
                     </div>
@@ -249,16 +253,20 @@
                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_team_lead() || \App\Helpers\RoleHelper::is_general_manager() || \App\Helpers\RoleHelper::is_senior_manager())
                     <div class="row g-2">
                         <div class="col-6">
+                            @if(empty($hasB2BLeadRestrictions))
                             <a href="javascript:void(0);" class="btn btn-outline-primary btn-sm w-100"
                                 onclick="show_ajax_modal('{{ route('leads.bulk-upload.test') }}', 'Bulk Upload Leads')">
                                 <i class="ti ti-upload me-1"></i> Upload
                             </a>
+                            @endif
                         </div>
                         <div class="col-6">
+                            @if(empty($hasB2BLeadRestrictions))
                             <a href="javascript:void(0);" class="btn btn-outline-success btn-sm w-100"
                                 onclick="show_large_modal('{{ route('admin.leads.bulk-reassign') }}', 'Bulk Reassign Leads')">
                                 <i class="ti ti-users me-1"></i> Reassign
                             </a>
+                            @endif
                         </div>
                         @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_general_manager())
                         <div class="col-6">
@@ -276,10 +284,12 @@
                             </a>
                         </div>
                         <div class="col-6">
+                            @if(empty($hasB2BLeadRestrictions))
                             <a href="javascript:void(0);" class="btn btn-outline-danger btn-sm w-100"
                                 onclick="show_ajax_modal('{{ route('admin.leads.bulk-delete') }}', 'Bulk Delete Leads')">
                                 <i class="ti ti-trash me-1"></i> Delete
                             </a>
+                            @endif
                         </div>
                         @endif
                     </div>

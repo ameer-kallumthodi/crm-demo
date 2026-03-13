@@ -66,6 +66,7 @@ class LeadController extends Controller
         // Get role flags
         $isTelecaller = $currentUser && $currentUser->role_id == 3;
         $isTeamLead = $currentUser && AuthHelper::isTeamLead();
+        $hasB2BLeadRestrictions = $currentUser && $currentUser->is_b2b;
         
         // Filter telecallers based on role
         if ($isTeamLead && !$isSeniorManager) {
@@ -109,7 +110,7 @@ class LeadController extends Controller
         return view('admin.leads.index', compact(
             'leadStatuses', 'leadSources', 'countries', 'courses', 'telecallers',
             'leadStatusList', 'leadSourceList', 'courseName', 'telecallerList',
-            'fromDate', 'toDate', 'isTelecaller', 'isTeamLead',
+            'fromDate', 'toDate', 'isTelecaller', 'isTeamLead', 'hasB2BLeadRestrictions',
             'isAdminOrSuperAdmin', 'isTeamLeadRole', 'isGeneralManager', 'isSeniorManager', 'isTelecallerRole',
             'isAcademicAssistant', 'isAdmissionCounsellor', 'hasLeadActionPermission'
         ))->with('search_key', $request->search_key);
@@ -2075,8 +2076,8 @@ class LeadController extends Controller
             'lead_source_id' => 'required|exists:lead_sources,id',
             'country_id' => 'nullable|exists:countries,id',
             'course_id' => 'required|exists:courses,id',
-            'team_id' => 'nullable|exists:teams,id',
-            'telecaller_id' => 'nullable|exists:users,id',
+            'team_id' => 'required|exists:teams,id',
+            'telecaller_id' => 'required|exists:users,id',
             'address' => 'nullable|string|max:500',
             'followup_date' => 'nullable|date',
             'add_date' => 'nullable|date',
@@ -2179,8 +2180,8 @@ class LeadController extends Controller
             'country_id' => 'required|exists:countries,id',
             'lead_status_id' => 'required|exists:lead_statuses,id',
             'lead_source_id' => 'required|exists:lead_sources,id',
-            'team_id' => 'nullable|exists:teams,id',
-            'telecaller_id' => 'nullable|exists:users,id',
+            'team_id' => 'required|exists:teams,id',
+            'telecaller_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
             'address' => 'nullable|string|max:500',
             'followup_date' => 'nullable|date',
@@ -2668,8 +2669,8 @@ class LeadController extends Controller
                 'lead_source_id' => 'required|exists:lead_sources,id',
                 'country_id' => 'nullable|exists:countries,id',
                 'course_id' => 'required|exists:courses,id',
-                'team_id' => 'nullable|exists:teams,id',
-                'telecaller_id' => 'nullable|exists:users,id',
+                'team_id' => 'required|exists:teams,id',
+                'telecaller_id' => 'required|exists:users,id',
                 'address' => 'nullable|string|max:500',
                 'followup_date' => 'nullable|date',
                 'add_date' => 'nullable|date',

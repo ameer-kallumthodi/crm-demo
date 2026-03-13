@@ -225,8 +225,8 @@
                         
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
-                                <label for="team_id" class="form-label">Team</label>
-                                <select class="form-select @error('team_id') is-invalid @enderror" name="team_id" id="team_id">
+                                <label for="team_id" class="form-label">Team <span class="text-danger">*</span></label>
+                                <select class="form-select @error('team_id') is-invalid @enderror" name="team_id" id="team_id" required>
                                     <option value="">Select Team</option>
                                     @foreach($teams as $team)
                                         <option value="{{ $team->id }}" data-is-b2b="{{ $team->is_b2b ? '1' : '0' }}" {{ old('team_id', $lead->team_id) == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
@@ -250,8 +250,8 @@
                         
                         <div class="col-lg-6">
                             <div class="form-group mb-3">
-                                <label for="telecaller_id" class="form-label">Telecaller</label>
-                                <select class="form-select @error('telecaller_id') is-invalid @enderror" name="telecaller_id" id="telecaller_id">
+                                <label for="telecaller_id" class="form-label">Telecaller <span class="text-danger">*</span></label>
+                                <select class="form-select @error('telecaller_id') is-invalid @enderror" name="telecaller_id" id="telecaller_id" required>
                                     <option value="">Select Team First</option>
                                     @if($lead->telecaller_id)
                                         <option value="{{ $lead->telecaller_id }}" data-is-b2b="{{ $lead->telecaller->is_b2b ?? '0' }}" selected>{{ $lead->telecaller->name ?? 'Selected Telecaller' }}</option>

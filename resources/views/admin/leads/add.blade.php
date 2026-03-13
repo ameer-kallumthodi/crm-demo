@@ -157,8 +157,8 @@
 
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="team_id_add">Team</label>
-                    <select class="form-select" name="team_id" id="team_id_add">
+                    <label class="form-label" for="team_id_add">Team <span class="text-danger">*</span></label>
+                    <select class="form-select" name="team_id" id="team_id_add" required>
                         <option value="">Select Team</option>
                         @foreach($teams as $team)
                             <option value="{{ $team->id }}" data-is-b2b="{{ $team->is_b2b ? '1' : '0' }}" {{ old('team_id') == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
@@ -169,8 +169,8 @@
             
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label" for="telecaller_id_add">Telecaller</label>
-                    <select class="form-select" name="telecaller_id" id="telecaller_id_add">
+                    <label class="form-label" for="telecaller_id_add">Telecaller <span class="text-danger">*</span></label>
+                    <select class="form-select" name="telecaller_id" id="telecaller_id_add" required>
                         <option value="">Select Telecaller</option> 
                     </select>
                 </div>
