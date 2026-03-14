@@ -113,8 +113,12 @@
                 </li>
                 @endif
 
-                {{-- Payments Overview --}}
-                @if(has_permission('admin/payments/list'))
+                {{-- Payments Overview (hidden for B2B telecallers) --}}
+                @php
+                    $currentUser = \App\Helpers\AuthHelper::getCurrentUser();
+                    $isB2BTelecaller = \App\Helpers\RoleHelper::is_telecaller() && $currentUser && $currentUser->is_b2b;
+                @endphp
+                @if(has_permission('admin/payments/list') && !$isB2BTelecaller)
                 <li class="pc-item {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.payments.list') }}" class="pc-link">
                         <span class="pc-micon">
