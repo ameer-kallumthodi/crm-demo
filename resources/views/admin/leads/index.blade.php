@@ -716,8 +716,7 @@ $columns = array_merge($columns, [
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: '{{ route('
-                    leads.data ') }}',
+                    url: '{{ route('leads.data') }}',
                     type: 'GET',
                     data: function(d) {
                         // Merge DataTables parameters with filter parameters
