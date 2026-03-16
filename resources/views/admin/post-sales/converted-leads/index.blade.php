@@ -149,7 +149,6 @@
                                     <th>Parent Phone</th>
                                     @endif
                                     <th>BDE Name</th>
-                                    <th>Post-Sales</th>
                                     <th>Converted Date</th>
                                     <th>Course</th>
                                     <th>Batch</th>
@@ -165,6 +164,7 @@
                                     <th>Has Pending Payment</th>
                                     <th>Paid Amount</th>
                                     <th>Pending Amount</th>
+                                    <th>Post-Sales</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -205,7 +205,6 @@ if (\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelpe
 
 $columns = array_merge($columns, [
     ['data' => 'bde_name', 'name' => 'bde_name', 'orderable' => false, 'searchable' => false],
-    ['data' => 'post_sales_user', 'name' => 'post_sales_user', 'orderable' => false, 'searchable' => false],
     ['data' => 'created_at', 'name' => 'created_at'],
     ['data' => 'course', 'name' => 'course', 'orderable' => false, 'searchable' => false],
     ['data' => 'batch', 'name' => 'batch', 'orderable' => false, 'searchable' => false],
@@ -221,6 +220,7 @@ $columns = array_merge($columns, [
     ['data' => 'pending_payment', 'name' => 'pending_payment', 'orderable' => false, 'searchable' => false],
     ['data' => 'paid_amount', 'name' => 'paid_amount', 'orderable' => false, 'searchable' => false],
     ['data' => 'pending_amount', 'name' => 'pending_amount', 'orderable' => false, 'searchable' => false],
+    ['data' => 'post_sales_user', 'name' => 'post_sales_user', 'orderable' => false, 'searchable' => false],
     ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
 ]);
 @endphp
