@@ -10,20 +10,22 @@
     </div>
 </form>
 <script>
-function submitApprove() {
-    const form = document.getElementById('approveForm');
-    
-    fetch(form.action, {
-        method: 'POST',
-        body: new FormData(form),
-        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }
-    }).then(r=>r.json()).then(d=>{
-        if(d.success){
-            toast_success(d.message);
-            setTimeout(()=>window.location.reload(), 800);
-        } else {
-            toast_error(d.message || 'Failed to approve');
-        }
-    }).catch(()=>toast_error('Failed to approve'));
-}
+    function submitApprove() {
+        const form = document.getElementById('approveForm');
+
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+            }
+        }).then(r => r.json()).then(d => {
+            if (d.success) {
+                toast_success(d.message);
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                toast_error(d.message || 'Failed to approve');
+            }
+        }).catch(() => toast_error('Failed to approve'));
+    }
 </script>

@@ -7,7 +7,7 @@
                 <select class="form-control" name="telecaller_id" id="telecaller_id" required>
                     <option value="">Select Telecaller</option>
                     @foreach ($telecallers as $telecaller)
-                        <option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>
+                    <option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -19,7 +19,7 @@
                 <select class="form-control" name="lead_source_id" id="lead_source_id" required>
                     <option value="">Select Source</option>
                     @foreach ($leadSources as $source)
-                        <option value="{{ $source->id }}">{{ $source->title }}</option>
+                    <option value="{{ $source->id }}">{{ $source->title }}</option>
                     @endforeach
                 </select>
             </div>
@@ -31,7 +31,7 @@
                 <select class="form-control" name="lead_status_id" id="lead_status_id" required>
                     <option value="">Select Status</option>
                     @foreach ($leadStatuses as $status)
-                        <option value="{{ $status->id }}">{{ $status->title }}</option>
+                    <option value="{{ $status->id }}">{{ $status->title }}</option>
                     @endforeach
                 </select>
             </div>
@@ -192,4 +192,3 @@
         height: 22px;
     }
 </style>
-

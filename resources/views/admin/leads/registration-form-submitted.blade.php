@@ -121,10 +121,10 @@
                             <select class="form-select form-select-sm" name="rating" id="rating">
                                 <option value="">All Ratings</option>
                                 @for($i = 1; $i <= 10; $i++)
-                                <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>
+                                    <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>
                                     {{ $i }}/10
-                                </option>
-                                @endfor
+                                    </option>
+                                    @endfor
                             </select>
                         </div>
 
@@ -186,22 +186,22 @@
                 <!-- Tabs for Registration Status -->
                 <ul class="nav nav-tabs mb-3" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link {{ (!request('registration_status') || request('registration_status') == 'pending') ? 'active' : '' }}" 
-                           href="{{ route('leads.registration-form-submitted', ['registration_status' => 'pending']) }}">
+                        <a class="nav-link {{ (!request('registration_status') || request('registration_status') == 'pending') ? 'active' : '' }}"
+                            href="{{ route('leads.registration-form-submitted', ['registration_status' => 'pending']) }}">
                             Pending
                             <span class="badge bg-warning ms-1">{{ $pendingCount }}</span>
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link {{ request('registration_status') == 'rejected' ? 'active' : '' }}" 
-                           href="{{ route('leads.registration-form-submitted', ['registration_status' => 'rejected']) }}">
+                        <a class="nav-link {{ request('registration_status') == 'rejected' ? 'active' : '' }}"
+                            href="{{ route('leads.registration-form-submitted', ['registration_status' => 'rejected']) }}">
                             Rejected
                             <span class="badge bg-danger ms-1">{{ $rejectedCount }}</span>
                         </a>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link {{ request('registration_status') == 'approved' ? 'active' : '' }}" 
-                           href="{{ route('leads.registration-form-submitted', ['registration_status' => 'approved']) }}">
+                        <a class="nav-link {{ request('registration_status') == 'approved' ? 'active' : '' }}"
+                            href="{{ route('leads.registration-form-submitted', ['registration_status' => 'approved']) }}">
                             Approved
                             <span class="badge bg-success ms-1">{{ $approvedCount }}</span>
                         </a>
@@ -242,10 +242,10 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     @php
-                                        $canConvertLead = !$lead->is_converted 
-                                            && $lead->studentDetails 
-                                            && (strtolower($lead->studentDetails->status ?? '') === 'approved');
-                                        $canTriggerConvert = $canConvertLead && !empty($hasLeadActionPermission);
+                                    $canConvertLead = !$lead->is_converted
+                                    && $lead->studentDetails
+                                    && (strtolower($lead->studentDetails->status ?? '') === 'approved');
+                                    $canTriggerConvert = $canConvertLead && !empty($hasLeadActionPermission);
                                     @endphp
                                     <td>
                                         <div class="btn-group" role="group">
@@ -319,7 +319,7 @@
                                             <span class="badge bg-success">Form Submitted</span>
                                             <small class="text-muted">{{ $lead->studentDetails->course->title ?? 'Unknown Course' }}</small>
                                             @php
-                                                $docVerificationStatus = $lead->studentDetails->getDocumentVerificationStatus();
+                                            $docVerificationStatus = $lead->studentDetails->getDocumentVerificationStatus();
                                             @endphp
                                             @if($docVerificationStatus !== null)
                                             <span class="badge {{ $docVerificationStatus === 'verified' ? 'bg-success' : 'bg-warning' }}">
@@ -335,7 +335,7 @@
                                                 {{ ucfirst($lead->studentDetails->status) }}
                                             </span>
                                             @php
-                                                $hasFinalStatus = in_array($lead->studentDetails->status, ['approved', 'rejected']);
+                                            $hasFinalStatus = in_array($lead->studentDetails->status, ['approved', 'rejected']);
                                             @endphp
                                             @if($hasFinalStatus && $lead->studentDetails->reviewed_at)
                                             <small class="text-muted">{{ ucfirst($lead->studentDetails->status) }} on {{ $lead->studentDetails->reviewed_at->format('M d, Y h:i A') }}</small>
@@ -350,81 +350,81 @@
                                         @else
                                         @if($lead->course_id == 1)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open NIOS Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>NIOS Form
-                                        </a>
+                                            <a href="{{ route('public.lead.nios.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open NIOS Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>NIOS Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 2)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.bosse.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Open BOSSE Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>BOSSE Form
-                                        </a>
+                                            <a href="{{ route('public.lead.bosse.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Open BOSSE Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>BOSSE Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 3)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.medical-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-success" title="Open Medical Coding Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>Medical Coding Form
-                                        </a>
+                                            <a href="{{ route('public.lead.medical-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-success" title="Open Medical Coding Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>Medical Coding Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 4)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.hotel-management.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Open Hotel Management Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>Hotel Management Form
-                                        </a>
+                                            <a href="{{ route('public.lead.hotel-management.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Open Hotel Management Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>Hotel Management Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 5)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.gmvss.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Open GMVSS Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>GMVSS Form
-                                        </a>
+                                            <a href="{{ route('public.lead.gmvss.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Open GMVSS Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>GMVSS Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 6)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.ai-python.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-dark" title="Open AI Python Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>AI Python Form
-                                        </a>
+                                            <a href="{{ route('public.lead.ai-python.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-dark" title="Open AI Python Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>AI Python Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 7)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.digital-marketing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Digital Marketing Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>Digital Marketing Form
-                                        </a>
+                                            <a href="{{ route('public.lead.digital-marketing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open Digital Marketing Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>Digital Marketing Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 8)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.diploma-in-data-science.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Open Diploma in Data Science Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>Diploma in Data Science Form
-                                        </a>
+                                            <a href="{{ route('public.lead.diploma-in-data-science.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Open Diploma in Data Science Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>Diploma in Data Science Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 9)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.web-development.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-success" title="Open Web Development Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>Web Development Form
-                                        </a>
+                                            <a href="{{ route('public.lead.web-development.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-success" title="Open Web Development Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>Web Development Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 10)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Open Vibe Coding Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>Vibe Coding Form
-                                        </a>
+                                            <a href="{{ route('public.lead.vibe-coding.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Open Vibe Coding Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>Vibe Coding Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 11)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Open Graphic Designing Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>Graphic Designing Form
-                                        </a>
+                                            <a href="{{ route('public.lead.graphic-designing.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Open Graphic Designing Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>Graphic Designing Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 12)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-dark" title="Open EduThanzeel Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>EduThanzeel Form
-                                        </a>
+                                            <a href="{{ route('public.lead.eduthanzeel.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-dark" title="Open EduThanzeel Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>EduThanzeel Form
+                                            </a>
                                         </div>
                                         @elseif($lead->course_id == 13)
                                         <div class="d-flex gap-1">
-                                        <a href="{{ route('public.lead.e-school.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open E-School Registration Form">
-                                            <i class="ti ti-external-link me-1"></i>E-School Form
-                                        </a>
+                                            <a href="{{ route('public.lead.e-school.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open E-School Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>E-School Form
+                                            </a>
                                         </div>
                                         @else
                                         <span class="text-muted">No form available</span>
@@ -556,10 +556,10 @@
                     <div class="card mb-2">
                         <div class="card-body p-3">
                             @php
-                                $canConvertLead = !$lead->is_converted 
-                                    && $lead->studentDetails 
-                                    && (strtolower($lead->studentDetails->status ?? '') === 'approved');
-                                $canTriggerConvert = $canConvertLead && !empty($hasLeadActionPermission);
+                            $canConvertLead = !$lead->is_converted
+                            && $lead->studentDetails
+                            && (strtolower($lead->studentDetails->status ?? '') === 'approved');
+                            $canTriggerConvert = $canConvertLead && !empty($hasLeadActionPermission);
                             @endphp
                             <!-- Lead Header -->
                             <div class="d-flex align-items-start justify-content-between mb-2">
@@ -677,7 +677,7 @@
                                             {{ ucfirst($lead->studentDetails->status) }}
                                         </span>
                                         @php
-                                            $hasFinalStatus = in_array($lead->studentDetails->status, ['approved', 'rejected']);
+                                        $hasFinalStatus = in_array($lead->studentDetails->status, ['approved', 'rejected']);
                                         @endphp
                                         @if($hasFinalStatus && $lead->studentDetails->reviewed_at)
                                         <small class="text-muted">{{ ucfirst($lead->studentDetails->status) }} on {{ $lead->studentDetails->reviewed_at->format('M d, Y h:i A') }}</small>
@@ -740,7 +740,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const filterForm = document.getElementById('dateFilterForm');
         const filterInputs = filterForm.querySelectorAll('select, input[type="date"]');
-        
+
         filterInputs.forEach(input => {
             input.addEventListener('change', function() {
                 filterForm.submit();

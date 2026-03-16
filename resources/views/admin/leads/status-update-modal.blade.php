@@ -2,8 +2,8 @@
 <form id="statusChangeForm">
     @csrf
     @php
-        $previousReason = optional($lead->leadActivities->firstWhere('reason', '!=', null))->reason;
-        $followupStatusIds = [2, 7, 8, 9];
+    $previousReason = optional($lead->leadActivities->firstWhere('reason', '!=', null))->reason;
+    $followupStatusIds = [2, 7, 8, 9];
     @endphp
     <div class="modal-body">
         <!-- Lead Information Card -->

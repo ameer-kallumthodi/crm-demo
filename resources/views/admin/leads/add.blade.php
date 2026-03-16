@@ -16,7 +16,7 @@
                         <select class="form-select" id="code" name="code" required>
                             <option value="">Select Country</option>
                             @foreach($country_codes as $code => $country)
-                                <option value="{{ $code }}" {{ old('code') == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
+                            <option value="{{ $code }}" {{ old('code') == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -66,7 +66,7 @@
                         <select class="form-select" id="whatsapp_code" name="whatsapp_code">
                             <option value="">Select Country</option>
                             @foreach($country_codes as $code => $country)
-                                <option value="{{ $code }}" {{ old('whatsapp_code') == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
+                            <option value="{{ $code }}" {{ old('whatsapp_code') == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -99,7 +99,7 @@
                     <select class="form-select" name="lead_status_id" id="lead_status_id" required>
                         <option value="">Select Lead Status</option>
                         @foreach($leadStatuses as $status)
-                            <option value="{{ $status->id }}" {{ old('lead_status_id', 1) == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
+                        <option value="{{ $status->id }}" {{ old('lead_status_id', 1) == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -111,7 +111,7 @@
                     <select class="form-select" name="lead_source_id" id="lead_source_id" required>
                         <option value="">Select Source</option>
                         @foreach($leadSources as $source)
-                            <option value="{{ $source->id }}" {{ old('lead_source_id') == $source->id ? 'selected' : '' }}>{{ $source->title }}</option>
+                        <option value="{{ $source->id }}" {{ old('lead_source_id') == $source->id ? 'selected' : '' }}>{{ $source->title }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -123,7 +123,7 @@
                     <select class="form-select" name="country_id" id="country_id">
                         <option value="">Select Country</option>
                         @foreach($countries as $country)
-                            <option value="{{ $country->id }}" {{ old('country_id') == $country->id ? 'selected' : '' }}>{{ $country->title }}</option>
+                        <option value="{{ $country->id }}" {{ old('country_id') == $country->id ? 'selected' : '' }}>{{ $country->title }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -135,7 +135,7 @@
                     <select class="form-select" name="course_id" id="course_id" required>
                         <option value="">Select Course</option>
                         @foreach($courses as $course)
-                            <option value="{{ $course->id }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>{{ $course->title }}</option>
+                        <option value="{{ $course->id }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>{{ $course->title }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -161,17 +161,17 @@
                     <select class="form-select" name="team_id" id="team_id_add" required>
                         <option value="">Select Team</option>
                         @foreach($teams as $team)
-                            <option value="{{ $team->id }}" data-is-b2b="{{ $team->is_b2b ? '1' : '0' }}" {{ old('team_id') == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
+                        <option value="{{ $team->id }}" data-is-b2b="{{ $team->is_b2b ? '1' : '0' }}" {{ old('team_id') == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
-            
+
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label" for="telecaller_id_add">Telecaller <span class="text-danger">*</span></label>
                     <select class="form-select" name="telecaller_id" id="telecaller_id_add" required>
-                        <option value="">Select Telecaller</option> 
+                        <option value="">Select Telecaller</option>
                     </select>
                 </div>
             </div>
@@ -210,116 +210,116 @@
 </div>
 
 <script>
-(function() {
-    // Immediate execution for AJAX loaded content
-    
-    // Store all team options from the unique select ID
-    // We use a specific ID selector to ensure we target the correct element in this modal
-    const $teamSelect = $('#team_id_add');
-    const $checkbox = $('#is_b2b_add');
-    const $telecallerSelect = $('#telecaller_id_add');
+    (function() {
+        // Immediate execution for AJAX loaded content
 
-    // If elements aren't found (e.g. issues with rendering), stop.
-    if ($teamSelect.length === 0) return;
+        // Store all team options from the unique select ID
+        // We use a specific ID selector to ensure we target the correct element in this modal
+        const $teamSelect = $('#team_id_add');
+        const $checkbox = $('#is_b2b_add');
+        const $telecallerSelect = $('#telecaller_id_add');
 
-    const allTeamOptions = $teamSelect.find('option').clone();
-    
-    // Function to filter teams
-    function filterTeams() {
-        const isB2BChecked = $checkbox.is(':checked');
-        const currentSelectedValue = $teamSelect.val();
-        
-        // Clear current options except the placeholder
-        $teamSelect.find('option:not(:first)').remove();
-        
-        // Filter and add appropriate options
-        allTeamOptions.each(function() {
-            const option = $(this);
-            if (option.val() === '') {
-                // Skip placeholder (already exists)
-                return;
-            }
-            
-            const teamIsB2B = option.attr('data-is-b2b') === '1';
-            
-            // Strict filtering:
-            // 1. is_b2b is checked: Team MUST be B2B
-            // 2. is_b2b is NOT checked: Team MUST NOT be B2B
-            if (isB2BChecked) {
-                if (teamIsB2B) {
-                    $teamSelect.append(option.clone());
+        // If elements aren't found (e.g. issues with rendering), stop.
+        if ($teamSelect.length === 0) return;
+
+        const allTeamOptions = $teamSelect.find('option').clone();
+
+        // Function to filter teams
+        function filterTeams() {
+            const isB2BChecked = $checkbox.is(':checked');
+            const currentSelectedValue = $teamSelect.val();
+
+            // Clear current options except the placeholder
+            $teamSelect.find('option:not(:first)').remove();
+
+            // Filter and add appropriate options
+            allTeamOptions.each(function() {
+                const option = $(this);
+                if (option.val() === '') {
+                    // Skip placeholder (already exists)
+                    return;
                 }
-            } else {
-                if (!teamIsB2B) {
-                    $teamSelect.append(option.clone());
-                }
-            }
-        });
-        
-        // Restore selection if still available and valid for the new list, otherwise clear
-        if (currentSelectedValue && $teamSelect.find('option[value="' + currentSelectedValue + '"]').length > 0) {
-            $teamSelect.val(currentSelectedValue);
-        } else {
-            $teamSelect.val('');
-            // Clear telecaller since team was cleared/changed context
-            $telecallerSelect.html('<option value="">Select Team First</option>');
-        }
-    }
 
-    // Bind change event to checkbox
-    $checkbox.off('change.addModal').on('change.addModal', function() {
-        filterTeams();
-    });
+                const teamIsB2B = option.attr('data-is-b2b') === '1';
 
-    // Handle team selection change to update telecallers
-    $teamSelect.off('change.addModal').on('change.addModal', function() {
-        const teamId = $(this).val();
-        const isB2BChecked = $checkbox.length > 0 ? $checkbox.is(':checked') : false;
-        
-        // Clear existing options
-        $telecallerSelect.html('<option value="">Loading telecallers...</option>');
-        
-        if (teamId) {
-            // Fetch telecallers for selected team
-            $.ajax({
-                url: '{{ route("leads.telecallers-by-team") }}',
-                type: 'GET',
-                data: { 
-                    team_id: teamId,
-                    is_b2b: isB2BChecked ? 1 : 0
-                },
-                success: function(response) {
-                    $telecallerSelect.html('<option value="">Select Telecaller</option>');
-                    
-                    if (response.telecallers && response.telecallers.length > 0) {
-                        $.each(response.telecallers, function(index, telecaller) {
-                            $telecallerSelect.append(
-                                '<option value="' + telecaller.id + '">' + telecaller.name + '</option>'
-                            );
-                        });
-                    } else {
-                        $telecallerSelect.append('<option value="">No telecallers found in this team</option>');
+                // Strict filtering:
+                // 1. is_b2b is checked: Team MUST be B2B
+                // 2. is_b2b is NOT checked: Team MUST NOT be B2B
+                if (isB2BChecked) {
+                    if (teamIsB2B) {
+                        $teamSelect.append(option.clone());
                     }
-                },
-                error: function() {
-                    $telecallerSelect.html('<option value="">Error loading telecallers</option>');
+                } else {
+                    if (!teamIsB2B) {
+                        $teamSelect.append(option.clone());
+                    }
                 }
             });
-        } else {
-            $telecallerSelect.html('<option value="">Select Team First</option>');
+
+            // Restore selection if still available and valid for the new list, otherwise clear
+            if (currentSelectedValue && $teamSelect.find('option[value="' + currentSelectedValue + '"]').length > 0) {
+                $teamSelect.val(currentSelectedValue);
+            } else {
+                $teamSelect.val('');
+                // Clear telecaller since team was cleared/changed context
+                $telecallerSelect.html('<option value="">Select Team First</option>');
+            }
         }
-    });
 
-    // Initialize logic
-    if ($checkbox.length > 0) {
-        // Trigger initial filtering
-        filterTeams();
-    }
-    
-    // If there's an old team_id value (e.g. from validation error), trigger the change event
-    @if(old('team_id'))
+        // Bind change event to checkbox
+        $checkbox.off('change.addModal').on('change.addModal', function() {
+            filterTeams();
+        });
+
+        // Handle team selection change to update telecallers
+        $teamSelect.off('change.addModal').on('change.addModal', function() {
+            const teamId = $(this).val();
+            const isB2BChecked = $checkbox.length > 0 ? $checkbox.is(':checked') : false;
+
+            // Clear existing options
+            $telecallerSelect.html('<option value="">Loading telecallers...</option>');
+
+            if (teamId) {
+                // Fetch telecallers for selected team
+                $.ajax({
+                    url: '{{ route("leads.telecallers-by-team") }}',
+                    type: 'GET',
+                    data: {
+                        team_id: teamId,
+                        is_b2b: isB2BChecked ? 1 : 0
+                    },
+                    success: function(response) {
+                        $telecallerSelect.html('<option value="">Select Telecaller</option>');
+
+                        if (response.telecallers && response.telecallers.length > 0) {
+                            $.each(response.telecallers, function(index, telecaller) {
+                                $telecallerSelect.append(
+                                    '<option value="' + telecaller.id + '">' + telecaller.name + '</option>'
+                                );
+                            });
+                        } else {
+                            $telecallerSelect.append('<option value="">No telecallers found in this team</option>');
+                        }
+                    },
+                    error: function() {
+                        $telecallerSelect.html('<option value="">Error loading telecallers</option>');
+                    }
+                });
+            } else {
+                $telecallerSelect.html('<option value="">Select Team First</option>');
+            }
+        });
+
+        // Initialize logic
+        if ($checkbox.length > 0) {
+            // Trigger initial filtering
+            filterTeams();
+        }
+
+        // If there's an old team_id value (e.g. from validation error), trigger the change event
+        @if(old('team_id'))
         $teamSelect.trigger('change');
-    @endif
+        @endif
 
-})();
+    })();
 </script>

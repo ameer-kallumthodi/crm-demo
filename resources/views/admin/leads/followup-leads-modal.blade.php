@@ -19,9 +19,9 @@
                 <select id="followup_lead_telecaller" name="telecaller_id" class="form-select">
                     <option value="">All Telecallers</option>
                     @foreach($telecallers as $telecaller)
-                        <option value="{{ $telecaller->id }}" {{ ($filters['telecaller_id'] ?? '') == $telecaller->id ? 'selected' : '' }}>
-                            {{ $telecaller->name }}
-                        </option>
+                    <option value="{{ $telecaller->id }}" {{ ($filters['telecaller_id'] ?? '') == $telecaller->id ? 'selected' : '' }}>
+                        {{ $telecaller->name }}
+                    </option>
                     @endforeach
                 </select>
             </div>
@@ -30,9 +30,9 @@
                 <select id="followup_lead_source" name="lead_source_id" class="form-select">
                     <option value="">All Sources</option>
                     @foreach($leadSources as $source)
-                        <option value="{{ $source->id }}" {{ ($filters['lead_source_id'] ?? '') == $source->id ? 'selected' : '' }}>
-                            {{ $source->title }}
-                        </option>
+                    <option value="{{ $source->id }}" {{ ($filters['lead_source_id'] ?? '') == $source->id ? 'selected' : '' }}>
+                        {{ $source->title }}
+                    </option>
                     @endforeach
                 </select>
             </div>
@@ -49,9 +49,9 @@
 
     <div id="followupLeadsResults">
         @include('admin.leads.partials.followup-leads-table', [
-            'leads' => $leads,
-            'followupStatusIds' => $followupStatusIds,
-            'filtersApplied' => $filtersApplied,
+        'leads' => $leads,
+        'followupStatusIds' => $followupStatusIds,
+        'filtersApplied' => $filtersApplied,
         ])
     </div>
 </div>
@@ -107,4 +107,3 @@
         });
     })();
 </script>
-

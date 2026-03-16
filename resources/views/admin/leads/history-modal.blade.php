@@ -21,7 +21,7 @@
                                         <small class="text-muted">{{ $lead->phone }}</small>
                                     </div>
                                 </div>
-                                
+
                                 <div class="row g-2">
                                     <div class="col-6">
                                         <div class="card bg-light">
@@ -87,7 +87,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Lead History Section -->
                     <div class="col-md-6">
                         <h6 class="mb-3">Lead History</h6>
@@ -99,20 +99,20 @@
                                     <div class="timeline-header">
                                         <h6 class="timeline-title">
                                             @switch($activity->activity_type)
-                                                @case('status_change')
-                                                    Status Changed
-                                                    @break
-                                                @case('bulk_upload')
-                                                    Lead Created
-                                                    @break
-                                                @case('reassign')
-                                                    Lead Reassigned
-                                                    @break
-                                                @case('update')
-                                                    Lead Updated
-                                                    @break
-                                                @default
-                                                    {{ ucfirst(str_replace('_', ' ', $activity->activity_type)) }}
+                                            @case('status_change')
+                                            Status Changed
+                                            @break
+                                            @case('bulk_upload')
+                                            Lead Created
+                                            @break
+                                            @case('reassign')
+                                            Lead Reassigned
+                                            @break
+                                            @case('update')
+                                            Lead Updated
+                                            @break
+                                            @default
+                                            {{ ucfirst(str_replace('_', ' ', $activity->activity_type)) }}
                                             @endswitch
                                         </h6>
                                         <span class="timeline-time">{{ $activity->created_at->format('d-m-Y h:i A') }}</span>
@@ -120,10 +120,10 @@
                                     <div class="timeline-body">
                                         <p class="mb-1">{{ $activity->description }}</p>
                                         @if($activity->remarks)
-                                            <p class="mb-1"><strong>Remarks:</strong> {{ $activity->remarks }}</p>
+                                        <p class="mb-1"><strong>Remarks:</strong> {{ $activity->remarks }}</p>
                                         @endif
                                         @if($activity->createdBy)
-                                            <small class="text-muted">Updated by: {{ $activity->createdBy->name }}</small>
+                                        <small class="text-muted">Updated by: {{ $activity->createdBy->name }}</small>
                                         @endif
                                     </div>
                                 </div>
@@ -149,79 +149,79 @@
 </div>
 
 <style>
-.timeline {
-    position: relative;
-    padding-left: 30px;
-}
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
 
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 15px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #e9ecef;
-}
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
 
-.timeline-item {
-    position: relative;
-    margin-bottom: 20px;
-}
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
 
-.timeline-marker {
-    position: absolute;
-    left: -22px;
-    top: 5px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #007bff;
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 2px #007bff;
-}
+    .timeline-marker {
+        position: absolute;
+        left: -22px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #007bff;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px #007bff;
+    }
 
-.timeline-content {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 15px;
-    border-left: 3px solid #007bff;
-}
+    .timeline-content {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        border-left: 3px solid #007bff;
+    }
 
-.timeline-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
 
-.timeline-title {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #495057;
-}
+    .timeline-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #495057;
+    }
 
-.timeline-time {
-    font-size: 12px;
-    color: #6c757d;
-}
+    .timeline-time {
+        font-size: 12px;
+        color: #6c757d;
+    }
 
-.timeline-body {
-    font-size: 13px;
-    color: #495057;
-}
+    .timeline-body {
+        font-size: 13px;
+        color: #495057;
+    }
 
-.timeline-body p {
-    margin-bottom: 5px;
-}
+    .timeline-body p {
+        margin-bottom: 5px;
+    }
 </style>
 
 <script>
-function printLeadHistory() {
-    const printContent = document.querySelector('#leadHistoryModal .modal-content').innerHTML;
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
+    function printLeadHistory() {
+        const printContent = document.querySelector('#leadHistoryModal .modal-content').innerHTML;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
         <html>
             <head>
                 <title>Lead History - {{ $lead->title }}</title>
@@ -251,7 +251,7 @@ function printLeadHistory() {
             </body>
         </html>
     `);
-    printWindow.document.close();
-    printWindow.print();
-}
+        printWindow.document.close();
+        printWindow.print();
+    }
 </script>

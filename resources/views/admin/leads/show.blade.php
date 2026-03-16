@@ -31,13 +31,13 @@
             <div class="btn-group">
                 @if($lead->phone && is_telecaller())
                 @php
-                    $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
+                $currentUserId = session('user_id') ?? (\App\Helpers\AuthHelper::getCurrentUserId() ?? 0);
                 @endphp
                 @if($currentUserId > 0)
-                <button class="btn btn-success voxbay-call-btn" 
-                        data-lead-id="{{ $lead->id }}" 
-                        data-telecaller-id="{{ $currentUserId }}"
-                        title="Click to call this lead">
+                <button class="btn btn-success voxbay-call-btn"
+                    data-lead-id="{{ $lead->id }}"
+                    data-telecaller-id="{{ $currentUserId }}"
+                    title="Click to call this lead">
                     <i class="fas fa-phone"></i> Call Lead
                 </button>
                 @endif
@@ -102,9 +102,9 @@
                                 <td><strong>Followup Date:</strong></td>
                                 <td>
                                     @if($lead->followup_date)
-                                        <span class="badge bg-warning">{{ $lead->followup_date->format('d M Y') }}</span>
+                                    <span class="badge bg-warning">{{ $lead->followup_date->format('d M Y') }}</span>
                                     @else
-                                        N/A
+                                    N/A
                                     @endif
                                 </td>
                             </tr>
@@ -112,9 +112,9 @@
                                 <td><strong>Last Reason:</strong></td>
                                 <td>
                                     @if($lead->leadActivities->where('reason', '!=', null)->first())
-                                        <span class="badge bg-info">{{ $lead->leadActivities->where('reason', '!=', null)->first()->reason }}</span>
+                                    <span class="badge bg-info">{{ $lead->leadActivities->where('reason', '!=', null)->first()->reason }}</span>
                                     @else
-                                        N/A
+                                    N/A
                                     @endif
                                 </td>
                             </tr>
@@ -122,9 +122,9 @@
                                 <td><strong>Current Rating:</strong></td>
                                 <td>
                                     @if($lead->rating)
-                                        <span class="badge bg-primary">{{ $lead->rating }}/10</span>
+                                    <span class="badge bg-primary">{{ $lead->rating }}/10</span>
                                     @else
-                                        N/A
+                                    N/A
                                     @endif
                                 </td>
                             </tr>
@@ -142,37 +142,37 @@
                         <h5 class="card-title">Call History</h5>
                         <div class="call-history">
                             @if($lead->leadActivities && $lead->leadActivities->count() > 0)
-                                @foreach($lead->leadActivities as $activity)
-                                <div class="activity-item mb-3 p-3 border rounded">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <strong>{{ $activity->activity_type ?? 'Activity' }}</strong>
-                                            @if($activity->leadStatus)
-                                                <span class="badge bg-primary ms-2">{{ $activity->leadStatus->title }}</span>
-                                            @endif
-                                            @if($activity->reason)
-                                                <span class="badge bg-info ms-2">{{ $activity->formatted_reason }}</span>
-                                            @endif
-                                            @if($activity->rating)
-                                                <span class="badge bg-success ms-2">{{ $activity->rating }}/10</span>
-                                            @endif
-                                        </div>
-                                        <small class="text-muted">{{ $activity->created_at->format('d M Y H:i') }}</small>
+                            @foreach($lead->leadActivities as $activity)
+                            <div class="activity-item mb-3 p-3 border rounded">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>{{ $activity->activity_type ?? 'Activity' }}</strong>
+                                        @if($activity->leadStatus)
+                                        <span class="badge bg-primary ms-2">{{ $activity->leadStatus->title }}</span>
+                                        @endif
+                                        @if($activity->reason)
+                                        <span class="badge bg-info ms-2">{{ $activity->formatted_reason }}</span>
+                                        @endif
+                                        @if($activity->rating)
+                                        <span class="badge bg-success ms-2">{{ $activity->rating }}/10</span>
+                                        @endif
                                     </div>
-                                    @if($activity->description)
-                                        <p class="mb-1">{{ $activity->description }}</p>
-                                    @endif
-                                    @if($activity->lead_status_id == 2 && $activity->followup_date)
-                                        <p class="mb-1"><strong>Followup Date:</strong> <span class="badge bg-warning">{{ $activity->followup_date->format('d M Y') }}</span></p>
-                                    @endif
-                                    @if($activity->remarks)
-                                        <p class="mb-1 text-muted">{{ $activity->remarks }}</p>
-                                    @endif
-                                    <small class="text-muted">By: {{ $activity->createdBy->name ?? 'System' }}</small>
+                                    <small class="text-muted">{{ $activity->created_at->format('d M Y H:i') }}</small>
                                 </div>
-                                @endforeach
+                                @if($activity->description)
+                                <p class="mb-1">{{ $activity->description }}</p>
+                                @endif
+                                @if($activity->lead_status_id == 2 && $activity->followup_date)
+                                <p class="mb-1"><strong>Followup Date:</strong> <span class="badge bg-warning">{{ $activity->followup_date->format('d M Y') }}</span></p>
+                                @endif
+                                @if($activity->remarks)
+                                <p class="mb-1 text-muted">{{ $activity->remarks }}</p>
+                                @endif
+                                <small class="text-muted">By: {{ $activity->createdBy->name ?? 'System' }}</small>
+                            </div>
+                            @endforeach
                             @else
-                                <p class="text-muted">No call history available.</p>
+                            <p class="text-muted">No call history available.</p>
                             @endif
                         </div>
                     </div>
@@ -185,55 +185,60 @@
 
 @push('scripts')
 <script>
-function makeCall(leadId, phoneNumber) {
-    if (!confirm('Are you sure you want to call ' + phoneNumber + '?')) {
-        return;
-    }
-
-    // Show loading state
-    const button = event.target;
-    const originalText = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calling...';
-    button.disabled = true;
-
-    // Make the API call
-    $.ajax({
-        url: '/api/voxbay/outgoing-call',
-        type: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-            'Content-Type': 'application/json'
-        },
-        data: JSON.stringify({
-            lead_id: leadId,
-            phoneNumber: phoneNumber,
-            telecaller_id: {{ session('user_id') }},
-            country_code: '{{ $lead->code ?? '91' }}'
-        }),
-        success: function(response) {
-            if (response.status === 'success') {
-                alert('Call initiated successfully!');
-                // Optionally refresh the page to show updated call logs
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            } else {
-                alert('Error: ' + response.message);
-            }
-        },
-        error: function(xhr) {
-            let errorMessage = 'An error occurred while making the call';
-            if (xhr.responseJSON && xhr.responseJSON.message) {
-                errorMessage = xhr.responseJSON.message;
-            }
-            alert(errorMessage);
-        },
-        complete: function() {
-            // Reset button state
-            button.innerHTML = originalText;
-            button.disabled = false;
+    function makeCall(leadId, phoneNumber) {
+        if (!confirm('Are you sure you want to call ' + phoneNumber + '?')) {
+            return;
         }
-    });
-}
+
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calling...';
+        button.disabled = true;
+
+        // Make the API call
+        $.ajax({
+            url: '/api/voxbay/outgoing-call',
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                lead_id: leadId,
+                phoneNumber: phoneNumber,
+                telecaller_id: {
+                    {
+                        session('user_id')
+                    }
+                },
+                country_code: '{{ $lead->code ?? '
+                91 ' }}'
+            }),
+            success: function(response) {
+                if (response.status === 'success') {
+                    alert('Call initiated successfully!');
+                    // Optionally refresh the page to show updated call logs
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred while making the call';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                alert(errorMessage);
+            },
+            complete: function() {
+                // Reset button state
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        });
+    }
 </script>
 @endpush

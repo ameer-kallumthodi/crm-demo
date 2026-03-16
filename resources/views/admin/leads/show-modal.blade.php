@@ -115,9 +115,9 @@
                                     <h6 class="card-title text-muted mb-1">Interest Status</h6>
                                     <p class="card-text mb-0">
                                         @if($lead->interest_status)
-                                            <span class="badge bg-{{ $lead->interest_status_color }}">{{ $lead->interest_status_label }}</span>
+                                        <span class="badge bg-{{ $lead->interest_status_color }}">{{ $lead->interest_status_label }}</span>
                                         @else
-                                            N/A
+                                        N/A
                                         @endif
                                     </p>
                                 </div>
@@ -143,125 +143,125 @@
                         <i class="ti ti-printer"></i> Print
                     </button>
                 </div>
-                
+
                 @if($lead->leadActivities && $lead->leadActivities->count() > 0)
-                    <!-- Hidden timeline for printing (contains all activities) -->
-                    <div class="timeline print-timeline" style="display: none;">
-                        @foreach($lead->leadActivities as $activity)
-                        <div class="timeline-item mb-4">
-                            <div class="timeline-marker bg-{{ $activity->activity_type == 'disqualified' ? 'danger' : ($activity->activity_type == 'converted' ? 'success' : 'info') }}"></div>
-                            <div class="timeline-content">
-                                <div class="card border-0 shadow-sm">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h6 class="card-title mb-0 text-uppercase">
-                                                {{ str_replace('_', ' ', $activity->activity_type) }}
-                                                @if($activity->activity_type == 'disqualified')
-                                                    : {{ $activity->created_at ? $activity->created_at->format('d-m-Y h:i A') : 'N/A' }}
-                                                @endif
-                                            </h6>
-                                            <small class="text-muted">{{ $activity->created_at ? $activity->created_at->format('d-m-Y') : 'N/A' }}</small>
-                                        </div>
-                                        <p class="card-text mb-2">{{ $activity->description }}</p>
-                                        @if($activity->reason)
-                                        <div class="mt-2">
-                                            <span class="text-muted fw-semibold">Reason:</span>
-                                            <span class="badge bg-info ms-2">{{ $activity->formatted_reason }}</span>
-                                        </div>
-                                        @endif
-                                        @if($activity->lead_status_id == 2 && $activity->followup_date)
-                                        <div class="mt-2">
-                                            <span class="text-muted fw-semibold">Followup Date:</span>
-                                            <span class="badge bg-warning ms-2">{{ $activity->followup_date->format('d M Y') }}</span>
-                                        </div>
-                                        @endif
-                                        @if($activity->remarks)
-                                        <div class="mt-2">
-                                            <span class="text-muted fw-semibold">Remarks:</span>
-                                            <div class="mt-1 p-2 bg-light rounded" style="white-space: pre-wrap; word-wrap: break-word;">{{ $activity->remarks }}</div>
-                                        </div>
-                                        @endif
-                                        <div class="d-flex justify-content-between align-items-center mt-2">
-                                            <small class="text-muted">Updated By: {{ $activity->createdBy ? $activity->createdBy->name : 'N/A' }}</small>
-                                            <small class="text-muted">{{ $activity->created_at ? $activity->created_at->format('d-m-Y h:i A') : 'N/A' }}</small>
-                                        </div>
-                                        @if($activity->updated_at && $activity->updated_at != $activity->created_at)
-                                        <div class="d-flex justify-content-between align-items-center mt-1">
-                                            <small class="text-muted">Last Updated:</small>
-                                            <small class="text-muted">{{ $activity->updated_at->format('d-m-Y h:i A') }}</small>
-                                        </div>
-                                        @endif
+                <!-- Hidden timeline for printing (contains all activities) -->
+                <div class="timeline print-timeline" style="display: none;">
+                    @foreach($lead->leadActivities as $activity)
+                    <div class="timeline-item mb-4">
+                        <div class="timeline-marker bg-{{ $activity->activity_type == 'disqualified' ? 'danger' : ($activity->activity_type == 'converted' ? 'success' : 'info') }}"></div>
+                        <div class="timeline-content">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0 text-uppercase">
+                                            {{ str_replace('_', ' ', $activity->activity_type) }}
+                                            @if($activity->activity_type == 'disqualified')
+                                            : {{ $activity->created_at ? $activity->created_at->format('d-m-Y h:i A') : 'N/A' }}
+                                            @endif
+                                        </h6>
+                                        <small class="text-muted">{{ $activity->created_at ? $activity->created_at->format('d-m-Y') : 'N/A' }}</small>
                                     </div>
+                                    <p class="card-text mb-2">{{ $activity->description }}</p>
+                                    @if($activity->reason)
+                                    <div class="mt-2">
+                                        <span class="text-muted fw-semibold">Reason:</span>
+                                        <span class="badge bg-info ms-2">{{ $activity->formatted_reason }}</span>
+                                    </div>
+                                    @endif
+                                    @if($activity->lead_status_id == 2 && $activity->followup_date)
+                                    <div class="mt-2">
+                                        <span class="text-muted fw-semibold">Followup Date:</span>
+                                        <span class="badge bg-warning ms-2">{{ $activity->followup_date->format('d M Y') }}</span>
+                                    </div>
+                                    @endif
+                                    @if($activity->remarks)
+                                    <div class="mt-2">
+                                        <span class="text-muted fw-semibold">Remarks:</span>
+                                        <div class="mt-1 p-2 bg-light rounded" style="white-space: pre-wrap; word-wrap: break-word;">{{ $activity->remarks }}</div>
+                                    </div>
+                                    @endif
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <small class="text-muted">Updated By: {{ $activity->createdBy ? $activity->createdBy->name : 'N/A' }}</small>
+                                        <small class="text-muted">{{ $activity->created_at ? $activity->created_at->format('d-m-Y h:i A') : 'N/A' }}</small>
+                                    </div>
+                                    @if($activity->updated_at && $activity->updated_at != $activity->created_at)
+                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <small class="text-muted">Last Updated:</small>
+                                        <small class="text-muted">{{ $activity->updated_at->format('d-m-Y h:i A') }}</small>
+                                    </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
-                        @endforeach
                     </div>
-                    
-                    <!-- Visible scrollable timeline -->
-                    <div class="timeline" style="height:600px; overflow-y: auto; padding-right: 10px;">
-                        @foreach($lead->leadActivities as $activity)
-                        <div class="timeline-item mb-4">
-                            <div class="timeline-marker bg-{{ $activity->activity_type == 'disqualified' ? 'danger' : ($activity->activity_type == 'converted' ? 'success' : 'info') }}"></div>
-                            <div class="timeline-content">
-                                <div class="card border-0 shadow-sm">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h6 class="card-title mb-0 text-uppercase">
-                                                {{ str_replace('_', ' ', $activity->activity_type) }}
-                                                @if($activity->activity_type == 'disqualified')
-                                                    : {{ $activity->created_at ? $activity->created_at->format('d-m-Y h:i A') : 'N/A' }}
-                                                @endif
-                                            </h6>
-                                            <small class="text-muted">{{ $activity->created_at ? $activity->created_at->format('d-m-Y') : 'N/A' }}</small>
-                                        </div>
-                                        <p class="card-text mb-2">{{ $activity->description }}</p>
-                                        
-                                        @if($activity->lead_status_id == 2 && $activity->followup_date)
-                                        <div class="mt-2">
-                                            <span class="text-muted fw-semibold">Followup Date:</span>
-                                            <span class="badge bg-warning ms-2">{{ $activity->followup_date->format('d M Y') }}</span>
-                                        </div>
-                                        @endif
-                                        @if($activity->remarks)
-                                        <div class="mt-2">
-                                            <span class="text-muted fw-semibold">Remarks:</span>
-                                            <div class="mt-1 p-2 bg-light rounded" style="white-space: pre-wrap; word-wrap: break-word;">{{ $activity->remarks }}</div>
-                                        </div>
-                                        @endif
-                                        @if($activity->reason)
-                                        <div class="mt-2">
-                                            <span class="text-muted fw-semibold">Reason:</span>
-                                            <div class="mt-1 p-2 bg-light rounded" style="white-space: pre-wrap; word-wrap: break-word;">{{ $activity->formatted_reason }}</div>
-                                        </div>
-                                        @endif
-                                        @if($activity->rating)
-                                        <div class="mt-2">
-                                            <span class="text-muted fw-semibold">Rating:</span>
-                                            <span class="badge bg-success ms-2">{{ $activity->rating }}/10</span>
-                                        </div>
-                                        @endif
-                                        <div class="d-flex justify-content-between align-items-center mt-2">
-                                            <small class="text-muted">Updated By: {{ $activity->createdBy ? $activity->createdBy->name : 'N/A' }}</small>
-                                            <small class="text-muted">{{ $activity->created_at ? $activity->created_at->format('d-m-Y h:i A') : 'N/A' }}</small>
-                                        </div>
-                                        @if($activity->updated_at && $activity->updated_at != $activity->created_at)
-                                        <div class="d-flex justify-content-between align-items-center mt-1">
-                                            <small class="text-muted">Last Updated:</small>
-                                            <small class="text-muted">{{ $activity->updated_at->format('d-m-Y h:i A') }}</small>
-                                        </div>
-                                        @endif
+                    @endforeach
+                </div>
+
+                <!-- Visible scrollable timeline -->
+                <div class="timeline" style="height:600px; overflow-y: auto; padding-right: 10px;">
+                    @foreach($lead->leadActivities as $activity)
+                    <div class="timeline-item mb-4">
+                        <div class="timeline-marker bg-{{ $activity->activity_type == 'disqualified' ? 'danger' : ($activity->activity_type == 'converted' ? 'success' : 'info') }}"></div>
+                        <div class="timeline-content">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0 text-uppercase">
+                                            {{ str_replace('_', ' ', $activity->activity_type) }}
+                                            @if($activity->activity_type == 'disqualified')
+                                            : {{ $activity->created_at ? $activity->created_at->format('d-m-Y h:i A') : 'N/A' }}
+                                            @endif
+                                        </h6>
+                                        <small class="text-muted">{{ $activity->created_at ? $activity->created_at->format('d-m-Y') : 'N/A' }}</small>
                                     </div>
+                                    <p class="card-text mb-2">{{ $activity->description }}</p>
+
+                                    @if($activity->lead_status_id == 2 && $activity->followup_date)
+                                    <div class="mt-2">
+                                        <span class="text-muted fw-semibold">Followup Date:</span>
+                                        <span class="badge bg-warning ms-2">{{ $activity->followup_date->format('d M Y') }}</span>
+                                    </div>
+                                    @endif
+                                    @if($activity->remarks)
+                                    <div class="mt-2">
+                                        <span class="text-muted fw-semibold">Remarks:</span>
+                                        <div class="mt-1 p-2 bg-light rounded" style="white-space: pre-wrap; word-wrap: break-word;">{{ $activity->remarks }}</div>
+                                    </div>
+                                    @endif
+                                    @if($activity->reason)
+                                    <div class="mt-2">
+                                        <span class="text-muted fw-semibold">Reason:</span>
+                                        <div class="mt-1 p-2 bg-light rounded" style="white-space: pre-wrap; word-wrap: break-word;">{{ $activity->formatted_reason }}</div>
+                                    </div>
+                                    @endif
+                                    @if($activity->rating)
+                                    <div class="mt-2">
+                                        <span class="text-muted fw-semibold">Rating:</span>
+                                        <span class="badge bg-success ms-2">{{ $activity->rating }}/10</span>
+                                    </div>
+                                    @endif
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <small class="text-muted">Updated By: {{ $activity->createdBy ? $activity->createdBy->name : 'N/A' }}</small>
+                                        <small class="text-muted">{{ $activity->created_at ? $activity->created_at->format('d-m-Y h:i A') : 'N/A' }}</small>
+                                    </div>
+                                    @if($activity->updated_at && $activity->updated_at != $activity->created_at)
+                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <small class="text-muted">Last Updated:</small>
+                                        <small class="text-muted">{{ $activity->updated_at->format('d-m-Y h:i A') }}</small>
+                                    </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
-                        @endforeach
                     </div>
+                    @endforeach
+                </div>
                 @else
-                    <div class="text-center text-muted py-5">
-                        <i class="ti ti-history" style="font-size: 3rem; opacity: 0.3;"></i>
-                        <p class="mt-3">No activity history found</p>
-                    </div>
+                <div class="text-center text-muted py-5">
+                    <i class="ti ti-history" style="font-size: 3rem; opacity: 0.3;"></i>
+                    <p class="mt-3">No activity history found</p>
+                </div>
                 @endif
             </div>
         </div>
@@ -270,12 +270,12 @@
 </div>
 
 <script>
-function printLeadHistory(leadName) {
-    const printWindow = window.open('', '_blank');
-    const timelineWrapper = document.querySelector('.timeline');
-    const clonedTimeline = timelineWrapper ? timelineWrapper.cloneNode(true) : null;
+    function printLeadHistory(leadName) {
+        const printWindow = window.open('', '_blank');
+        const timelineWrapper = document.querySelector('.timeline');
+        const clonedTimeline = timelineWrapper ? timelineWrapper.cloneNode(true) : null;
 
-    const printContent = `
+        const printContent = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -311,58 +311,58 @@ function printLeadHistory(leadName) {
         </html>
     `;
 
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.onload = function() {
-        printWindow.print();
-        printWindow.close();
-    };
-}
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.onload = function() {
+            printWindow.print();
+            printWindow.close();
+        };
+    }
 </script>
 
 <style>
-.timeline {
-    position: relative;
-    padding-left: 30px;
-}
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
 
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 15px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #dee2e6;
-}
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
 
-.timeline-item {
-    position: relative;
-}
+    .timeline-item {
+        position: relative;
+    }
 
-.timeline-marker {
-    position: absolute;
-    left: -22px;
-    top: 8px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 3px solid #fff;
-    box-shadow: 0 0 0 2px #dee2e6;
-}
+    .timeline-marker {
+        position: absolute;
+        left: -22px;
+        top: 8px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 0 0 2px #dee2e6;
+    }
 
-.timeline-content {
-    margin-left: 0;
-}
+    .timeline-content {
+        margin-left: 0;
+    }
 
-.avatar-lg {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    .avatar-lg {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-/* Print styles removed - handled by JavaScript function */
+    /* Print styles removed - handled by JavaScript function */
 </style>

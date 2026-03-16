@@ -55,7 +55,7 @@
                 <select class="form-control" name="from_telecaller_id" id="from_telecaller_id" required>
                     <option value="">Select Telecaller</option>
                     @foreach ($telecallers as $telecaller)
-                        <option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>
+                    <option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -116,97 +116,97 @@
 </form>
 
 <script>
-$(document).ready(function() {
-    // Handle "Check All" functionality
-    $('#check_all').on('change', function() {
-        var isChecked = $(this).is(':checked');
-        $('#lead_table_body input[type="checkbox"]').prop('checked', isChecked);
-        toggleSubmitButton();
-    });
-
-    // Handle individual checkbox changes
-    $('#lead_table_body').on('change', 'input[type="checkbox"]', function() {
-        toggleSubmitButton();
-    });
-
-    // Enable/Disable submit button based on checkbox selection
-    function toggleSubmitButton() {
-        var anyChecked = $('#lead_table_body input[type="checkbox"]:checked').length > 0;
-        $('#reassign_btn').prop('disabled', !anyChecked);
-    }
-
-    // Select checkboxes based on entered number
-    $('#select_count').on('input', function() {
-        var count = parseInt($(this).val()) || 0;
-        var checkboxes = $('#lead_table_body input[type="checkbox"]');
-
-        // Uncheck all first
-        checkboxes.prop('checked', false);
-
-        // Check only the specified number of checkboxes
-        checkboxes.slice(0, count).prop('checked', true);
-
-        toggleSubmitButton();
-    });
-
-    // Team selection removed - senior managers can see all telecallers directly
-    
-    // AJAX to fetch leads
-    $('#from_telecaller_id, #lead_source_id, #lead_from_date, #lead_to_date, #lead_status_id, #reassign_course_id').on('change', function() {
-        var leadSourceId = $('#lead_source_id').val();
-        var leadStatusId = $('#lead_status_id').val();
-        var teleCallerId = $('#from_telecaller_id').val();
-        var leadFromDate = $('#lead_from_date').val();
-        var leadToDate = $('#lead_to_date').val();
-        var courseId = $('#reassign_course_id').val();
-
-        if (leadSourceId && teleCallerId && leadFromDate && leadToDate && leadStatusId) {
-            $.ajax({
-                url: '{{ route("admin.leads.get-by-source-reassign") }}',
-                type: 'POST',
-                data: { 
-                    lead_source_id: leadSourceId, 
-                    tele_caller_id: teleCallerId, 
-                    from_date: leadFromDate, 
-                    to_date: leadToDate, 
-                    lead_status_id: leadStatusId,
-                    course_id: courseId || ''
-                },
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    $('#lead_table_body').html(response);
-                    $('#check_all').prop('checked', false);
-                    toggleSubmitButton();
-                },
-                error: function(xhr) {
-                    console.log('Error fetching leads:', xhr.responseText);
-                }
-            });
-        } else {
-            $('#lead_table_body').html('');
+    $(document).ready(function() {
+        // Handle "Check All" functionality
+        $('#check_all').on('change', function() {
+            var isChecked = $(this).is(':checked');
+            $('#lead_table_body input[type="checkbox"]').prop('checked', isChecked);
             toggleSubmitButton();
+        });
+
+        // Handle individual checkbox changes
+        $('#lead_table_body').on('change', 'input[type="checkbox"]', function() {
+            toggleSubmitButton();
+        });
+
+        // Enable/Disable submit button based on checkbox selection
+        function toggleSubmitButton() {
+            var anyChecked = $('#lead_table_body input[type="checkbox"]:checked').length > 0;
+            $('#reassign_btn').prop('disabled', !anyChecked);
         }
+
+        // Select checkboxes based on entered number
+        $('#select_count').on('input', function() {
+            var count = parseInt($(this).val()) || 0;
+            var checkboxes = $('#lead_table_body input[type="checkbox"]');
+
+            // Uncheck all first
+            checkboxes.prop('checked', false);
+
+            // Check only the specified number of checkboxes
+            checkboxes.slice(0, count).prop('checked', true);
+
+            toggleSubmitButton();
+        });
+
+        // Team selection removed - senior managers can see all telecallers directly
+
+        // AJAX to fetch leads
+        $('#from_telecaller_id, #lead_source_id, #lead_from_date, #lead_to_date, #lead_status_id, #reassign_course_id').on('change', function() {
+            var leadSourceId = $('#lead_source_id').val();
+            var leadStatusId = $('#lead_status_id').val();
+            var teleCallerId = $('#from_telecaller_id').val();
+            var leadFromDate = $('#lead_from_date').val();
+            var leadToDate = $('#lead_to_date').val();
+            var courseId = $('#reassign_course_id').val();
+
+            if (leadSourceId && teleCallerId && leadFromDate && leadToDate && leadStatusId) {
+                $.ajax({
+                    url: '{{ route("admin.leads.get-by-source-reassign") }}',
+                    type: 'POST',
+                    data: {
+                        lead_source_id: leadSourceId,
+                        tele_caller_id: teleCallerId,
+                        from_date: leadFromDate,
+                        to_date: leadToDate,
+                        lead_status_id: leadStatusId,
+                        course_id: courseId || ''
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        $('#lead_table_body').html(response);
+                        $('#check_all').prop('checked', false);
+                        toggleSubmitButton();
+                    },
+                    error: function(xhr) {
+                        console.log('Error fetching leads:', xhr.responseText);
+                    }
+                });
+            } else {
+                $('#lead_table_body').html('');
+                toggleSubmitButton();
+            }
+        });
     });
-});
 </script>
 
 <style>
-.bulk-operations-table {
-    max-height: 300px;
-    overflow-y: auto;
-}
+    .bulk-operations-table {
+        max-height: 300px;
+        overflow-y: auto;
+    }
 
-.bulk-table thead th {
-    background-color: #fff;
-    position: sticky;
-    top: 0;
-    border: 1px solid #ddd;
-}
+    .bulk-table thead th {
+        background-color: #fff;
+        position: sticky;
+        top: 0;
+        border: 1px solid #ddd;
+    }
 
-.bulk-checkbox {
-    width: 22px;
-    height: 22px;
-}
+    .bulk-checkbox {
+        width: 22px;
+        height: 22px;
+    }
 </style>

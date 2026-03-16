@@ -7,7 +7,7 @@
                 <select class="form-control" name="telecaller_id" id="telecaller_id" required>
                     <option value="">Select Tele Caller</option>
                     @foreach ($telecallers as $telecaller)
-                        <option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>
+                    <option value="{{ $telecaller->id }}">{{ $telecaller->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -62,79 +62,79 @@
 
 <script>
     $(document).ready(function() {
-    // Handle "Check All" functionality
-    $('#check_all').on('change', function() {
-        var isChecked = $(this).is(':checked');
-        $('#lead_table_body input[type="checkbox"]').prop('checked', isChecked);
-        toggleSubmitButton();
-    });
-
-    // Handle individual checkbox changes
-    $('#lead_table_body').on('change', 'input[type="checkbox"]', function() {
-        toggleSubmitButton();
-    });
-
-    // Function to enable/disable the submit button
-    function toggleSubmitButton() {
-        var anyChecked = $('#lead_table_body input[type="checkbox"]:checked').length > 0;
-        $('#reassign_btn').prop('disabled', !anyChecked);
-    }
-
-    // Team selection removed - senior managers can see all telecallers directly
-
-    // AJAX to fetch leads based on lead source
-    $('#telecaller_id, #lead_source_id, #lead_date').on('change', function() {
-        var leadSourceId = $('#lead_source_id').val();
-        var teleCallerId = $('#telecaller_id').val();
-        var leadDate     = $('#lead_date').val();
-    
-        // Ensure both fields have values before making the AJAX request 
-        if (leadSourceId && teleCallerId && leadDate) {
-            $.ajax({
-                url: '{{ route("admin.leads.get-by-source") }}',
-                type: 'POST', 
-                data: { 
-                    lead_source_id: leadSourceId, 
-                    tele_caller_id: teleCallerId,
-                    created_at: leadDate 
-                },
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) { 
-                    $('#lead_table_body').html(response);  
-                    $('#check_all').prop('checked', false);
-                    toggleSubmitButton();
-                }, 
-                error: function(xhr, status, error) { 
-                    console.log('Error fetching leads. Please try again.');
-                    console.log(xhr.responseText);
-                }
-            });
-        } else {
-            $('#lead_table_body').html('');
+        // Handle "Check All" functionality
+        $('#check_all').on('change', function() {
+            var isChecked = $(this).is(':checked');
+            $('#lead_table_body input[type="checkbox"]').prop('checked', isChecked);
             toggleSubmitButton();
-        }
-    });
+        });
 
-});
+        // Handle individual checkbox changes
+        $('#lead_table_body').on('change', 'input[type="checkbox"]', function() {
+            toggleSubmitButton();
+        });
+
+        // Function to enable/disable the submit button
+        function toggleSubmitButton() {
+            var anyChecked = $('#lead_table_body input[type="checkbox"]:checked').length > 0;
+            $('#reassign_btn').prop('disabled', !anyChecked);
+        }
+
+        // Team selection removed - senior managers can see all telecallers directly
+
+        // AJAX to fetch leads based on lead source
+        $('#telecaller_id, #lead_source_id, #lead_date').on('change', function() {
+            var leadSourceId = $('#lead_source_id').val();
+            var teleCallerId = $('#telecaller_id').val();
+            var leadDate = $('#lead_date').val();
+
+            // Ensure both fields have values before making the AJAX request 
+            if (leadSourceId && teleCallerId && leadDate) {
+                $.ajax({
+                    url: '{{ route("admin.leads.get-by-source") }}',
+                    type: 'POST',
+                    data: {
+                        lead_source_id: leadSourceId,
+                        tele_caller_id: teleCallerId,
+                        created_at: leadDate
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        $('#lead_table_body').html(response);
+                        $('#check_all').prop('checked', false);
+                        toggleSubmitButton();
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error fetching leads. Please try again.');
+                        console.log(xhr.responseText);
+                    }
+                });
+            } else {
+                $('#lead_table_body').html('');
+                toggleSubmitButton();
+            }
+        });
+
+    });
 </script>
 
 <style>
-.bulk-operations-table {
-    max-height: 300px;
-    overflow-y: auto;
-}
+    .bulk-operations-table {
+        max-height: 300px;
+        overflow-y: auto;
+    }
 
-.bulk-table thead th {
-    background-color: #fff;
-    position: sticky;
-    top: 0;
-    border: 1px solid #ddd;
-}
+    .bulk-table thead th {
+        background-color: #fff;
+        position: sticky;
+        top: 0;
+        border: 1px solid #ddd;
+    }
 
-.bulk-checkbox {
-    width: 22px;
-    height: 22px;
-}
+    .bulk-checkbox {
+        width: 22px;
+        height: 22px;
+    }
 </style>

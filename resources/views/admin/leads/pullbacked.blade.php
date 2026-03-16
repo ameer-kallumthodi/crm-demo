@@ -42,9 +42,9 @@
                             <select name="telecaller_id" class="form-control">
                                 <option value="">All</option>
                                 @foreach ($telecallers as $telecaller)
-                                    <option value="{{ $telecaller->id }}" {{ $filters['telecaller_id'] == $telecaller->id ? 'selected' : '' }}>
-                                        {{ $telecaller->name }}
-                                    </option>
+                                <option value="{{ $telecaller->id }}" {{ $filters['telecaller_id'] == $telecaller->id ? 'selected' : '' }}>
+                                    {{ $telecaller->name }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
@@ -53,9 +53,9 @@
                             <select name="lead_status_id" class="form-control">
                                 <option value="">All</option>
                                 @foreach ($leadStatuses as $status)
-                                    <option value="{{ $status->id }}" {{ $filters['lead_status_id'] == $status->id ? 'selected' : '' }}>
-                                        {{ $status->title }}
-                                    </option>
+                                <option value="{{ $status->id }}" {{ $filters['lead_status_id'] == $status->id ? 'selected' : '' }}>
+                                    {{ $status->title }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
@@ -64,9 +64,9 @@
                             <select name="lead_source_id" class="form-control">
                                 <option value="">All</option>
                                 @foreach ($leadSources as $source)
-                                    <option value="{{ $source->id }}" {{ $filters['lead_source_id'] == $source->id ? 'selected' : '' }}>
-                                        {{ $source->title }}
-                                    </option>
+                                <option value="{{ $source->id }}" {{ $filters['lead_source_id'] == $source->id ? 'selected' : '' }}>
+                                    {{ $source->title }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
@@ -100,7 +100,7 @@
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-3">
-                <h5 class="mb-0">Pullbacked Leads List</h5>
+                    <h5 class="mb-0">Pullbacked Leads List</h5>
                     <span class="badge bg-danger" id="pullbackedTotal">Total: 0</span>
                 </div>
                 @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_general_manager())
@@ -138,7 +138,7 @@
 
 @push('scripts')
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
         const $pullbackedTotal = $('#pullbackedTotal');
 
         function getFilterParams() {
@@ -156,16 +156,16 @@
             const params = new URLSearchParams();
             if (!reset) {
                 const filters = getFilterParams();
-                Object.keys(filters).forEach(function (key) {
+                Object.keys(filters).forEach(function(key) {
                     if (filters[key]) {
                         params.append(key, filters[key]);
                     }
                 });
             }
 
-            const newUrl = params.toString()
-                ? `${window.location.pathname}?${params.toString()}`
-                : window.location.pathname;
+            const newUrl = params.toString() ?
+                `${window.location.pathname}?${params.toString()}` :
+                window.location.pathname;
             window.history.replaceState({}, '', newUrl);
         }
 
@@ -179,38 +179,85 @@
         const pullbackedTable = $(tableSelector).DataTable({
             processing: true,
             serverSide: true,
-            order: [[8, 'desc']],
+            order: [
+                [8, 'desc']
+            ],
             pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            lengthMenu: [
+                [10, 25, 50, 100, -1],
+                [10, 25, 50, 100, "All"]
+            ],
             dom: "Bfrtip",
             buttons: ["csv", "excel", "print", "pdf"],
             stateSave: true,
             scrollX: true,
             ajax: {
-                url: '{{ route('admin.leads.pullbacked.data') }}',
-                data: function (d) {
+                url: '{{ route('
+                admin.leads.pullbacked.data ') }}',
+                data: function(d) {
                     return $.extend({}, d, getFilterParams());
                 },
-                error: function (xhr, error) {
+                error: function(xhr, error) {
                     console.error('Error loading pullbacked leads:', error);
                 }
             },
-            columns: [
-                { data: 'actions', name: 'actions', orderable: false, searchable: false },
-                { data: 'index', name: 'index', orderable: false, searchable: false },
-                { data: 'name', name: 'title' },
-                { data: 'contact', name: 'phone', orderable: false, searchable: false },
-                { data: 'status', name: 'lead_status_id', orderable: false, searchable: false },
-                { data: 'source', name: 'lead_source_id' },
-                { data: 'telecaller', name: 'telecaller_id' },
-                { data: 'course', name: 'course_id' },
-                { data: 'pullbacked_on', name: 'updated_at' },
-                { data: 'remarks', name: 'remarks', orderable: false },
+            columns: [{
+                    data: 'actions',
+                    name: 'actions',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'index',
+                    name: 'index',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'name',
+                    name: 'title'
+                },
+                {
+                    data: 'contact',
+                    name: 'phone',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'status',
+                    name: 'lead_status_id',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'source',
+                    name: 'lead_source_id'
+                },
+                {
+                    data: 'telecaller',
+                    name: 'telecaller_id'
+                },
+                {
+                    data: 'course',
+                    name: 'course_id'
+                },
+                {
+                    data: 'pullbacked_on',
+                    name: 'updated_at'
+                },
+                {
+                    data: 'remarks',
+                    name: 'remarks',
+                    orderable: false
+                },
             ],
-            columnDefs: [
-                { targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], render: function (data) { return data; } }
-            ],
-            drawCallback: function (settings) {
+            columnDefs: [{
+                targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                render: function(data) {
+                    return data;
+                }
+            }],
+            drawCallback: function(settings) {
                 if (settings.json && typeof settings.json.recordsFiltered !== 'undefined') {
                     $pullbackedTotal.text('Total: ' + settings.json.recordsFiltered);
                 }
@@ -233,18 +280,18 @@
             }
         });
 
-        $('#pullbackedFilterForm').on('submit', function (e) {
+        $('#pullbackedFilterForm').on('submit', function(e) {
             e.preventDefault();
             updateUrlWithFilters();
             pullbackedTable.ajax.reload();
         });
 
-        $('#pullbackedFilterForm .form-control').on('change', function () {
+        $('#pullbackedFilterForm .form-control').on('change', function() {
             updateUrlWithFilters();
             pullbackedTable.ajax.reload();
         });
 
-        $('#pullbackedResetBtn').on('click', function () {
+        $('#pullbackedResetBtn').on('click', function() {
             $('#pullbackedFilterForm')[0].reset();
             updateUrlWithFilters(true);
             pullbackedTable.ajax.reload();
