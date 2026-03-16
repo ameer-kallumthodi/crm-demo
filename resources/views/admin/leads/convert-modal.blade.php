@@ -339,7 +339,7 @@
         const $convertBtn = $('#convertLeadBtn');
 
         const totalAmountValue = @json($totalAmount);
-        const courseId = @json($lead - > course_id);
+        const courseId = @json($lead->course_id);
         const isCourse23 = courseId == 23;
         const $course23TotalInput = $('#course23_custom_total_amount');
         const $course23FeePg = $('#course23_fee_pg_amount');
@@ -348,7 +348,7 @@
         const $course23FeeSslc = $('#course23_fee_sslc_amount');
         const $paymentAmountInput = $('#modal_payment_amount'); // only exists for non-course23
 
-        @if(!$course || !$course - > title)
+        @if(!$course || !$course->title)
         // Hide payment section if no course is available
         $paymentCheckbox.closest('.card').hide();
         @endif
@@ -433,7 +433,7 @@
         }
 
         function updateTotalAmount() {
-            @if($course && $course - > title)
+            @if($course && $course->title)
             let amount = getSelectedTotalAmount();
             $totalAmountDisplay.val(formatINR(amount));
             if (!isCourse23) {
