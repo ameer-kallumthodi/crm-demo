@@ -1,4 +1,4 @@
-<form id="assignPostSalesForm" class="assign-post-sales-form" data-submit-url="{{ route('admin.post-sales.converted-leads.assign-submit', $convertedLead->id) }}">
+<form id="assignPostSalesForm">
     @csrf
     <div class="modal-body">
         <div class="card mb-3">
@@ -42,52 +42,53 @@
 
 <script>
 (function () {
-    var form = document.getElementById('assignPostSalesForm');
-    if (!form) return;
-    var submitUrl = form.getAttribute('data-submit-url');
-    $(form).off('submit').on('submit', function (e) {
-        e.preventDefault();
-        var $form = $(this);
-        var url = $form.attr('data-submit-url') || submitUrl;
-        var submitBtn = $form.find('button[type="submit"]');
-        var originalText = submitBtn.html();
-        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+    const assignPostSalesSubmitUrl = "{{ route('admin.post-sales.converted-leads.assign-submit', $convertedLead->id) }}";
+    $(function () {
+        $('#assignPostSalesForm').on('submit', function (e) {
+            e.preventDefault();
 
-        $.ajax({
-            url: url,
-            method: 'POST',
-            data: $form.serialize(),
-            success: function (response) {
-                $('#ajax_modal').modal('hide');
-                if (typeof showToast === 'function') {
-                    showToast(response.message, 'success');
-                } else if (typeof toast_success === 'function') {
-                    toast_success(response.message);
-                } else {
-                    alert(response.message);
+            const form = $(this);
+            const submitBtn = form.find('button[type="submit"]');
+            const originalText = submitBtn.html();
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+
+            $.ajax({
+                url: assignPostSalesSubmitUrl,
+                method: 'POST',
+                data: form.serialize(),
+                success: function (response) {
+                    $('#ajax_modal').modal('hide');
+                    if (typeof showToast === 'function') {
+                        showToast(response.message, 'success');
+                    } else if (typeof toast_success === 'function') {
+                        toast_success(response.message);
+                    } else {
+                        alert(response.message);
+                    }
+                    if ($.fn.DataTable.isDataTable('#postSalesConvertedTable')) {
+                        var table = $('#postSalesConvertedTable').DataTable();
+                        table.ajax.reload(null, false);
+                    } else {
+                        location.reload();
+                    }
+                },
+                error: function (xhr) {
+                    let message = 'Unable to assign.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        message = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    }
+                    if (typeof showToast === 'function') {
+                        showToast(message, 'error');
+                    } else if (typeof toast_error === 'function') {
+                        toast_error(message);
+                    } else {
+                        alert(message);
+                    }
+                    submitBtn.prop('disabled', false).html(originalText);
                 }
-                if ($.fn.DataTable.isDataTable('#postSalesConvertedTable')) {
-                    $('#postSalesConvertedTable').DataTable().ajax.reload(null, false);
-                } else {
-                    location.reload();
-                }
-            },
-            error: function (xhr) {
-                var message = 'Unable to assign.';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    message = xhr.responseJSON.message;
-                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
-                    message = Object.values(xhr.responseJSON.errors).flat().join('\n');
-                }
-                if (typeof showToast === 'function') {
-                    showToast(message, 'error');
-                } else if (typeof toast_error === 'function') {
-                    toast_error(message);
-                } else {
-                    alert(message);
-                }
-                submitBtn.prop('disabled', false).html(originalText);
-            }
+            });
         });
     });
 })();

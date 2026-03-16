@@ -18,7 +18,7 @@
                         <select class="form-select" id="code" name="code" required>
                             <option value="">Select Country</option>
                             @foreach($country_codes as $code => $country)
-                            <option value="{{ $code }}" {{ old('code', $lead->code) == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
+                                <option value="{{ $code }}" {{ old('code', $lead->code) == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
                             @endforeach
                         </select>
                         <div class="invalid-feedback" id="code-error"></div>
@@ -72,7 +72,7 @@
                         <select class="form-select" id="whatsapp_code" name="whatsapp_code">
                             <option value="">Select Country</option>
                             @foreach($country_codes as $code => $country)
-                            <option value="{{ $code }}" {{ old('whatsapp_code', $lead->whatsapp_code) == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
+                                <option value="{{ $code }}" {{ old('whatsapp_code', $lead->whatsapp_code) == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
                             @endforeach
                         </select>
                         <div class="invalid-feedback" id="whatsapp_code-error"></div>
@@ -109,7 +109,7 @@
                     <select class="form-select" name="lead_status_id" id="lead_status_id" required>
                         <option value="">Select Lead Status</option>
                         @foreach($leadStatuses as $status)
-                        <option value="{{ $status->id }}" {{ old('lead_status_id', $lead->lead_status_id) == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
+                            <option value="{{ $status->id }}" {{ old('lead_status_id', $lead->lead_status_id) == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
                         @endforeach
                     </select>
                     <div class="invalid-feedback" id="lead_status_id-error"></div>
@@ -122,7 +122,7 @@
                     <select class="form-select" name="lead_source_id" id="lead_source_id" required>
                         <option value="">Select Source</option>
                         @foreach($leadSources as $source)
-                        <option value="{{ $source->id }}" {{ old('lead_source_id', $lead->lead_source_id) == $source->id ? 'selected' : '' }}>{{ $source->title }}</option>
+                            <option value="{{ $source->id }}" {{ old('lead_source_id', $lead->lead_source_id) == $source->id ? 'selected' : '' }}>{{ $source->title }}</option>
                         @endforeach
                     </select>
                     <div class="invalid-feedback" id="lead_source_id-error"></div>
@@ -135,7 +135,7 @@
                     <select class="form-select" name="country_id" id="country_id">
                         <option value="">Select Country</option>
                         @foreach($countries as $country)
-                        <option value="{{ $country->id }}" {{ old('country_id', $lead->country_id) == $country->id ? 'selected' : '' }}>{{ $country->title }}</option>
+                            <option value="{{ $country->id }}" {{ old('country_id', $lead->country_id) == $country->id ? 'selected' : '' }}>{{ $country->title }}</option>
                         @endforeach
                     </select>
                     <div class="invalid-feedback" id="country_id-error"></div>
@@ -148,7 +148,7 @@
                     <select class="form-select" name="course_id" id="course_id" required>
                         <option value="">Select Course</option>
                         @foreach($courses as $course)
-                        <option value="{{ $course->id }}" {{ old('course_id', $lead->course_id) == $course->id ? 'selected' : '' }}>{{ $course->title }}</option>
+                            <option value="{{ $course->id }}" {{ old('course_id', $lead->course_id) == $course->id ? 'selected' : '' }}>{{ $course->title }}</option>
                         @endforeach
                     </select>
                     <div class="invalid-feedback" id="course_id-error"></div>
@@ -176,20 +176,20 @@
                     <select class="form-select" name="team_id" id="team_id" required>
                         <option value="">Select Team</option>
                         @foreach($teams as $team)
-                        <option value="{{ $team->id }}" data-is-b2b="{{ $team->is_b2b ? '1' : '0' }}" {{ old('team_id', $lead->team_id) == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
+                            <option value="{{ $team->id }}" data-is-b2b="{{ $team->is_b2b ? '1' : '0' }}" {{ old('team_id', $lead->team_id) == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
                         @endforeach
                     </select>
                     <div class="invalid-feedback" id="team_id-error"></div>
                 </div>
             </div>
-
+            
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label" for="telecaller_id">Telecaller <span class="text-danger">*</span></label>
                     <select class="form-select" name="telecaller_id" id="telecaller_id" required>
                         <option value="">Select Telecaller</option>
                         @foreach($telecallers as $telecaller)
-                        <option value="{{ $telecaller->id }}" {{ old('telecaller_id', $lead->telecaller_id) == $telecaller->id ? 'selected' : '' }}>{{ $telecaller->name }}</option>
+                            <option value="{{ $telecaller->id }}" {{ old('telecaller_id', $lead->telecaller_id) == $telecaller->id ? 'selected' : '' }}>{{ $telecaller->name }}</option>
                         @endforeach
                     </select>
                     <div class="invalid-feedback" id="telecaller_id-error"></div>
@@ -203,7 +203,7 @@
                     <input type="text" class="form-control" value="{{ $lead->team ? $lead->team->name : 'No Team Assigned' }}" readonly>
                 </div>
             </div>
-
+            
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">Current Telecaller</label>
@@ -250,166 +250,166 @@
 </div>
 
 <script>
-    $(document).ready(function() {
-        // Check if user is telecaller
-        var isTelecaller = $('.container').data('is-telecaller') === 'true';
-
-        if (!isTelecaller) {
-            // Store all team options
-            const allTeamOptions = $('#team_id option').clone();
-
-            // Filter teams based on is_b2b checkbox
-            $('#is_b2b_edit_modal').on('change', function() {
-                const isB2BChecked = $(this).is(':checked');
-                const currentSelectedValue = $('#team_id').val();
-
-                // Clear current options except the placeholder
-                $('#team_id').find('option:not(:first)').remove();
-
-                // Filter and add appropriate options
-                allTeamOptions.each(function() {
-                    const option = $(this);
-                    if (option.val() === '') {
-                        // Skip placeholder (already exists)
-                        return;
+$(document).ready(function() {
+    // Check if user is telecaller
+    var isTelecaller = $('.container').data('is-telecaller') === 'true';
+    
+    if (!isTelecaller) {
+        // Store all team options
+        const allTeamOptions = $('#team_id option').clone();
+        
+        // Filter teams based on is_b2b checkbox
+        $('#is_b2b_edit_modal').on('change', function() {
+            const isB2BChecked = $(this).is(':checked');
+            const currentSelectedValue = $('#team_id').val();
+            
+            // Clear current options except the placeholder
+            $('#team_id').find('option:not(:first)').remove();
+            
+            // Filter and add appropriate options
+            allTeamOptions.each(function() {
+                const option = $(this);
+                if (option.val() === '') {
+                    // Skip placeholder (already exists)
+                    return;
+                }
+                
+                const teamIsB2B = option.attr('data-is-b2b') === '1';
+                
+                // Strict filtering:
+                // 1. is_b2b is checked: Team MUST be B2B
+                // 2. is_b2b is NOT checked: Team MUST NOT be B2B
+                if (isB2BChecked) {
+                    if (teamIsB2B) {
+                        $('#team_id').append(option.clone());
                     }
+                } else {
+                    if (!teamIsB2B) {
+                        $('#team_id').append(option.clone());
+                    }
+                }
+            });
+            
+            // Restore selection if still available, otherwise clear
+            if ($('#team_id option[value="' + currentSelectedValue + '"]').length > 0) {
+                $('#team_id').val(currentSelectedValue);
+            } else {
+                $('#team_id').val('');
+                // Clear telecaller since team was cleared
+                $('#telecaller_id').html('<option value="">Select Team First</option>');
+            }
+            
+            // If team is selected, reload telecallers with B2B filter
+            if ($('#team_id').val()) {
+                $('#team_id').trigger('change');
+            }
+        });
 
-                    const teamIsB2B = option.attr('data-is-b2b') === '1';
-
-                    // Strict filtering:
-                    // 1. is_b2b is checked: Team MUST be B2B
-                    // 2. is_b2b is NOT checked: Team MUST NOT be B2B
-                    if (isB2BChecked) {
-                        if (teamIsB2B) {
-                            $('#team_id').append(option.clone());
+        // Initialize B2B filter
+        $('#is_b2b_edit_modal').trigger('change');
+        
+        // Handle team selection change (only for non-telecallers)
+        $('#team_id').on('change', function() {
+            const teamId = $(this).val();
+            const telecallerSelect = $('#telecaller_id');
+            const isB2BChecked = $('#is_b2b_edit_modal').is(':checked');
+            
+            // Clear existing options
+            telecallerSelect.html('<option value="">Loading telecallers...</option>');
+            
+            if (teamId) {
+                // Fetch telecallers for selected team
+                $.ajax({
+                    url: '{{ route("leads.telecallers-by-team") }}',
+                    type: 'GET',
+                    data: { 
+                        team_id: teamId,
+                        is_b2b: isB2BChecked ? 1 : 0
+                    },
+                    success: function(response) {
+                        telecallerSelect.html('<option value="">Select Telecaller</option>');
+                        
+                        if (response.telecallers && response.telecallers.length > 0) {
+                            $.each(response.telecallers, function(index, telecaller) {
+                                telecallerSelect.append(
+                                    '<option value="' + telecaller.id + '">' + telecaller.name + '</option>'
+                                );
+                            });
+                        } else {
+                            telecallerSelect.append('<option value="">No telecallers found in this team</option>');
                         }
-                    } else {
-                        if (!teamIsB2B) {
-                            $('#team_id').append(option.clone());
-                        }
+                    },
+                    error: function() {
+                        telecallerSelect.html('<option value="">Error loading telecallers</option>');
                     }
                 });
+            } else {
+                telecallerSelect.html('<option value="">Select Team First</option>');
+            }
+        });
+        
+        // If there's a current team_id value, trigger the change event to load telecallers
+        var currentTeamId = '{{ $lead->team_id }}';
+        var currentTelecallerId = '{{ $lead->telecaller_id }}';
+        
+        if (currentTeamId) {
+            $('#team_id').trigger('change');
+            // Set the current telecaller as selected after loading
+            setTimeout(function() {
+                $('#telecaller_id').val(currentTelecallerId);
+            }, 500);
+        }
+    }
 
-                // Restore selection if still available, otherwise clear
-                if ($('#team_id option[value="' + currentSelectedValue + '"]').length > 0) {
-                    $('#team_id').val(currentSelectedValue);
-                } else {
-                    $('#team_id').val('');
-                    // Clear telecaller since team was cleared
-                    $('#telecaller_id').html('<option value="">Select Team First</option>');
+    // Form submission with AJAX
+    $('#leadEditForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        $('.form-control, .form-select').removeClass('is-invalid');
+        $('.invalid-feedback').text('');
+        
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        const form = $(this);
+        const formData = new FormData(this);
+        
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="ti ti-loader-2"></i> Updating...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    toast_success(response.message);
+                    $('#ajax_modal').modal('hide');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 }
-
-                // If team is selected, reload telecallers with B2B filter
-                if ($('#team_id').val()) {
-                    $('#team_id').trigger('change');
-                }
-            });
-
-            // Initialize B2B filter
-            $('#is_b2b_edit_modal').trigger('change');
-
-            // Handle team selection change (only for non-telecallers)
-            $('#team_id').on('change', function() {
-                const teamId = $(this).val();
-                const telecallerSelect = $('#telecaller_id');
-                const isB2BChecked = $('#is_b2b_edit_modal').is(':checked');
-
-                // Clear existing options
-                telecallerSelect.html('<option value="">Loading telecallers...</option>');
-
-                if (teamId) {
-                    // Fetch telecallers for selected team
-                    $.ajax({
-                        url: '{{ route("leads.telecallers-by-team") }}',
-                        type: 'GET',
-                        data: {
-                            team_id: teamId,
-                            is_b2b: isB2BChecked ? 1 : 0
-                        },
-                        success: function(response) {
-                            telecallerSelect.html('<option value="">Select Telecaller</option>');
-
-                            if (response.telecallers && response.telecallers.length > 0) {
-                                $.each(response.telecallers, function(index, telecaller) {
-                                    telecallerSelect.append(
-                                        '<option value="' + telecaller.id + '">' + telecaller.name + '</option>'
-                                    );
-                                });
-                            } else {
-                                telecallerSelect.append('<option value="">No telecallers found in this team</option>');
-                            }
-                        },
-                        error: function() {
-                            telecallerSelect.html('<option value="">Error loading telecallers</option>');
-                        }
+            },
+            error: function(xhr) {
+                if (xhr.status === 422) {
+                    var errors = xhr.responseJSON.errors;
+                    $.each(errors, function(field, messages) {
+                        var input = $('[name="' + field + '"]');
+                        input.addClass('is-invalid');
+                        input.siblings('.invalid-feedback').text(messages[0]);
                     });
                 } else {
-                    telecallerSelect.html('<option value="">Select Team First</option>');
+                    toast_danger('An error occurred while updating the lead. Please try again.');
                 }
-            });
-
-            // If there's a current team_id value, trigger the change event to load telecallers
-            var currentTeamId = '{{ $lead->team_id }}';
-            var currentTelecallerId = '{{ $lead->telecaller_id }}';
-
-            if (currentTeamId) {
-                $('#team_id').trigger('change');
-                // Set the current telecaller as selected after loading
-                setTimeout(function() {
-                    $('#telecaller_id').val(currentTelecallerId);
-                }, 500);
+                
+                submitBtn.prop('disabled', false);
+                submitBtn.html(originalText);
             }
-        }
-
-        // Form submission with AJAX
-        $('#leadEditForm').on('submit', function(e) {
-            e.preventDefault();
-
-            $('.form-control, .form-select').removeClass('is-invalid');
-            $('.invalid-feedback').text('');
-
-            const submitBtn = $(this).find('button[type="submit"]');
-            const originalText = submitBtn.html();
-            const form = $(this);
-            const formData = new FormData(this);
-
-            submitBtn.prop('disabled', true);
-            submitBtn.html('<i class="ti ti-loader-2"></i> Updating...');
-
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    if (response.success) {
-                        toast_success(response.message);
-                        $('#ajax_modal').modal('hide');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
-                    }
-                },
-                error: function(xhr) {
-                    if (xhr.status === 422) {
-                        var errors = xhr.responseJSON.errors;
-                        $.each(errors, function(field, messages) {
-                            var input = $('[name="' + field + '"]');
-                            input.addClass('is-invalid');
-                            input.siblings('.invalid-feedback').text(messages[0]);
-                        });
-                    } else {
-                        toast_danger('An error occurred while updating the lead. Please try again.');
-                    }
-
-                    submitBtn.prop('disabled', false);
-                    submitBtn.html(originalText);
-                }
-            });
         });
     });
+});
 </script>
