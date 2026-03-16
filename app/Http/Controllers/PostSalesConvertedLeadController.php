@@ -28,6 +28,13 @@ class PostSalesConvertedLeadController extends Controller
         $courses = Course::where('is_active', 1)->orderBy('title')->get(['id', 'title']);
         $telecallers = User::select('id', 'name')->nonMarketingTelecallers()->where('is_active', true)->orderBy('name')->get();
         
+        // Post-sales users (role_id 7, exclude head) for assign dropdown; only head or admin can assign
+        $postSalesUsers = User::select('id', 'name')->where('role_id', 7)->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('is_head')->orWhere('is_head', 0);
+            })->orderBy('name')->get();
+        $canAssignPostSales = RoleHelper::is_post_sales_head() || RoleHelper::is_admin_or_super_admin();
+        
         // Load batches only if a course is selected
         $batches = collect();
         if ($request->filled('course_id')) {
@@ -37,7 +44,7 @@ class PostSalesConvertedLeadController extends Controller
                 ->get(['id', 'title']);
         }
 
-        return view('admin.post-sales.converted-leads.index', compact('courses', 'telecallers', 'batches'));
+        return view('admin.post-sales.converted-leads.index', compact('courses', 'telecallers', 'batches', 'postSalesUsers', 'canAssignPostSales'));
     }
 
     /**
@@ -58,8 +65,14 @@ class PostSalesConvertedLeadController extends Controller
                 'subject',
                 'lead.telecaller:id,name',
                 'cancelledBy:id,name',
+                'postSalesUser:id,name',
                 'invoices.payments' // For checking pending payments
             ]);
+
+            // Post-sales members see only their assigned; head and admin see all
+            if (RoleHelper::is_post_sales() && !RoleHelper::is_post_sales_head() && !RoleHelper::is_admin_or_super_admin()) {
+                $query->where('post_sales_user_id', AuthHelper::getCurrentUserId());
+            }
 
             // Apply filters
             // Handle DataTable's built-in search box (search.value) - priority for DataTable search box
@@ -105,10 +118,14 @@ class PostSalesConvertedLeadController extends Controller
                 $query->where('batch_id', $request->batch_id);
             }
 
-            // Get total count before filtering
-            $totalRecords = ConvertedLead::count();
+            // recordsTotal: count user can see (role filter only)
+            $baseQuery = ConvertedLead::query();
+            if (RoleHelper::is_post_sales() && !RoleHelper::is_post_sales_head() && !RoleHelper::is_admin_or_super_admin()) {
+                $baseQuery->where('post_sales_user_id', AuthHelper::getCurrentUserId());
+            }
+            $totalRecords = $baseQuery->count();
 
-            // Get filtered count
+            // Get filtered count (after all filters)
             $filteredCount = $query->count();
 
             // Always order by ID (latest first) to keep
@@ -140,6 +157,7 @@ class PostSalesConvertedLeadController extends Controller
             'show_parent_phone' => \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor(),
             'email' => $convertedLead->email ?? 'N/A',
                     'bde_name' => $convertedLead->lead?->telecaller?->name ?? 'Unassigned',
+                    'post_sales_user' => $this->renderPostSalesUser($convertedLead),
                     'created_at' => $convertedLead->created_at ? $convertedLead->created_at->format('d M Y h:i A') : 'N/A',
                     'course' => $convertedLead->course?->title ?? 'N/A',
                     'batch' => $convertedLead->batch?->title ?? 'N/A',
@@ -347,6 +365,18 @@ class PostSalesConvertedLeadController extends Controller
     }
 
     /**
+     * Render post-sales assigned user column HTML
+     */
+    private function renderPostSalesUser($convertedLead)
+    {
+        $name = $convertedLead->postSalesUser?->name ?? null;
+        if (empty($name)) {
+            return '<span class="text-muted">Unassigned</span>';
+        }
+        return '<span>' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '</span>';
+    }
+
+    /**
      * Render post sales remarks column HTML
      */
     private function renderPostSalesRemarks($convertedLead)
@@ -453,6 +483,11 @@ class PostSalesConvertedLeadController extends Controller
     private function renderActions($convertedLead)
     {
         $html = '<div class="text-center d-flex gap-1 justify-content-center">';
+        if (RoleHelper::is_post_sales_head() || RoleHelper::is_admin_or_super_admin()) {
+            $html .= '<button type="button" class="btn btn-sm btn-outline-secondary" title="Assign to Post-Sales" onclick="show_ajax_modal(\'' . route('admin.post-sales.converted-leads.assign', $convertedLead->id) . '\', \'Assign to Post-Sales\')">';
+            $html .= '<i class="ti ti-user-plus"></i>';
+            $html .= '</button>';
+        }
         $html .= '<a href="' . route('admin.post-sales.converted-leads.show', $convertedLead->id) . '" class="btn btn-sm btn-outline-primary" title="View Details">';
         $html .= '<i class="ti ti-eye"></i>';
         $html .= '</a>';
@@ -525,6 +560,7 @@ class PostSalesConvertedLeadController extends Controller
             'show_parent_phone' => \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor(),
             'email' => $convertedLead->email ?? 'N/A',
             'bde_name' => $convertedLead->lead?->telecaller?->name ?? 'Unassigned',
+            'post_sales_user' => $convertedLead->postSalesUser?->name ?? 'Unassigned',
             'created_at' => $convertedLead->created_at ? $convertedLead->created_at->format('d M Y h:i A') : 'N/A',
             'course' => $convertedLead->course?->title ?? 'N/A',
             'batch' => $convertedLead->batch?->title ?? 'N/A',
@@ -925,6 +961,51 @@ class PostSalesConvertedLeadController extends Controller
         return response()->json([
             'success' => true,
             'message' => $message
+        ]);
+    }
+
+    /**
+     * Show assign to post-sales modal (only post-sales head or admin).
+     */
+    public function assign($id)
+    {
+        $this->ensureAccess();
+        if (!RoleHelper::is_post_sales_head() && !RoleHelper::is_admin_or_super_admin()) {
+            abort(403, 'Only Post-Sales Head or Admin can assign.');
+        }
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+        // Exclude post-sales head from assignable list (only members)
+        $postSalesUsers = User::select('id', 'name')->where('role_id', 7)->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('is_head')->orWhere('is_head', 0);
+            })->orderBy('name')->get();
+
+        return view('admin.post-sales.converted-leads.assign-modal', compact('convertedLead', 'postSalesUsers'));
+    }
+
+    /**
+     * Submit assign to post-sales (only post-sales head or admin).
+     */
+    public function assignSubmit(Request $request, $id)
+    {
+        $this->ensureAccess();
+        if (!RoleHelper::is_post_sales_head() && !RoleHelper::is_admin_or_super_admin()) {
+            return response()->json(['success' => false, 'message' => 'Only Post-Sales Head or Admin can assign.'], 403);
+        }
+
+        $convertedLead = ConvertedLead::findOrFail($id);
+        $request->validate([
+            'post_sales_user_id' => 'required|exists:users,id',
+        ]);
+
+        $convertedLead->post_sales_user_id = $request->post_sales_user_id;
+        $convertedLead->updated_by = AuthHelper::getCurrentUserId();
+        $convertedLead->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Assigned to post-sales successfully.',
         ]);
     }
 

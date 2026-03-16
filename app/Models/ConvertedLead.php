@@ -33,6 +33,7 @@ class ConvertedLead extends Model
         'called_date',
         'called_time',
         'post_sales_remarks',
+        'post_sales_user_id',
         'ref_no',
         'register_number',
         'course_id',
@@ -152,6 +153,11 @@ class ConvertedLead extends Model
     public function cancelledBy()
     {
         return $this->belongsTo(User::class, 'cancelled_by');
+    }
+
+    public function postSalesUser()
+    {
+        return $this->belongsTo(User::class, 'post_sales_user_id');
     }
 
     public function admissionBatch()

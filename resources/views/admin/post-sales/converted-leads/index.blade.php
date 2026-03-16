@@ -149,6 +149,7 @@
                                     <th>Parent Phone</th>
                                     @endif
                                     <th>BDE Name</th>
+                                    <th>Post-Sales</th>
                                     <th>Converted Date</th>
                                     <th>Course</th>
                                     <th>Batch</th>
@@ -204,6 +205,7 @@ if (\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelpe
 
 $columns = array_merge($columns, [
     ['data' => 'bde_name', 'name' => 'bde_name', 'orderable' => false, 'searchable' => false],
+    ['data' => 'post_sales_user', 'name' => 'post_sales_user', 'orderable' => false, 'searchable' => false],
     ['data' => 'created_at', 'name' => 'created_at'],
     ['data' => 'course', 'name' => 'course', 'orderable' => false, 'searchable' => false],
     ['data' => 'batch', 'name' => 'batch', 'orderable' => false, 'searchable' => false],
@@ -873,7 +875,8 @@ $columns = array_merge($columns, [
                 if (data.show_parent_phone && data.parent_phone) {
                     cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-phone-call f-12 text-muted me-1"></i><small class="text-muted f-11">Parent: ' + escapeHtml(data.parent_phone || 'N/A') + '</small></div></div>';
                 }
-                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-user f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.bde_name || 'Unassigned') + '</small></div></div>';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-user f-12 text-muted me-1"></i><small class="text-muted f-11">BDE: ' + escapeHtml(data.bde_name || 'Unassigned') + '</small></div></div>';
+                cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-user-plus f-12 text-muted me-1"></i><small class="text-muted f-11">Post-Sales: ' + escapeHtml(data.post_sales_user || 'Unassigned') + '</small></div></div>';
                 cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-book f-12 text-muted me-1"></i><small class="text-muted f-11">' + escapeHtml(data.course || '-') + '</small></div></div>';
                 if (data.batch && data.batch !== 'N/A') {
                     cardHtml += '<div class="col-6"><div class="d-flex align-items-center"><i class="ti ti-calendar f-12 text-muted me-1"></i><small class="text-muted f-11">Batch: ' + escapeHtml(data.batch) + '</small></div></div>';
