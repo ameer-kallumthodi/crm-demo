@@ -795,6 +795,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/post-sales-converted-students', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'index'])->name('post-sales.converted-leads.index');
         Route::get('/post-sales-converted-students/data', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'getPostSalesConvertedStudentsData'])->name('post-sales.converted-leads.data');
         Route::get('/post-sales-postponed-batches', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'postponedBatches'])->name('post-sales.postponed-batches');
+        Route::get('/post-sales-converted-students/bulk-assign', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'bulkAssign'])->name('post-sales.converted-leads.bulk-assign');
+        Route::get('/post-sales-converted-students/bulk-assign/data', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'getBulkAssignData'])->name('post-sales.converted-leads.bulk-assign.data');
+        Route::post('/post-sales-converted-students/bulk-assign', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'bulkAssignSubmit'])->name('post-sales.converted-leads.bulk-assign.submit');
         Route::get('/post-sales-converted-students/{id}', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'show'])->name('post-sales.converted-leads.show');
         Route::get('/post-sales-converted-students/{id}/postponed-batch', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'postponedBatch'])->name('post-sales.converted-leads.postponed-batch');
         Route::post('/post-sales-converted-students/{id}/postponed-batch', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'postponedBatchSubmit'])->name('post-sales.converted-leads.postponed-batch.submit');

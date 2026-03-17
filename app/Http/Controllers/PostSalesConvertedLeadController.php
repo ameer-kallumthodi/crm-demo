@@ -1010,6 +1010,110 @@ class PostSalesConvertedLeadController extends Controller
     }
 
     /**
+     * Show bulk assign modal (only post-sales head or admin).
+     */
+    public function bulkAssign()
+    {
+        $this->ensureAccess();
+        if (!RoleHelper::is_post_sales_head() && !RoleHelper::is_admin_or_super_admin()) {
+            abort(403, 'Only Post-Sales Head or Admin can bulk assign.');
+        }
+
+        $courses = Course::where('is_active', 1)->orderBy('title')->get(['id', 'title']);
+        $postSalesUsers = User::select('id', 'name')->where('role_id', 7)->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('is_head')->orWhere('is_head', 0);
+            })->orderBy('name')->get();
+
+        return view('admin.post-sales.converted-leads.bulk-assign-modal', compact('courses', 'postSalesUsers'));
+    }
+
+    /**
+     * AJAX: Get converted students for bulk assign list (filtered by date_from, date_to, course_id; optional batch_id, post_sales_user_id).
+     */
+    public function getBulkAssignData(Request $request): JsonResponse
+    {
+        $this->ensureAccess();
+        if (!RoleHelper::is_post_sales_head() && !RoleHelper::is_admin_or_super_admin()) {
+            return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
+        }
+
+        $request->validate([
+            'date_from' => 'required|date',
+            'date_to'   => 'required|date|after_or_equal:date_from',
+            'course_id' => 'required|exists:courses,id',
+        ]);
+
+        $query = ConvertedLead::with([
+            'course',
+            'batch',
+            'postSalesUser:id,name',
+        ])
+            ->where('course_id', $request->course_id)
+            ->whereDate('created_at', '>=', $request->date_from)
+            ->whereDate('created_at', '<=', $request->date_to);
+
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+        if ($request->has('post_sales_user_id') && $request->post_sales_user_id !== '' && $request->post_sales_user_id !== null) {
+            if ((string) $request->post_sales_user_id === '0') {
+                $query->whereNull('post_sales_user_id');
+            } else {
+                $query->where('post_sales_user_id', $request->post_sales_user_id);
+            }
+        }
+
+        $query->orderBy('id', 'desc');
+        $leads = $query->get();
+
+        $rows = [];
+        foreach ($leads as $index => $lead) {
+            $rows[] = [
+                'id'                => $lead->id,
+                'index'             => $index + 1,
+                'name'              => $lead->name ?? '',
+                'register_number'   => $lead->register_number ?? 'N/A',
+                'phone'             => \App\Helpers\PhoneNumberHelper::display($lead->code, $lead->phone),
+                'course'            => $lead->course?->title ?? 'N/A',
+                'batch'             => $lead->batch?->title ?? 'N/A',
+                'post_sales_user'   => $lead->postSalesUser?->name ?? 'Unassigned',
+                'created_at'        => $lead->created_at ? $lead->created_at->format('d M Y') : '',
+            ];
+        }
+
+        return response()->json(['success' => true, 'data' => $rows]);
+    }
+
+    /**
+     * Submit bulk assign (only post-sales head or admin).
+     */
+    public function bulkAssignSubmit(Request $request): JsonResponse
+    {
+        $this->ensureAccess();
+        if (!RoleHelper::is_post_sales_head() && !RoleHelper::is_admin_or_super_admin()) {
+            return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
+        }
+
+        $request->validate([
+            'post_sales_user_id' => 'required|exists:users,id',
+            'ids'                => 'required|array|min:1',
+            'ids.*'               => 'exists:converted_leads,id',
+        ]);
+
+        $count = ConvertedLead::whereIn('id', $request->ids)
+            ->update([
+                'post_sales_user_id' => $request->post_sales_user_id,
+                'updated_by'         => AuthHelper::getCurrentUserId(),
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' student(s) assigned to post-sales successfully.',
+        ]);
+    }
+
+    /**
      * Generate PDF of converted lead details
      */
     public function generateDetailsPdf($id)

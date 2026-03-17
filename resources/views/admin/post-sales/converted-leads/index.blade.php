@@ -118,18 +118,32 @@
                 <!-- Desktop Header -->
                 <div class="d-none d-md-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Converted Students</h5>
-                    <button type="button" class="btn btn-warning btn-sm" onclick="show_large_modal('{{ route('admin.post-sales.postponed-batches') }}', 'Postponed Batches')">
-                        <i class="ti ti-calendar-time me-1"></i> Postponed Batches
-                    </button>
+                    <div class="d-flex gap-2">
+                        @if(isset($canAssignPostSales) && $canAssignPostSales)
+                        <button type="button" class="btn btn-primary btn-sm" onclick="show_large_modal('{{ route('admin.post-sales.converted-leads.bulk-assign') }}', 'Bulk Assign to Post-Sales')">
+                            <i class="ti ti-user-plus me-1"></i> Bulk Assign
+                        </button>
+                        @endif
+                        <button type="button" class="btn btn-warning btn-sm" onclick="show_large_modal('{{ route('admin.post-sales.postponed-batches') }}', 'Postponed Batches')">
+                            <i class="ti ti-calendar-time me-1"></i> Postponed Batches
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Mobile Header -->
                 <div class="d-md-none">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Converted Students</h5>
-                        <button type="button" class="btn btn-warning btn-sm" onclick="show_large_modal('{{ route('admin.post-sales.postponed-batches') }}', 'Postponed Batches')">
-                            <i class="ti ti-calendar-time me-1"></i> Postponed
-                        </button>
+                        <div class="d-flex gap-2">
+                            @if(isset($canAssignPostSales) && $canAssignPostSales)
+                            <button type="button" class="btn btn-primary btn-sm" onclick="show_large_modal('{{ route('admin.post-sales.converted-leads.bulk-assign') }}', 'Bulk Assign')">
+                                <i class="ti ti-user-plus me-1"></i> Bulk Assign
+                            </button>
+                            @endif
+                            <button type="button" class="btn btn-warning btn-sm" onclick="show_large_modal('{{ route('admin.post-sales.postponed-batches') }}', 'Postponed Batches')">
+                                <i class="ti ti-calendar-time me-1"></i> Postponed
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -299,6 +313,11 @@ $columns = array_merge($columns, [
     }
 </style>
 <div id="postSalesConfig" data-data-url="{{ route('admin.post-sales.converted-leads.data') }}" style="display: none;"></div>
+@if(isset($canAssignPostSales) && $canAssignPostSales)
+<div id="bulkAssignConfig" style="display: none;"
+     data-data-url="{{ route('admin.post-sales.converted-leads.bulk-assign.data') }}"
+     data-submit-url="{{ route('admin.post-sales.converted-leads.bulk-assign.submit') }}"></div>
+@endif
 <script type="application/json" id="postSalesConvertedColumnsData">
 {!! json_encode($columns) !!}
 </script>
@@ -945,6 +964,172 @@ $columns = array_merge($columns, [
             }
         }, 50); // Small delay to allow page to render first
     });
+
+    // Bulk Assign modal: use event delegation so handlers work when modal content is loaded via AJAX (scripts in injected HTML do not run)
+    (function() {
+        var $config = $('#bulkAssignConfig');
+        if (!$config.length) return;
+        var dataUrl = $config.data('data-url');
+        var submitUrl = $config.data('submit-url');
+        var csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+        function escapeHtmlBulk(t) {
+            if (!t) return '';
+            var m = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(t).replace(/[&<>"']/g, function(c) { return m[c] || c; });
+        }
+        function getBulkFilters() {
+            return {
+                date_from: $('#bulk_date_from').val(),
+                date_to: $('#bulk_date_to').val(),
+                course_id: $('#bulk_course_id').val()
+            };
+        }
+        var bulkAssignLoadInProgress = false;
+        function loadBulkAssignList() {
+            var f = getBulkFilters();
+            if (!f.date_from || !f.date_to || !f.course_id) {
+                $('#bulkAssignTableBody').empty();
+                $('#bulkAssignEmpty').show();
+                $('#bulkAssignTableWrap').hide();
+                return;
+            }
+            if (bulkAssignLoadInProgress) return;
+            bulkAssignLoadInProgress = true;
+            $('#bulkAssignEmpty').html('<div class="py-4"><span class="spinner-border spinner-border-sm me-2"></span>Loading students...</div>');
+            $('#bulkAssignTableWrap').hide();
+            $.ajax({
+                url: dataUrl,
+                type: 'GET',
+                data: { date_from: f.date_from, date_to: f.date_to, course_id: f.course_id },
+                success: function(res) {
+                    bulkAssignLoadInProgress = false;
+                    $('#bulkAssignEmpty').html('<i class="ti ti-filter-off d-block mb-2" style="font-size: 2rem;"></i><p class="mb-0">Select From Date, To Date and Course to load students.</p>');
+                    if (!res.success || !res.data) {
+                        $('#bulkAssignTableBody').empty();
+                        $('#bulkAssignEmpty').show();
+                        $('#bulkAssignTableWrap').hide();
+                        return;
+                    }
+                    var html = '';
+                    res.data.forEach(function(row) {
+                        html += '<tr>';
+                        html += '<td><input type="checkbox" class="form-check-input bulk-row-cb" value="' + row.id + '" name="ids[]"></td>';
+                        html += '<td>' + row.index + '</td>';
+                        html += '<td>' + escapeHtmlBulk(row.name) + '</td>';
+                        html += '<td>' + escapeHtmlBulk(row.register_number) + '</td>';
+                        html += '<td>' + escapeHtmlBulk(row.phone) + '</td>';
+                        html += '<td>' + escapeHtmlBulk(row.course) + '</td>';
+                        html += '<td>' + escapeHtmlBulk(row.batch) + '</td>';
+                        html += '<td>' + escapeHtmlBulk(row.post_sales_user) + '</td>';
+                        html += '<td>' + escapeHtmlBulk(row.created_at) + '</td>';
+                        html += '</tr>';
+                    });
+                    $('#bulkAssignTableBody').html(html);
+                    $('#bulkAssignCount').text('Total: ' + res.data.length + ' student(s). Select rows and choose Assign to Post-Sales, then click Bulk Assign.');
+                    $('#bulkAssignEmpty').hide();
+                    $('#bulkAssignTableWrap').show();
+                    $('#bulk_check_all').prop('checked', false).prop('indeterminate', false);
+                    updateBulkCheckAll();
+                },
+                error: function(xhr) {
+                    bulkAssignLoadInProgress = false;
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Failed to load data.';
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        msg = Object.values(xhr.responseJSON.errors).flat().join(' ');
+                    }
+                    if (typeof showToast === 'function') showToast(msg, 'error');
+                    else alert(msg);
+                    $('#bulkAssignTableBody').empty();
+                    $('#bulkAssignEmpty').html('<i class="ti ti-filter-off d-block mb-2" style="font-size: 2rem;"></i><p class="mb-0">Select From Date, To Date and Course to load students.</p>').show();
+                    $('#bulkAssignTableWrap').hide();
+                }
+            });
+        }
+        function toggleBulkSubmitButton() {
+            var anyChecked = $('#bulkAssignTableBody input.bulk-row-cb:checked').length > 0;
+            var userSelected = $('#bulk_assign_to').val() !== '';
+            $('#bulkAssignSubmitBtn').prop('disabled', !(anyChecked && userSelected));
+        }
+        function updateBulkCheckAll() {
+            var total = $('#bulkAssignTableBody input.bulk-row-cb').length;
+            var checked = $('#bulkAssignTableBody input.bulk-row-cb:checked').length;
+            $('#bulk_check_all').prop('checked', total > 0 && total === checked);
+            $('#bulk_check_all').prop('indeterminate', checked > 0 && checked < total);
+            toggleBulkSubmitButton();
+        }
+
+        $(document).on('change', '#bulk_date_from, #bulk_date_to, #bulk_course_id', function() {
+            loadBulkAssignList();
+        });
+        $(document).on('change', '#bulk_check_all', function() {
+            $('#bulkAssignTableBody input.bulk-row-cb').prop('checked', $(this).is(':checked'));
+            updateBulkCheckAll();
+        });
+        $(document).on('change', '#bulkAssignTableBody input.bulk-row-cb', updateBulkCheckAll);
+        $(document).on('change', '#bulk_assign_to', toggleBulkSubmitButton);
+        $(document).on('input', '#bulk_select_count', function() {
+            var count = parseInt($(this).val(), 10) || 0;
+            var $checkboxes = $('#bulkAssignTableBody input.bulk-row-cb');
+            $checkboxes.prop('checked', false);
+            if (count > 0) {
+                $checkboxes.slice(0, count).prop('checked', true);
+            }
+            updateBulkCheckAll();
+        });
+        $(document).on('click', '#bulkAssignSubmitBtn', function() {
+            var ids = [];
+            $('#bulkAssignTableBody input.bulk-row-cb:checked').each(function() { ids.push($(this).val()); });
+            var userId = $('#bulk_assign_to').val();
+            if (!ids.length || !userId) {
+                if (typeof showToast === 'function') showToast('Select at least one student and a Post-Sales user.', 'error');
+                else alert('Select at least one student and a Post-Sales user.');
+                return;
+            }
+            var btn = $(this);
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
+            $.ajax({
+                url: submitUrl,
+                type: 'POST',
+                data: {
+                    _token: csrfToken,
+                    post_sales_user_id: userId,
+                    ids: ids
+                },
+                success: function(res) {
+                    if (res.success) {
+                        if (typeof showToast === 'function') showToast(res.message, 'success');
+                        else alert(res.message);
+                        $('#large_modal').modal('hide');
+                        if ($.fn.DataTable.isDataTable('#postSalesConvertedTable')) {
+                            $('#postSalesConvertedTable').DataTable().ajax.reload(null, false);
+                        }
+                        var container = document.getElementById('mobileConvertedStudentsContainer');
+                        if (container && typeof loadAllMobileViewData === 'function') {
+                            loadAllMobileViewData(1, false);
+                        } else if (container && typeof loadMobileView === 'function' && typeof lastJsonResponse !== 'undefined' && lastJsonResponse) {
+                            loadMobileView(lastJsonResponse);
+                        }
+                    } else {
+                        if (typeof showToast === 'function') showToast(res.message || 'Error', 'error');
+                        else alert(res.message || 'Error');
+                    }
+                    btn.prop('disabled', false).html('<i class="ti ti-user-plus me-1"></i> Bulk Assign');
+                    toggleBulkSubmitButton();
+                },
+                error: function(xhr) {
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Request failed.';
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        msg = Object.values(xhr.responseJSON.errors).flat().join(' ');
+                    }
+                    if (typeof showToast === 'function') showToast(msg, 'error');
+                    else alert(msg);
+                    btn.prop('disabled', false).html('<i class="ti ti-user-plus me-1"></i> Bulk Assign');
+                    toggleBulkSubmitButton();
+                }
+            });
+        });
+    })();
 
     // Function to show toast notifications
     function showToast(message, type = 'info') {
