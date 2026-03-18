@@ -342,7 +342,7 @@ class TeamController extends Controller
                                 $structure = $structures[$sId];
                                 $descriptions = $structure->descriptions;
                                 if (is_array($descriptions)) {
-                                    $descriptions = implode(' | ', array_values(array_filter($descriptions, fn ($v) => (string) $v !== '')));
+                                    $descriptions = implode(', ', array_values(array_filter($descriptions, fn ($v) => (string) $v !== '')));
                                 } else {
                                     $descriptions = (string) ($descriptions ?? '');
                                 }
@@ -459,7 +459,7 @@ class TeamController extends Controller
                                 $structure = $structures[$sId];
                                 $descriptions = $structure->descriptions;
                                 if (is_array($descriptions)) {
-                                    $descriptions = implode(' | ', array_values(array_filter($descriptions, fn ($v) => (string) $v !== '')));
+                                    $descriptions = implode(', ', array_values(array_filter($descriptions, fn ($v) => (string) $v !== '')));
                                 } else {
                                     $descriptions = (string) ($descriptions ?? '');
                                 }
