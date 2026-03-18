@@ -4198,7 +4198,10 @@ class LeadController extends Controller
         ->where('lead_status_id', $request->lead_status_id)
         ->where('is_converted', 0)
         ->where('created_at', '>=', $fromDate)
-        ->where('created_at', '<=', $toDate);
+        ->where('created_at', '<=', $toDate)
+        ->where(function ($q) {
+            $q->whereNull('is_b2b')->orWhere('is_b2b', 0);
+        });
         
         // Optional course filter - only apply if course_id is provided
         if ($request->filled('course_id')) {

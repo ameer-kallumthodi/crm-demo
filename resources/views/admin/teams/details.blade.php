@@ -172,7 +172,12 @@
                                             @if(count($item['structures']) > 0)
                                                 <ul class="mb-0 ps-3">
                                                     @foreach($item['structures'] as $structure)
-                                                        <li>{{ $structure }}</li>
+                                                        <li>
+                                                            <div class="fw-medium">{{ $structure['title'] ?? '' }}</div>
+                                                            @if(!empty($structure['descriptions']))
+                                                                <div class="text-muted small">{{ $structure['descriptions'] }}</div>
+                                                            @endif
+                                                        </li>
                                                     @endforeach
                                                 </ul>
                                             @else

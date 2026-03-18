@@ -251,7 +251,7 @@
     <div class="contact-bar">
         <table>
             <tr>
-                <td>Phone: {{ config('app.contact_phone', '+91 9899108107') }}</td>
+                <td>Phone: {{ config('app.contact_phone', '+91 4942948039') }}</td>
                 <td>Website: {{ config('app.contact_website', 'www.natdemy.com') }}</td>
                 <td>Email: {{ config('app.contact_email', 'support@natdemy.com') }}</td>
             </tr>
@@ -373,6 +373,12 @@
             <td>Office Hours</td>
             <td class="value">{{ $detail->office_hours ?: '09:00 AM – 05:00 PM' }}</td>
         </tr>
+        <tr>
+            <td>Break Time</td>
+            <td class="value">{{ $detail->break_time ?: '01:15 PM – 02:00 PM' }}</td>
+            <td>Public Holiday Policy</td>
+            <td class="value">{{ $detail->holiday_policy ?: 'As per Head Office Circular' }}</td>
+        </tr>
     </table>
 
     <!-- OFFICE ADDRESS (same labels and defaults as details page section 3) -->
@@ -437,7 +443,16 @@
                 <td><strong>{{ $item['course'] }}</strong></td>
                 <td>
                     @if(count($item['structures']) > 0)
-                    {{ implode(', ', $item['structures']) }}
+                    <div>
+                        @foreach($item['structures'] as $structure)
+                            <div style="margin-bottom: 6px;">
+                                <div><strong>{{ $structure['title'] ?? '' }}</strong></div>
+                                @if(!empty($structure['descriptions']))
+                                    <div style="color: #555;">{{ $structure['descriptions'] }}</div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
                     @else
                     —
                     @endif

@@ -335,17 +335,28 @@ class TeamController extends Controller
             foreach ($detail->interested_courses_details as $cId => $sIds) {
                 if (isset($courses[$cId])) {
                     $courseName = $courses[$cId]->title;
-                    $structureNames = [];
+                    $structuresForCourse = [];
                     if (is_array($sIds)) {
                         foreach ($sIds as $sId) {
                             if (isset($structures[$sId])) {
-                                $structureNames[] = $structures[$sId]->title;
+                                $structure = $structures[$sId];
+                                $descriptions = $structure->descriptions;
+                                if (is_array($descriptions)) {
+                                    $descriptions = implode(' | ', array_values(array_filter($descriptions, fn ($v) => (string) $v !== '')));
+                                } else {
+                                    $descriptions = (string) ($descriptions ?? '');
+                                }
+
+                                $structuresForCourse[] = [
+                                    'title' => $structure->title,
+                                    'descriptions' => $descriptions,
+                                ];
                             }
                         }
                     }
                     $interestedCourses[] = [
                         'course' => $courseName,
-                        'structures' => $structureNames
+                        'structures' => $structuresForCourse
                     ];
                 }
 
@@ -441,17 +452,28 @@ class TeamController extends Controller
             foreach ($detail->interested_courses_details as $cId => $sIds) {
                 if (isset($courses[$cId])) {
                     $courseName = $courses[$cId]->title;
-                    $structureNames = [];
+                    $structuresForCourse = [];
                     if (is_array($sIds)) {
                         foreach ($sIds as $sId) {
                             if (isset($structures[$sId])) {
-                                $structureNames[] = $structures[$sId]->title;
+                                $structure = $structures[$sId];
+                                $descriptions = $structure->descriptions;
+                                if (is_array($descriptions)) {
+                                    $descriptions = implode(' | ', array_values(array_filter($descriptions, fn ($v) => (string) $v !== '')));
+                                } else {
+                                    $descriptions = (string) ($descriptions ?? '');
+                                }
+
+                                $structuresForCourse[] = [
+                                    'title' => $structure->title,
+                                    'descriptions' => $descriptions,
+                                ];
                             }
                         }
                     }
                     $interestedCourses[] = [
                         'course' => $courseName,
-                        'structures' => $structureNames
+                        'structures' => $structuresForCourse
                     ];
                 }
 
