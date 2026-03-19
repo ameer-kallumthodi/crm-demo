@@ -180,11 +180,11 @@
                 <td>{{ $payment->transaction_id ?? 'N/A' }}</td>
                 <td>
                     @if($status == 'approved')
-                        {{ $payment->approvedBy->name ?? 'N/A' }}
+                        {{ optional($payment->approvedBy)->name ?: 'N/A' }}
                     @elseif($status == 'rejected')
-                        {{ $payment->rejectedBy->name ?? 'N/A' }}
+                        {{ optional($payment->rejectedBy)->name ?: 'N/A' }}
                     @else
-                        {{ $payment->createdBy->name ?? 'N/A' }}
+                        {{ optional($payment->createdBy)->name ?: 'N/A' }}
                     @endif
                 </td>
                 @if($status == 'rejected')
