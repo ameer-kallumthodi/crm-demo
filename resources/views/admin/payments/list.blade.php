@@ -149,6 +149,7 @@
                                             <th>Payment Type</th>
                                             <th>Transaction ID</th>
                                             <th>Created By</th>
+                                            <th>Approved By</th>
                                             <th class="text-center">Actions</th>
                                         </tr>
                                     </thead>
@@ -217,7 +218,8 @@
                                                     <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $payment->createdBy->name ?? 'N/A' }}</td>
+                                            <td>{{ optional($payment->createdBy)->name ?: (optional($payment->collectedBy)->name ?: (optional($payment->approvedBy)->name ?: (optional($payment->rejectedBy)->name ?: 'N/A')) ) }}</td>
+                                            <td>{{ optional($payment->approvedBy)->name ?: (optional($payment->createdBy)->name ?: 'N/A') }}</td>
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm">
                                                     <a href="{{ route('admin.payments.show', $payment->id) }}" class="btn btn-outline-info" title="View Payment">
@@ -290,6 +292,7 @@
                                             <th>Fee Head</th>
                                             <th>Payment Type</th>
                                             <th>Transaction ID</th>
+                                            <th>Created By</th>
                                             <th>Approved By</th>
                                             <th class="text-center">Actions</th>
                                         </tr>
@@ -365,7 +368,8 @@
                                                     <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $payment->approvedBy->name ?? 'N/A' }}</td>
+                                            <td>{{ optional($payment->createdBy)->name ?: (optional($payment->collectedBy)->name ?: (optional($payment->approvedBy)->name ?: (optional($payment->rejectedBy)->name ?: 'N/A')) ) }}</td>
+                                            <td>{{ optional($payment->approvedBy)->name ?: (optional($payment->createdBy)->name ?: 'N/A') }}</td>
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm">
                                                     <a href="{{ route('admin.payments.show', $payment->id) }}" class="btn btn-outline-info" title="View Payment">
@@ -390,7 +394,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="12" class="text-center py-4">
+                                            <td colspan="14" class="text-center py-4">
                                                 <i class="ti ti-info-circle text-muted me-2"></i>No approved payments yet.
                                             </td>
                                         </tr>
@@ -505,7 +509,7 @@
                                                     <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $payment->createdBy->name ?? 'N/A' }}</td>
+                                            <td>{{ optional($payment->createdBy)->name ?: (optional($payment->collectedBy)->name ?: (optional($payment->approvedBy)->name ?: (optional($payment->rejectedBy)->name ?: 'N/A')) ) }}</td>
                                             <td>{{ $payment->rejectedBy->name ?? 'N/A' }}</td>
                                             <td>
                                                 @if($payment->rejection_remarks)

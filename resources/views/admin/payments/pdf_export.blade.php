@@ -123,14 +123,12 @@
                 <th style="width: 8%;">Fee Head</th>
                 <th style="width: 8%;">Type</th>
                 <th style="width: 10%;">Transaction ID</th>
+                <th style="width: 11%;">Created By</th>
                 @if($status == 'approved')
                 <th style="width: 11%;">Approved By</th>
-                @elseif($status == 'rejected')
-                <th style="width: 11%;">Rejected By</th>
-                @else
-                <th style="width: 11%;">Created By</th>
                 @endif
                 @if($status == 'rejected')
+                <th style="width: 11%;">Rejected By</th>
                 <th style="width: 10%;">Remarks</th>
                 @endif
             </tr>
@@ -154,7 +152,10 @@
                     {{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->name ?? $payment->invoice->student->lead->title ?? 'N/A') : 'N/A' }}
                     <br>
                     <small style="color: #666;">
-                        {{ $payment->invoice && $payment->invoice->student ? ($payment->invoice->student->code ?? '') : '' }}
+                        @php
+                            $student = $payment->invoice->student ?? null;
+                        @endphp
+                        {{ $student ? \App\Helpers\PhoneNumberHelper::display($student->code ?? null, $student->phone ?? null) : 'N/A' }}
                     </small>
                 </td>
                 <td>
@@ -178,22 +179,18 @@
                 <td>{{ $payment->fee_head ?? '-' }}</td>
                 <td>{{ $payment->payment_type }}</td>
                 <td>{{ $payment->transaction_id ?? 'N/A' }}</td>
-                <td>
-                    @if($status == 'approved')
-                        {{ optional($payment->approvedBy)->name ?: 'N/A' }}
-                    @elseif($status == 'rejected')
-                        {{ optional($payment->rejectedBy)->name ?: 'N/A' }}
-                    @else
-                        {{ optional($payment->createdBy)->name ?: 'N/A' }}
-                    @endif
-                </td>
+                <td>{{ optional($payment->createdBy)->name ?: (optional($payment->collectedBy)->name ?: (optional($payment->approvedBy)->name ?: (optional($payment->rejectedBy)->name ?: 'N/A')) ) }}</td>
+                @if($status == 'approved')
+                <td>{{ optional($payment->approvedBy)->name ?: (optional($payment->createdBy)->name ?: 'N/A') }}</td>
+                @endif
                 @if($status == 'rejected')
+                <td>{{ optional($payment->rejectedBy)->name ?: 'N/A' }}</td>
                 <td>{{ $payment->rejection_remarks ?? '-' }}</td>
                 @endif
             </tr>
             @empty
             <tr>
-                <td colspan="{{ $status == 'rejected' ? 12 : 11 }}" class="text-center">
+                <td colspan="{{ $status == 'rejected' ? 13 : ($status == 'approved' ? 12 : 11) }}" class="text-center">
                     No records found for the selected period.
                 </td>
             </tr>

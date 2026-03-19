@@ -79,6 +79,7 @@ class PaymentController extends Controller
             'invoice.course',
             'invoice.batch',
             'createdBy',
+            'collectedBy',
         ];
 
         $pendingQuery = Payment::with($withRelations)
