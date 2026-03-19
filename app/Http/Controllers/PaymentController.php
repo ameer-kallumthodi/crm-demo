@@ -57,7 +57,7 @@ class PaymentController extends Controller
      */
     public function listAll(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_finance() && !RoleHelper::is_telecaller()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_finance() && !RoleHelper::is_telecaller() && !RoleHelper::is_post_sales()) {
             abort(403, 'Access denied.');
         }
 
@@ -1448,7 +1448,7 @@ class PaymentController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_finance() && !RoleHelper::is_telecaller()) {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_finance() && !RoleHelper::is_telecaller() && !RoleHelper::is_post_sales()) {
             abort(403, 'Access denied.');
         }
 
