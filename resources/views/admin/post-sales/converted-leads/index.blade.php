@@ -982,7 +982,8 @@ $columns = array_merge($columns, [
             return {
                 date_from: $('#bulk_date_from').val(),
                 date_to: $('#bulk_date_to').val(),
-                course_id: $('#bulk_course_id').val()
+                course_id: $('#bulk_course_id').val(),
+                batch_id: $('#bulk_batch_id').val() || ''
             };
         }
         var bulkAssignLoadInProgress = false;
@@ -998,10 +999,12 @@ $columns = array_merge($columns, [
             bulkAssignLoadInProgress = true;
             $('#bulkAssignEmpty').html('<div class="py-4"><span class="spinner-border spinner-border-sm me-2"></span>Loading students...</div>');
             $('#bulkAssignTableWrap').hide();
+            var ajaxData = { date_from: f.date_from, date_to: f.date_to, course_id: f.course_id };
+            if (f.batch_id) ajaxData.batch_id = f.batch_id;
             $.ajax({
                 url: dataUrl,
                 type: 'GET',
-                data: { date_from: f.date_from, date_to: f.date_to, course_id: f.course_id },
+                data: ajaxData,
                 success: function(res) {
                     bulkAssignLoadInProgress = false;
                     $('#bulkAssignEmpty').html('<i class="ti ti-filter-off d-block mb-2" style="font-size: 2rem;"></i><p class="mb-0">Select From Date, To Date and Course to load students.</p>');
@@ -1059,8 +1062,28 @@ $columns = array_merge($columns, [
             toggleBulkSubmitButton();
         }
 
-        $(document).on('change', '#bulk_date_from, #bulk_date_to, #bulk_course_id', function() {
+        $(document).on('change', '#bulk_batch_id', function() {
             loadBulkAssignList();
+        });
+        $(document).on('change', '#bulk_date_from, #bulk_date_to, #bulk_course_id', function() {
+            var courseId = $('#bulk_course_id').val();
+            var $batchSelect = $('#bulk_batch_id');
+            $batchSelect.find('option:not(:first)').remove();
+            $batchSelect.val('');
+            if (courseId) {
+                $.get('/api/batches/by-course/' + courseId).done(function(res) {
+                    if (res.success && res.batches && res.batches.length) {
+                        res.batches.forEach(function(b) {
+                            $batchSelect.append($('<option></option>').val(b.id).text(b.title));
+                        });
+                    }
+                    loadBulkAssignList();
+                }).fail(function() {
+                    loadBulkAssignList();
+                });
+            } else {
+                loadBulkAssignList();
+            }
         });
         $(document).on('change', '#bulk_check_all', function() {
             $('#bulkAssignTableBody input.bulk-row-cb').prop('checked', $(this).is(':checked'));

@@ -18,6 +18,12 @@
             </select>
         </div>
         <div class="col-6 col-md-3">
+            <label for="bulk_batch_id" class="form-label">Batch <small class="text-muted">(Optional)</small></label>
+            <select class="form-select form-select-sm" name="batch_id" id="bulk_batch_id">
+                <option value="">All batches</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-3">
             <label for="bulk_assign_to" class="form-label">Assign to Post-Sales</label>
             <select class="form-select form-select-sm" id="bulk_assign_to">
                 <option value="">Select user</option>
