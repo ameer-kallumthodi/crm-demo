@@ -548,6 +548,17 @@ function renderInlineEdit($model, $field, $type = 'text', $options = [], $overri
           '<button type="button" class="btn btn-secondary btn-sm cancel-edit-show">Cancel</button>' +
           "</div>" +
           "</div>";
+      } else if (type === "date") {
+        html =
+          '<div class="edit-form-show">' +
+          '<input type="date" class="form-control form-control-sm" value="' +
+          escapeAttr(current) +
+          '" />' +
+          '<div class="btn-group">' +
+          '<button type="button" class="btn btn-success btn-sm save-edit-show">Save</button>' +
+          '<button type="button" class="btn btn-secondary btn-sm cancel-edit-show">Cancel</button>' +
+          "</div>" +
+          "</div>";
       } else {
         html =
           '<div class="edit-form-show">' +
