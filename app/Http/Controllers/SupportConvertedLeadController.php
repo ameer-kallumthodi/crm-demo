@@ -865,6 +865,30 @@ class SupportConvertedLeadController extends Controller
     }
 
     /**
+     * Display Flutter converted leads for support
+     */
+    public function flutterIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 21, 'Flutter Converted Support List', 'admin.converted-leads.support-flutter-index');
+    }
+
+    /**
+     * Display Eduthanzeel converted leads for support
+     */
+    public function eduthanzeelIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 6, 'Eduthanzeel Converted Support List', 'admin.converted-leads.support-eduthanzeel-index');
+    }
+
+    /**
+     * Display E-School converted leads for support
+     */
+    public function eSchoolIndex(Request $request)
+    {
+        return $this->getCourseSupportIndex($request, 5, 'E-School Converted Support List', 'admin.converted-leads.support-e-school-index');
+    }
+
+    /**
      * Display Junior Vlogger – Course Support list (course_id = 25)
      */
     public function juniorVloggerIndex(Request $request)

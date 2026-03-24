@@ -868,6 +868,11 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/junior-vlogger-mentor-converted-leads', [App\Http\Controllers\JuniorVloggerMentorController::class, 'index'])->name('junior-vlogger-mentor-converted-leads.index');
         Route::post('/junior-vlogger-mentor-converted-leads/{id}/update-mentor-details', [App\Http\Controllers\JuniorVloggerMentorController::class, 'updateMentorDetails'])->name('junior-vlogger-mentor-converted-leads.update-mentor-details');
 
+        // Additional Mentor Converted Leads Routes
+        Route::get('/medical-coding-mentor-converted-leads', [App\Http\Controllers\AdditionalMentorCourseController::class, 'medicalCodingIndex'])->name('medical-coding-mentor-converted-leads.index');
+        Route::get('/python-mentor-converted-leads', [App\Http\Controllers\AdditionalMentorCourseController::class, 'pythonIndex'])->name('python-mentor-converted-leads.index');
+        Route::get('/flutter-mentor-converted-leads', [App\Http\Controllers\AdditionalMentorCourseController::class, 'flutterIndex'])->name('flutter-mentor-converted-leads.index');
+
         // Support Converted Lead Details Route (Unified)
         Route::get('/support-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-converted-leads.details');
         Route::post('/support-converted-leads/{id}/feedback', [App\Http\Controllers\SupportConvertedLeadController::class, 'submitFeedback'])->name('support-converted-leads.feedback');
