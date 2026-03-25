@@ -28,7 +28,16 @@ class AdditionalMentorCourseController extends Controller
 
     private function renderMentorList(Request $request, int $courseId, string $courseTitle, string $routeName)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_mentor() && !RoleHelper::is_telecaller() && !RoleHelper::is_team_lead() && !RoleHelper::is_senior_manager() && !RoleHelper::is_general_manager() && !RoleHelper::is_hod()) {
+        if (!RoleHelper::is_admin_or_super_admin()
+            && !RoleHelper::is_admission_counsellor()
+            && !RoleHelper::is_academic_assistant()
+            && !RoleHelper::is_mentor()
+            && !RoleHelper::is_telecaller()
+            && !RoleHelper::is_team_lead()
+            && !RoleHelper::is_senior_manager()
+            && !RoleHelper::is_general_manager()
+            && !RoleHelper::is_hod()
+        ) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
