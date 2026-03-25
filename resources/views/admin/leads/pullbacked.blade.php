@@ -192,8 +192,7 @@
             stateSave: true,
             scrollX: true,
             ajax: {
-                url: '{{ route('
-                admin.leads.pullbacked.data ') }}',
+                url: '{{ route('admin.leads.pullbacked.data') }}',
                 data: function(d) {
                     return $.extend({}, d, getFilterParams());
                 },

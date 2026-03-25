@@ -2107,7 +2107,18 @@ class ConvertedLeadController extends Controller
      */
     public function ugpgIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'leadDetail.university', 'leadDetail.universityCourse', 'course', 'academicAssistant', 'createdBy', 'cancelledBy'])
+        $query = ConvertedLead::with([
+            'lead',
+            'lead.team',
+            'leadDetail.university',
+            'leadDetail.universityCourse',
+            'course',
+            'academicAssistant',
+            'createdBy',
+            'cancelledBy',
+            'batch',
+            'admissionBatch'
+        ])
             ->where('course_id', 9);
 
         // Apply role-based filtering
@@ -2174,14 +2185,31 @@ class ConvertedLeadController extends Controller
             });
         }
 
+        if ($request->filled('batch_id')) {
+            $query->where('batch_id', $request->batch_id);
+        }
+
+        if ($request->filled('admission_batch_id')) {
+            $query->where('admission_batch_id', $request->admission_batch_id);
+        }
+
         // Get all results
         $convertedLeads = $query->orderBy('created_at', 'desc')->get();
 
         // Get filter data
+        $batches = \App\Models\Batch::where('course_id', 9)
+            ->where('is_active', 1)
+            ->orderBy('title')
+            ->get();
+
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')
+            ->orderBy('title')
+            ->get();
+
         $universities = \App\Models\University::where('is_active', 1)->orderBy('title')->get();
         $country_codes = get_country_code();
 
-        return view('admin.converted-leads.ugpg-index', compact('convertedLeads', 'universities', 'country_codes'));
+        return view('admin.converted-leads.ugpg-index', compact('convertedLeads', 'universities', 'country_codes', 'batches', 'admission_batches'));
     }
 
     /**
