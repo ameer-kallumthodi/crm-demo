@@ -176,7 +176,7 @@ class TelecallerController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'required|string|max:20',
             'code' => 'nullable|string|max:10',
             'ext_no' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:6',
@@ -184,7 +184,7 @@ class TelecallerController extends Controller
             'is_team_lead' => 'nullable|boolean',
             'is_senior_manager' => 'nullable|boolean',
             'is_b2b' => 'nullable|boolean',
-            'joining_date' => 'nullable|date',
+            'joining_date' => 'required|date',
         ]);
 
         if ($validator->fails()) {
