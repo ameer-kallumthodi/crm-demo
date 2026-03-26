@@ -522,7 +522,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="batch_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current="{{ $convertedLead->batch_id ?? '' }}">
+                                        <div class="inline-edit" data-field="batch_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->batch_id ?? '' }}">
                                             <span class="display-value">{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
@@ -532,7 +532,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id ?? '' }}" data-current="{{ $convertedLead->admission_batch_id ?? '' }}">
+                                        <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id ?? '' }}" data-current-id="{{ $convertedLead->admission_batch_id ?? '' }}">
                                             <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
@@ -795,10 +795,10 @@
                 editForm = createCourseTypeSelect(currentValue);
             } else if (field === 'batch_id') {
                 const courseId = container.data('course-id');
-                editForm = createBatchSelect(courseId, currentValue);
+                editForm = createBatchSelect(courseId, currentId);
             } else if (field === 'admission_batch_id') {
                 const batchId = container.data('batch-id');
-                editForm = createAdmissionBatchSelect(batchId, currentValue);
+                editForm = createAdmissionBatchSelect(batchId, currentId);
             } else if (field === 'university_id') {
                 editForm = createUniversitySelect(currentValue);
             } else if (field === 'university_course_id') {
@@ -823,11 +823,11 @@
             } else if (field === 'batch_id') {
                 const courseId = container.data('course-id');
                 const $select = container.find('select');
-                loadBatches(courseId, $select, currentValue);
+                loadBatches(courseId, $select, currentId);
             } else if (field === 'admission_batch_id') {
                 const batchId = container.data('batch-id');
                 const $select = container.find('select');
-                loadAdmissionBatches(batchId, $select, currentValue);
+                loadAdmissionBatches(batchId, $select, currentId);
             }
 
             container.find('input, select').first().focus();
@@ -883,11 +883,9 @@
                         }
 
                         container.find('.display-value').text(displayValue);
+                        container.data('current', response.value || value);
                         if (field === 'batch_id' || field === 'admission_batch_id') {
-                            // For batch dropdowns we must keep the ID for correct re-selection later.
-                            container.data('current', value || '');
-                        } else {
-                            container.data('current', response.value || value);
+                            container.data('current-id', value || '');
                         }
 
                         // If batch changes, clear the admission batch selection UI.
@@ -896,7 +894,7 @@
                             const admissionBatchContainer = row.find('.inline-edit[data-field="admission_batch_id"]');
                             if (admissionBatchContainer.length) {
                                 admissionBatchContainer.data('batch-id', value || '');
-                                admissionBatchContainer.data('current', '');
+                                admissionBatchContainer.data('current-id', '');
                                 admissionBatchContainer.find('.display-value').text('N/A');
                             }
                         }
@@ -1079,7 +1077,7 @@
                 });
         }
 
-        function createBatchSelect(courseId, currentValue) {
+        function createBatchSelect(courseId, currentId) {
             return `
                 <div class="edit-form">
                     <select class="form-select form-select-sm">
@@ -1093,7 +1091,7 @@
             `;
         }
 
-        function createAdmissionBatchSelect(batchId, currentValue) {
+        function createAdmissionBatchSelect(batchId, currentId) {
             return `
                 <div class="edit-form">
                     <select class="form-select form-select-sm">
@@ -1107,19 +1105,21 @@
             `;
         }
 
-        function loadBatches(courseId, $select, currentValue) {
+        function loadBatches(courseId, $select, currentId) {
             if (!courseId) {
                 $select.html('<option value="">Select Course First</option>');
                 return;
             }
 
             $.get(`/api/batches/by-course/${courseId}`)
-                .done(function(list) {
+                .done(function(response) {
                     let options = '<option value="">Select Batch</option>';
-                    list.forEach(function(i) {
-                        const sel = String(currentValue) === String(i.id) ? 'selected' : '';
-                        options += `<option value="${i.id}" ${sel}>${i.title}</option>`;
-                    });
+                    if (response.success && response.batches) {
+                        response.batches.forEach(function(i) {
+                            const sel = (currentId && String(currentId) === String(i.id)) ? 'selected' : '';
+                            options += `<option value="${i.id}" ${sel}>${i.title}</option>`;
+                        });
+                    }
                     $select.html(options);
                 })
                 .fail(function() {
@@ -1127,7 +1127,7 @@
                 });
         }
 
-        function loadAdmissionBatches(batchId, $select, currentValue) {
+        function loadAdmissionBatches(batchId, $select, currentId) {
             if (!batchId) {
                 $select.html('<option value="">Select Batch First</option>');
                 return;
@@ -1137,7 +1137,7 @@
                 .done(function(list) {
                     let options = '<option value="">Select Admission Batch</option>';
                     list.forEach(function(i) {
-                        const sel = String(currentValue) === String(i.id) ? 'selected' : '';
+                        const sel = (currentId && String(currentId) === String(i.id)) ? 'selected' : '';
                         options += `<option value="${i.id}" ${sel}>${i.title}</option>`;
                     });
                     $select.html(options);
