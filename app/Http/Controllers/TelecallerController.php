@@ -177,7 +177,7 @@ class TelecallerController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
             'phone' => 'required|string|max:20',
-            'code' => 'nullable|string|max:10',
+            'code' => 'required|string|max:10',
             'ext_no' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:6',
             'team_id' => 'nullable|exists:teams,id',

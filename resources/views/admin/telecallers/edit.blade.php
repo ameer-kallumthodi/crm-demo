@@ -20,8 +20,8 @@
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label class="form-label" for="code">Country Code</label>
-                        <select class="form-select" id="code" name="code">
+                        <label class="form-label" for="code">Country Code <span class="text-danger">*</span></label>
+                        <select class="form-select" id="code" name="code" required>
                             <option value="">Select Country</option>
                             @foreach($country_codes as $code => $country)
                                 <option value="{{ $code }}" {{ $edit_data->code == $code ? 'selected' : '' }}>{{ $code }} - {{ $country }}</option>
