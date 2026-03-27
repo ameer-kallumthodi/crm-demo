@@ -3509,6 +3509,9 @@ class LeadController extends Controller
         ->where('telecaller_id', $request->tele_caller_id)
         ->where('lead_status_id', $request->lead_status_id)
         ->where('is_pullbacked', 0)
+        ->where(function ($q) {
+            $q->whereNull('is_b2b')->orWhere('is_b2b', 0);
+        })
         ->where('created_at', '>=', $fromDate)
         ->where('created_at', '<=', $toDate)
         ->with([
