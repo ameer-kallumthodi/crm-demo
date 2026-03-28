@@ -14,11 +14,15 @@ class TeamController extends Controller
 {
     public function index()
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canViewTeamsIndex()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $teams = Team::with(['teamLead', 'users', 'detail'])->get();
+        $query = Team::with(['teamLead', 'users', 'detail']);
+        if (RoleHelper::is_finance()) {
+            $query->where('is_b2b', true);
+        }
+        $teams = $query->get();
         $teamLeads = User::where('is_team_lead', true)->get();
 
         return view('admin.teams.index', compact('teams', 'teamLeads'));
@@ -26,7 +30,7 @@ class TeamController extends Controller
 
     public function store(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -54,7 +58,10 @@ class TeamController extends Controller
 
     public function show(Team $team)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams() && !RoleHelper::is_finance()) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+        if (RoleHelper::is_finance() && !$team->is_b2b) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -64,7 +71,7 @@ class TeamController extends Controller
 
     public function destroy(Team $team)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -85,7 +92,7 @@ class TeamController extends Controller
 
     public function ajax_add()
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -94,7 +101,7 @@ class TeamController extends Controller
 
     public function submit(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams()) {
             if ($request->ajax()) {
                 return response()->json(['error' => 'Access denied.'], 403);
             }
@@ -129,7 +136,7 @@ class TeamController extends Controller
 
     public function ajax_edit($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -139,7 +146,7 @@ class TeamController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams()) {
             if ($request->ajax()) {
                 return response()->json(['error' => 'Access denied.'], 403);
             }
@@ -175,7 +182,7 @@ class TeamController extends Controller
 
     public function delete($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
@@ -195,11 +202,14 @@ class TeamController extends Controller
      */
     public function members($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canViewTeamsIndex()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
         $team = Team::with('teamLead')->findOrFail($id);
+        if (RoleHelper::is_finance() && !$team->is_b2b) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
 
         // Load users based on team type
         if ($team->marketing_team) {
@@ -227,23 +237,22 @@ class TeamController extends Controller
         // Remove duplicates (in case team lead is also in users)
         $allTeamMembers = $allTeamMembers->unique('id');
 
-        // Get available users based on team type
-        if ($team->marketing_team) {
-            // For marketing teams, show marketing users (role_id 13)
+        $membersReadOnly = RoleHelper::is_finance();
+        if ($membersReadOnly) {
+            $availableUsers = collect();
+        } elseif ($team->marketing_team) {
             $availableUsers = User::where('role_id', 13)
                 ->whereNull('team_id')
                 ->whereNull('deleted_at')
                 ->get();
-        }
-        else {
-            // For sales teams, show telecallers (role_id 3)
+        } else {
             $availableUsers = User::where('role_id', 3)
                 ->whereNull('team_id')
                 ->whereNull('deleted_at')
                 ->get();
         }
 
-        return view('admin.teams.members', compact('team', 'allTeamMembers', 'availableUsers'));
+        return view('admin.teams.members', compact('team', 'allTeamMembers', 'availableUsers', 'membersReadOnly'));
     }
 
     /**
@@ -251,7 +260,7 @@ class TeamController extends Controller
      */
     public function removeMember(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -273,7 +282,7 @@ class TeamController extends Controller
      */
     public function addMember(Request $request)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -304,11 +313,14 @@ class TeamController extends Controller
      */
     public function showDetails($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
         $team = Team::with('detail')->findOrFail($id);
+        if (RoleHelper::is_finance() && !$team->is_b2b) {
+            return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
+        }
 
         // Ensure it is a B2B team or at least has details
         if (!$team->is_b2b || !$team->detail) {
@@ -369,11 +381,13 @@ class TeamController extends Controller
             $q->where('status', 1);
         }])->where('is_active', 1)->get();
 
-        return view('admin.teams.details', compact('team', 'detail', 'interestedCourses', 'allCourses'));
+        $teamDetailsReadOnly = RoleHelper::is_finance();
+
+        return view('admin.teams.details', compact('team', 'detail', 'interestedCourses', 'allCourses', 'teamDetailsReadOnly'));
     }
     public function updateDetails(Request $request, $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -422,11 +436,14 @@ class TeamController extends Controller
 
     public function exportDetailsPdf($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams() && !RoleHelper::is_finance()) {
             abort(403);
         }
 
         $team = Team::with('detail')->findOrFail($id);
+        if (RoleHelper::is_finance() && !$team->is_b2b) {
+            abort(403);
+        }
 
         if (!$team->is_b2b || !$team->detail) {
             abort(404);
@@ -486,24 +503,28 @@ class TeamController extends Controller
 
     public function termsAndConditions($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams() && !RoleHelper::is_finance()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
         $team = Team::with('detail')->findOrFail($id);
+        if (RoleHelper::is_finance() && !$team->is_b2b) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
 
         if (!$team->is_b2b) {
             abort(404);
         }
 
         $termsAndConditions = $team->detail?->terms_and_conditions ?? '';
+        $termsReadOnly = RoleHelper::is_finance();
 
-        return view('admin.teams.terms-and-conditions', compact('team', 'termsAndConditions'));
+        return view('admin.teams.terms-and-conditions', compact('team', 'termsAndConditions', 'termsReadOnly'));
     }
 
     public function updateTermsAndConditions(Request $request, $id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+        if (!$this->canManageTeams()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -534,5 +555,15 @@ class TeamController extends Controller
             'success' => true,
             'message' => 'Terms and conditions updated successfully.',
         ]);
+    }
+
+    private function canManageTeams(): bool
+    {
+        return RoleHelper::is_admin_or_super_admin() || RoleHelper::is_admission_counsellor();
+    }
+
+    private function canViewTeamsIndex(): bool
+    {
+        return $this->canManageTeams() || RoleHelper::is_finance();
     }
 }

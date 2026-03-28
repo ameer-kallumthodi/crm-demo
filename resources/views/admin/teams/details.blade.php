@@ -2,6 +2,8 @@
 
 @section('title', 'Team Registration Details')
 
+@php $teamDetailsReadOnly = $teamDetailsReadOnly ?? false; @endphp
+
 @section('content')
 <div class="page-header">
     <div class="page-block">
@@ -22,9 +24,14 @@
     </div>
 </div>
 
-<div id="jsTeamDetailsConfig" data-inline-url="{{ route('admin.teams.update-details', $team->id) }}" style="display: none;"></div>
+<div id="jsTeamDetailsConfig" data-inline-url="{{ $teamDetailsReadOnly ? '' : route('admin.teams.update-details', $team->id) }}" data-readonly="{{ $teamDetailsReadOnly ? '1' : '0' }}" style="display: none;"></div>
+@if($teamDetailsReadOnly)
+<style>
+.team-details-readonly-page .edit-btn-show { display: none !important; }
+</style>
+@endif
 
-<div class="row">
+<div class="row{{ $teamDetailsReadOnly ? ' team-details-readonly-page' : '' }}">
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -495,7 +502,14 @@ function renderInlineEdit($model, $field, $type = 'text', $options = [], $overri
     var $config = $("#jsTeamDetailsConfig");
     if ($config.length === 0) return;
 
+    if ($config.attr("data-readonly") === "1") {
+      return;
+    }
+
     var inlineUrl = $config.attr("data-inline-url");
+    if (!inlineUrl) {
+      return;
+    }
 
     // --- Inline Edit Handler ---
     $(document).off("click", ".edit-btn-show").on("click", ".edit-btn-show", function (e) {

@@ -30,11 +30,18 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Team List</h5>
+                    <div>
+                        <h5 class="mb-0">Team List</h5>
+                        @if(\App\Helpers\RoleHelper::is_finance())
+                        <small class="text-muted">B2B teams only (read-only)</small>
+                        @endif
+                    </div>
+                    @if(!\App\Helpers\RoleHelper::is_finance())
                     <a href="javascript:void(0);" class="btn btn-primary btn-sm px-3"
                         onclick="show_small_modal('{{ route('admin.teams.add') }}', 'Add Team')">
                         <i class="ti ti-plus"></i> Add New
                     </a>
+                    @endif
                 </div>
             </div>
             <div class="card-body">
@@ -133,9 +140,11 @@
                                         onclick="show_large_modal('{{ route('admin.teams.terms-and-conditions', $team->id) }}', 'Terms and Conditions - {{ addslashes(str_replace(["\r","\n"], '', $team->name)) }}')">
                                         <i class="ti ti-file-text"></i> Terms
                                     </a>
+                                    @if(!\App\Helpers\RoleHelper::is_finance())
                                     <a href="{{ route('public.team.register', $team->id) }}" target="_blank" class="btn btn-primary btn-sm shadow-sm px-3 me-1" title="Public Registration Form">
                                         <i class="ti ti-external-link"></i> Public Form
                                     </a>
+                                    @endif
                                     @if($team->detail)
                                     <a href="{{ route('admin.teams.details', $team->id) }}" class="btn btn-dark btn-sm shadow-sm px-3 me-1" title="View Submitted Details">
                                         <i class="ti ti-file-text"></i> Details
@@ -147,6 +156,7 @@
                                         title="View Members">
                                         <i class="ti ti-users"></i> Members
                                     </a>
+                                    @if(!\App\Helpers\RoleHelper::is_finance())
                                     <a href="javascript:void(0);" class="btn btn-warning btn-sm shadow-sm px-3 me-1"
                                         onclick="show_small_modal('{{ route('admin.teams.edit', $team->id) }}', 'Edit Team')"
                                         title="Edit">
@@ -156,6 +166,7 @@
                                         onclick="delete_modal('{{ route('admin.teams.delete', $team->id) }}')" title="Delete">
                                         <i class="ti ti-trash"></i> Delete
                                     </a>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach

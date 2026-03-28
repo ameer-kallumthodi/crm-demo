@@ -19,7 +19,7 @@ class RevenueController extends Controller
         }
 
         $totals = $revenueReportService->getTotalsForCurrentUser();
-        $showTeamBreakdown = RoleHelper::is_admin_or_super_admin();
+        $showTeamBreakdown = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_finance();
         $teamBreakdown = $showTeamBreakdown
             ? $revenueReportService->getTeamBreakdownForAdmin()
             : [];

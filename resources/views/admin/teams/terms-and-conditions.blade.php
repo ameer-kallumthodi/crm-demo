@@ -1,3 +1,4 @@
+@php $termsReadOnly = $termsReadOnly ?? false; @endphp
 <div class="container p-2">
     <form id="termsAndConditionsForm" action="{{ route('admin.teams.update-terms-and-conditions', $team->id) }}" method="post">
         @csrf
@@ -5,20 +6,23 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <label for="terms_and_conditions" class="form-label">Terms and Conditions</label>
-                    <textarea class="form-control" id="terms_and_conditions" name="terms_and_conditions" rows="12">{{ $termsAndConditions }}</textarea>
+                    <textarea class="form-control" id="terms_and_conditions" name="terms_and_conditions" rows="12" @if($termsReadOnly) readonly @endif>{{ $termsAndConditions }}</textarea>
                 </div>
             </div>
         </div>
 
         <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $termsReadOnly ? 'Close' : 'Cancel' }}</button>
+            @if(!$termsReadOnly)
             <button type="submit" class="btn btn-success">
                 <i class="ti ti-device-floppy"></i> Update Terms
             </button>
+            @endif
         </div>
     </form>
 </div>
 
+@unless($termsReadOnly)
 <script>
 (function() {
     function initTermsTinyMCE() {
@@ -130,3 +134,4 @@ $(document).ready(function() {
     });
 });
 </script>
+@endunless

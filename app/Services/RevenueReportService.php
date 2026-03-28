@@ -21,24 +21,26 @@ class RevenueReportService
     }
 
     /**
-     * Per-team breakdown (full organization, no user scope).
+     * Per-team breakdown (full organization, no user scope). B2B teams only; non-B2B and unassigned leads are omitted.
      *
      * @return list<array{team_id: int|null, team_name: string, total_payable: float, total_paid: float, total_balance: float, total_discount: float}>
      */
     public function getTeamBreakdownForAdmin(): array
     {
         $query = $this->baseInvoicesQuery()
-            ->leftJoin('teams', 'leads.team_id', '=', 'teams.id')
+            ->join('teams', 'leads.team_id', '=', 'teams.id')
+            ->where('teams.is_b2b', 1)
+            ->whereNull('teams.deleted_at')
             ->selectRaw('
                 leads.team_id,
-                COALESCE(MAX(teams.name), ?) as team_name,
+                MAX(teams.name) as team_name,
                 COALESCE(SUM(GREATEST(0, invoices.total_amount - COALESCE(invoices.discount_amount, 0))), 0) as total_payable,
                 COALESCE(SUM(COALESCE(invoices.paid_amount, 0)), 0) as total_paid,
                 COALESCE(SUM(GREATEST(0,
                     (invoices.total_amount - COALESCE(invoices.discount_amount, 0)) - COALESCE(invoices.paid_amount, 0)
                 )), 0) as total_balance,
                 COALESCE(SUM(COALESCE(invoices.discount_amount, 0)), 0) as total_discount
-            ', ['No team'])
+            ')
             ->groupBy('leads.team_id')
             ->orderByDesc('total_payable');
 

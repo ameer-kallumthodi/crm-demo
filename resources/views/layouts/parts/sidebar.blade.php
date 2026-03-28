@@ -634,7 +634,7 @@
                     </a>
                 </li>
                 @endif
-                @if(has_permission('admin/teams/index'))
+                @if(has_permission('admin/teams/index') || \App\Helpers\RoleHelper::is_finance())
                 <li class="pc-item {{ request()->routeIs('admin.teams.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.teams.index') }}" class="pc-link">
                         <span class="pc-micon">

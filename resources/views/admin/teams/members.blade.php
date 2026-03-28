@@ -1,3 +1,4 @@
+@php $membersReadOnly = $membersReadOnly ?? false; @endphp
 <h5 class="mb-4">
     <i class="ti ti-users me-2"></i>Team Members - {{ $team->name }}
 </h5>
@@ -48,9 +49,11 @@
                         </h6>
                         <small class="text-muted">{{ $allTeamMembers->count() }} member{{ $allTeamMembers->count() != 1 ? 's' : '' }}</small>
                     </div>
+                    @if(!$membersReadOnly)
                     <button type="button" class="btn btn-primary btn-sm" onclick="openAddMemberModal()">
                         <i class="ti ti-plus me-1"></i> Add Member
                     </button>
+                    @endif
                 </div>
             </div>
             <div class="card-body p-0">
@@ -139,10 +142,12 @@
                             <i class="ti ti-users display-6"></i>
                         </div>
                         <h6 class="text-muted mb-2">No team members assigned</h6>
-                        <p class="text-muted mb-3">Click "Add Member" to assign {{ $team->marketing_team ? 'marketing users' : 'telecallers' }} to this team</p>
+                        <p class="text-muted mb-3">@if($membersReadOnly)No members assigned.@else Click "Add Member" to assign {{ $team->marketing_team ? 'marketing users' : 'telecallers' }} to this team.@endif</p>
+                        @if(!$membersReadOnly)
                         <button type="button" class="btn btn-primary" onclick="show_small_modal('{{ $team->marketing_team ? route('admin.marketing.add') : route('admin.telecallers.add') }}?team_id={{ $team->id }}', 'Add Team Member')">
                             <i class="ti ti-plus me-1"></i> Add First Member
                         </button>
+                        @endif
                     </div>
                 @endif
             </div>
@@ -151,7 +156,7 @@
 </div>
 
 <!-- Available Users Section -->
-@if($availableUsers->count() > 0)
+@if(!$membersReadOnly && $availableUsers->count() > 0)
     <div class="row mt-4">
         <div class="col-12">
             <div class="card">
