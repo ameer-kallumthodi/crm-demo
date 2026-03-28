@@ -11,6 +11,13 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">Invoice Details - {{ $invoice->invoice_number }}</h4>
                         <div>
+                            @php $canFinanceInvoice = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_finance(); @endphp
+                            @if($canFinanceInvoice)
+                            <button type="button" class="btn btn-outline-success" title="Discount"
+                                onclick="show_small_modal('{{ route('admin.invoices.edit-discount', $invoice->id) }}', 'Invoice discount')">
+                                <i class="fas fa-percent"></i> Discount
+                            </button>
+                            @endif
                             <a href="{{ route('admin.payments.create', $invoice->id) }}" class="btn btn-success">
                                 <i class="fas fa-plus"></i> Add Payment
                             </a>
@@ -66,8 +73,18 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Total Amount:</strong></td>
+                                    <td><strong>Total (gross):</strong></td>
                                     <td>₹{{ number_format(round($invoice->total_amount)) }}</td>
+                                </tr>
+                                @if((float) ($invoice->discount_amount ?? 0) > 0)
+                                <tr>
+                                    <td><strong>Discount:</strong></td>
+                                    <td class="text-success">− ₹{{ number_format(round($invoice->discount_amount)) }}</td>
+                                </tr>
+                                @endif
+                                <tr>
+                                    <td><strong>Net payable:</strong></td>
+                                    <td>₹{{ number_format(round($invoice->net_amount)) }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Paid Amount:</strong></td>
@@ -322,7 +339,7 @@
                                                         <button type="button" class="btn btn-sm btn-success approve-payment-btn" 
                                                                 data-payment-id="{{ $payment->id }}"
                                                                 data-amount="{{ $payment->amount_paid }}"
-                                                                data-previous-balance="{{ $invoice->total_amount - $payment->previous_balance }}"
+                                                                data-previous-balance="{{ $invoice->net_amount - $payment->previous_balance }}"
                                                                 data-payment-type="{{ $payment->payment_type }}"
                                                                 data-transaction-id="{{ $payment->transaction_id }}"
                                                                 data-file-upload="{{ $payment->file_upload }}"

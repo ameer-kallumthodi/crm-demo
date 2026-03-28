@@ -5,7 +5,11 @@
             <div class="p-2 border rounded bg-light">
                 <p class="mb-1"><strong>Invoice #:</strong> {{ $invoice->invoice_number }}</p>
                 <p class="mb-1"><strong>Student:</strong> {{ $invoice->student->name }}</p>
-                <p class="mb-0"><strong>Current Total:</strong> ₹ {{ number_format(round($invoice->total_amount)) }}</p>
+                <p class="mb-0"><strong>Gross total:</strong> ₹ {{ number_format(round($invoice->total_amount)) }}</p>
+                @if((float) ($invoice->discount_amount ?? 0) > 0)
+                <p class="mb-0"><strong>Discount:</strong> ₹ {{ number_format(round($invoice->discount_amount)) }}</p>
+                @endif
+                <p class="mb-0"><strong>Net payable:</strong> ₹ {{ number_format(round($invoice->net_amount)) }}</p>
                 <p class="mb-0"><strong>Paid Amount:</strong> ₹ {{ number_format(round($invoice->paid_amount)) }}</p>
                 <p class="mb-0"><strong>Pending Amount:</strong> ₹ {{ number_format(round($invoice->pending_amount)) }}</p>
             </div>

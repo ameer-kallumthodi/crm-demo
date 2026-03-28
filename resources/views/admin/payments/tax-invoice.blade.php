@@ -2,11 +2,11 @@
     $isEduThanzeel = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 6);
     $isESchool = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 5);
     $isEduMaster = $payment->invoice->invoice_type === 'course' && ((int) ($payment->invoice->course_id ?? 0) === 23);
-    $taxInvoiceTotal = isset($payment->tax_invoice_total) ? (float) $payment->tax_invoice_total : (float) ($payment->invoice->total_amount ?? 0);
+    $taxInvoiceTotal = isset($payment->tax_invoice_total) ? (float) $payment->tax_invoice_total : (float) ($payment->invoice->net_amount ?? 0);
     $taxableAmount = isset($payment->tax_invoice_taxable) ? (float) $payment->tax_invoice_taxable : ($taxInvoiceTotal / 1.18);
     $gstAmount = isset($payment->tax_invoice_gst) ? (float) $payment->tax_invoice_gst : ($taxableAmount * 0.18);
     $feeHeadBalance = max($taxInvoiceTotal - (float) ($payment->amount_paid ?? 0), 0);
-    $courseCurrentBalance = (float) (($payment->invoice->total_amount ?? 0) - ($payment->invoice->paid_amount ?? 0));
+    $courseCurrentBalance = (float) ($payment->invoice->pending_amount ?? 0);
 @endphp
 
 @extends('layouts.mantis')
@@ -91,7 +91,7 @@
                             @endif
                             @if($isEduMaster)
                                 <p class="mb-0" style="font-size: 12px !important;">
-                                    Full Course Amount: <strong>₹{{ number_format((float) ($payment->invoice->total_amount ?? 0), 2) }}</strong>
+                                    Full Course Amount: <strong>₹{{ number_format((float) ($payment->invoice->net_amount ?? 0), 2) }}</strong>
                                 </p>
                             @endif
                         </div>

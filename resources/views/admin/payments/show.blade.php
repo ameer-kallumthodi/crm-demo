@@ -185,7 +185,7 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Total Amount:</strong></td>
-                                    <td>₹{{ number_format(round($payment->invoice->total_amount)) }}</td>
+                                    <td>₹{{ number_format(round($payment->invoice->net_amount)) }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Paid Amount:</strong></td>
@@ -228,7 +228,7 @@
                                 <button type="button" class="btn btn-success approve-payment-btn" 
                                         data-payment-id="{{ $payment->id }}"
                                         data-amount="{{ $payment->amount_paid }}"
-                                        data-previous-balance="{{ $payment->invoice->total_amount - $payment->previous_balance }}"
+                                        data-previous-balance="{{ $payment->invoice->net_amount - $payment->previous_balance }}"
                                         data-payment-type="{{ $payment->payment_type }}"
                                         data-transaction-id="{{ $payment->transaction_id }}"
                                         data-file-upload="{{ $payment->file_upload }}">

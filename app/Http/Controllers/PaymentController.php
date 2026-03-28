@@ -206,7 +206,7 @@ class PaymentController extends Controller
                 return;
             }
 
-            $remainingBalance = (float) ($invoice->total_amount - $invoice->paid_amount);
+            $remainingBalance = (float) $invoice->pending_amount;
             if ($totalPaid > $remainingBalance) {
                 $validator->errors()->add('payment_pg_amount', 'Total payment amount cannot exceed the remaining balance of ' . number_format($remainingBalance, 2) . '.');
             }
@@ -262,7 +262,7 @@ class PaymentController extends Controller
             }
             */
             
-            $remainingBalance = (float) ($invoice->total_amount - $invoice->paid_amount);
+            $remainingBalance = (float) $invoice->pending_amount;
 
             // Calculate previous balance (sum of all approved payments)
             $previousBalance = Payment::where('invoice_id', $invoiceId)
@@ -559,8 +559,7 @@ class PaymentController extends Controller
         // Add number to words conversion
         $payment->amount_in_words = $this->numberToWords($payment->amount_paid);
 
-        // For course_id = 23, tax invoice total is based on fee head (if provided)
-        $taxInvoiceTotal = (float) ($payment->invoice->total_amount ?? 0);
+        $feeHeadColumn = null;
         if ((int) ($payment->invoice->course_id ?? 0) === 23 && $payment->fee_head) {
             $feeHeadToColumn = [
                 'PG' => 'fee_pg_amount',
@@ -568,11 +567,9 @@ class PaymentController extends Controller
                 'PLUS_TWO' => 'fee_plustwo_amount',
                 'SSLC' => 'fee_sslc_amount',
             ];
-            $column = $feeHeadToColumn[$payment->fee_head] ?? null;
-            if ($column) {
-                $taxInvoiceTotal = (float) ($payment->invoice->{$column} ?? 0);
-            }
+            $feeHeadColumn = $feeHeadToColumn[$payment->fee_head] ?? null;
         }
+        $taxInvoiceTotal = $payment->invoice->taxInvoiceLineTotal($feeHeadColumn);
 
         $payment->tax_invoice_total = $taxInvoiceTotal;
         $payment->tax_invoice_taxable = $taxInvoiceTotal > 0 ? ($taxInvoiceTotal / 1.18) : 0.0;
@@ -616,8 +613,7 @@ class PaymentController extends Controller
         // Add number to words conversion
         $payment->amount_in_words = $this->numberToWords($payment->amount_paid);
 
-        // For course_id = 23, tax invoice total is based on fee head (if provided)
-        $taxInvoiceTotal = (float) ($payment->invoice->total_amount ?? 0);
+        $feeHeadColumn = null;
         if ((int) ($payment->invoice->course_id ?? 0) === 23 && $payment->fee_head) {
             $feeHeadToColumn = [
                 'PG' => 'fee_pg_amount',
@@ -625,11 +621,9 @@ class PaymentController extends Controller
                 'PLUS_TWO' => 'fee_plustwo_amount',
                 'SSLC' => 'fee_sslc_amount',
             ];
-            $column = $feeHeadToColumn[$payment->fee_head] ?? null;
-            if ($column) {
-                $taxInvoiceTotal = (float) ($payment->invoice->{$column} ?? 0);
-            }
+            $feeHeadColumn = $feeHeadToColumn[$payment->fee_head] ?? null;
         }
+        $taxInvoiceTotal = $payment->invoice->taxInvoiceLineTotal($feeHeadColumn);
 
         $payment->tax_invoice_total = $taxInvoiceTotal;
         $payment->tax_invoice_taxable = $taxInvoiceTotal > 0 ? ($taxInvoiceTotal / 1.18) : 0.0;

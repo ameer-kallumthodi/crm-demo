@@ -263,8 +263,9 @@
                                     <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
                                         <i class="fas fa-rupee-sign text-info fs-4"></i>
                                     </div>
-                                    <h6 class="text-muted mb-2">Total Amount</h6>
-                                    <h3 class="text-info mb-0">₹{{ number_format(round($invoice->total_amount)) }}</h3>
+                                    <h6 class="text-muted mb-2">Invoice total</h6>
+                                    <h3 class="text-info mb-0">₹{{ number_format(round($invoice->net_amount)) }}</h3>
+                                    <small class="text-muted">After discount</small>
                                 </div>
                             </div>
                         </div>
@@ -353,7 +354,7 @@
                                             <div class="bg-info bg-opacity-10 rounded-circle p-1 me-2">
                                                 <i class="fas fa-balance-scale text-info" style="font-size: 12px;"></i>
                                             </div>
-                                            <span class="fw-semibold">₹{{ number_format(round($payment->invoice->total_amount - $payment->previous_balance)) }}</span>
+                                            <span class="fw-semibold">₹{{ number_format(round($payment->invoice->net_amount - $payment->previous_balance)) }}</span>
                                         </div>
                                     </td>
                                     <td>
@@ -475,7 +476,7 @@
                                             @endif
                                             @if($payment->status == 'Pending Approval')
                                                 @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_finance())
-                                                <button type="button" class="btn btn-sm btn-success" onclick="showApproveModal({{ $payment->id }}, '{{ $payment->amount_paid }}', '{{ $payment->invoice->total_amount - $payment->previous_balance }}', '{{ $payment->payment_type }}', '{{ $payment->transaction_id }}', '{{ $payment->file_upload }}')" title="Approve Payment">
+                                                <button type="button" class="btn btn-sm btn-success" onclick="showApproveModal({{ $payment->id }}, '{{ $payment->amount_paid }}', '{{ $payment->invoice->net_amount - $payment->previous_balance }}', '{{ $payment->payment_type }}', '{{ $payment->transaction_id }}', '{{ $payment->file_upload }}')" title="Approve Payment">
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-danger" onclick="showRejectModal({{ $payment->id }}, '{{ $payment->amount_paid }}', '{{ $payment->payment_type }}')" title="Reject Payment">

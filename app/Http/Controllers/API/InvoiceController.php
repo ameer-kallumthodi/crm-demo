@@ -40,12 +40,14 @@ class InvoiceController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            // Calculate summary
+            // Calculate summary (totals after discount where applicable)
             $summary = [
                 'total_invoices' => $invoices->count(),
-                'total_amount' => (float) $invoices->sum('total_amount'),
+                'total_gross' => (float) $invoices->sum('total_amount'),
+                'total_discount' => (float) $invoices->sum('discount_amount'),
+                'total_amount' => (float) $invoices->sum(fn ($inv) => $inv->net_amount),
                 'total_paid' => (float) $invoices->sum('paid_amount'),
-                'total_pending' => (float) ($invoices->sum('total_amount') - $invoices->sum('paid_amount')),
+                'total_pending' => (float) $invoices->sum(fn ($inv) => $inv->pending_amount),
             ];
 
             // Format invoices for API response
@@ -56,6 +58,8 @@ class InvoiceController extends Controller
                     'invoice_type' => $invoice->invoice_type,
                     'invoice_date' => $invoice->invoice_date,
                     'total_amount' => (float) $invoice->total_amount,
+                    'discount_amount' => (float) ($invoice->discount_amount ?? 0),
+                    'net_amount' => (float) $invoice->net_amount,
                     'paid_amount' => (float) $invoice->paid_amount,
                     'pending_amount' => (float) $invoice->pending_amount,
                     'status' => $invoice->status,

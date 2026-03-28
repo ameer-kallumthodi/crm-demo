@@ -959,6 +959,8 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/invoices/store/{studentId}', [App\Http\Controllers\InvoiceController::class, 'store'])->name('invoices.store');
         Route::get('/invoices/{id}/edit-amount', [App\Http\Controllers\InvoiceController::class, 'editAmount'])->name('invoices.edit-amount');
         Route::post('/invoices/{id}/update-amount', [App\Http\Controllers\InvoiceController::class, 'updateAmount'])->name('invoices.update-amount');
+        Route::get('/invoices/{id}/edit-discount', [App\Http\Controllers\InvoiceController::class, 'editDiscount'])->name('invoices.edit-discount');
+        Route::post('/invoices/{id}/update-discount', [App\Http\Controllers\InvoiceController::class, 'updateDiscount'])->name('invoices.update-discount');
 
         // Payment Routes
         Route::get('/payments/export-pdf', [App\Http\Controllers\PaymentController::class, 'exportPdf'])->name('payments.export-pdf');

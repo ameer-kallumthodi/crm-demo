@@ -18,6 +18,7 @@ class Invoice extends Model
         'batch_id',
         'student_id',
         'total_amount',
+        'discount_amount',
         'fee_pg_amount',
         'fee_ug_amount',
         'fee_plustwo_amount',
@@ -35,6 +36,7 @@ class Invoice extends Model
 
     protected $casts = [
         'total_amount' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'fee_pg_amount' => 'decimal:2',
         'fee_ug_amount' => 'decimal:2',
         'fee_plustwo_amount' => 'decimal:2',
@@ -91,14 +93,43 @@ class Invoice extends Model
 
 
     // Accessors
-    public function getPendingAmountAttribute()
+    public function getNetAmountAttribute(): float
     {
-        return $this->total_amount - $this->paid_amount;
+        $total = (float) $this->total_amount;
+        $discount = (float) ($this->discount_amount ?? 0);
+
+        return max(0, round($total - $discount, 2));
     }
 
-    public function getCurrentBalanceAttribute()
+    public function getPendingAmountAttribute(): float
     {
-        return $this->total_amount - $this->paid_amount;
+        return max(0, round($this->net_amount - (float) $this->paid_amount, 2));
+    }
+
+    public function getCurrentBalanceAttribute(): float
+    {
+        return max(0, round($this->net_amount - (float) $this->paid_amount, 2));
+    }
+
+    /**
+     * Amount for tax invoice / receipts (after discount, no separate discount line).
+     * For EduMaster (course 23) with a fee head, applies discount pro-rata to that head.
+     */
+    public function taxInvoiceLineTotal(?string $feeHeadColumn = null): float
+    {
+        $net = $this->net_amount;
+        $total = (float) $this->total_amount;
+
+        if ($feeHeadColumn && (int) ($this->course_id ?? 0) === 23) {
+            $head = (float) ($this->{$feeHeadColumn} ?? 0);
+            if ($total <= 0) {
+                return max(0, round($head, 2));
+            }
+
+            return max(0, round($head * ($net / $total), 2));
+        }
+
+        return $net;
     }
 
     // Scopes
@@ -117,7 +148,7 @@ class Invoice extends Model
     {
         if ($this->paid_amount == 0) {
             $this->status = 'Not Paid';
-        } elseif ($this->paid_amount >= $this->total_amount) {
+        } elseif ($this->paid_amount >= $this->net_amount) {
             $this->status = 'Fully Paid';
         } else {
             $this->status = 'Partially Paid';
@@ -133,8 +164,8 @@ class Invoice extends Model
             ->where('status', 'Approved')
             ->sum('amount_paid');
         
-        // Calculate previous balance (total amount - paid amount)
-        $this->previous_balance = $this->total_amount - $totalPaid;
+        // Calculate previous balance (net amount - paid amount)
+        $this->previous_balance = $this->net_amount - $totalPaid;
         $this->paid_amount = $totalPaid;
         $this->save();
     }

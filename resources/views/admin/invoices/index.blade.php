@@ -65,8 +65,9 @@
                         <div class="col-md-3">
                             <div class="card bg-info text-white">
                                 <div class="card-body">
-                                    <h5 class="card-title">Total Amount</h5>
+                                    <h5 class="card-title">Net total</h5>
                                     <h3>₹{{ number_format(round($summary['total_amount'])) }}</h3>
+                                    <small class="text-white-50">After discounts</small>
                                 </div>
                             </div>
                         </div>
@@ -97,7 +98,9 @@
                                     <th>Invoice #</th>
                                     <th>Type</th>
                                     <th>Details</th>
-                                    <th>Total Amount</th>
+                                    <th>Gross</th>
+                                    <th>Discount</th>
+                                    <th>Net</th>
                                     <th>Paid Amount</th>
                                     <th>Pending Amount</th>
                                     <th>Status</th>
@@ -148,6 +151,8 @@
                                         @endif
                                     </td>
                                     <td>₹{{ number_format(round($invoice->total_amount)) }}</td>
+                                    <td>@if((float) ($invoice->discount_amount ?? 0) > 0) ₹{{ number_format(round($invoice->discount_amount)) }} @else — @endif</td>
+                                    <td>₹{{ number_format(round($invoice->net_amount)) }}</td>
                                     <td>₹{{ number_format(round($invoice->paid_amount)) }}</td>
                                     <td>₹{{ number_format(round($invoice->pending_amount)) }}</td>
                                     <td>
@@ -172,6 +177,12 @@
                                         <button type="button" class="btn btn-sm btn-outline-warning" title="Edit Amount"
                                             onclick="show_small_modal('{{ route('admin.invoices.edit-amount', $invoice->id) }}', 'Edit Invoice Amount')">
                                             <i class="fas fa-edit"></i>
+                                        </button>
+                                        @endif
+                                        @if($canEditInvoice)
+                                        <button type="button" class="btn btn-sm btn-outline-success" title="Discount"
+                                            onclick="show_small_modal('{{ route('admin.invoices.edit-discount', $invoice->id) }}', 'Invoice discount')">
+                                            <i class="fas fa-percent"></i>
                                         </button>
                                         @endif
                                         <a href="{{ route('admin.payments.index', $invoice->id) }}" class="btn btn-sm btn-primary" title="Manage Payments">
@@ -203,7 +214,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="text-center">No invoices found for this student.</td>
+                                    <td colspan="12" class="text-center">No invoices found for this student.</td>
                                 </tr>
                                 @endforelse
                             </tbody>

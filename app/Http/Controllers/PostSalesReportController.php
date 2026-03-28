@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Payment;
 use App\Models\Invoice;
@@ -374,6 +375,7 @@ class PostSalesReportController extends Controller
                 $query->where('telecaller_id', $telecaller->id)
                       ->where('is_converted', true);
             })
+            ->where('is_cancelled', false)
             ->whereNotIn('course_id', [5, 6])
             ->get();
 
@@ -405,14 +407,17 @@ class PostSalesReportController extends Controller
             $totalSaleAmount = 0;
             if (!empty($convertedLeadIds)) {
                 $totalSaleAmount = Invoice::whereIn('student_id', $convertedLeadIds)
-                    ->sum('total_amount');
+                    ->sum(DB::raw('total_amount - COALESCE(discount_amount, 0)'));
             }
 
             // Received at Sale (DP) - payments collected_by telecaller and approved
-            // Filter by payment_date using from_date and to_date
+            // Filter by payment_date using from_date and to_date; exclude cancelled students
             $receivedAtSale = Payment::where('collected_by', $telecaller->id)
                 ->where('status', 'Approved')
                 ->whereBetween('payment_date', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
+                ->whereHas('invoice.student', function ($q) {
+                    $q->where('is_cancelled', false);
+                })
                 ->sum('amount_paid');
 
             $reports[] = [
@@ -482,6 +487,7 @@ class PostSalesReportController extends Controller
                 $query->where('telecaller_id', $telecaller->id)
                       ->where('is_converted', true);
             })
+            ->where('is_cancelled', false)
             ->whereIn('course_id', [5, 6])
             ->get();
 
@@ -513,7 +519,7 @@ class PostSalesReportController extends Controller
             $totalSaleAmount = 0;
             if (!empty($convertedLeadIds)) {
                 $totalSaleAmount = Invoice::whereIn('student_id', $convertedLeadIds)
-                    ->sum('total_amount');
+                    ->sum(DB::raw('total_amount - COALESCE(discount_amount, 0)'));
             }
 
             // Received at Sale (DP) - payments collected_by telecaller and approved
@@ -593,6 +599,7 @@ class PostSalesReportController extends Controller
                 'invoices.payments',
                 'lead',
             ])
+            ->where('is_cancelled', false)
             ->whereNotIn('course_id', [5, 6])
             ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
             ->whereHas('lead', function ($query) use ($telecallerId) {
@@ -604,8 +611,8 @@ class PostSalesReportController extends Controller
 
         // Map data with sale and received amounts
         $rows = $convertedLeads->map(function (ConvertedLead $student) use ($telecallerId, $fromDate, $toDate) {
-            // Total sale amount: sum of all invoice totals for this student
-            $totalSaleAmount = $student->invoices->sum('total_amount');
+            // Total sale amount: sum of invoice amounts after discount
+            $totalSaleAmount = $student->invoices->sum(fn ($inv) => $inv->net_amount);
 
             // Received amount: sum of approved payments collected by this telecaller in the same date range
             $receivedAmount = $student->invoices
@@ -678,6 +685,7 @@ class PostSalesReportController extends Controller
                 'invoices.payments',
                 'lead',
             ])
+            ->where('is_cancelled', false)
             ->whereIn('course_id', [5, 6])
             ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
             ->whereHas('lead', function ($query) use ($telecallerId) {
@@ -689,8 +697,8 @@ class PostSalesReportController extends Controller
 
         // Map data with sale and received amounts
         $rows = $convertedLeads->map(function (ConvertedLead $student) use ($telecallerId, $fromDate, $toDate) {
-            // Total sale amount: sum of all invoice totals for this student
-            $totalSaleAmount = $student->invoices->sum('total_amount');
+            // Total sale amount: sum of invoice amounts after discount
+            $totalSaleAmount = $student->invoices->sum(fn ($inv) => $inv->net_amount);
 
             // Received amount: sum of approved payments collected by this telecaller in the same date range
             $receivedAmount = $student->invoices
@@ -762,8 +770,9 @@ class PostSalesReportController extends Controller
         $reports = [];
 
         foreach ($courses as $course) {
-            // Get converted leads for this course within date range
+            // Get converted leads for this course within date range (exclude cancelled admissions)
             $convertedLeads = ConvertedLead::where('course_id', $course->id)
+                ->where('is_cancelled', false)
                 ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
                 ->get();
 
@@ -775,7 +784,7 @@ class PostSalesReportController extends Controller
             $totalSaleAmount = 0;
             if (!empty($convertedLeadIds)) {
                 $totalSaleAmount = Invoice::whereIn('student_id', $convertedLeadIds)
-                    ->sum('total_amount');
+                    ->sum(DB::raw('total_amount - COALESCE(discount_amount, 0)'));
             }
 
             // Received Amount - sum of approved payments for invoices of this course
@@ -860,6 +869,7 @@ class PostSalesReportController extends Controller
                 $query->where('telecaller_id', $telecaller->id)
                       ->where('is_converted', true);
             })
+            ->where('is_cancelled', false)
             ->whereNotIn('course_id', [5, 6])
             ->get();
 
@@ -891,14 +901,17 @@ class PostSalesReportController extends Controller
             $totalSaleAmount = 0;
             if (!empty($convertedLeadIds)) {
                 $totalSaleAmount = Invoice::whereIn('student_id', $convertedLeadIds)
-                    ->sum('total_amount');
+                    ->sum(DB::raw('total_amount - COALESCE(discount_amount, 0)'));
             }
 
             // Received at Sale (DP) - payments collected_by telecaller and approved
-            // Filter by payment_date using from_date and to_date
+            // Filter by payment_date using from_date and to_date; exclude cancelled students
             $receivedAtSale = Payment::where('collected_by', $telecaller->id)
                 ->where('status', 'Approved')
                 ->whereBetween('payment_date', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
+                ->whereHas('invoice.student', function ($q) {
+                    $q->where('is_cancelled', false);
+                })
                 ->sum('amount_paid');
 
             $reports[] = [
@@ -969,6 +982,7 @@ class PostSalesReportController extends Controller
                 $query->where('telecaller_id', $telecaller->id)
                       ->where('is_converted', true);
             })
+            ->where('is_cancelled', false)
             ->whereIn('course_id', [5, 6])
             ->get();
 
@@ -1000,7 +1014,7 @@ class PostSalesReportController extends Controller
             $totalSaleAmount = 0;
             if (!empty($convertedLeadIds)) {
                 $totalSaleAmount = Invoice::whereIn('student_id', $convertedLeadIds)
-                    ->sum('total_amount');
+                    ->sum(DB::raw('total_amount - COALESCE(discount_amount, 0)'));
             }
 
             // Received at Sale (DP) - payments collected_by telecaller and approved
@@ -1080,8 +1094,9 @@ class PostSalesReportController extends Controller
         $reports = [];
 
         foreach ($courses as $course) {
-            // Get converted leads for this course within date range
+            // Get converted leads for this course within date range (exclude cancelled admissions)
             $convertedLeads = ConvertedLead::where('course_id', $course->id)
+                ->where('is_cancelled', false)
                 ->whereBetween('created_at', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
                 ->get();
 
@@ -1093,7 +1108,7 @@ class PostSalesReportController extends Controller
             $totalSaleAmount = 0;
             if (!empty($convertedLeadIds)) {
                 $totalSaleAmount = Invoice::whereIn('student_id', $convertedLeadIds)
-                    ->sum('total_amount');
+                    ->sum(DB::raw('total_amount - COALESCE(discount_amount, 0)'));
             }
 
             // Received Amount - sum of approved payments for invoices of this course

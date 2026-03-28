@@ -411,19 +411,12 @@ class PostSalesConvertedLeadController extends Controller
      */
     private function calculateTotalPendingAmount($convertedLead)
     {
-        $totalInvoiceAmount = 0;
-        $totalPaid = 0;
-        
+        $total = 0;
         foreach ($convertedLead->invoices as $invoice) {
-            $totalInvoiceAmount += (float) $invoice->total_amount;
-            // Sum all approved payments
-            $approvedPayments = $invoice->payments->where('status', 'Approved');
-            foreach ($approvedPayments as $payment) {
-                $totalPaid += (float) $payment->amount_paid;
-            }
+            $total += (float) $invoice->pending_amount;
         }
-        
-        return $totalInvoiceAmount - $totalPaid;
+
+        return $total;
     }
 
     /**

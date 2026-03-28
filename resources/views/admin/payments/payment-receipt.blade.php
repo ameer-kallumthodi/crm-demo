@@ -141,9 +141,9 @@
                                         <p class="mb-0" style="font-size: 12px !important;border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;"><strong>Current Balance:</strong></p>
                                     </div>
                                     <div class="col-6 text-end">
-                                        <p class="mb-1" style="font-size: 12px !important; border-bottom: 1px solid #ddd; padding-bottom: 5px;">₹{{ number_format($payment->invoice->total_amount, 2) }}</p>
+                                        <p class="mb-1" style="font-size: 12px !important; border-bottom: 1px solid #ddd; padding-bottom: 5px;">₹{{ number_format($payment->invoice->net_amount, 2) }}</p>
                                         <p class="mb-1" style="font-size: 12px !important;">₹{{ number_format($payment->amount_paid, 2) }}</p>
-                                        <p class="mb-0" style="font-size: 12px !important;border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;">₹{{ number_format($payment->invoice->total_amount - $payment->invoice->paid_amount, 2) }}</p>
+                                        <p class="mb-0" style="font-size: 12px !important;border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;">₹{{ number_format($payment->invoice->pending_amount, 2) }}</p>
                                     </div>
                                 </div>
                             </div>

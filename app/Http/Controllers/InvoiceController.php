@@ -29,12 +29,12 @@ class InvoiceController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Calculate summary
+        // Calculate summary (amounts after discount / net payable)
         $summary = [
             'total_invoices' => $invoices->count(),
-            'total_amount' => $invoices->sum('total_amount'),
+            'total_amount' => $invoices->sum(fn ($inv) => $inv->net_amount),
             'total_paid' => $invoices->sum('paid_amount'),
-            'total_pending' => $invoices->sum('total_amount') - $invoices->sum('paid_amount'),
+            'total_pending' => $invoices->sum(fn ($inv) => $inv->pending_amount),
         ];
 
         return view('admin.invoices.index', compact('student', 'invoices', 'summary'));
@@ -219,28 +219,60 @@ class InvoiceController extends Controller
         $invoice = Invoice::with('student')->findOrFail($invoiceId);
         $this->checkStudentAccess($invoice->student);
 
+        $minTotal = (float) $invoice->paid_amount + (float) $invoice->discount_amount;
         $request->validate([
-            'total_amount' => 'required|numeric|min:' . $invoice->pending_amount,
+            'total_amount' => 'required|numeric|min:' . $minTotal,
         ], [
-            'total_amount.min' => 'New amount cannot be less than the pending amount (₹' . number_format($invoice->pending_amount, 2) . ').',
+            'total_amount.min' => 'Invoice amount cannot be less than paid plus discount (minimum ₹' . number_format($minTotal, 2) . ').',
         ]);
 
         $invoice->total_amount = $request->total_amount;
-
-        if ($invoice->paid_amount >= $invoice->total_amount) {
-            $invoice->status = 'Fully Paid';
-        } elseif ($invoice->paid_amount > 0) {
-            $invoice->status = 'Partially Paid';
-        } else {
-            $invoice->status = 'Not Paid';
-        }
-
         $invoice->updated_by = AuthHelper::getCurrentUserId();
         $invoice->save();
+        $invoice->recalculatePaidAmount();
+        $invoice->updateStatus();
 
         return redirect()
             ->route('admin.invoices.index', $invoice->student_id)
             ->with('message_success', 'Invoice amount updated successfully.');
+    }
+
+    /**
+     * Modal: set invoice discount (finance / admin)
+     */
+    public function editDiscount($invoiceId)
+    {
+        $invoice = Invoice::with(['student', 'batch', 'course'])->findOrFail($invoiceId);
+        $this->checkStudentAccess($invoice->student);
+
+        return view('admin.invoices.edit-discount-modal', compact('invoice'));
+    }
+
+    /**
+     * Persist discount_amount (cannot reduce net below amount already paid)
+     */
+    public function updateDiscount(Request $request, $invoiceId)
+    {
+        $invoice = Invoice::with('student')->findOrFail($invoiceId);
+        $this->checkStudentAccess($invoice->student);
+
+        $maxDiscount = max(0, (float) $invoice->total_amount - (float) $invoice->paid_amount);
+
+        $request->validate([
+            'discount_amount' => 'required|numeric|min:0|max:' . $maxDiscount,
+        ], [
+            'discount_amount.max' => 'Discount cannot exceed ₹' . number_format($maxDiscount, 2) . ' (gross total minus paid amount).',
+        ]);
+
+        $invoice->discount_amount = $request->discount_amount;
+        $invoice->updated_by = AuthHelper::getCurrentUserId();
+        $invoice->save();
+        $invoice->recalculatePaidAmount();
+        $invoice->updateStatus();
+
+        return redirect()
+            ->back()
+            ->with('message_success', 'Invoice discount updated successfully.');
     }
 
     /**

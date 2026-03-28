@@ -27,7 +27,7 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Total Amount:</strong></td>
-                                    <td>₹{{ number_format(round($invoice->total_amount)) }}</td>
+                                    <td>₹{{ number_format(round($invoice->net_amount)) }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Paid Amount:</strong></td>

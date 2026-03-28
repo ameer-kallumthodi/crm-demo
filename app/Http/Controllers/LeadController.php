@@ -217,7 +217,7 @@ class LeadController extends Controller
             'course_id', 'telecaller_id', 'team_id', 'place', 'rating', 'interest_status', 
             'followup_date', 'remarks', 'is_converted', 'created_at', 'updated_at',
             'gender', 'age', 'whatsapp', 'whatsapp_code', 'qualification', 'country_id', 
-            'address', 'first_created_at' // Added for profile completeness calculation and auditing
+            'address', 'first_created_at', 'is_b2b' // is_b2b required for Type column (B2B / In House)
         ])
         ->where('is_converted', 0) // Direct condition instead of scope for better performance
         ->with([
@@ -740,7 +740,7 @@ class LeadController extends Controller
                         : '-';
                 }
 
-                $row['type'] = $lead->is_b2b == 1 ? 'B2B' : 'In House';
+                $row['type'] = (int) ($lead->is_b2b ?? 0) === 1 ? 'B2B' : 'In House';
                 $data[] = $row;
             }
 
