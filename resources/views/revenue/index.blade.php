@@ -71,8 +71,8 @@
     <div class="col-12">
         <div class="card tbl-card">
             <div class="card-header">
-                <h5 class="mb-0">By team (B2B only)</h5>
-                <small class="text-muted">Organization-wide totals by B2B team (leads on non-B2B or without a team are not listed here)</small>
+                <h5 class="mb-0">By team</h5>
+                <small class="text-muted">Organization-wide totals by team (leads without a team are not listed)</small>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">

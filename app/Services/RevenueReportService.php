@@ -11,17 +11,19 @@ class RevenueReportService
     /**
      * Invoice-backed revenue for visible converted leads (non-cancelled), after discount.
      * Scope matches DashboardController::applyRoleBasedFilterToConvertedLeads (via leads.telecaller_id).
+     * Totals include only partner-channel rows: lead or converted lead marked partner, or lead’s team is a partner team.
      */
     public function getTotalsForCurrentUser(): array
     {
         $query = $this->baseInvoicesQuery();
         $this->applyConvertedLeadVisibilityScope($query);
+        $this->applyPartnerChannelRevenueFilter($query);
 
         return $this->aggregateQuery($query);
     }
 
     /**
-     * Per-team breakdown (full organization, no user scope). B2B teams only; non-B2B and unassigned leads are omitted.
+     * Per-team breakdown (full organization, no user scope). Only teams flagged as partner channel; unassigned leads omitted.
      *
      * @return list<array{team_id: int|null, team_name: string, total_payable: float, total_paid: float, total_balance: float, total_discount: float}>
      */
@@ -106,6 +108,22 @@ class RevenueReportService
         }
 
         $query->whereRaw('1 = 0');
+    }
+
+    /**
+     * Restrict to partner-channel revenue (same notion as partner teams / B2B flags on lead and student).
+     */
+    private function applyPartnerChannelRevenueFilter($query): void
+    {
+        $query->leftJoin('teams as revenue_teams', 'leads.team_id', '=', 'revenue_teams.id')
+            ->where(function ($q) {
+                $q->where('converted_leads.is_b2b', 1)
+                    ->orWhere('leads.is_b2b', 1)
+                    ->orWhere(function ($q2) {
+                        $q2->where('revenue_teams.is_b2b', 1)
+                            ->whereNull('revenue_teams.deleted_at');
+                    });
+            });
     }
 
     private function aggregateQuery($query): array
