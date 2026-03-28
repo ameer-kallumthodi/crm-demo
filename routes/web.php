@@ -210,6 +210,10 @@ Route::prefix('register')->group(function () {
     Route::get('/vibe-coding/subjects', [App\Http\Controllers\Public\LeadVibeCodingRegistrationController::class, 'getSubjects'])->name('public.lead.vibe-coding.subjects');
     Route::get('/vibe-coding/batches', [App\Http\Controllers\Public\LeadVibeCodingRegistrationController::class, 'getBatches'])->name('public.lead.vibe-coding.batches');
 
+    // RPA Registration Routes (course_id = 27)
+    Route::get('/rpa/{leadId?}', [App\Http\Controllers\Public\LeadRpaRegistrationController::class, 'showRpaForm'])->name('public.lead.rpa.register');
+    Route::post('/rpa', [App\Http\Controllers\Public\LeadRpaRegistrationController::class, 'store'])->name('public.lead.rpa.register.store');
+
     // Graphic Designing Registration Routes
     Route::get('/graphic-designing/{leadId?}', [App\Http\Controllers\Public\LeadGraphicDesigningRegistrationController::class, 'showGraphicDesigningForm'])->name('public.lead.graphic-designing.register');
     Route::post('/graphic-designing', [App\Http\Controllers\Public\LeadGraphicDesigningRegistrationController::class, 'store'])->name('public.lead.graphic-designing.register.store');

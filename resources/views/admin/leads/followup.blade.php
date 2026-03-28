@@ -513,6 +513,17 @@
                                                     <i class="ti ti-copy"></i>
                                                 </button>
                                             </div>
+                                            @elseif($lead->course_id == 27)
+                                            <div class="d-flex gap-1">
+                                                <a href="{{ route('public.lead.rpa.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open RPA Registration Form">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-info copy-link-btn"
+                                                    data-url="{{ route('public.lead.rpa.register', $lead->id) }}"
+                                                    title="Copy RPA Registration Link">
+                                                    <i class="ti ti-copy"></i>
+                                                </button>
+                                            </div>
                                             @endif
                                         </div>
                                         @endif
@@ -1006,6 +1017,17 @@
                                         <button type="button" class="btn btn-sm btn-info copy-link-btn"
                                             data-url="{{ route('public.lead.junior-vlogger.register', $lead->id) }}"
                                             title="Copy Junior Vlogger Registration Link">
+                                            <i class="ti ti-copy f-12"></i>
+                                        </button>
+                                    </div>
+                                    @elseif($lead->course_id == 27)
+                                    <div class="d-flex gap-1 mt-2">
+                                        <a href="{{ route('public.lead.rpa.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-warning" title="Open RPA Registration Form">
+                                            <i class="ti ti-external-link f-12"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info copy-link-btn"
+                                            data-url="{{ route('public.lead.rpa.register', $lead->id) }}"
+                                            title="Copy RPA Registration Link">
                                             <i class="ti ti-copy f-12"></i>
                                         </button>
                                     </div>

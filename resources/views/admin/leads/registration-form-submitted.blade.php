@@ -426,6 +426,12 @@
                                                 <i class="ti ti-external-link me-1"></i>E-School Form
                                             </a>
                                         </div>
+                                        @elseif($lead->course_id == 27)
+                                        <div class="d-flex gap-1">
+                                            <a href="{{ route('public.lead.rpa.register', $lead->id) }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Open RPA Registration Form">
+                                                <i class="ti ti-external-link me-1"></i>RPA Form
+                                            </a>
+                                        </div>
                                         @else
                                         <span class="text-muted">No form available</span>
                                         @endif

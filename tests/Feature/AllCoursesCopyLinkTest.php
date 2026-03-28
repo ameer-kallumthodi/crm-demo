@@ -112,7 +112,8 @@ class AllCoursesCopyLinkTest extends TestCase
             'public.lead.web-dev.register',
             'public.lead.vibe-coding.register',
             'public.lead.graphic-designing.register',
-            'public.lead.gmvss.register'
+            'public.lead.gmvss.register',
+            'public.lead.rpa.register'
         ];
 
         foreach ($routes as $route) {
