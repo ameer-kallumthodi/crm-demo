@@ -14,7 +14,6 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
-use App\Services\RevenueReportService;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -37,13 +36,7 @@ class DashboardController extends Controller
             return $this->auditorDashboard();
         }
 
-        $revenueSummary = null;
-        if (!RoleHelper::is_auditor()) {
-            $revenueSummary = app(RevenueReportService::class)->getTotalsForCurrentUser();
-        }
-
         $data = [
-            'revenueSummary' => $revenueSummary,
             'leadStatuses' => $this->getLeadStatusesWithCount(),
             'topTelecallers' => $this->getTopTelecallers(),
             'topCountries' => $this->getTopCountries(),

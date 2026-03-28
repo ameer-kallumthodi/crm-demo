@@ -188,13 +188,7 @@
                         <i class="ti ti-external-link f-12"></i>
                     </a>
                 </div>
-                <h4 class="mb-2">₹{{ isset($revenueSummary) ? number_format(round($revenueSummary['total_balance'] ?? 0)) : '0' }}</h4>
-                <div class="d-flex align-items-center">
-                    <span class="badge bg-light-secondary border border-secondary me-2">
-                        <i class="ti ti-wallet"></i> Balance
-                    </span>
-                    <small class="text-muted">After discount · excl. cancelled</small>
-                </div>
+                <small class="text-muted">Open the Revenue page for totals</small>
             </div>
         </div>
     </div>
