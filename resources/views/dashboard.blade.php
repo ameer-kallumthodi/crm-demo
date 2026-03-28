@@ -178,6 +178,27 @@
             </div>
         </div>
     </div>
+    @if(!\App\Helpers\RoleHelper::is_auditor())
+    <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="mb-0 f-w-400 text-muted">Revenue</h6>
+                    <a href="{{ route('revenue.index') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="ti ti-external-link f-12"></i>
+                    </a>
+                </div>
+                <h4 class="mb-2">₹{{ isset($revenueSummary) ? number_format(round($revenueSummary['total_balance'] ?? 0)) : '0' }}</h4>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-light-secondary border border-secondary me-2">
+                        <i class="ti ti-wallet"></i> Balance
+                    </span>
+                    <small class="text-muted">After discount · excl. cancelled</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
     <br>
     <hr>
     <br>
