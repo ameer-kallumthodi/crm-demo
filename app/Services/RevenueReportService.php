@@ -58,6 +58,89 @@ class RevenueReportService
         })->values()->all();
     }
 
+    /**
+     * Detailed B2B team revenue by course.
+     *
+     * Totals are net of invoice discount (payable = max(0, total_amount - discount_amount)).
+     */
+    public function getTeamDetailsForAdmin(int $teamId): array
+    {
+        // Team totals
+        $totalsQuery = $this->baseInvoicesQuery()
+            ->join('teams', 'leads.team_id', '=', 'teams.id')
+            ->where('teams.is_b2b', 1)
+            ->where('teams.id', $teamId)
+            ->whereNull('teams.deleted_at')
+            ->selectRaw('
+                MAX(teams.name) as team_name,
+                COALESCE(SUM(GREATEST(0, invoices.total_amount - COALESCE(invoices.discount_amount, 0))), 0) as total_payable,
+                COALESCE(SUM(COALESCE(invoices.paid_amount, 0)), 0) as total_paid,
+                COALESCE(SUM(GREATEST(0,
+                    (invoices.total_amount - COALESCE(invoices.discount_amount, 0)) - COALESCE(invoices.paid_amount, 0)
+                )), 0) as total_balance,
+                COALESCE(SUM(COALESCE(invoices.discount_amount, 0)), 0) as total_discount
+            ')
+            ->first();
+
+        if (!$totalsQuery) {
+            return [
+                'team_id' => $teamId,
+                'team_name' => '',
+                'totals' => [
+                    'total_payable' => 0.0,
+                    'total_paid' => 0.0,
+                    'total_balance' => 0.0,
+                    'total_discount' => 0.0,
+                ],
+                'course_wise' => [],
+            ];
+        }
+
+        // Course-wise breakdown
+        $courseQuery = $this->baseInvoicesQuery()
+            ->join('teams', 'leads.team_id', '=', 'teams.id')
+            ->join('courses', 'converted_leads.course_id', '=', 'courses.id')
+            ->where('teams.is_b2b', 1)
+            ->where('teams.id', $teamId)
+            ->whereNull('teams.deleted_at')
+            ->whereNull('courses.deleted_at')
+            ->selectRaw('
+                courses.id as course_id,
+                MAX(courses.title) as course_title,
+                COALESCE(SUM(GREATEST(0, invoices.total_amount - COALESCE(invoices.discount_amount, 0))), 0) as total_payable,
+                COALESCE(SUM(COALESCE(invoices.paid_amount, 0)), 0) as total_paid,
+                COALESCE(SUM(GREATEST(0,
+                    (invoices.total_amount - COALESCE(invoices.discount_amount, 0)) - COALESCE(invoices.paid_amount, 0)
+                )), 0) as total_balance,
+                COALESCE(SUM(COALESCE(invoices.discount_amount, 0)), 0) as total_discount
+            ')
+            ->groupBy('courses.id')
+            ->orderByDesc('total_payable');
+
+        $courseWise = $courseQuery->get()->map(function ($r) {
+            return [
+                'course_id' => (int) $r->course_id,
+                'course_title' => (string) $r->course_title,
+                'total_payable' => (float) $r->total_payable,
+                'total_paid' => (float) $r->total_paid,
+                'total_balance' => (float) $r->total_balance,
+                'total_discount' => (float) $r->total_discount,
+            ];
+        })->values()->all();
+
+        return [
+            'team_id' => $teamId,
+            'team_name' => (string) $totalsQuery->team_name,
+            'totals' => [
+                'total_payable' => (float) ($totalsQuery->total_payable ?? 0),
+                'total_paid' => (float) ($totalsQuery->total_paid ?? 0),
+                'total_balance' => (float) ($totalsQuery->total_balance ?? 0),
+                'total_discount' => (float) ($totalsQuery->total_discount ?? 0),
+            ],
+            'course_wise' => $courseWise,
+        ];
+    }
+
     private function baseInvoicesQuery()
     {
         return DB::table('invoices')

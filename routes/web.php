@@ -247,6 +247,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/revenue', [RevenueController::class, 'index'])->name('revenue.index');
+    Route::get('/revenue/team/{teamId}', [RevenueController::class, 'teamDetails'])->name('revenue.team.details');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');

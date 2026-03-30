@@ -74,11 +74,12 @@
                 <h5 class="mb-0">By team</h5>
                 <small class="text-muted">Organization-wide totals by team (leads without a team are not listed)</small>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
+            <div class="card-body p-3">
+                <div class="table-responsive px-1">
                     <table class="table table-hover table-borderless mb-0">
                         <thead>
                             <tr>
+                                <th>Sl No</th>
                                 <th>Team</th>
                                 <th class="text-end">Total payable</th>
                                 <th class="text-end">Total paid</th>
@@ -87,9 +88,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($teamBreakdown ?? [] as $row)
+                            @forelse($teamBreakdown ?? [] as $index => $row)
                             <tr>
-                                <td class="fw-medium">{{ $row['team_name'] }}</td>
+                                <td>{{ $index + 1 }}</td>
+                                <td class="fw-medium">
+                                    <button type="button"
+                                        class="btn btn-link p-0 text-decoration-none"
+                                        style="color: inherit;"
+                                        onclick="show_large_modal('{{ route('revenue.team.details', $row['team_id']) }}', 'Team Revenue Details')">
+                                        {{ $row['team_name'] }}
+                                    </button>
+                                </td>
                                 <td class="text-end">₹{{ number_format(round($row['total_payable'])) }}</td>
                                 <td class="text-end">₹{{ number_format(round($row['total_paid'])) }}</td>
                                 <td class="text-end">₹{{ number_format(round($row['total_balance'])) }}</td>
@@ -97,7 +106,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">No invoice data to show by team.</td>
+                                <td colspan="6" class="text-center text-muted py-4">No invoice data to show by team.</td>
                             </tr>
                             @endforelse
                         </tbody>

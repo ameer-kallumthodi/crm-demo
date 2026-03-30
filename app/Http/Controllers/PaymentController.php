@@ -1153,27 +1153,55 @@ class PaymentController extends Controller
      */
     private function checkInvoiceAccess($invoice)
     {
-        $currentUserId = AuthHelper::getCurrentUserId();
-        $currentUserRole = AuthHelper::getCurrentUserRole();
-        
-        // Check if user is team lead using the helper method
-        if (\App\Helpers\RoleHelper::is_team_lead()) {
-            // Team Lead can access all invoices
-            return;
+        $currentUser = AuthHelper::getCurrentUser();
+        if (!$currentUser) {
+            abort(403, 'Access denied.');
         }
-        
+
+        $currentUserRole = AuthHelper::getCurrentUserRole();
         switch ($currentUserRole) {
             case 1: // Super Admin
             case 2: // Admin
-            case 11: // General Manager
-            case 3: // Telecaller
             case 4: // Admission Counsellor
             case 5: // Academic Assistant
             case 6: // Finance
             case 7: // Post-sales
-                // Can access all invoices
-                break;
-                
+            case 11: // General Manager
+                // Keep existing broad access for non-telecaller/team-lead roles.
+                return;
+            case 3: // Telecaller (including team lead flag)
+                $lead = optional(optional($invoice->student)->lead);
+                if (!$lead) {
+                    abort(403, 'Access denied.');
+                }
+
+                // Team lead: own + team members. Telecaller: own only.
+                if (RoleHelper::is_team_lead()) {
+                    $teamMemberIds = [];
+                    if ($currentUser->team_id) {
+                        $teamMemberIds = AuthHelper::getTeamMemberIds($currentUser->team_id);
+                    }
+                    $teamMemberIds[] = $currentUser->id;
+                    $teamMemberIds = array_unique(array_filter($teamMemberIds));
+
+                    if (!in_array((int) $lead->telecaller_id, $teamMemberIds, true)) {
+                        abort(403, 'Access denied.');
+                    }
+                } else {
+                    if ((int) $lead->telecaller_id !== (int) $currentUser->id) {
+                        abort(403, 'Access denied.');
+                    }
+                }
+
+                // If current user is B2B, allow only B2B channel leads.
+                if ((int) ($currentUser->is_b2b ?? 0) === 1) {
+                    $leadTeamIsB2B = (int) (optional($lead->team)->is_b2b ?? 0) === 1;
+                    $leadIsB2B = (int) ($lead->is_b2b ?? 0) === 1;
+                    if (!($leadIsB2B || $leadTeamIsB2B)) {
+                        abort(403, 'Access denied.');
+                    }
+                }
+                return;
             default:
                 abort(403, 'Access denied.');
         }
@@ -1184,6 +1212,8 @@ class PaymentController extends Controller
      */
     private function applyFilters($query, array $filters, string $status)
     {
+        $this->applyRoleBasedScope($query);
+
         if (!empty($filters['student_id'])) {
             $studentId = (int) $filters['student_id'];
             $query->whereHas('invoice', function ($invoiceQuery) use ($studentId) {
@@ -1239,6 +1269,52 @@ class PaymentController extends Controller
         }
 
         return $query;
+    }
+
+    /**
+     * Restrict telecaller/team-lead payments visibility to their own scope.
+     * For B2B users, additionally restrict to B2B leads/teams.
+     */
+    private function applyRoleBasedScope($query): void
+    {
+        $currentUser = AuthHelper::getCurrentUser();
+        if (!$currentUser) {
+            return;
+        }
+
+        // Keep existing visibility for roles other than telecaller/team lead.
+        if (!RoleHelper::is_telecaller()) {
+            return;
+        }
+
+        if (RoleHelper::is_team_lead()) {
+            $teamMemberIds = [];
+            if ($currentUser->team_id) {
+                $teamMemberIds = AuthHelper::getTeamMemberIds($currentUser->team_id);
+            }
+            $teamMemberIds[] = $currentUser->id;
+            $teamMemberIds = array_unique(array_filter($teamMemberIds));
+
+            $query->whereHas('invoice.student.lead', function ($leadQuery) use ($teamMemberIds) {
+                $leadQuery->whereIn('telecaller_id', $teamMemberIds);
+            });
+        } else {
+            $query->whereHas('invoice.student.lead', function ($leadQuery) use ($currentUser) {
+                $leadQuery->where('telecaller_id', $currentUser->id);
+            });
+        }
+
+        if ((int) ($currentUser->is_b2b ?? 0) === 1) {
+            $query->whereHas('invoice.student.lead', function ($leadQuery) {
+                $leadQuery->where(function ($q) {
+                    $q->where('is_b2b', 1)
+                        ->orWhereHas('team', function ($teamQuery) {
+                            $teamQuery->where('is_b2b', 1)
+                                ->whereNull('deleted_at');
+                        });
+                });
+            });
+        }
     }
 
     private function formatCustomerContact(?string $code, ?string $phone): ?string
