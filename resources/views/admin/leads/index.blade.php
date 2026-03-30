@@ -317,6 +317,7 @@ $canViewFirstCreated = $isAdminOrSuperAdmin || $isGeneralManager;
                                     <th>First Created At</th>
                                     @endif
                                     <th>Type</th>
+                                    <th>Team</th>
                                     <th>Name</th>
                                     <th>Profile</th>
                                     <th>Phone</th>
@@ -378,6 +379,7 @@ if ($canViewFirstCreated) {
 }
 
 $columns[] = ['data' => 'type', 'name' => 'type'];
+$columns[] = ['data' => 'team', 'name' => 'team'];
 
 $columns = array_merge($columns, [
     ['data' => 'name', 'name' => 'name'],

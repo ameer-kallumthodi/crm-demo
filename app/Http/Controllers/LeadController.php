@@ -224,7 +224,11 @@ class LeadController extends Controller
             'leadStatus:id,title', 
             'leadSource:id,title', 
             'course:id,title', 
-            'telecaller:id,name', 
+            // Telecaller is used as a reliable fallback for team name.
+            // Need telecaller.team_id in the select so Eloquent can load telecaller->team.
+            'telecaller:id,name,team_id',
+            'telecaller.team:id,name',
+            'team:id,name',
             // Load studentDetails with document fields for verification status
             'studentDetails' => function($query) {
                 $query->select([
@@ -569,6 +573,7 @@ class LeadController extends Controller
                 $columns[$columnIndex++] = 'first_created_at'; // First Created At
             }
             $columns[$columnIndex++] = 'is_b2b'; // Type
+            $columns[$columnIndex++] = 'team_id'; // Team
             $columns[$columnIndex++] = 'title'; // Name
             $columns[$columnIndex++] = 'id'; // Profile - no sorting
             $columns[$columnIndex++] = 'phone'; // Phone
@@ -636,6 +641,7 @@ class LeadController extends Controller
                 $columns[$columnIndex++] = 'first_created_at'; // First Created At
             }
             $columns[$columnIndex++] = 'is_b2b'; // Type
+            $columns[$columnIndex++] = 'team_id'; // Team
             $columns[$columnIndex++] = 'title'; // Name
             $columns[$columnIndex++] = 'id'; // Profile - no sorting
             $columns[$columnIndex++] = 'phone'; // Phone
@@ -674,6 +680,20 @@ class LeadController extends Controller
 
             // Format data for DataTables
             $data = [];
+
+            // Preload team names for fast + reliable type rendering.
+            // We prefer `leads.team_id` but fall back to the telecaller's team_id.
+            $teamIds = $leads->pluck('team_id')->filter()->unique()->values();
+            $telecallerTeamIds = $leads
+                ->map(fn ($lead) => $lead->telecaller?->team_id)
+                ->filter()
+                ->unique()
+                ->values();
+            $allTeamIds = $teamIds->merge($telecallerTeamIds)->unique()->values();
+            $teamNameMap = $allTeamIds->isNotEmpty()
+                ? Team::whereIn('id', $allTeamIds)->pluck('name', 'id')
+                : collect();
+
             foreach ($leads as $index => $lead) {
                 // Calculate profile completeness
                 $completedFields = 0;
@@ -740,7 +760,12 @@ class LeadController extends Controller
                         : '-';
                 }
 
-                $row['type'] = (int) ($lead->is_b2b ?? 0) === 1 ? 'B2B' : 'In House';
+                $isB2B = (int) ($lead->is_b2b ?? 0) === 1;
+                $leadType = $isB2B ? 'B2B' : 'In House';
+                $teamId = $lead->team_id ?? $lead->telecaller?->team_id;
+                $leadTeamName = $this->cleanUtf8($teamId ? ($teamNameMap->get($teamId) ?? null) : null);
+                $row['type'] = $leadType;
+                $row['team'] = $leadTeamName ?: '-';
                 $data[] = $row;
             }
 
