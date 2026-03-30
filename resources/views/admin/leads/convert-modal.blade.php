@@ -56,6 +56,28 @@
             </div>
         </div>
 
+        <div class="col-lg-6">
+            <div class="p-1">
+                <label for="modal_batch_id" class="form-label">
+                    Batch @if((int) ($lead->course_id ?? 0) !== 23)<span class="text-danger">*</span>@endif
+                </label>
+                <select class="form-control" name="batch_id" id="modal_batch_id" {{ (int) ($lead->course_id ?? 0) !== 23 ? 'required' : '' }}>
+                    <option value="">Select Batch</option>
+                    @foreach($batches as $item)
+                    <option
+                        value="{{ $item->id }}"
+                        data-amount="{{ (float) ($item->amount ?? 0) }}"
+                        data-sslc-amount="{{ (float) ($item->sslc_amount ?? 0) }}"
+                        data-plustwo-amount="{{ (float) ($item->plustwo_amount ?? 0) }}"
+                        data-b2b-amount="{{ (float) ($item->b2b_amount ?? 0) }}"
+                        {{ (int) ($batch->id ?? 0) === (int) $item->id ? 'selected' : '' }}>
+                        {{ $item->title }}{{ (int) ($item->is_active ?? 0) === 0 ? ' (Inactive)' : '' }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
         @if($course && $course->title)
         <div class="col-lg-12">
             <div class="p-1">
@@ -113,16 +135,14 @@
                     </small>
                     @endif
 
-                    @if($batch && $batchAmount > 0)
-                    <br><small class="text-info">
-                        <i class="fas fa-layer-group"></i> Batch: <strong>{{ $batch->title }}</strong> - ₹{{ number_format($batchAmount, 2) }}
+                    <br><small class="text-info" id="batch_amount_preview">
+                        <i class="fas fa-layer-group"></i> Batch: <strong>{{ $batch->title ?? '-' }}</strong> - ₹{{ number_format($batchAmount, 2) }}
                         @if($batchAmountLabel)
                         <span class="badge bg-primary ms-1">{{ $batchAmountLabel }}</span>
                         @endif
                     </small>
-                    @endif
 
-                    <br><strong class="text-primary">Total: ₹{{ number_format($totalAmount, 2) }}</strong>
+                    <br><strong class="text-primary" id="course_total_preview">Total: ₹{{ number_format($totalAmount, 2) }}</strong>
                 </div>
                 @endif
             </div>
@@ -341,6 +361,14 @@
         const totalAmountValue = @json($totalAmount);
         const courseId = @json($lead->course_id);
         const isCourse23 = courseId == 23;
+        const isEdumasterCourse = Number(courseId) === 23;
+        const isB2BLead = @json((int) ($lead->is_b2b ?? 0) === 1);
+        const studentClass = @json($studentClass ? strtolower($studentClass) : null);
+        const baseCourseAmount = @json((float) ($courseAmount ?? 0));
+        const baseUniversityAmount = @json((float) ($universityAmount ?? 0));
+        const $batchSelect = $('#modal_batch_id');
+        const $batchAmountPreview = $('#batch_amount_preview');
+        const $courseTotalPreview = $('#course_total_preview');
         const $course23TotalInput = $('#course23_custom_total_amount');
         const $course23FeePg = $('#course23_fee_pg_amount');
         const $course23FeeUg = $('#course23_fee_ug_amount');
@@ -370,7 +398,34 @@
             if (isCourse23 && $course23TotalInput.length) {
                 return toNumber($course23TotalInput.val());
             }
-            return toNumber(totalAmountValue);
+            const selectedOption = $batchSelect.find('option:selected');
+            let batchAmount = 0;
+
+            if (selectedOption.length && selectedOption.val()) {
+                const amount = toNumber(selectedOption.data('amount'));
+                const sslcAmount = toNumber(selectedOption.data('sslc-amount'));
+                const plustwoAmount = toNumber(selectedOption.data('plustwo-amount'));
+                const b2bAmount = toNumber(selectedOption.data('b2b-amount'));
+
+                if (isB2BLead) {
+                    batchAmount = b2bAmount;
+                } else if (courseId == 16) {
+                    if (studentClass === 'sslc' && sslcAmount > 0) {
+                        batchAmount = sslcAmount;
+                    } else if (plustwoAmount > 0) {
+                        batchAmount = plustwoAmount;
+                    } else {
+                        batchAmount = amount;
+                    }
+                } else {
+                    batchAmount = amount;
+                }
+            }
+
+            if (isB2BLead) {
+                return batchAmount;
+            }
+            return baseCourseAmount + batchAmount + baseUniversityAmount;
         }
 
         // Show/hide payment fields based on checkbox
@@ -436,6 +491,9 @@
             @if($course && $course->title)
             let amount = getSelectedTotalAmount();
             $totalAmountDisplay.val(formatINR(amount));
+            if ($courseTotalPreview.length) {
+                $courseTotalPreview.text('Total: ' + formatINR(amount));
+            }
             if (!isCourse23) {
                 $paymentAmountInput.attr('max', amount);
                 $paymentAmountInput.data('total-amount', amount);
@@ -449,6 +507,35 @@
 
         // Initialize on page load
         updateTotalAmount();
+        $batchSelect.on('change', function() {
+            const selectedOption = $(this).find('option:selected');
+            if ($batchAmountPreview.length && selectedOption.length && selectedOption.val()) {
+                const title = selectedOption.text();
+                const amount = toNumber(selectedOption.data('amount'));
+                const sslcAmount = toNumber(selectedOption.data('sslc-amount'));
+                const plustwoAmount = toNumber(selectedOption.data('plustwo-amount'));
+                const b2bAmount = toNumber(selectedOption.data('b2b-amount'));
+
+                let shownAmount = amount;
+                let label = '';
+                if (isB2BLead) {
+                    shownAmount = b2bAmount;
+                    label = 'B2B Amount';
+                } else if (courseId == 16) {
+                    if (studentClass === 'sslc' && sslcAmount > 0) {
+                        shownAmount = sslcAmount;
+                        label = 'SSLC Amount';
+                    } else if (plustwoAmount > 0) {
+                        shownAmount = plustwoAmount;
+                        label = 'Plus Two Amount';
+                    }
+                }
+
+                const labelHtml = label ? ` <span class="badge bg-primary ms-1">${label}</span>` : '';
+                $batchAmountPreview.html(`<i class="fas fa-layer-group"></i> Batch: <strong>${title}</strong> - ${formatINR(shownAmount)}${labelHtml}`);
+            }
+            updateTotalAmount();
+        });
 
         // AJAX form submission
         $convertBtn.on('click', function() {
@@ -628,6 +715,9 @@
 
             // Check required fields
             const requiredFields = ['name', 'code', 'phone'];
+            if (!isEdumasterCourse) {
+                requiredFields.push('batch_id');
+            }
 
             requiredFields.forEach(function(field) {
                 // Map field names to modal IDs

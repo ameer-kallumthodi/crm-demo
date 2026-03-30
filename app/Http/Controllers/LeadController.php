@@ -4264,6 +4264,7 @@ class LeadController extends Controller
         $course = null;
         $courseAmount = 0;
         $batch = $lead->batch ?: ($lead->studentDetails?->batch);
+        $batches = collect();
         $batchAmount = 0.0;
         $batchAmountLabel = null;
         $studentClass = $lead->studentDetails?->class;
@@ -4276,6 +4277,11 @@ class LeadController extends Controller
         if ($lead->course_id) {
             $course = \App\Models\Course::find($lead->course_id);
             $courseAmount = $course ? (float) $course->amount : 0.0;
+            $batches = \App\Models\Batch::where('course_id', $lead->course_id)
+                ->select('id', 'title', 'amount', 'sslc_amount', 'plustwo_amount', 'b2b_amount', 'is_active')
+                ->orderBy('is_active', 'desc')
+                ->orderBy('title')
+                ->get();
             
             // Check if it's UG/PG course (course_id = 9) and has student details with course_type and university
             if ($lead->course_id == 9 && $lead->studentDetails) {
@@ -4334,6 +4340,7 @@ class LeadController extends Controller
             'lead',
             'boards',
             'country_codes',
+            'batches',
             'course',
             'courseAmount',
             'batchAmount',
@@ -4360,6 +4367,7 @@ class LeadController extends Controller
             'email' => 'nullable|email|max:255',
             'dob' => 'nullable|date|before_or_equal:today',
             'board_id' => 'nullable|exists:boards,id',
+            'batch_id' => 'nullable|exists:batches,id',
             'remarks' => 'nullable|string|max:1000',
             'payment_collected' => 'boolean',
             'payment_amount' => 'required_if:payment_collected,1|required_if:payment_collected,true|required_if:payment_collected,"1"|nullable|numeric|min:0.01',
@@ -4393,10 +4401,24 @@ class LeadController extends Controller
             $rules['payment_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
         }
 
+        // Edumaster course does not require batch during conversion.
+        if ($lead->course_id && (int) $lead->course_id !== 23) {
+            $rules['batch_id'] = 'required|exists:batches,id';
+        }
+
         $validator = Validator::make($request->all(), $rules);
 
         // Additional conditional validations for course_id = 23 split payments
         $validator->after(function ($validator) use ($request, $lead) {
+            if ($request->filled('batch_id')) {
+                $batchBelongsToCourse = \App\Models\Batch::where('id', $request->batch_id)
+                    ->where('course_id', $lead->course_id)
+                    ->exists();
+                if (!$batchBelongsToCourse) {
+                    $validator->errors()->add('batch_id', 'Selected batch does not belong to this lead course.');
+                }
+            }
+
             if (!$request->boolean('payment_collected')) {
                 return;
             }
@@ -4470,6 +4492,10 @@ class LeadController extends Controller
             // Get DOB and subject_id for converted lead (from request or existing lead detail)
             $dob = $request->dob ?? ($leadDetail ? $leadDetail->date_of_birth : null);
             $subjectId = $leadDetail ? $leadDetail->subject_id : null;
+            $selectedBatchId = $request->filled('batch_id') ? (int) $request->batch_id : null;
+            if (!is_null($selectedBatchId)) {
+                $leadDetail->update(['batch_id' => $selectedBatchId]);
+            }
             
             // Create converted lead record
             $convertedLead = ConvertedLead::create([
@@ -4480,7 +4506,7 @@ class LeadController extends Controller
                 'email' => $request->email,
                 'dob' => $dob,
                 'course_id' => $lead->course_id,
-                'batch_id' => $lead->batch_id,
+                'batch_id' => $selectedBatchId,
                 'board_id' => $request->board_id,
                 'subject_id' => $subjectId,
                 'is_b2b' => $lead->is_b2b ?? 0,
@@ -4491,10 +4517,14 @@ class LeadController extends Controller
             ]);
 
             // Update lead as converted
-            $lead->update([
+            $leadUpdateData = [
                 'is_converted' => true,
                 'updated_by' => AuthHelper::getCurrentUserId(),
-            ]);
+            ];
+            if (!is_null($selectedBatchId)) {
+                $leadUpdateData['batch_id'] = $selectedBatchId;
+            }
+            $lead->update($leadUpdateData);
 
             // Auto-generate invoice if lead has course_id
             $invoice = null;
