@@ -773,7 +773,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/placement-list', [App\Http\Controllers\ConvertedLeadController::class, 'placementList'])->name('placement-list.index');
         Route::get('/placement-list/data', [App\Http\Controllers\ConvertedLeadController::class, 'placementListData'])->name('placement-list.data');
         Route::get('/placement-list/{id}', [App\Http\Controllers\ConvertedLeadController::class, 'placementDetails'])->name('placement-list.show');
+        Route::get('/placement-list/{id}/pdf', [App\Http\Controllers\ConvertedLeadController::class, 'placementDetailsPdf'])->name('placement-list.pdf');
         Route::patch('/placement-list/{id}/specialization', [App\Http\Controllers\ConvertedLeadController::class, 'updatePlacementSpecialization'])->name('placement-list.update-specialization');
+        Route::patch('/placement-list/{id}/remarks', [App\Http\Controllers\ConvertedLeadController::class, 'updatePlacementRemarks'])->name('placement-list.update-remarks');
         Route::post('/placement-list/{id}/mock-test-details', [App\Http\Controllers\ConvertedLeadController::class, 'storeMockTestDetails'])->name('placement-list.mock-test-details.store');
         Route::post('/placement-list/{id}/interviews', [App\Http\Controllers\ConvertedLeadController::class, 'storeScheduleInterview'])->name('placement-list.interviews.store');
         Route::patch('/placement-list/{id}/interviews/{interviewId}/status', [App\Http\Controllers\ConvertedLeadController::class, 'updateInterviewStatus'])->name('placement-list.interviews.status');

@@ -42,6 +42,9 @@
                                 <th>Email</th>
                                 <th>Course</th>
                                 <th>Batch</th>
+                                <th>Admission Batch</th>
+                                <th>Starting Date</th>
+                                <th>Ending Date</th>
                                 <th>Specialization</th>
                                 <th>Resume</th>
                                 <th>Stage</th>
@@ -101,6 +104,9 @@ $(document).ready(function() {
             { data: 'email', name: 'email' },
             { data: 'course', name: 'course', orderable: false },
             { data: 'batch', name: 'batch', orderable: false },
+            { data: 'admission_batch', name: 'admission_batch', orderable: false },
+            { data: 'class_start_date', name: 'class_start_date', orderable: false },
+            { data: 'class_end_date', name: 'class_end_date', orderable: false },
             { data: 'specialization', name: 'specialization', orderable: false, searchable: false },
             { data: 'resume', name: 'resume', orderable: false, searchable: false },
             { data: 'stage', name: 'stage', orderable: false, searchable: false },
@@ -108,7 +114,7 @@ $(document).ready(function() {
         ],
         columnDefs: [
             {
-                targets: 6,
+                targets: 9,
                 orderable: false,
                 searchable: false,
                 render: function (data, type, row) {
@@ -128,7 +134,7 @@ $(document).ready(function() {
                 }
             },
             {
-                targets: 7,
+                targets: 10,
                 orderable: false,
                 searchable: false,
                 render: function (data) {
@@ -136,7 +142,7 @@ $(document).ready(function() {
                 }
             },
             {
-                targets: 8,
+                targets: 11,
                 orderable: false,
                 searchable: false,
                 render: function (data) {
@@ -147,7 +153,7 @@ $(document).ready(function() {
                 }
             },
             {
-                targets: 9,
+                targets: 12,
                 orderable: false,
                 searchable: false,
                 render: function (data) {

@@ -139,6 +139,7 @@ class ConvertedStudentMentorDetail extends Model
         'final_internship_certification_exam_marks',
         'final_internship_certification_exam_feedback',
         'remarks',
+        'placement_remarks',
         // UG/PG specific fields
         'online_registration_date',
         'admission_form_issued_date',

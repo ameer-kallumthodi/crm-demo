@@ -18,7 +18,12 @@
                     <li class="breadcrumb-item"><a href="{{ route('admin.placement-list.index') }}">Placement List</a></li>
                     <li class="breadcrumb-item">Details</li>
                 </ul>
-                <div class="d-flex justify-content-end mt-2">
+                <div class="d-flex justify-content-end mt-2 gap-2">
+                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
+                        <a href="{{ route('admin.placement-list.pdf', $convertedLead->id) }}" target="_blank" class="btn btn-primary btn-sm">
+                            <i class="ti ti-download"></i> Download PDF
+                        </a>
+                    @endif
                     <a href="{{ route('admin.placement-list.index') }}" class="btn btn-secondary btn-sm">
                         <i class="ti ti-arrow-left"></i> Back to Placement List
                     </a>
@@ -61,6 +66,22 @@
                     <div class="col-12">
                         <label class="form-label text-muted">Specialization</label>
                         <p class="fw-bold mb-0">{{ $convertedLead->mentorDetails->specialization ?? '—' }}</p>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-muted">Remarks</label>
+                        <div class="placement-remarks-cell">
+                            <span class="placement-remarks-display fw-bold">{{ $convertedLead->mentorDetails?->placement_remarks ?: '—' }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary placement-remarks-edit-btn ms-2" data-id="{{ $convertedLead->id }}">
+                                <i class="ti ti-edit"></i> Edit
+                            </button>
+                            <div class="placement-remarks-edit-wrap d-none mt-2">
+                                <textarea class="form-control form-control-sm placement-remarks-input" rows="3" maxlength="2000" placeholder="Remarks">{{ $convertedLead->mentorDetails?->placement_remarks }}</textarea>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-primary placement-remarks-save-btn"><i class="ti ti-check"></i> Save</button>
+                                    <button type="button" class="btn btn-sm btn-secondary placement-remarks-cancel-btn"><i class="ti ti-x"></i> Cancel</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-12">
                         <label class="form-label text-muted">Resume</label>
@@ -303,6 +324,9 @@
 @endsection
 
 @push('scripts')
+<div id="placementRemarksConfig"
+     data-remarks-update-url="{{ route('admin.placement-list.update-remarks', ['id' => $convertedLead->id]) }}"
+     style="display: none;"></div>
 @if($errors->any())
 <script>
 $(document).ready(function() {
@@ -321,6 +345,61 @@ $(document).ready(function() {
 @endif
 <script>
 $(document).ready(function() {
+    var remarksConfigEl = document.getElementById('placementRemarksConfig');
+    var remarksUpdateUrl = remarksConfigEl ? remarksConfigEl.getAttribute('data-remarks-update-url') : '';
+
+    var escapeHtml = function(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    };
+
+    $(document).on('click', '.placement-remarks-edit-btn', function() {
+        var $cell = $(this).closest('.placement-remarks-cell');
+        $cell.find('.placement-remarks-display').addClass('d-none');
+        $cell.find('.placement-remarks-edit-btn').addClass('d-none');
+        $cell.find('.placement-remarks-edit-wrap').removeClass('d-none');
+        $cell.find('.placement-remarks-input').focus();
+    });
+
+    $(document).on('click', '.placement-remarks-cancel-btn', function() {
+        var $cell = $(this).closest('.placement-remarks-cell');
+        var displayVal = $cell.find('.placement-remarks-display').text().trim();
+        $cell.find('.placement-remarks-input').val(displayVal === '—' ? '' : displayVal);
+        $cell.find('.placement-remarks-edit-wrap').addClass('d-none');
+        $cell.find('.placement-remarks-display').removeClass('d-none');
+        $cell.find('.placement-remarks-edit-btn').removeClass('d-none');
+    });
+
+    $(document).on('click', '.placement-remarks-save-btn', function() {
+        if (!remarksUpdateUrl) return;
+
+        var $cell = $(this).closest('.placement-remarks-cell');
+        var $saveBtn = $(this);
+        var value = $cell.find('.placement-remarks-input').val().trim();
+
+        $saveBtn.prop('disabled', true);
+        $.ajax({
+            url: remarksUpdateUrl,
+            type: 'PATCH',
+            data: { remarks: value, _token: $('meta[name="csrf-token"]').attr('content') },
+            dataType: 'json',
+            success: function(res) {
+                var newVal = (res.remarks != null && res.remarks !== undefined) ? String(res.remarks) : '';
+                $cell.find('.placement-remarks-display').html(newVal ? escapeHtml(newVal) : '—');
+                $cell.find('.placement-remarks-input').val(newVal);
+                $cell.find('.placement-remarks-edit-wrap').addClass('d-none');
+                $cell.find('.placement-remarks-display').removeClass('d-none');
+                $cell.find('.placement-remarks-edit-btn').removeClass('d-none');
+            },
+            complete: function() {
+                $saveBtn.prop('disabled', false);
+            }
+        });
+    });
+
     var $card = $('#scheduledInterviewsCard');
     var statusUrlTemplate = $card.data('status-url');
     if (!statusUrlTemplate) return;

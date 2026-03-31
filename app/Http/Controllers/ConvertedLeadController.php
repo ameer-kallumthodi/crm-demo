@@ -2977,6 +2977,47 @@ class ConvertedLeadController extends Controller
     }
 
     /**
+     * Generate PDF for placement details page.
+     */
+    public function placementDetailsPdf($id)
+    {
+        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor()) {
+            abort(403, 'Access denied. Only admins and admission counsellors can download placement PDF.');
+        }
+
+        $convertedLead = ConvertedLead::with([
+            'mentorDetails',
+            'course',
+            'batch',
+            'admissionBatch',
+            'placementMockTestDetails',
+            'placementScheduledInterviews'
+        ])->whereHas('mentorDetails', function ($q) {
+            $q->where('is_placement_passed', 1);
+        })->findOrFail($id);
+
+        $html = view('admin.placement-list.pdf', compact('convertedLead'))->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_left' => 10,
+            'margin_right' => 10,
+        ]);
+
+        $mpdf->SetTitle('Placement Details - #' . $convertedLead->id);
+        $mpdf->WriteHTML($html);
+
+        $safeName = preg_replace('/[^A-Za-z0-9_\-]/', '_', (string) ($convertedLead->name ?? 'student'));
+        $filename = 'placement-details-' . $safeName . '-' . $convertedLead->id . '.pdf';
+
+        return response($mpdf->Output($filename, 'I'))
+            ->header('Content-Type', 'application/pdf');
+    }
+
+    /**
      * Store a new mock test detail entry for a placement (inserts new row each time).
      */
     public function storeMockTestDetails(Request $request, $id)
@@ -3080,13 +3121,39 @@ class ConvertedLeadController extends Controller
     }
 
     /**
+     * Update placement remarks for a placement list entry (mentor details).
+     */
+    public function updatePlacementRemarks(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'remarks' => 'nullable|string|max:2000',
+        ]);
+
+        $convertedLead = ConvertedLead::with('mentorDetails')->findOrFail($id);
+        $mentorDetails = $convertedLead->mentorDetails;
+        if (!$mentorDetails) {
+            $mentorDetails = new ConvertedStudentMentorDetail();
+            $mentorDetails->converted_student_id = $id;
+            $mentorDetails->save();
+        }
+
+        $mentorDetails->placement_remarks = $validated['remarks'] ?? null;
+        $mentorDetails->save();
+
+        return response()->json([
+            'success' => true,
+            'remarks' => $mentorDetails->placement_remarks ?? '',
+        ]);
+    }
+
+    /**
      * AJAX endpoint for DataTables: placement list data (is_placement_passed = 1).
      * Columns: slno, name, phone, email, course, batch, specialization, resume, actions.
      * Resume link is only shown if it is verified.
      */
     public function placementListData(Request $request)
     {
-        $query = ConvertedLead::with(['mentorDetails', 'course', 'batch', 'placementScheduledInterviews', 'placementMockTestDetails'])
+        $query = ConvertedLead::with(['mentorDetails', 'course', 'batch', 'admissionBatch', 'placementScheduledInterviews', 'placementMockTestDetails'])
             ->whereHas('mentorDetails', function ($q) {
                 $q->where('is_placement_passed', 1);
             });
@@ -3109,10 +3176,11 @@ class ConvertedLeadController extends Controller
         })->count();
         $filteredCount = $query->count();
 
-        // Ordering: 0=index, 1=name, 2=phone, 3=email, 4=course, 5=batch, 6=specialization, 7=resume, 8=stage, 9=actions
+        // Ordering: 0=index, 1=name, 2=phone, 3=email, 4=course, 5=batch, 6=admission batch,
+        // 7=starting date, 8=ending date, 9=specialization, 10=resume, 11=stage, 12=remark, 13=actions
         $orderCol = (int) $request->get('order.0.column', 0);
         $orderDir = $request->get('order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
-        $orderColumns = ['id', 'name', 'phone', 'email', null, null, null, null, null, null];
+        $orderColumns = ['id', 'name', 'phone', 'email', null, null, null, null, null, null, null, null, null, null];
         $orderBy = isset($orderColumns[$orderCol]) ? $orderColumns[$orderCol] : 'id';
         $query->orderBy($orderBy, $orderDir);
 
@@ -3147,9 +3215,13 @@ class ConvertedLeadController extends Controller
                 'email' => $lead->email ?? '—',
                 'course' => $lead->course?->title ?? '—',
                 'batch' => $lead->batch?->title ?? '—',
-                'specialization' => $lead->mentorDetails->specialization ?? '',
+                'admission_batch' => $lead->admissionBatch?->title ?? '—',
+                'class_start_date' => $lead->mentorDetails?->class_start_date ? $lead->mentorDetails->class_start_date->format('d-m-Y') : '—',
+                'class_end_date' => $lead->mentorDetails?->class_end_date ? $lead->mentorDetails->class_end_date->format('d-m-Y') : '—',
+                'specialization' => $lead->mentorDetails?->specialization ?? '',
                 'resume' => $resumeHtml,
                 'stage' => $stage,
+                'remark' => $lead->mentorDetails?->placement_remarks ?? '—',
                 'actions' => $actionsHtml,
             ];
         }
