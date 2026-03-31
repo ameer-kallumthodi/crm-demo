@@ -489,9 +489,6 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                                     <th>Initial Project End Date</th>
                                     <th>Initial Project Marks</th>
                                     <th>Initial Project Feedback</th>
-                                    <th>4th Month Exam Date</th>
-                                    <th>4th Month Marks</th>
-                                    <th>4th Month Feedback</th>
                                     <th>Mock Test Date</th>
                                     <th>Mock Test Marks</th>
                                     <th>Mock Test Feedback</th>
@@ -502,7 +499,6 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                                     <th>Final Project End Date</th>
                                     <th>Final Project Marks</th>
                                     <th>Final Project Feedback</th>
-                                    <th>Data Science Workshop Attendance</th>
                                     <th>Total Class</th>
                                     <th>Total Present</th>
                                     <th>Total Absent</th>
@@ -873,36 +869,6 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="inline-edit" data-field="fourth_month_exam_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->fourth_month_exam_date)->format('d-m-Y') : '' }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_exam_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->fourth_month_exam_date)->format('d-m-Y') : '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_hod() || \App\Helpers\RoleHelper::is_mentor())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="fourth_month_marks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_marks }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_marks ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_hod() || \App\Helpers\RoleHelper::is_mentor())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="fourth_month_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->fourth_month_feedback }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->fourth_month_feedback ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_hod() || \App\Helpers\RoleHelper::is_mentor())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
                                         <div class="inline-edit" data-field="mock_test_date" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->mock_test_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->mock_test_date)->format('d-m-Y') : '' }}">
                                             <span class="display-value">{{ $convertedLead->mentorDetails?->mock_test_date ? \Carbon\Carbon::parse($convertedLead->mentorDetails->mock_test_date)->format('d-m-Y') : '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_hod() || \App\Helpers\RoleHelper::is_mentor())
@@ -995,16 +961,6 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                                     <td>
                                         <div class="inline-edit" data-field="final_project_feedback" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->final_project_feedback }}">
                                             <span class="display-value">{{ $convertedLead->mentorDetails?->final_project_feedback ?? '-' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_hod() || \App\Helpers\RoleHelper::is_mentor())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="data_science_workshop_attendance" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->mentorDetails?->data_science_workshop_attendance }}">
-                                            <span class="display-value">{{ $convertedLead->mentorDetails?->data_science_workshop_attendance ?? '-' }}</span>
                                             @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_hod() || \App\Helpers\RoleHelper::is_mentor())
                                             <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
                                                 <i class="ti ti-edit"></i>
@@ -1566,9 +1522,9 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                 // Handle fields with data-field-type="select" using data-options
                 const options = container.data('options');
                 editForm = createSelectFieldFromOptions(field, currentValue, options);
-            } else if (['call_status', 'class_information', 'orientation_class_status', 'whatsapp_group_status', 'class_status', 'programme_type', 'whatsapp_group_status', 'ai_workshop_attendance', 'data_science_workshop_attendance'].includes(field)) {
+            } else if (['call_status', 'class_information', 'orientation_class_status', 'whatsapp_group_status', 'class_status', 'programme_type', 'whatsapp_group_status', 'ai_workshop_attendance'].includes(field)) {
                 editForm = createSelectField(field, currentValue);
-            } else if (['class_starting_date', 'class_ending_date', 'complete_cancel_date', 'orientation_class_date', 'class_start_date', 'class_end_date', 'first_month_exam_date', 'second_month_exam_date', 'third_month_exam_date', 'initial_project_start_date', 'initial_project_end_date', 'fourth_month_exam_date', 'mock_test_date', 'mock_interview_date', 'final_project_start_date', 'final_project_end_date', 'final_certificate_examination_date', 'final_interview_date', 'certificate_distribution_date', 'experience_certificate_distribution_date', 'cancelled_date'].includes(field)) {
+            } else if (['class_starting_date', 'class_ending_date', 'complete_cancel_date', 'orientation_class_date', 'class_start_date', 'class_end_date', 'first_month_exam_date', 'second_month_exam_date', 'third_month_exam_date', 'initial_project_start_date', 'initial_project_end_date', 'mock_test_date', 'mock_interview_date', 'final_project_start_date', 'final_project_end_date', 'final_certificate_examination_date', 'final_interview_date', 'certificate_distribution_date', 'experience_certificate_distribution_date', 'cancelled_date'].includes(field)) {
                 editForm = createDateField(field, currentValue);
             } else if (field === 'class_time') {
                 editForm = createTimeField(field, currentValue);
@@ -1989,12 +1945,6 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
             } else if (field === 'ai_workshop_attendance') {
                 options = `
                     <option value="">Select AI Workshop Attendance</option>
-                    <option value="Attended" ${currentValue === 'Attended' ? 'selected' : ''}>Attended</option>
-                    <option value="Not Attended" ${currentValue === 'Not Attended' ? 'selected' : ''}>Not Attended</option>
-                `;
-            } else if (field === 'data_science_workshop_attendance') {
-                options = `
-                    <option value="">Select Data Science Workshop Attendance</option>
                     <option value="Attended" ${currentValue === 'Attended' ? 'selected' : ''}>Attended</option>
                     <option value="Not Attended" ${currentValue === 'Not Attended' ? 'selected' : ''}>Not Attended</option>
                 `;
