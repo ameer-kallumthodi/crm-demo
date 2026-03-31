@@ -76,17 +76,20 @@
                         @csrf
                         @php
                             $isCourse23 = (int) ($invoice->course_id ?? 0) === 23;
+                            $hasNeedMobile = $isCourse23 && $invoice->hasNeedMobileAddon();
                             $feeBreakdown = [
                                 'PG' => (float) ($invoice->fee_pg_amount ?? 0),
                                 'UG' => (float) ($invoice->fee_ug_amount ?? 0),
                                 'PLUS_TWO' => (float) ($invoice->fee_plustwo_amount ?? 0),
                                 'SSLC' => (float) ($invoice->fee_sslc_amount ?? 0),
+                                'MOBILE' => $hasNeedMobile ? (float) $invoice->mobileNetAmount() : 0.0,
                             ];
                             $feeHeadLabels = [
                                 'PG' => 'PG',
                                 'UG' => 'UG',
                                 'PLUS_TWO' => 'Plus Two',
                                 'SSLC' => 'SSLC',
+                                'MOBILE' => 'Needed Mobile',
                             ];
                             $approvedPayments = $invoice->payments ?? collect();
                             $paidByHead = [
@@ -94,13 +97,19 @@
                                 'UG' => (float) $approvedPayments->where('fee_head', 'UG')->sum('amount_paid'),
                                 'PLUS_TWO' => (float) $approvedPayments->where('fee_head', 'PLUS_TWO')->sum('amount_paid'),
                                 'SSLC' => (float) $approvedPayments->where('fee_head', 'SSLC')->sum('amount_paid'),
+                                'MOBILE' => (float) $approvedPayments->where('fee_head', 'MOBILE')->sum('amount_paid'),
                             ];
                             $remainingByHead = [
                                 'PG' => max($feeBreakdown['PG'] - $paidByHead['PG'], 0),
                                 'UG' => max($feeBreakdown['UG'] - $paidByHead['UG'], 0),
                                 'PLUS_TWO' => max($feeBreakdown['PLUS_TWO'] - $paidByHead['PLUS_TWO'], 0),
                                 'SSLC' => max($feeBreakdown['SSLC'] - $paidByHead['SSLC'], 0),
+                                'MOBILE' => $hasNeedMobile ? max($feeBreakdown['MOBILE'] - $paidByHead['MOBILE'], 0) : 0.0,
                             ];
+                            $edumasterHeads = ['PG', 'UG', 'PLUS_TWO', 'SSLC'];
+                            if ($hasNeedMobile) {
+                                $edumasterHeads[] = 'MOBILE';
+                            }
                         @endphp
                         <div class="row g-3">
                             @if($isCourse23)
@@ -123,7 +132,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach(['PG','UG','PLUS_TWO','SSLC'] as $head)
+                                                @foreach($edumasterHeads as $head)
                                                     <tr>
                                                         <td>{{ $feeHeadLabels[$head] }}</td>
                                                         <td class="text-end">₹{{ number_format($feeBreakdown[$head], 2) }}</td>
@@ -231,6 +240,32 @@
                                         @enderror
                                     </div>
                                 </div>
+
+                                @if($hasNeedMobile)
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="payment_mobile_amount" class="form-label">Needed Mobile — Paid Amount</label>
+                                        <input type="number" class="form-control @error('payment_mobile_amount') is-invalid @enderror"
+                                               name="payment_mobile_amount" id="payment_mobile_amount" step="0.01" min="0"
+                                               max="{{ $remainingByHead['MOBILE'] }}" value="{{ old('payment_mobile_amount') }}">
+                                        <div class="form-text">Listed add-on ₹{{ number_format(\App\Models\Invoice::NEED_MOBILE_ADDON_GROSS, 2) }} · Net on invoice ₹{{ number_format($feeBreakdown['MOBILE'], 2) }} · Max payable now: ₹{{ number_format($remainingByHead['MOBILE'], 2) }}</div>
+                                        @error('payment_mobile_amount')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="payment_mobile_file" class="form-label">Needed Mobile — Payment Proof</label>
+                                        <input type="file" class="form-control @error('payment_mobile_file') is-invalid @enderror"
+                                               name="payment_mobile_file" id="payment_mobile_file" accept=".pdf,.jpg,.jpeg,.png">
+                                        <div class="form-text">Accepted formats: PDF, JPG, JPEG, PNG (Max: 2MB)</div>
+                                        @error('payment_mobile_file')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                @endif
                             @else
                                 <div class="col-md-6">
                                     <div class="mb-3">

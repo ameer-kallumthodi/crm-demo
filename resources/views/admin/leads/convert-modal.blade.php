@@ -81,6 +81,22 @@
         @if($course && $course->title)
         <div class="col-lg-12">
             <div class="p-1">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="need_mobile" id="need_mobile" value="1">
+                    <label class="form-check-label" for="need_mobile">
+                        Need Mobile (+₹1000.00)
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12" id="asset_id_field_wrapper" style="display: none;">
+            <div class="p-1">
+                <label for="asset_id" class="form-label">Asset ID <span class="text-danger" id="asset_id_required_marker" style="display: none;">*</span></label>
+                <input type="text" class="form-control" name="asset_id" id="asset_id" placeholder="Enter asset ID">
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <div class="p-1">
                 <label class="form-label">Course Information</label>
                 @if($course->id == 23)
                 <div class="bg-light p-3 rounded">
@@ -375,6 +391,11 @@
         const $course23FeePlustwo = $('#course23_fee_plustwo_amount');
         const $course23FeeSslc = $('#course23_fee_sslc_amount');
         const $paymentAmountInput = $('#modal_payment_amount'); // only exists for non-course23
+        const $needMobileCheckbox = $('#need_mobile');
+        const $assetIdFieldWrapper = $('#asset_id_field_wrapper');
+        const $assetIdInput = $('#asset_id');
+        const $assetIdRequiredMarker = $('#asset_id_required_marker');
+        const mobileAddonAmount = 1000;
 
         @if(!$course || !$course->title)
         // Hide payment section if no course is available
@@ -395,37 +416,59 @@
         }
 
         function getSelectedTotalAmount() {
+            let totalAmount = 0;
             if (isCourse23 && $course23TotalInput.length) {
-                return toNumber($course23TotalInput.val());
-            }
-            const selectedOption = $batchSelect.find('option:selected');
-            let batchAmount = 0;
+                totalAmount = toNumber($course23TotalInput.val());
+            } else {
+                const selectedOption = $batchSelect.find('option:selected');
+                let batchAmount = 0;
 
-            if (selectedOption.length && selectedOption.val()) {
-                const amount = toNumber(selectedOption.data('amount'));
-                const sslcAmount = toNumber(selectedOption.data('sslc-amount'));
-                const plustwoAmount = toNumber(selectedOption.data('plustwo-amount'));
-                const b2bAmount = toNumber(selectedOption.data('b2b-amount'));
+                if (selectedOption.length && selectedOption.val()) {
+                    const amount = toNumber(selectedOption.data('amount'));
+                    const sslcAmount = toNumber(selectedOption.data('sslc-amount'));
+                    const plustwoAmount = toNumber(selectedOption.data('plustwo-amount'));
+                    const b2bAmount = toNumber(selectedOption.data('b2b-amount'));
 
-                if (isB2BLead) {
-                    batchAmount = b2bAmount;
-                } else if (courseId == 16) {
-                    if (studentClass === 'sslc' && sslcAmount > 0) {
-                        batchAmount = sslcAmount;
-                    } else if (plustwoAmount > 0) {
-                        batchAmount = plustwoAmount;
+                    if (isB2BLead) {
+                        batchAmount = b2bAmount;
+                    } else if (courseId == 16) {
+                        if (studentClass === 'sslc' && sslcAmount > 0) {
+                            batchAmount = sslcAmount;
+                        } else if (plustwoAmount > 0) {
+                            batchAmount = plustwoAmount;
+                        } else {
+                            batchAmount = amount;
+                        }
                     } else {
                         batchAmount = amount;
                     }
+                }
+
+                if (isB2BLead) {
+                    totalAmount = batchAmount;
                 } else {
-                    batchAmount = amount;
+                    totalAmount = baseCourseAmount + batchAmount + baseUniversityAmount;
                 }
             }
 
-            if (isB2BLead) {
-                return batchAmount;
+            if ($needMobileCheckbox.is(':checked')) {
+                totalAmount += mobileAddonAmount;
             }
-            return baseCourseAmount + batchAmount + baseUniversityAmount;
+
+            return totalAmount;
+        }
+
+        function toggleNeedMobileFields() {
+            if ($needMobileCheckbox.is(':checked')) {
+                $assetIdFieldWrapper.show();
+                $assetIdInput.prop('required', true);
+                $assetIdRequiredMarker.show();
+            } else {
+                $assetIdFieldWrapper.hide();
+                $assetIdInput.prop('required', false).val('');
+                $assetIdRequiredMarker.hide();
+            }
+            updateTotalAmount();
         }
 
         // Show/hide payment fields based on checkbox
@@ -458,6 +501,9 @@
 
         $paymentCheckbox.on('change click', function() {
             setTimeout(togglePaymentFields, 10);
+        });
+        $needMobileCheckbox.on('change', function() {
+            toggleNeedMobileFields();
         });
 
         // For course 23, keep payment total synced with entered total
@@ -507,6 +553,7 @@
 
         // Initialize on page load
         updateTotalAmount();
+        toggleNeedMobileFields();
         $batchSelect.on('change', function() {
             const selectedOption = $(this).find('option:selected');
             if ($batchAmountPreview.length && selectedOption.length && selectedOption.val()) {
@@ -564,10 +611,8 @@
             // Submit form via AJAX using jQuery
             const formData = new FormData($form[0]);
 
-            // For course_id 23, ensure custom_total_amount is included (from Course Information)
-            if (isCourse23) {
-                formData.set('custom_total_amount', toNumber($course23TotalInput.val()));
-            }
+            // Always submit computed total amount (includes mobile add-on when selected)
+            formData.set('custom_total_amount', getSelectedTotalAmount());
 
             console.log('Submitting form to:', '{{ route("leads.convert.submit", $lead->id) }}');
             console.log('Form data:', Object.fromEntries(formData));
@@ -796,6 +841,11 @@
                         isValid = false;
                     }
                 }
+            }
+
+            if ($needMobileCheckbox.is(':checked') && !$assetIdInput.val().trim()) {
+                errors['asset_id'] = ['The asset id field is required when Need Mobile is checked.'];
+                isValid = false;
             }
 
             // Only display errors if there are actual validation errors

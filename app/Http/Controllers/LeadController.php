@@ -4376,6 +4376,8 @@ class LeadController extends Controller
             'payment_date' => 'nullable|date',
             'payment_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'custom_total_amount' => 'nullable|numeric|min:0',
+            'need_mobile' => 'nullable|boolean',
+            'asset_id' => 'nullable|string|max:255',
         ];
 
         if ((int) $lead->course_id === 23) {
@@ -4410,6 +4412,10 @@ class LeadController extends Controller
 
         // Additional conditional validations for course_id = 23 split payments
         $validator->after(function ($validator) use ($request, $lead) {
+            if ($request->boolean('need_mobile') && !$request->filled('asset_id')) {
+                $validator->errors()->add('asset_id', 'The asset id field is required when Need Mobile is checked.');
+            }
+
             if ($request->filled('batch_id')) {
                 $batchBelongsToCourse = \App\Models\Batch::where('id', $request->batch_id)
                     ->where('course_id', $lead->course_id)
@@ -4512,6 +4518,8 @@ class LeadController extends Controller
                 'is_b2b' => $lead->is_b2b ?? 0,
                 'candidate_status_id' => 1,
                 'remarks' => $request->remarks,
+                'need_mobile' => $request->boolean('need_mobile'),
+                'asset_id' => $request->filled('asset_id') ? $request->input('asset_id') : null,
                 'created_by' => AuthHelper::getCurrentUserId(),
                 'updated_by' => AuthHelper::getCurrentUserId(),
             ]);

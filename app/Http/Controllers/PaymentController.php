@@ -139,6 +139,7 @@ class PaymentController extends Controller
             'course',
             'batch',
             'student.lead',
+            'student',
             'payments' => function ($query) {
                 $query->approved()->orderBy('created_at', 'desc');
             },
@@ -155,9 +156,12 @@ class PaymentController extends Controller
      */
     public function store(Request $request, $invoiceId)
     {
-        $invoice = Invoice::with(['payments' => function ($query) {
-            $query->approved();
-        }])->findOrFail($invoiceId);
+        $invoice = Invoice::with([
+            'payments' => function ($query) {
+                $query->approved();
+            },
+            'student',
+        ])->findOrFail($invoiceId);
 
         // Check permissions
         $this->checkInvoiceAccess($invoice);
@@ -179,10 +183,12 @@ class PaymentController extends Controller
             'payment_ug_amount' => 'nullable|numeric|min:0',
             'payment_plustwo_amount' => 'nullable|numeric|min:0',
             'payment_sslc_amount' => 'nullable|numeric|min:0',
+            'payment_mobile_amount' => 'nullable|numeric|min:0',
             'payment_pg_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'payment_ug_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'payment_plustwo_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'payment_sslc_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'payment_mobile_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ];
 
         // Helper flag for conditional rules (so we can use required_unless)
@@ -199,10 +205,22 @@ class PaymentController extends Controller
             $ugPaid = (float) ($request->input('payment_ug_amount') ?: 0);
             $plustwoPaid = (float) ($request->input('payment_plustwo_amount') ?: 0);
             $sslcPaid = (float) ($request->input('payment_sslc_amount') ?: 0);
+            $mobilePaid = (float) ($request->input('payment_mobile_amount') ?: 0);
 
-            $totalPaid = $pgPaid + $ugPaid + $plustwoPaid + $sslcPaid;
+            if (!$invoice->hasNeedMobileAddon() && $mobilePaid > 0) {
+                $validator->errors()->add('payment_mobile_amount', 'Mobile payment is only available when the student has Needed Mobile on file.');
+            }
+
+            if ($invoice->hasNeedMobileAddon()) {
+                $mobileRemaining = max((float) $invoice->mobileNetAmount() - (float) $invoice->payments->where('fee_head', 'MOBILE')->sum('amount_paid'), 0);
+                if ($mobilePaid > $mobileRemaining + 0.00001) {
+                    $validator->errors()->add('payment_mobile_amount', 'Mobile paid amount cannot exceed the remaining mobile balance of ' . number_format($mobileRemaining, 2) . '.');
+                }
+            }
+
+            $totalPaid = $pgPaid + $ugPaid + $plustwoPaid + $sslcPaid + $mobilePaid;
             if ($totalPaid <= 0) {
-                $validator->errors()->add('payment_pg_amount', 'At least one payment amount (PG/UG/Plus Two/SSLC) is required.');
+                $validator->errors()->add('payment_pg_amount', 'At least one payment amount (PG/UG/Plus Two/SSLC' . ($invoice->hasNeedMobileAddon() ? '/Needed Mobile' : '') . ') is required.');
                 return;
             }
 
@@ -223,6 +241,9 @@ class PaymentController extends Controller
             }
             if ($sslcPaid > 0 && !$request->hasFile('payment_sslc_file')) {
                 $validator->errors()->add('payment_sslc_file', 'SSLC payment proof file is required when SSLC paid amount is entered.');
+            }
+            if ($invoice->hasNeedMobileAddon() && $mobilePaid > 0 && !$request->hasFile('payment_mobile_file')) {
+                $validator->errors()->add('payment_mobile_file', 'Needed Mobile payment proof is required when mobile paid amount is entered.');
             }
         });
 
@@ -276,6 +297,12 @@ class PaymentController extends Controller
                     'PLUS_TWO' => ['amount' => (float) ($request->input('payment_plustwo_amount') ?: 0), 'file' => $request->file('payment_plustwo_file')],
                     'SSLC' => ['amount' => (float) ($request->input('payment_sslc_amount') ?: 0), 'file' => $request->file('payment_sslc_file')],
                 ];
+                if ($invoice->hasNeedMobileAddon()) {
+                    $splitPayments['MOBILE'] = [
+                        'amount' => (float) ($request->input('payment_mobile_amount') ?: 0),
+                        'file' => $request->file('payment_mobile_file'),
+                    ];
+                }
 
                 $createdCount = 0;
                 foreach ($splitPayments as $feeHead => $payload) {
@@ -538,7 +565,7 @@ class PaymentController extends Controller
      */
     public function taxInvoice($id)
     {
-        $payment = Payment::with(['invoice.student', 'invoice.course', 'invoice.batch'])
+        $payment = Payment::with(['invoice.student.leadDetail', 'invoice.course', 'invoice.batch'])
             ->findOrFail($id);
         
         // Check permissions
@@ -566,6 +593,7 @@ class PaymentController extends Controller
                 'UG' => 'fee_ug_amount',
                 'PLUS_TWO' => 'fee_plustwo_amount',
                 'SSLC' => 'fee_sslc_amount',
+                'MOBILE' => Invoice::TAX_LINE_FEE_HEAD_MOBILE,
             ];
             $feeHeadColumn = $feeHeadToColumn[$payment->fee_head] ?? null;
         }
@@ -574,8 +602,10 @@ class PaymentController extends Controller
         $payment->tax_invoice_total = $taxInvoiceTotal;
         $payment->tax_invoice_taxable = $taxInvoiceTotal > 0 ? ($taxInvoiceTotal / 1.18) : 0.0;
         $payment->tax_invoice_gst = $payment->tax_invoice_taxable * 0.18;
-        $payment->total_amount_in_words = $this->numberToWords($taxInvoiceTotal);
-        
+        $payment->total_amount_in_words = (int) ($payment->invoice->course_id ?? 0) === 23
+            ? $this->numberToWords((float) $payment->invoice->net_amount)
+            : $this->numberToWords($taxInvoiceTotal);
+
         return view('admin.payments.tax-invoice', compact('payment'));
     }
 
@@ -584,7 +614,7 @@ class PaymentController extends Controller
      */
     public function taxInvoicePdf($id)
     {
-        $payment = Payment::with(['invoice.student', 'invoice.course', 'invoice.batch'])
+        $payment = Payment::with(['invoice.student.leadDetail', 'invoice.course', 'invoice.batch'])
             ->findOrFail($id);
         
         // Check permissions
@@ -620,6 +650,7 @@ class PaymentController extends Controller
                 'UG' => 'fee_ug_amount',
                 'PLUS_TWO' => 'fee_plustwo_amount',
                 'SSLC' => 'fee_sslc_amount',
+                'MOBILE' => Invoice::TAX_LINE_FEE_HEAD_MOBILE,
             ];
             $feeHeadColumn = $feeHeadToColumn[$payment->fee_head] ?? null;
         }
@@ -628,8 +659,10 @@ class PaymentController extends Controller
         $payment->tax_invoice_total = $taxInvoiceTotal;
         $payment->tax_invoice_taxable = $taxInvoiceTotal > 0 ? ($taxInvoiceTotal / 1.18) : 0.0;
         $payment->tax_invoice_gst = $payment->tax_invoice_taxable * 0.18;
-        $payment->total_amount_in_words = $this->numberToWords($taxInvoiceTotal);
-        
+        $payment->total_amount_in_words = (int) ($payment->invoice->course_id ?? 0) === 23
+            ? $this->numberToWords((float) $payment->invoice->net_amount)
+            : $this->numberToWords($taxInvoiceTotal);
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.payments.tax-invoice-pdf-inline', compact('payment'));
         $pdf->setPaper('A4', 'portrait');
         $pdf->setOptions([
@@ -660,7 +693,7 @@ class PaymentController extends Controller
      */
     public function paymentReceipt($id)
     {
-        $payment = Payment::with(['invoice.student', 'invoice.course', 'invoice.batch'])
+        $payment = Payment::with(['invoice.student.leadDetail', 'invoice.course', 'invoice.batch'])
             ->findOrFail($id);
         
         // Check permissions
@@ -683,7 +716,7 @@ class PaymentController extends Controller
      */
     public function paymentReceiptPdf($id)
     {
-        $payment = Payment::with(['invoice.student', 'invoice.course', 'invoice.batch'])
+        $payment = Payment::with(['invoice.student.leadDetail', 'invoice.course', 'invoice.batch'])
             ->findOrFail($id);
         
         // Check permissions

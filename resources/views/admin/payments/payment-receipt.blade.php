@@ -2,7 +2,16 @@
     $isEduThanzeel = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 6);
     $isESchool = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 5);
     $isEduMaster = $payment->invoice->invoice_type === 'course' && ((int) ($payment->invoice->course_id ?? 0) === 23);
-    $feeHeadDisplay = $payment->fee_head === 'PLUS_TWO' ? 'Plus Two' : ($payment->fee_head ?? null);
+    $feeHeadDisplay = match ($payment->fee_head ?? null) {
+        'PLUS_TWO' => 'Plus Two',
+        'MOBILE' => 'Needed Mobile',
+        default => $payment->fee_head ?? null,
+    };
+    $invReceipt = $payment->invoice;
+    $showReceiptMobileSplit = $invReceipt->invoice_type === 'course'
+        && $invReceipt->student
+        && $invReceipt->student->need_mobile
+        && $invReceipt->mobileNetAmount() > 0;
 @endphp
 
 @extends('layouts.mantis')
@@ -70,6 +79,14 @@
                             <h6 class="mb-2" style="color: #000; font-weight: bold;font-size: 12px !important;"><strong>Bill To:</strong></h6>
                             <p class="mb-1" style="font-size: 12px !important;"><strong>{{ $payment->invoice->student->name }}</strong></p>
                             <p class="mb-0" style="font-size: 12px !important;">Contact No.: {{ $payment->invoice->student->phone }}</p>
+                            @if($payment->invoice->invoice_type === 'course' && $payment->invoice->student->need_mobile)
+                                <p class="mb-0 mt-2" style="font-size: 12px !important;">
+                                    <strong>Needed Mobile:</strong> ₹{{ number_format(\App\Models\Invoice::NEED_MOBILE_ADDON_GROSS, 2) }}
+                                    @if($payment->invoice->student->asset_id)
+                                        <br><strong>Asset ID:</strong> {{ $payment->invoice->student->asset_id }}
+                                    @endif
+                                </p>
+                            @endif
                         </div>
                         
                         <div class="col-6 text-end">
@@ -136,11 +153,19 @@
                                 <h6 class="section-header mb-3" style="font-size: 12px !important;"><strong>Payment Summary</strong></h6>
                                 <div class="row" style="font-size: 12px !important;">
                                     <div class="col-6">
+                                        @if($showReceiptMobileSplit)
+                                            <p class="mb-1" style="font-size: 12px !important; border-bottom: 1px solid #ddd; padding-bottom: 5px;"><strong>Amount:</strong></p>
+                                            <p class="mb-1" style="font-size: 12px !important; border-bottom: 1px solid #ddd; padding-bottom: 5px;"><strong>Needed Mobile:</strong></p>
+                                        @endif
                                         <p class="mb-1" style="font-size: 12px !important; border-bottom: 1px solid #ddd; padding-bottom: 5px;"><strong>Total Amount:</strong></p>
                                         <p class="mb-1" style="font-size: 12px !important;"><strong>Received:</strong></p>
                                         <p class="mb-0" style="font-size: 12px !important;border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;"><strong>Current Balance:</strong></p>
                                     </div>
                                     <div class="col-6 text-end">
+                                        @if($showReceiptMobileSplit)
+                                            <p class="mb-1" style="font-size: 12px !important; border-bottom: 1px solid #ddd; padding-bottom: 5px;">₹{{ number_format($invReceipt->courseNetExcludingMobile(), 2) }}</p>
+                                            <p class="mb-1" style="font-size: 12px !important; border-bottom: 1px solid #ddd; padding-bottom: 5px;">₹{{ number_format($invReceipt->mobileNetAmount(), 2) }}</p>
+                                        @endif
                                         <p class="mb-1" style="font-size: 12px !important; border-bottom: 1px solid #ddd; padding-bottom: 5px;">₹{{ number_format($payment->invoice->net_amount, 2) }}</p>
                                         <p class="mb-1" style="font-size: 12px !important;">₹{{ number_format($payment->amount_paid, 2) }}</p>
                                         <p class="mb-0" style="font-size: 12px !important;border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 5px 0;">₹{{ number_format($payment->invoice->pending_amount, 2) }}</p>

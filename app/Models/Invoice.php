@@ -11,6 +11,12 @@ class Invoice extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /** Gross add-on when student opted for mobile at conversion (must match lead convert form). */
+    public const NEED_MOBILE_ADDON_GROSS = 1000.0;
+
+    /** Sentinel for taxInvoiceLineTotal() EduMaster mobile line (not a DB column). */
+    public const TAX_LINE_FEE_HEAD_MOBILE = 'need_mobile_addon';
+
     protected $fillable = [
         'invoice_number',
         'invoice_type',
@@ -121,7 +127,11 @@ class Invoice extends Model
         $total = (float) $this->total_amount;
 
         if ($feeHeadColumn && (int) ($this->course_id ?? 0) === 23) {
-            $head = (float) ($this->{$feeHeadColumn} ?? 0);
+            if ($feeHeadColumn === self::TAX_LINE_FEE_HEAD_MOBILE) {
+                $head = self::NEED_MOBILE_ADDON_GROSS;
+            } else {
+                $head = (float) ($this->{$feeHeadColumn} ?? 0);
+            }
             if ($total <= 0) {
                 return max(0, round($head, 2));
             }
@@ -130,6 +140,63 @@ class Invoice extends Model
         }
 
         return $net;
+    }
+
+    public function hasNeedMobileAddon(): bool
+    {
+        return $this->invoice_type === 'course'
+            && $this->student
+            && (bool) $this->student->need_mobile;
+    }
+
+    public function mobileAddonGrossAmount(): float
+    {
+        return $this->hasNeedMobileAddon() ? self::NEED_MOBILE_ADDON_GROSS : 0.0;
+    }
+
+    /**
+     * Mobile line share of net payable (discount applied pro-rata vs invoice total).
+     */
+    public function mobileNetAmount(): float
+    {
+        if (!$this->hasNeedMobileAddon()) {
+            return 0.0;
+        }
+        $gross = self::NEED_MOBILE_ADDON_GROSS;
+        $total = (float) $this->total_amount;
+        if ($total <= 0) {
+            return 0.0;
+        }
+
+        return round($gross * ($this->net_amount / $total), 2);
+    }
+
+    public function courseNetExcludingMobile(): float
+    {
+        return max(0, round($this->net_amount - $this->mobileNetAmount(), 2));
+    }
+
+    /**
+     * Split a net line amount (e.g. tax-invoice line for this payment) into course vs mobile.
+     *
+     * @return array{course: float, mobile: float}
+     */
+    public function splitLineAmountForMobile(float $lineNetTotal): array
+    {
+        $lineNetTotal = round(max(0, $lineNetTotal), 2);
+        $mobileNet = $this->mobileNetAmount();
+        $net = $this->net_amount;
+        if ($mobileNet <= 0 || $net <= 0) {
+            return ['course' => $lineNetTotal, 'mobile' => 0.0];
+        }
+
+        $mobileShare = round($lineNetTotal * ($mobileNet / $net), 2);
+        $courseShare = round($lineNetTotal - $mobileShare, 2);
+
+        return [
+            'course' => max(0, $courseShare),
+            'mobile' => max(0, $mobileShare),
+        ];
     }
 
     // Scopes

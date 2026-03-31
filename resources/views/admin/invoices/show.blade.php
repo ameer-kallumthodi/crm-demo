@@ -160,6 +160,17 @@
                                     <td><strong>Email:</strong></td>
                                     <td>{{ $invoice->student->email ?? 'N/A' }}</td>
                                 </tr>
+                                @if($invoice->invoice_type == 'course' && $invoice->student->need_mobile)
+                                <tr>
+                                    <td><strong>Needed Mobile:</strong></td>
+                                    <td>
+                                        Yes — <strong>₹{{ number_format(\App\Models\Invoice::NEED_MOBILE_ADDON_GROSS, 2) }}</strong>
+                                        @if($invoice->student->asset_id)
+                                            <br><strong>Asset ID:</strong> {{ $invoice->student->asset_id }}
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endif
                                 @if($invoice->invoice_type == 'course')
                                 <tr>
                                     <td><strong>Course:</strong></td>

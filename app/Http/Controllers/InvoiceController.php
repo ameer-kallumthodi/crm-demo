@@ -19,7 +19,7 @@ class InvoiceController extends Controller
      */
     public function index(Request $request, $studentId)
     {
-        $student = ConvertedLead::with(['course', 'lead'])->findOrFail($studentId);
+        $student = ConvertedLead::with(['course', 'lead', 'leadDetail.university', 'batch', 'academicAssistant'])->findOrFail($studentId);
         
         // Check permissions
         $this->checkStudentAccess($student);

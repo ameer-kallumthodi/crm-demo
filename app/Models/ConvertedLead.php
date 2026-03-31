@@ -30,6 +30,8 @@ class ConvertedLead extends Model
         'postsale_followuptime',
         'paid_status',
         'call_status',
+        'need_mobile',
+        'asset_id',
         'called_date',
         'called_time',
         'post_sales_remarks',
@@ -77,6 +79,7 @@ class ConvertedLead extends Model
         'is_cancelled' => 'boolean',
         'is_postpond_batch' => 'boolean',
         'is_b2b' => 'boolean',
+        'need_mobile' => 'boolean',
     ];
 
     // Relationships

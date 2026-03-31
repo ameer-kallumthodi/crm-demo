@@ -2,7 +2,16 @@
     $isEduThanzeel = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 6);
     $isESchool = $payment->invoice->invoice_type === 'course' && ($payment->invoice->course_id == 5);
     $isEduMaster = $payment->invoice->invoice_type === 'course' && ((int) ($payment->invoice->course_id ?? 0) === 23);
-    $feeHeadDisplay = $payment->fee_head === 'PLUS_TWO' ? 'Plus Two' : ($payment->fee_head ?? null);
+    $feeHeadDisplay = match ($payment->fee_head ?? null) {
+        'PLUS_TWO' => 'Plus Two',
+        'MOBILE' => 'Needed Mobile',
+        default => $payment->fee_head ?? null,
+    };
+    $invReceiptPdf = $payment->invoice;
+    $showReceiptMobileSplit = $invReceiptPdf->invoice_type === 'course'
+        && $invReceiptPdf->student
+        && $invReceiptPdf->student->need_mobile
+        && $invReceiptPdf->mobileNetAmount() > 0;
 @endphp
 
 <!DOCTYPE html>
@@ -72,6 +81,14 @@
                     <h6 style="font-weight: bold; font-size: 12px; margin-bottom: 8px; color: #000;">Bill To</h6>
                     <p style="margin: 3px 0; font-size: 11px;">Name: {{ $payment->invoice->student->name }}</p>
                     <p style="margin: 3px 0; font-size: 11px;">Contact No.: {{ $payment->invoice->student->phone }}</p>
+                    @if($payment->invoice->invoice_type === 'course' && $payment->invoice->student->need_mobile)
+                        <p style="margin: 6px 0 0 0; font-size: 11px;">
+                            <strong>Needed Mobile:</strong> <span class="rupee">₹</span> {{ number_format(\App\Models\Invoice::NEED_MOBILE_ADDON_GROSS, 2) }}
+                            @if($payment->invoice->student->asset_id)
+                                <br><strong>Asset ID:</strong> {{ $payment->invoice->student->asset_id }}
+                            @endif
+                        </p>
+                    @endif
                 </td>
                 <td style="width: 48%; vertical-align: top; padding-left: 10px; text-align: right;">
                     <h6 style="font-weight: bold; font-size: 12px; margin-bottom: 8px; color: #000;">Payment Details</h6>
@@ -124,6 +141,7 @@
                         <p style="margin: 4px 0; font-size: 10px;">{{ $payment->amount_in_words }} Rupees only</p>
                     </div>
 
+                </td>
 
                 <!-- Right Column -->
                 <td style="width: 48%; vertical-align: top; padding-left: 5px;">
@@ -132,6 +150,16 @@
                     <div style="padding: 12px; margin-bottom: 15px;">
                         <h6 style="background-color: {{ $isEduThanzeel ? '#991E5B' : ($isESchool ? '#0B67C2' : '#a276f3') }}; color: white; padding: 10px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 12px;">Payment Summary</h6>
                         <table style="width: 100%; border-collapse: collapse;">
+                            @if($showReceiptMobileSplit)
+                            <tr>
+                                <td style="padding: 4px 0; font-size: 10px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Amount</td>
+                                <td style="padding: 4px 0; font-size: 10px; border-bottom: 1px solid #ddd; padding-bottom: 4px; text-align: right;"><span class="rupee">₹</span> {{ number_format($invReceiptPdf->courseNetExcludingMobile(), 2) }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px 0; font-size: 10px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Needed Mobile</td>
+                                <td style="padding: 4px 0; font-size: 10px; border-bottom: 1px solid #ddd; padding-bottom: 4px; text-align: right;"><span class="rupee">₹</span> {{ number_format($invReceiptPdf->mobileNetAmount(), 2) }}</td>
+                            </tr>
+                            @endif
                             <tr>
                                 <td style="padding: 4px 0; font-size: 10px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Total Amount</td>
                                 <td style="padding: 4px 0; font-size: 10px; border-bottom: 1px solid #ddd; padding-bottom: 4px; text-align: right;"><span class="rupee">₹</span> {{ number_format($payment->invoice->net_amount, 2) }}</td>

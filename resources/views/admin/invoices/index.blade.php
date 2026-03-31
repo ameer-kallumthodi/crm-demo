@@ -49,6 +49,15 @@
                             </p>
                             <p><strong>Batch:</strong> {{ $student->batch->title ?? 'N/A' }}</p>
                             <p><strong>Academic Assistant:</strong> {{ $student->academicAssistant->name ?? 'N/A' }}</p>
+                            @if($student->need_mobile)
+                                <p class="mb-0 mt-2">
+                                    <strong>Needed Mobile:</strong> Yes —
+                                    <strong>₹{{ number_format(\App\Models\Invoice::NEED_MOBILE_ADDON_GROSS, 2) }}</strong>
+                                    @if($student->asset_id)
+                                        <br><strong>Asset ID:</strong> {{ $student->asset_id }}
+                                    @endif
+                                </p>
+                            @endif
                         </div>
                     </div>
 
