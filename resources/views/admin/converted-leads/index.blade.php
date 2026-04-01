@@ -1,4 +1,4 @@
-@extends('layouts.mantis')
+﻿@extends('layouts.mantis')
 
 @section('title', 'Converted Leads')
 
@@ -114,6 +114,9 @@
                     <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Flutter Mentor List
                     </a>
+                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> RPA Mentor List
+                    </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
                     </a>
@@ -186,6 +189,9 @@
                     <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Flutter Mentor List
                     </a>
+                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> RPA Mentor List
+                    </a>
                     <a href="{{ route('admin.junior-vlogger-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List
                     </a>
@@ -256,7 +262,7 @@
                         <i class="ti ti-headphones"></i> E-School Converted Support List
                     </a>
                     <a href="{{ route('admin.support-junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Junior Vlogger – Course Support List
+                        <i class="ti ti-headphones"></i> Junior Vlogger â€“ Course Support List
                     </a>
                 </div>
             </div>
@@ -1108,14 +1114,14 @@
         loadBatchesByCourse(initialCourse, $('#batch_id').data('selected'));
         loadAdmissionBatchesByBatch($('#batch_id').data('selected'), $('#admission_batch_id').data('selected'));
 
-        // On course change → reload batches, clear admission batch
+        // On course change â†’ reload batches, clear admission batch
         $('#course_id').on('change', function() {
             const cid = $(this).val();
             $('#admission_batch_id').html('<option value="">All Admission Batches</option>');
             loadBatchesByCourse(cid, '');
         });
 
-        // On batch change → reload admission batches
+        // On batch change â†’ reload admission batches
         $('#batch_id').on('change', function() {
             const bid = $(this).val();
             loadAdmissionBatchesByBatch(bid, '');

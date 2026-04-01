@@ -1,6 +1,6 @@
-@extends('layouts.mantis')
+﻿@extends('layouts.mantis')
 
-@section('title', 'Junior Vlogger – Course Support List')
+@section('title', 'Junior Vlogger â€“ Course Support List')
 
 @section('content')
 @php $appTimezone = config('app.timezone'); @endphp
@@ -62,7 +62,7 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Junior Vlogger – Course Support List</h5>
+                    <h5 class="m-b-10">Junior Vlogger â€“ Course Support List</h5>
                 </div>
             </div>
             <div class="col-md-6">
@@ -141,6 +141,9 @@
                     <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Flutter Mentor List
                     </a>
+                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> RPA Mentor List
+                    </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
                     </a>
@@ -213,6 +216,9 @@
                     <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Flutter Mentor List
                     </a>
+                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> RPA Mentor List
+                    </a>
                     <a href="{{ route('admin.junior-vlogger-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List
                     </a>
@@ -283,7 +289,7 @@
                         <i class="ti ti-headphones"></i> E-School Converted Support List
                     </a>
                     <a href="{{ route('admin.support-junior-vlogger-converted-leads.index') }}" class="btn btn-primary active">
-                        <i class="ti ti-headphones"></i> Junior Vlogger – Course Support List
+                        <i class="ti ti-headphones"></i> Junior Vlogger â€“ Course Support List
                     </a>
                 </div>
             </div>
@@ -344,7 +350,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Junior Vlogger – Course Support List</h5>
+                <h5 class="mb-0">Junior Vlogger â€“ Course Support List</h5>
             </div>
             <div class="card-body">
                 @php
@@ -732,3 +738,4 @@ $(document).ready(function() {
 });
 </script>
 @endpush
+

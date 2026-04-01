@@ -1,4 +1,4 @@
-@extends('layouts.mantis')
+﻿@extends('layouts.mantis')
 
 @section('title', 'Eduthanzeel Converted Mentor List')
 
@@ -112,6 +112,9 @@
                     <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Flutter Mentor List
                     </a>
+                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> RPA Mentor List
+                    </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
                     </a>
@@ -125,7 +128,7 @@
                         <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List
                     </a>
                     <a href="{{ route('admin.support-junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Junior Vlogger – Course Support List
+                        <i class="ti ti-headphones"></i> Junior Vlogger â€“ Course Support List
                     </a>
                 </div>
             </div>
@@ -189,6 +192,9 @@
                     </a>
                     <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Flutter Mentor List
+                    </a>
+                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> RPA Mentor List
                     </a>
                     <a href="{{ route('admin.junior-vlogger-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List
@@ -260,7 +266,7 @@
                         <i class="ti ti-headphones"></i> E-School Converted Support List
                     </a>
                     <a href="{{ route('admin.support-junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Junior Vlogger – Course Support List
+                        <i class="ti ti-headphones"></i> Junior Vlogger â€“ Course Support List
                     </a>
                 </div>
             </div>
@@ -953,7 +959,7 @@ return ['id' => $teacher->id, 'name' => $teacher->name];
         // Initialize dependent dropdowns on load
         loadAdmissionBatchesByBatch($('#batch_id').val(), $('#admission_batch_id').data('selected'));
 
-        // On batch change → reload admission batches
+        // On batch change â†’ reload admission batches
         $('#batch_id').on('change', function() {
             const bid = $(this).val();
             loadAdmissionBatchesByBatch(bid, '');

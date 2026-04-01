@@ -195,6 +195,9 @@
                     <a href="{{ url('/admin/flutter-mentor-converted-leads') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Flutter Mentor List
                     </a>
+                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> RPA Mentor List
+                    </a>
                     <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-video"></i> Junior Vlogger Converted Leads
                     </a>
