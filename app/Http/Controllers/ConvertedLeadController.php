@@ -3027,6 +3027,9 @@ class ConvertedLeadController extends Controller
             'is_placement_passed_by' => AuthHelper::getCurrentUserId(),
             'is_placement_passed_at' => now(),
             'placement_resume' => $resumePath,
+            'is_resume_verified' => 0,
+            'resume_verified_at' => null,
+            'resume_verified_by' => null,
         ]);
 
         $referer = $request->header('referer') ?: route('admin.converted-leads.index');

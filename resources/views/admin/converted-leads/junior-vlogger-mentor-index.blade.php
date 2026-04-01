@@ -674,6 +674,11 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
                                                     title="Resume Verification">
                                                     <i class="ti ti-circle-check"></i> {{ $lead->mentorDetails->is_resume_verified ? 'Resume Verified' : 'Verify Resume' }}@if($lead->mentorDetails->is_resume_verified && $lead->mentorDetails->resume_verified_at) ({{ $lead->mentorDetails->resume_verified_at->format('d M Y') }})@endif
                                                 </a>
+                                                <br><a href="javascript:void(0);" class="btn btn-sm btn-outline-primary px-2 py-0"
+                                                    onclick="show_small_modal('{{ route('admin.converted-leads.move-to-placement', $lead->id) }}', 'Change Resume')"
+                                                    title="Change Resume">
+                                                    <i class="ti ti-upload"></i> Change Resume
+                                                </a>
                                             @endif
                                         @endif
                                     @else

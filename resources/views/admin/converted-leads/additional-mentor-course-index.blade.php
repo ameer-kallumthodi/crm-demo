@@ -163,6 +163,13 @@
                                                     <i class="ti ti-circle-check"></i> {{ $convertedLead->mentorDetails->is_resume_verified ? 'Resume Verified' : 'Verify Resume' }}@if($convertedLead->mentorDetails->is_resume_verified && $convertedLead->mentorDetails->resume_verified_at) ({{ $convertedLead->mentorDetails->resume_verified_at->format('d M Y') }})@endif
                                                 </a>
                                             @endif
+                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_mentor() || \App\Helpers\RoleHelper::is_hod())
+                                                <br><a href="javascript:void(0);" class="btn btn-sm btn-outline-primary px-2 py-0"
+                                                    onclick="show_small_modal('{{ route('admin.converted-leads.move-to-placement', $convertedLead->id) }}', 'Change Resume')"
+                                                    title="Change Resume">
+                                                    <i class="ti ti-upload"></i> Change Resume
+                                                </a>
+                                            @endif
                                         @endif
                                     @else
                                         <a href="javascript:void(0);" class="btn btn-outline-primary btn-sm px-2"
