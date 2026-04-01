@@ -824,6 +824,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/graphic-designing-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'graphicDesigningIndex'])->name('graphic-designing-converted-leads.index');
         Route::get('/machine-learning-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'machineLearningIndex'])->name('machine-learning-converted-leads.index');
         Route::get('/flutter-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'flutterIndex'])->name('flutter-converted-leads.index');
+        Route::get('/rpa-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'rpaIndex'])->name('rpa-converted-leads.index');
         Route::get('/eduthanzeel-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'eduthanzeelIndex'])->name('eduthanzeel-converted-leads.index');
         Route::get('/e-school-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'eschoolIndex'])->name('e-school-converted-leads.index');
         Route::get('/junior-vlogger-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'juniorVloggerIndex'])->name('junior-vlogger-converted-leads.index');
@@ -881,6 +882,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::get('/medical-coding-mentor-converted-leads', [App\Http\Controllers\AdditionalMentorCourseController::class, 'medicalCodingIndex'])->name('medical-coding-mentor-converted-leads.index');
         Route::get('/python-mentor-converted-leads', [App\Http\Controllers\AdditionalMentorCourseController::class, 'pythonIndex'])->name('python-mentor-converted-leads.index');
         Route::get('/flutter-mentor-converted-leads', [App\Http\Controllers\AdditionalMentorCourseController::class, 'flutterIndex'])->name('flutter-mentor-converted-leads.index');
+        Route::get('/rpa-mentor-converted-leads', [App\Http\Controllers\AdditionalMentorCourseController::class, 'rpaIndex'])->name('rpa-mentor-converted-leads.index');
 
         // Support Converted Lead Details Route (Unified)
         Route::get('/support-converted-leads/{id}/details', [App\Http\Controllers\SupportConvertedLeadController::class, 'show'])->name('support-converted-leads.details');

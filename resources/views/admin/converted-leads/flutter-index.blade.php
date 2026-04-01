@@ -1,6 +1,12 @@
 @extends('layouts.mantis')
 
-@section('title', 'Flutter Converted Leads')
+@php
+    $pageCourseName = $pageCourseName ?? 'Flutter';
+    $pageCourseId = $pageCourseId ?? 21;
+    $pageRouteName = $pageRouteName ?? 'admin.flutter-converted-leads.index';
+@endphp
+
+@section('title', $pageCourseName . ' Converted Leads')
 
 @section('content')
 <style>
@@ -40,14 +46,14 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Flutter Converted Leads Management</h5>
+                    <h5 class="m-b-10">{{ $pageCourseName }} Converted Leads Management</h5>
                 </div>
             </div>
             <div class="col-md-6">
                 <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                    <li class="breadcrumb-item">Flutter</li>
+                    <li class="breadcrumb-item">{{ $pageCourseName }}</li>
                 </ul>
             </div>
         </div>
@@ -102,17 +108,14 @@
                     <a href="{{ route('admin.machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-brain"></i> Diploma in Machine Learning Converted Leads
                     </a>
-                    <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-primary active">
+                    <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn {{ $pageCourseId === 21 ? 'btn-primary active' : 'btn-outline-primary' }}">
                         <i class="ti ti-device-mobile"></i> Flutter Converted Leads
+                    </a>
+                    <a href="{{ route('admin.rpa-converted-leads.index') }}" class="btn {{ $pageCourseId === 27 ? 'btn-primary active' : 'btn-outline-primary' }}">
+                        <i class="ti ti-cpu"></i> RPA Converted Leads
                     </a>
                     <a href="{{ route('admin.medical-coding-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Medical Coding Mentor List
-                    </a>
-                    <a href="{{ route('admin.python-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Python Mentor List
-                    </a>
-                    <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Flutter Mentor List
                     </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
@@ -185,6 +188,9 @@
                     </a>
                     <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Flutter Mentor List
+                    </a>
+                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> RPA Mentor List
                     </a>
                     <a href="{{ route('admin.junior-vlogger-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List
@@ -266,7 +272,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.flutter-converted-leads.index') }}" id="filterForm">
+                <form method="GET" action="{{ route($pageRouteName) }}" id="filterForm">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
@@ -370,7 +376,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($pageRouteName) }}" class="btn btn-secondary">
                                 <i class="ti ti-refresh"></i> Clear
                             </a>
                         </div>
@@ -387,7 +393,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5>Flutter Converted Leads</h5>
+                <h5>{{ $pageCourseName }} Converted Leads</h5>
             </div>
             <div class="card-body">
                 <!-- Desktop Table View -->
@@ -738,7 +744,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="22" class="text-center">No Flutter converted leads found</td>
+                                    <td colspan="22" class="text-center">No {{ $pageCourseName }} converted leads found</td>
                                 </tr>
                                 @endforelse
                             </tbody>

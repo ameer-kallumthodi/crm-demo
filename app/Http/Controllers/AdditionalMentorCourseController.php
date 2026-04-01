@@ -26,6 +26,11 @@ class AdditionalMentorCourseController extends Controller
         return $this->renderMentorList($request, 21, 'Flutter', 'admin.flutter-mentor-converted-leads.index');
     }
 
+    public function rpaIndex(Request $request)
+    {
+        return $this->renderMentorList($request, 27, 'RPA', 'admin.rpa-mentor-converted-leads.index');
+    }
+
     private function renderMentorList(Request $request, int $courseId, string $courseTitle, string $routeName)
     {
         if (!RoleHelper::is_admin_or_super_admin()
