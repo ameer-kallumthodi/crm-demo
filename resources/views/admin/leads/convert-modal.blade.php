@@ -1,3 +1,7 @@
+@php
+    $usePlanLabelsForBatch = (int) ($lead->course_id ?? 0) === 25 && (int) ($lead->is_b2b ?? 0) === 1;
+    $batchSelectFieldLabel = $usePlanLabelsForBatch ? 'Plan' : 'Batch';
+@endphp
 <form id="convertLeadForm" enctype="multipart/form-data">
     @csrf
     <div class="row g-3">
@@ -59,10 +63,10 @@
         <div class="col-lg-6">
             <div class="p-1">
                 <label for="modal_batch_id" class="form-label">
-                    Batch @if((int) ($lead->course_id ?? 0) !== 23)<span class="text-danger">*</span>@endif
+                    {{ $batchSelectFieldLabel }} @if((int) ($lead->course_id ?? 0) !== 23)<span class="text-danger">*</span>@endif
                 </label>
                 <select class="form-control" name="batch_id" id="modal_batch_id" {{ (int) ($lead->course_id ?? 0) !== 23 ? 'required' : '' }}>
-                    <option value="">Select Batch</option>
+                    <option value="">Select {{ $batchSelectFieldLabel }}</option>
                     @foreach($batches as $item)
                     <option
                         value="{{ $item->id }}"
@@ -152,7 +156,7 @@
                     @endif
 
                     <br><small class="text-info" id="batch_amount_preview">
-                        <i class="fas fa-layer-group"></i> Batch: <strong>{{ $batch->title ?? '-' }}</strong> - ₹{{ number_format($batchAmount, 2) }}
+                        <i class="fas fa-layer-group"></i> {{ $batchSelectFieldLabel }}: <strong>{{ $batch->title ?? '-' }}</strong> - ₹{{ number_format($batchAmount, 2) }}
                         @if($batchAmountLabel)
                         <span class="badge bg-primary ms-1">{{ $batchAmountLabel }}</span>
                         @endif
@@ -379,6 +383,7 @@
         const isCourse23 = courseId == 23;
         const isEdumasterCourse = Number(courseId) === 23;
         const isB2BLead = @json((int) ($lead->is_b2b ?? 0) === 1);
+        const batchPreviewLabel = @json($batchSelectFieldLabel);
         const studentClass = @json($studentClass ? strtolower($studentClass) : null);
         const baseCourseAmount = @json((float) ($courseAmount ?? 0));
         const baseUniversityAmount = @json((float) ($universityAmount ?? 0));
@@ -579,7 +584,7 @@
                 }
 
                 const labelHtml = label ? ` <span class="badge bg-primary ms-1">${label}</span>` : '';
-                $batchAmountPreview.html(`<i class="fas fa-layer-group"></i> Batch: <strong>${title}</strong> - ${formatINR(shownAmount)}${labelHtml}`);
+                $batchAmountPreview.html(`<i class="fas fa-layer-group"></i> ${batchPreviewLabel}: <strong>${title}</strong> - ${formatINR(shownAmount)}${labelHtml}`);
             }
             updateTotalAmount();
         });
@@ -778,7 +783,8 @@
 
                 // Check if field is empty or has no value selected
                 if (!fieldValue || fieldValue.trim() === '' || fieldValue === '0') {
-                    errors[field] = [`The ${field.replace('_', ' ')} field is required.`];
+                    const label = field === 'batch_id' ? batchPreviewLabel.toLowerCase() : field.replace('_', ' ');
+                    errors[field] = [`The ${label} field is required.`];
                     isValid = false;
                 }
             });
