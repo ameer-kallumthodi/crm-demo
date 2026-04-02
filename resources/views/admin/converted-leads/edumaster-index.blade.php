@@ -1,4 +1,4 @@
-﻿@extends('layouts.mantis')
+@extends('layouts.mantis')
 
 @section('title', 'EduMaster Converted Leads')
 
@@ -156,7 +156,7 @@
                     <a href="{{ route('admin.mentor-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> UG/PG Mentor Converted List
                     </a>
-                    <a href="{{ route('admin.mentor-edumaster-converted-leads.index') }}" class="btn btn-outline-primary active">
+                    <a href="{{ route('admin.mentor-edumaster-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> EduMaster Mentor Converted List
                     </a>
                     <a href="{{ route('admin.mentor-eschool-converted-leads.index') }}" class="btn btn-outline-primary">
@@ -220,7 +220,7 @@
                     <a href="{{ route('admin.support-ugpg-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> UG/PG Converted Support List
                     </a>
-                    <a href="{{ route('admin.support-edumaster-converted-leads.index') }}" class="btn btn-outline-primary active">
+                    <a href="{{ route('admin.support-edumaster-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> EduMaster Converted Support List
                     </a>
                     <a href="{{ route('admin.support-hotel-management-converted-leads.index') }}" class="btn btn-outline-primary">
@@ -337,7 +337,7 @@
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover data_table_basic" id="edumasterTable">
+                        <table class="table table-hover" id="edumasterTable">
                             <thead>
                                 <tr>
                                     <th>SL No</th>
@@ -646,9 +646,47 @@
 
 <script id="country-codes-json" type="application/json">
     {
-        !!json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!
+        {!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}
     }
 </script>
+
+@php
+    $showEdumasterParentPhone = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor();
+
+    $edumasterConvertedLeadsColumns = [
+        ['data' => 'index', 'name' => 'index', 'orderable' => false, 'searchable' => false],
+        ['data' => 'academic', 'name' => 'academic', 'orderable' => false, 'searchable' => false],
+        ['data' => 'support', 'name' => 'support', 'orderable' => false, 'searchable' => false],
+        ['data' => 'converted_date', 'name' => 'converted_date', 'orderable' => false, 'searchable' => false],
+        ['data' => 'register_number', 'name' => 'register_number', 'orderable' => false, 'searchable' => false],
+        ['data' => 'name_col', 'name' => 'name_col', 'orderable' => false, 'searchable' => false],
+        ['data' => 'type', 'name' => 'type', 'orderable' => false, 'searchable' => false],
+        ['data' => 'dob', 'name' => 'dob', 'orderable' => false, 'searchable' => false],
+        ['data' => 'phone', 'name' => 'phone', 'orderable' => false, 'searchable' => false],
+        ['data' => 'whatsapp', 'name' => 'whatsapp', 'orderable' => false, 'searchable' => false],
+    ];
+
+    if ($showEdumasterParentPhone) {
+        $edumasterConvertedLeadsColumns[] = ['data' => 'parent_phone', 'name' => 'parent_phone', 'orderable' => false, 'searchable' => false];
+    }
+
+    $edumasterConvertedLeadsColumns = array_merge($edumasterConvertedLeadsColumns, [
+        ['data' => 'email', 'name' => 'email', 'orderable' => false, 'searchable' => false],
+        ['data' => 'batch', 'name' => 'batch', 'orderable' => false, 'searchable' => false],
+        ['data' => 'admission_batch', 'name' => 'admission_batch', 'orderable' => false, 'searchable' => false],
+        ['data' => 'selected_courses', 'name' => 'selected_courses', 'orderable' => false, 'searchable' => false],
+        ['data' => 'board_university', 'name' => 'board_university', 'orderable' => false, 'searchable' => false],
+        ['data' => 'course_type', 'name' => 'course_type', 'orderable' => false, 'searchable' => false],
+        ['data' => 'course_name', 'name' => 'course_name', 'orderable' => false, 'searchable' => false],
+        ['data' => 'sslc_back_year', 'name' => 'sslc_back_year', 'orderable' => false, 'searchable' => false],
+        ['data' => 'plustwo_back_year', 'name' => 'plustwo_back_year', 'orderable' => false, 'searchable' => false],
+        ['data' => 'degree_back_year', 'name' => 'degree_back_year', 'orderable' => false, 'searchable' => false],
+        ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
+    ]);
+@endphp
+
+<div id="edumasterConvertedLeadsConfig" data-data-url="{{ route('admin.edumaster-converted-leads.data') }}" style="display:none"></div>
+<script type="application/json" id="edumasterConvertedLeadsColumnsData">{!! json_encode($edumasterConvertedLeadsColumns) !!}</script>
 
 @push('styles')
 <style>
@@ -750,6 +788,60 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+        const configEl = document.getElementById('edumasterConvertedLeadsConfig');
+        const edumasterDataUrl = configEl ? configEl.dataset.dataUrl : '';
+        const columnsEl = document.getElementById('edumasterConvertedLeadsColumnsData');
+        const edumasterConvertedLeadsColumns = columnsEl ? JSON.parse(columnsEl.textContent || '[]') : [];
+
+        function getEdumasterFilterParams() {
+            return {
+                filter_search: ($('#search').val() || '').trim(),
+                search: ($('#search').val() || '').trim(),
+                university_id: $('#university_id').val() || '',
+                course_type: $('#course_type').val() || '',
+                date_from: $('#date_from').val() || '',
+                date_to: $('#date_to').val() || ''
+            };
+        }
+
+        window.reloadEdumasterTable = function() {
+            if ($.fn.DataTable.isDataTable('#edumasterTable')) {
+                $('#edumasterTable').DataTable().ajax.reload(null, false);
+            }
+        };
+
+        if ($.fn.DataTable.isDataTable('#edumasterTable')) {
+            $('#edumasterTable').DataTable().destroy();
+        }
+
+        $('#edumasterTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: edumasterDataUrl,
+                type: 'GET',
+                data: function(d) {
+                    $.extend(d, getEdumasterFilterParams());
+                },
+                dataSrc: function(json) {
+                    return (json && json.data) ? json.data : [];
+                },
+                error: function() {
+                    if (typeof showToast === 'function') {
+                        showToast('Error loading EduMaster converted leads.', 'error');
+                    }
+                }
+            },
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            order: [],
+            ordering: false,
+            dom: 'Bfrtip',
+            scrollX: true,
+            autoWidth: false,
+            columns: edumasterConvertedLeadsColumns
+        });
+
         // Inline editing functionality
         $(document).on('click', '.edit-btn', function(e) {
             e.preventDefault();
@@ -1229,7 +1321,7 @@
                     show_alert('success', res.message || 'Updated');
                     $('#academicVerifyModal').modal('hide');
                     setTimeout(() => {
-                        location.reload();
+                        window.reloadEdumasterTable();
                     }, 600);
                 } else {
                     show_alert('error', (res && res.message) ? res.message : 'Failed to update');
@@ -1280,7 +1372,7 @@
                     show_alert('success', res.message || 'Updated');
                     $('#supportVerifyModal').modal('hide');
                     setTimeout(() => {
-                        location.reload();
+                        window.reloadEdumasterTable();
                     }, 600);
                 } else {
                     show_alert('error', (res && res.message) ? res.message : 'Failed to update');

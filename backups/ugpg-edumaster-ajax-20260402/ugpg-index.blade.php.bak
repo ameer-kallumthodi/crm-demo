@@ -1,4 +1,4 @@
-@extends('layouts.mantis')
+﻿@extends('layouts.mantis')
 
 @section('title', 'UG/PG Converted Leads')
 
@@ -354,7 +354,7 @@
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover" id="ugpgTable">
+                        <table class="table table-hover data_table_basic" id="ugpgTable">
                             <thead>
                                 <tr>
                                     <th>SL No</th>
@@ -633,44 +633,9 @@
 
 <script id="country-codes-json" type="application/json">
     {
-        {!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}
+        !!json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!
     }
 </script>
-
-@php
-    $showUgpgParentPhone = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor();
-
-    $ugpgConvertedLeadsColumns = [
-        ['data' => 'index', 'name' => 'index', 'orderable' => false, 'searchable' => false],
-        ['data' => 'academic', 'name' => 'academic', 'orderable' => false, 'searchable' => false],
-        ['data' => 'support', 'name' => 'support', 'orderable' => false, 'searchable' => false],
-        ['data' => 'converted_date', 'name' => 'converted_date', 'orderable' => false, 'searchable' => false],
-        ['data' => 'register_number', 'name' => 'register_number', 'orderable' => false, 'searchable' => false],
-        ['data' => 'name_col', 'name' => 'name_col', 'orderable' => false, 'searchable' => false],
-        ['data' => 'type', 'name' => 'type', 'orderable' => false, 'searchable' => false],
-        ['data' => 'dob', 'name' => 'dob', 'orderable' => false, 'searchable' => false],
-        ['data' => 'phone', 'name' => 'phone', 'orderable' => false, 'searchable' => false],
-        ['data' => 'whatsapp', 'name' => 'whatsapp', 'orderable' => false, 'searchable' => false],
-    ];
-
-    if ($showUgpgParentPhone) {
-        $ugpgConvertedLeadsColumns[] = ['data' => 'parent_phone', 'name' => 'parent_phone', 'orderable' => false, 'searchable' => false];
-    }
-
-    $ugpgConvertedLeadsColumns = array_merge($ugpgConvertedLeadsColumns, [
-        ['data' => 'email', 'name' => 'email', 'orderable' => false, 'searchable' => false],
-        ['data' => 'board_university', 'name' => 'board_university', 'orderable' => false, 'searchable' => false],
-        ['data' => 'course_type', 'name' => 'course_type', 'orderable' => false, 'searchable' => false],
-        ['data' => 'course_name', 'name' => 'course_name', 'orderable' => false, 'searchable' => false],
-        ['data' => 'batch', 'name' => 'batch', 'orderable' => false, 'searchable' => false],
-        ['data' => 'admission_batch', 'name' => 'admission_batch', 'orderable' => false, 'searchable' => false],
-        ['data' => 'back_year', 'name' => 'back_year', 'orderable' => false, 'searchable' => false],
-        ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
-    ]);
-@endphp
-
-<div id="ugpgConvertedLeadsConfig" data-data-url="{{ route('admin.ugpg-converted-leads.data') }}" style="display:none"></div>
-<script type="application/json" id="ugpgConvertedLeadsColumnsData">{!! json_encode($ugpgConvertedLeadsColumns) !!}</script>
 
 @push('styles')
 <style>
@@ -777,62 +742,6 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        const configEl = document.getElementById('ugpgConvertedLeadsConfig');
-        const ugpgDataUrl = configEl ? configEl.dataset.dataUrl : '';
-        const columnsEl = document.getElementById('ugpgConvertedLeadsColumnsData');
-        const ugpgConvertedLeadsColumns = columnsEl ? JSON.parse(columnsEl.textContent || '[]') : [];
-
-        function getUgpgFilterParams() {
-            return {
-                filter_search: ($('#search').val() || '').trim(),
-                search: ($('#search').val() || '').trim(),
-                university_id: $('#university_id').val() || '',
-                course_type: $('#course_type').val() || '',
-                batch_id: $('#batch_id').val() || '',
-                admission_batch_id: ($('#admission_batch_id').val() || $('#admission_batch_id').data('selected') || '') || '',
-                date_from: $('#date_from').val() || '',
-                date_to: $('#date_to').val() || ''
-            };
-        }
-
-        window.reloadUgpgTable = function() {
-            if ($.fn.DataTable.isDataTable('#ugpgTable')) {
-                $('#ugpgTable').DataTable().ajax.reload(null, false);
-            }
-        };
-
-        if ($.fn.DataTable.isDataTable('#ugpgTable')) {
-            $('#ugpgTable').DataTable().destroy();
-        }
-
-        $('#ugpgTable').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: ugpgDataUrl,
-                type: 'GET',
-                data: function(d) {
-                    $.extend(d, getUgpgFilterParams());
-                },
-                dataSrc: function(json) {
-                    return (json && json.data) ? json.data : [];
-                },
-                error: function() {
-                    if (typeof showToast === 'function') {
-                        showToast('Error loading UG/PG converted leads.', 'error');
-                    }
-                }
-            },
-            pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-            order: [],
-            ordering: false,
-            dom: 'Bfrtip',
-            scrollX: true,
-            autoWidth: false,
-            columns: ugpgConvertedLeadsColumns
-        });
-
         // Dependent filters: load admission batches by batch
         function loadAdmissionBatchesByBatch(batchId, selectedId) {
             const $admission = $('#admission_batch_id');
@@ -1312,7 +1221,7 @@
                     show_alert('success', res.message || 'Updated');
                     $('#academicVerifyModal').modal('hide');
                     setTimeout(() => {
-                        window.reloadUgpgTable();
+                        location.reload();
                     }, 600);
                 } else {
                     show_alert('error', (res && res.message) ? res.message : 'Failed to update');
@@ -1363,7 +1272,7 @@
                     show_alert('success', res.message || 'Updated');
                     $('#supportVerifyModal').modal('hide');
                     setTimeout(() => {
-                        window.reloadUgpgTable();
+                        location.reload();
                     }, 600);
                 } else {
                     show_alert('error', (res && res.message) ? res.message : 'Failed to update');
@@ -1438,8 +1347,8 @@
                 } else {
                     alert(response.message);
                 }
-                if ($.fn.DataTable.isDataTable('#ugpgTable')) {
-                    const dt = $('#ugpgTable').DataTable();
+                if ($.fn.DataTable.isDataTable('#convertedLeadsTable')) {
+                    const dt = $('#convertedLeadsTable').DataTable();
                     if (dt.ajax && dt.ajax.url()) {
                         dt.ajax.reload();
                     } else {

@@ -1,4 +1,4 @@
-﻿@extends('layouts.mantis')
+@extends('layouts.mantis')
 
 @section('title', 'NIOS Converted Leads')
 
@@ -366,7 +366,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="ti ti-search"></i> <span class="d-none d-sm-inline">Filter</span>
                                 </button>
-                                <a href="{{ route('admin.nios-converted-leads.index') }}" class="btn btn-secondary">
+                                <a href="{{ route('admin.nios-converted-leads.index') }}" class="btn btn-secondary" id="niosClearFilters">
                                     <i class="ti ti-x"></i> <span class="d-none d-sm-inline">Clear</span>
                                 </a>
                             </div>
@@ -398,7 +398,7 @@
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover data_table_basic" id="convertedLeadsTable">
+                        <table class="table table-hover" id="convertedLeadsTable">
                             <thead>
                                 <tr>
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
@@ -438,518 +438,21 @@
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @forelse($convertedLeads as $index => $convertedLead)
-                                <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
-                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                    <td>
-                                        <input type="checkbox" class="row-checkbox" value="{{ $convertedLead->id }}">
-                                    </td>
-                                    @endif
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>
-                                        @php $isVerified = (bool) ($convertedLead->is_academic_verified ?? false); @endphp
-                                        <span class="badge {{ $isVerified ? 'bg-success' : 'bg-secondary' }} me-1">
-                                            {{ $isVerified ? 'Verified' : 'Not Verified' }}
-                                        </span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                        <button type="button" class="btn btn-sm {{ $isVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-academic-verify-btn"
-                                            data-use-modal="1"
-                                            data-id="{{ $convertedLead->id }}"
-                                            data-name="{{ $convertedLead->name }}"
-                                            data-verified="{{ $isVerified ? 1 : 0 }}"
-                                            data-url="{{ route('admin.converted-leads.toggle-academic-verify', $convertedLead->id) }}"
-                                            title="{{ $isVerified ? 'Unverify' : 'Verify' }} academic">
-                                            <i class="ti {{ $isVerified ? 'ti-x' : 'ti-check' }}"></i>
-                                        </button>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @php $isSupportVerified = (bool) ($convertedLead->is_support_verified ?? false); @endphp
-                                        <span class="badge {{ $isSupportVerified ? 'bg-success' : 'bg-secondary' }} me-1">
-                                            {{ $isSupportVerified ? 'Verified' : 'Not Verified' }}
-                                        </span>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team())
-                                        <button type="button" class="btn btn-sm {{ $isSupportVerified ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-support-verify-btn"
-                                            data-use-modal="1"
-                                            data-id="{{ $convertedLead->id }}"
-                                            data-name="{{ $convertedLead->name }}"
-                                            data-verified="{{ $isSupportVerified ? 1 : 0 }}"
-                                            data-url="{{ route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) }}"
-                                            title="{{ $isSupportVerified ? 'Unverify' : 'Verify' }} support">
-                                            <i class="ti {{ $isSupportVerified ? 'ti-x' : 'ti-check' }}"></i>
-                                        </button>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="register_number" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->register_number }}">
-                                            @if($convertedLead->register_number)
-                                            <span class="badge bg-success"><span class="display-value">{{ $convertedLead->register_number }}</span></span>
-                                            @else
-                                            <span class="display-value text-muted">Not Set</span>
-                                            @endif
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
-                                    <td>
-                                        <div class="inline-edit" data-field="dob" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->dob }}">
-                                            @php
-                                            $dobDisplay = $convertedLead->dob ? (strtotime($convertedLead->dob) ? date('d-m-Y', strtotime($convertedLead->dob)) : $convertedLead->dob) : 'N/A';
-                                            @endphp
-                                            <span class="display-value">{{ $dobDisplay }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>{{ $convertedLead->is_b2b == 1 ? ('B2B' . ($convertedLead->lead?->team?->name ? ' (' . $convertedLead->lead->team->name . ')' : '')) : 'In house' }}</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avtar avtar-s rounded-circle bg-light-success me-2 d-flex align-items-center justify-content-center">
-                                                <span class="f-16 fw-bold text-success">{{ strtoupper(substr($convertedLead->name, 0, 1)) }}</span>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0">{{ $convertedLead->name }}</h6>
-                                                <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
-                                                @if($convertedLead->is_cancelled)
-                                                <div>
-                                                    <span class="badge bg-danger mt-1">Cancelled</span>
-                                                    @if($convertedLead->cancelledBy)
-                                                        <br><small class="text-muted mt-1 d-block">By: {{ $convertedLead->cancelledBy->name }}
-                                                        @if($convertedLead->cancelled_at)
-                                                            <br>{{ $convertedLead->cancelled_at->format('d-m-Y h:i A') }}
-                                                        @endif
-                                                        </small>
-                                                    @endif
-                                                </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="subject_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->subject_id }}">
-                                            <span class="display-value">{{ $convertedLead->subject ? $convertedLead->subject->title : 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="phone" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->phone }}">
-                                            <span class="display-value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                        <div class="d-none inline-code-value" data-field="code" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->code }}"></div>
-                                    </td>
-                                    <td>
-                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
-                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}
-                                        @else
-                                            <span class="text-muted">N/A</span>
-                                        @endif
-                                    </td>
-                                    @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                    <td>
-                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
-                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}
-                                        @else
-                                            <span class="text-muted">N/A</span>
-                                        @endif
-                                    </td>
-                                    @endif
-                                    <td>
-                                        <div class="inline-edit" data-field="batch_id" data-id="{{ $convertedLead->id }}" data-course-id="{{ $convertedLead->course_id }}" data-current-id="{{ $convertedLead->batch_id }}">
-                                            <span class="display-value">{{ $convertedLead->batch ? $convertedLead->batch->title : 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</td>
-                                    <td>
-                                        <div class="inline-edit" data-field="admission_batch_id" data-id="{{ $convertedLead->id }}" data-batch-id="{{ $convertedLead->batch_id }}" data-current-id="{{ $convertedLead->admission_batch_id }}">
-                                            <span class="display-value">{{ $convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="academic_assistant_id" data-id="{{ $convertedLead->id }}" data-current-id="{{ $convertedLead->academic_assistant_id }}">
-                                            <span class="display-value">{{ $convertedLead->academicAssistant ? $convertedLead->academicAssistant->name : 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="username" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->username }}">
-                                            <span class="display-value">{{ $convertedLead->username ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="password" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->password }}">
-                                            <span class="display-value">{{ $convertedLead->password ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->status }}">
-                                            <span class="display-value">{{ $convertedLead->status ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="reg_fee" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->reg_fee }}">
-                                            <span class="display-value">{{ $convertedLead->reg_fee ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="exam_fee" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->exam_fee }}">
-                                            <span class="display-value">{{ $convertedLead->exam_fee ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_finance())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="ref_no" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->ref_no }}">
-                                            <span class="display-value">{{ $convertedLead->ref_no ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="enroll_no" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->enroll_no }}">
-                                            <span class="display-value">{{ $convertedLead->enroll_no ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>{{ $convertedLead->email ?? 'N/A' }}</td>
-                                    <td>
-                                        <div class="inline-edit" data-field="id_card" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->id_card }}">
-                                            <span class="display-value">{{ $convertedLead->id_card ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="tma" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->tma }}">
-                                            <span class="display-value">{{ $convertedLead->tma ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="remarks" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->studentDetails?->remarks }}">
-                                            <span class="display-value">{{ $convertedLead->studentDetails?->remarks ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="" role="group">
-                                            <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
-                                                <i class="ti ti-eye"></i>
-                                            </a>
-                                            <a href="{{ route('admin.invoices.index', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View Invoice">
-                                                <i class="ti ti-receipt"></i>
-                                            </a>
-                                            @php
-                                            $canManageCancelFlag = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor();
-                                            @endphp
-                                            @if($canManageCancelFlag)
-                                            @php
-                                            $cancelBtnClass = $convertedLead->is_cancelled ? 'btn-danger' : 'btn-outline-danger';
-                                            $cancelBtnTitle = $convertedLead->is_cancelled ? 'Update cancellation confirmation' : 'Confirm cancellation';
-                                            @endphp
-                                            <button type="button" class="btn btn-sm {{ $cancelBtnClass }} js-cancel-flag" title="{{ $cancelBtnTitle }}"
-                                                data-cancel-url="{{ route('admin.converted-leads.cancel-flag', $convertedLead->id) }}"
-                                                data-modal-title="Cancellation Confirmation">
-                                                <i class="ti ti-ban"></i>
-                                            </button>
-                                            @endif
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_support_team())
-                                            <button type="button" class="btn btn-sm btn-info update-register-btn" title="Update Register Number"
-                                                data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
-                                                data-title="Update Register Number">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @php $courseChanged = (bool) ($convertedLead->is_course_changed ?? false); @endphp
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                            <button type="button" class="btn btn-sm {{ $courseChanged ? 'btn-success' : 'btn-danger' }} js-change-course-modal"
-                                                title="Change Course"
-                                                data-modal-url="{{ route('admin.converted-leads.change-course-modal', $convertedLead->id) }}"
-                                                data-modal-title="Change Course">
-                                                <i class="ti ti-exchange"></i>
-                                            </button>
-                                            @endif
-                                            @if($convertedLead->register_number)
-                                            @php
-                                            $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
-                                            @endphp
-                                            @if($idCard)
-                                            <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" class="btn btn-sm btn-success" title="View ID Card" target="_blank">
-                                                <i class="ti ti-id"></i>
-                                            </a>
-                                            @else
-                                            <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
-                                                    <i class="ti ti-id"></i>
-                                                </button>
-                                            </form>
-                                            @endif
-                                            @endif
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="21" class="text-center">No NIOS converted leads found</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
+                            <tbody></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Mobile Card View -->
-                <div class="d-lg-none">
-                    @forelse($convertedLeads as $index => $convertedLead)
-                    <div class="card mb-3 {{ $convertedLead->is_cancelled ? 'cancelled-card' : '' }}">
-                        <div class="card-body">
-                            <!-- Lead Header -->
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="avtar avtar-s rounded-circle bg-light-success me-3 d-flex align-items-center justify-content-center">
-                                    <span class="f-16 fw-bold text-success">{{ strtoupper(substr($convertedLead->name, 0, 1)) }}</span>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1 fw-bold">{{ $convertedLead->name }}</h6>
-                                    <small class="text-muted">ID: {{ $convertedLead->lead_id }}</small>
-                                    @if($convertedLead->is_cancelled)
-                                    <div>
-                                        <span class="badge bg-danger ms-2">Cancelled</span>
-                                        @if($convertedLead->cancelledBy)
-                                            <br><small class="text-muted ms-2">By: {{ $convertedLead->cancelledBy->name }}
-                                            @if($convertedLead->cancelled_at)
-                                                ({{ $convertedLead->cancelled_at->format('d-m-Y h:i A') }})
-                                            @endif
-                                            </small>
-                                        @endif
-                                    </div>
-                                    @endif
-                                </div>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                        <i class="ti ti-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('admin.converted-leads.show', $convertedLead->id) }}">
-                                                <i class="ti ti-eye me-2"></i>View Details
-                                            </a>
-                                        </li>
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_finance() || \App\Helpers\RoleHelper::is_post_sales())
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('admin.invoices.index', $convertedLead->id) }}">
-                                                <i class="ti ti-receipt me-2"></i>View Invoice
-                                            </a>
-                                        </li>
-                                        @endif
-                                        @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                        <li>
-                                            <a class="dropdown-item update-register-btn" href="#"
-                                                data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
-                                                data-title="Update Register Number">
-                                                <i class="ti ti-edit me-2"></i>Update Register Number
-                                            </a>
-                                        </li>
-                                        @if($convertedLead->register_number)
-                                        @php
-                                        $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
-                                        @endphp
-                                        @if($idCard)
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}" target="_blank">
-                                                <i class="ti ti-id me-2"></i>View ID Card
-                                            </a>
-                                        </li>
-                                        @else
-                                        <li>
-                                            <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
-                                                @csrf
-                                                <button type="submit" class="dropdown-item" data-loading-text="Generating...">
-                                                    <i class="ti ti-id me-2"></i>Generate ID Card
-                                                </button>
-                                            </form>
-                                        </li>
-                                        @endif
-                                        @endif
-                                        @endif
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Lead Details -->
-                            <div class="row g-2 mb-3">
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Phone</small>
-                                    <span class="fw-medium">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) }}</span>
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted d-block">WhatsApp</small>
-                                    <span class="fw-medium">
-                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
-                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->whatsapp_code, $convertedLead->leadDetail->whatsapp_number) }}
-                                        @else
-                                            N/A
-                                        @endif
-                                    </span>
-                                </div>
-                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Parent Phone</small>
-                                    <span class="fw-medium">
-                                        @if($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
-                                            {{ \App\Helpers\PhoneNumberHelper::display($convertedLead->leadDetail->parents_code, $convertedLead->leadDetail->parents_number) }}
-                                        @else
-                                            N/A
-                                        @endif
-                                    </span>
-                                </div>
-                                @endif
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Email</small>
-                                    <span class="fw-medium">{{ $convertedLead->email ?? 'N/A' }}</span>
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Course</small>
-                                    <span class="fw-medium">{{ $convertedLead->course ? $convertedLead->course->title : 'N/A' }}</span>
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Academic Assistant</small>
-                                    <span class="fw-medium">{{ $convertedLead->academicAssistant ? $convertedLead->academicAssistant->name : 'N/A' }}</span>
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Register Number</small>
-                                    @if($convertedLead->register_number)
-                                    <span class="badge bg-success">{{ $convertedLead->register_number }}</span>
-                                    @else
-                                    <span class="text-muted">Not Set</span>
-                                    @endif
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-muted d-block">Converted Date</small>
-                                    <span class="fw-medium">{{ $convertedLead->created_at->format('d-m-Y') }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Action Buttons -->
-                            <div class="d-flex gap-2 flex-wrap">
-                                <a href="{{ route('admin.converted-leads.show', $convertedLead->id) }}"
-                                    class="btn btn-sm btn-primary">
-                                    <i class="ti ti-eye me-1"></i>View Details
-                                </a>
-                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_finance() || \App\Helpers\RoleHelper::is_post_sales())
-                                <a href="{{ route('admin.invoices.index', $convertedLead->id) }}"
-                                    class="btn btn-sm btn-success">
-                                    <i class="ti ti-receipt me-1"></i>View Invoice
-                                </a>
-                                @endif
-                                @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor())
-                                <button type="button" class="btn btn-sm btn-info update-register-btn"
-                                    data-url="{{ route('admin.converted-leads.update-register-number-modal', $convertedLead->id) }}"
-                                    data-title="Update Register Number">
-                                    <i class="ti ti-edit me-1"></i>Update Register
-                                </button>
-                                @if($convertedLead->register_number)
-                                @php
-                                $idCard = \App\Models\ConvertedLeadIdCard::where('converted_lead_id', $convertedLead->id)->first();
-                                @endphp
-                                @if($idCard)
-                                <a href="{{ route('admin.converted-leads.id-card-view', $convertedLead->id) }}"
-                                    class="btn btn-sm btn-success" target="_blank">
-                                    <i class="ti ti-id me-1"></i>View ID Card
-                                </a>
-                                @else
-                                <form action="{{ route('admin.converted-leads.id-card-generate', $convertedLead->id) }}" method="post" style="display:inline-block" class="id-card-generate-form">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-warning" title="Generate ID Card" data-loading-text="Generating...">
-                                        <i class="ti ti-id me-1"></i>Generate ID Card
-                                    </button>
-                                </form>
-                                @endif
-                                @endif
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    @empty
-                    <div class="text-center py-5">
+                <!-- Mobile Card View (filled from AJAX response) -->
+                <div class="d-lg-none" id="niosMobileCardsWrap">
+                    <div id="niosMobileCards"></div>
+                    <div id="niosMobileEmpty" class="text-center py-5 d-none">
                         <div class="text-muted">
                             <i class="ti ti-check-circle f-48 mb-3 d-block"></i>
                             <h5>No NIOS converted leads found</h5>
                             <p>Try adjusting your filters or check back later.</p>
                         </div>
                     </div>
-                    @endforelse
                 </div>
             </div>
         </div>
@@ -998,13 +501,53 @@
         </div>
     </div>
 </div>
-@endsection
 
-<script id="country-codes-json" type="application/json">
-    {
-        !!json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!
-    }
-</script>
+<script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+
+@php
+$niosConvertedLeadsColumns = [];
+if (\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant()) {
+    $niosConvertedLeadsColumns[] = ['data' => 'batch_cb', 'name' => 'batch_cb', 'orderable' => false, 'searchable' => false];
+}
+$niosConvertedLeadsColumns = array_merge($niosConvertedLeadsColumns, [
+    ['data' => 'index', 'name' => 'index', 'orderable' => false, 'searchable' => false],
+    ['data' => 'academic', 'name' => 'academic', 'orderable' => false, 'searchable' => false],
+    ['data' => 'support', 'name' => 'support', 'orderable' => false, 'searchable' => false],
+    ['data' => 'register_number', 'name' => 'register_number', 'orderable' => false, 'searchable' => false],
+    ['data' => 'converted_date', 'name' => 'converted_date', 'orderable' => false, 'searchable' => false],
+    ['data' => 'dob', 'name' => 'dob', 'orderable' => false, 'searchable' => false],
+    ['data' => 'type', 'name' => 'type', 'orderable' => false, 'searchable' => false],
+    ['data' => 'name_col', 'name' => 'name_col', 'orderable' => false, 'searchable' => false],
+    ['data' => 'subject', 'name' => 'subject', 'orderable' => false, 'searchable' => false],
+    ['data' => 'mobile', 'name' => 'mobile', 'orderable' => false, 'searchable' => false],
+    ['data' => 'whatsapp', 'name' => 'whatsapp', 'orderable' => false, 'searchable' => false],
+]);
+if (\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor()) {
+    $niosConvertedLeadsColumns[] = ['data' => 'parent_phone', 'name' => 'parent_phone', 'orderable' => false, 'searchable' => false];
+}
+$niosConvertedLeadsColumns = array_merge($niosConvertedLeadsColumns, [
+    ['data' => 'batch', 'name' => 'batch', 'orderable' => false, 'searchable' => false],
+    ['data' => 'course', 'name' => 'course', 'orderable' => false, 'searchable' => false],
+    ['data' => 'admission_batch', 'name' => 'admission_batch', 'orderable' => false, 'searchable' => false],
+    ['data' => 'registered_person', 'name' => 'registered_person', 'orderable' => false, 'searchable' => false],
+    ['data' => 'username', 'name' => 'username', 'orderable' => false, 'searchable' => false],
+    ['data' => 'password', 'name' => 'password', 'orderable' => false, 'searchable' => false],
+    ['data' => 'admission_status', 'name' => 'admission_status', 'orderable' => false, 'searchable' => false],
+    ['data' => 'student_reg_fee', 'name' => 'student_reg_fee', 'orderable' => false, 'searchable' => false],
+    ['data' => 'exam_fee', 'name' => 'exam_fee', 'orderable' => false, 'searchable' => false],
+    ['data' => 'ref_no', 'name' => 'ref_no', 'orderable' => false, 'searchable' => false],
+    ['data' => 'enroll_no', 'name' => 'enroll_no', 'orderable' => false, 'searchable' => false],
+    ['data' => 'mail', 'name' => 'mail', 'orderable' => false, 'searchable' => false],
+    ['data' => 'id_card', 'name' => 'id_card', 'orderable' => false, 'searchable' => false],
+    ['data' => 'tma', 'name' => 'tma', 'orderable' => false, 'searchable' => false],
+    ['data' => 'remarks', 'name' => 'remarks', 'orderable' => false, 'searchable' => false],
+    ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
+]);
+@endphp
+<div id="niosConvertedLeadsConfig" data-data-url="{{ route('admin.nios-converted-leads.data') }}" style="display:none"></div>
+<script type="application/json" id="niosConvertedLeadsColumnsData">{!! json_encode($niosConvertedLeadsColumns) !!}</script>
+
+@endsection
 
 @push('styles')
 <style>
@@ -1220,36 +763,95 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        // Handle filter form submission
-        $('#filterForm').on('submit', function(e) {
-            e.preventDefault();
+        const configEl = document.getElementById('niosConvertedLeadsConfig');
+        const niosDataUrl = configEl ? configEl.dataset.dataUrl : '';
+        const columnsEl = document.getElementById('niosConvertedLeadsColumnsData');
+        const niosColumns = columnsEl ? JSON.parse(columnsEl.textContent || '[]') : [];
+        let niosConvertedLeadsTable = null;
 
-            const formData = new FormData(this);
+        function getNiosFilterParams() {
+            return {
+                filter_search: ($('#search').val() || '').trim(),
+                search: ($('#search').val() || '').trim(),
+                batch_id: $('#batch_id').val() || '',
+                admission_batch_id: $('#admission_batch_id').val() || '',
+                date_from: $('#date_from').val() || '',
+                date_to: $('#date_to').val() || '',
+                status: $('#status').val() || '',
+                reg_fee: $('#reg_fee').val() || '',
+                exam_fee: $('#exam_fee').val() || '',
+                id_card: $('#id_card').val() || '',
+                tma: $('#tma').val() || ''
+            };
+        }
+
+        function updateNiosUrlWithFilters() {
+            const f = getNiosFilterParams();
             const params = new URLSearchParams();
+            if (f.search) params.append('search', f.search);
+            if (f.batch_id) params.append('batch_id', f.batch_id);
+            if (f.admission_batch_id) params.append('admission_batch_id', f.admission_batch_id);
+            if (f.date_from) params.append('date_from', f.date_from);
+            if (f.date_to) params.append('date_to', f.date_to);
+            if (f.status) params.append('status', f.status);
+            if (f.reg_fee) params.append('reg_fee', f.reg_fee);
+            if (f.exam_fee) params.append('exam_fee', f.exam_fee);
+            if (f.id_card) params.append('id_card', f.id_card);
+            if (f.tma) params.append('tma', f.tma);
+            const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+            window.history.replaceState({ path: newUrl }, '', newUrl);
+        }
 
-            for (let [key, value] of formData.entries()) {
-                if (value.trim() !== '') {
-                    params.append(key, value);
-                }
+        function loadNiosFiltersFromUrl() {
+            const p = new URLSearchParams(window.location.search);
+            if (p.get('search')) $('#search').val(p.get('search'));
+            if (p.get('batch_id')) {
+                $('#batch_id').val(p.get('batch_id'));
+                $('#batch_id').data('selected', p.get('batch_id'));
             }
+            if (p.get('admission_batch_id')) $('#admission_batch_id').data('selected', p.get('admission_batch_id'));
+            if (p.get('date_from')) $('#date_from').val(p.get('date_from'));
+            if (p.get('date_to')) $('#date_to').val(p.get('date_to'));
+            if (p.get('status')) $('#status').val(p.get('status'));
+            if (p.get('reg_fee')) $('#reg_fee').val(p.get('reg_fee'));
+            if (p.get('exam_fee')) $('#exam_fee').val(p.get('exam_fee'));
+            if (p.get('id_card')) $('#id_card').val(p.get('id_card'));
+            if (p.get('tma')) $('#tma').val(p.get('tma'));
+        }
 
-            const url = new URL(window.location.href);
-            url.search = params.toString();
-            window.location.href = url.toString();
-        });
+        function reloadNiosTable() {
+            if (niosConvertedLeadsTable) {
+                niosConvertedLeadsTable.ajax.reload(null, false);
+            }
+        }
 
-        // Handle clear button
-        $('a[href="{{ route("admin.nios-converted-leads.index") }}"]').on('click', function(e) {
-            e.preventDefault();
-            window.location.href = '{{ route("admin.nios-converted-leads.index") }}';
-        });
+        function syncNiosMobileCards(json) {
+            const $cards = $('#niosMobileCards');
+            const $empty = $('#niosMobileEmpty');
+            if (!json || !Array.isArray(json.data)) {
+                $cards.empty();
+                $empty.addClass('d-none');
+                return;
+            }
+            if (json.data.length === 0) {
+                $cards.empty();
+                $empty.removeClass('d-none');
+                return;
+            }
+            $empty.addClass('d-none');
+            let html = '';
+            json.data.forEach(function(row) {
+                html += row.mobile_card || '';
+            });
+            $cards.html(html);
+        }
 
-        // Dependent filters: load admission batches by batch
-        function loadAdmissionBatchesByBatch(batchId, selectedId) {
+        function loadAdmissionBatchesByBatch(batchId, selectedId, done) {
             const $admission = $('#admission_batch_id');
             $admission.html('<option value="">Loading...</option>');
             if (!batchId) {
                 $admission.html('<option value="">All Admission Batches</option>');
+                if (typeof done === 'function') done();
                 return;
             }
             $.get(`/api/admission-batches/by-batch/${batchId}`).done(function(list) {
@@ -1261,24 +863,95 @@
                 $admission.html(opts);
             }).fail(function() {
                 $admission.html('<option value="">All Admission Batches</option>');
+            }).always(function() {
+                if (typeof done === 'function') done();
             });
         }
 
-        // Initialize dependent dropdowns on load
-        loadAdmissionBatchesByBatch($('#batch_id').data('selected'), $('#admission_batch_id').data('selected'));
+        function initNiosDataTable() {
+            $('#convertedLeadsTable').removeClass('data_table_basic');
+            if ($.fn.DataTable.isDataTable('#convertedLeadsTable')) {
+                $('#convertedLeadsTable').DataTable().destroy();
+            }
+            niosConvertedLeadsTable = $('#convertedLeadsTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: niosDataUrl,
+                    type: 'GET',
+                    data: function(d) {
+                        $.extend(d, getNiosFilterParams());
+                    },
+                    dataSrc: function(json) {
+                        syncNiosMobileCards(json);
+                        return json.data;
+                    },
+                    error: function() {
+                        if (typeof showToast === 'function') {
+                            showToast('Error loading NIOS converted leads.', 'error');
+                        }
+                    }
+                },
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                order: [],
+                ordering: false,
+                dom: 'Bfrtip',
+                buttons: ['csv', 'excel', 'print', 'pdf'],
+                scrollX: true,
+                autoWidth: false,
+                columns: niosColumns,
+                drawCallback: function() {
+                    const api = this.api();
+                    const json = api.ajax.json();
+                    if (json) syncNiosMobileCards(json);
+                    $('#selectAll').prop('checked', false);
+                    $('.batch-actions-toolbar').hide();
+                    $('.selected-count').text('0 selected');
+                }
+            });
+        }
 
-        // On batch change â†’ reload admission batches
-        $('#batch_id').on('change', function() {
-            const bid = $(this).val();
-            loadAdmissionBatchesByBatch(bid, '');
+        loadNiosFiltersFromUrl();
+        const batchDataSelected = $('#batch_id').data('selected');
+        const admissionDataSelected = $('#admission_batch_id').data('selected');
+        if (batchDataSelected) {
+            $('#batch_id').val(String(batchDataSelected));
+        }
+        loadAdmissionBatchesByBatch($('#batch_id').val() || batchDataSelected, admissionDataSelected, initNiosDataTable);
+
+        $('#filterForm').on('submit', function(e) {
+            e.preventDefault();
+            updateNiosUrlWithFilters();
+            reloadNiosTable();
         });
 
-        // Handle update register number button clicks
-        $('.update-register-btn').on('click', function(e) {
+        $('#niosClearFilters').on('click', function(e) {
+            e.preventDefault();
+            const form = document.getElementById('filterForm');
+            if (form) form.reset();
+            $('#batch_id').data('selected', '');
+            $('#admission_batch_id').data('selected', '');
+            loadAdmissionBatchesByBatch('', '', function() {
+                window.history.replaceState({}, '', window.location.pathname);
+                reloadNiosTable();
+            });
+        });
+
+        $('#batch_id').on('change', function() {
+            const bid = $(this).val();
+            loadAdmissionBatchesByBatch(bid, '', null);
+        });
+
+        $(document).on('click', '.update-register-btn', function(e) {
             e.preventDefault();
             const url = $(this).data('url');
             const title = $(this).data('title');
             show_small_modal(url, title);
+        });
+
+        $(document).on('change', '#selectAll', function() {
+            $('#convertedLeadsTable tbody .row-checkbox').prop('checked', $(this).prop('checked'));
         });
 
         // Handle ID card generation form submission
@@ -1309,8 +982,12 @@
                     if (response.success) {
                         toast_success(response.message);
                         setTimeout(function() {
-                            location.reload();
-                        }, 1000);
+                            if ($.fn.DataTable.isDataTable('#convertedLeadsTable')) {
+                                $('#convertedLeadsTable').DataTable().ajax.reload(null, false);
+                            } else {
+                                location.reload();
+                            }
+                        }, 600);
                     }
                 },
                 error: function(xhr) {
@@ -1772,9 +1449,13 @@
                     if (res && res.success) {
                         show_alert('success', res.message || 'Updated');
                         $('#academicVerifyModal').modal('hide');
-                        setTimeout(() => {
-                            location.reload();
-                        }, 600);
+                        setTimeout(function() {
+                            if ($.fn.DataTable.isDataTable('#convertedLeadsTable')) {
+                                $('#convertedLeadsTable').DataTable().ajax.reload(null, false);
+                            } else {
+                                location.reload();
+                            }
+                        }, 400);
                     } else {
                         show_alert('error', (res && res.message) ? res.message : 'Failed to update');
                     }
@@ -1823,9 +1504,13 @@
                     if (res && res.success) {
                         show_alert('success', res.message || 'Updated');
                         $('#supportVerifyModal').modal('hide');
-                        setTimeout(() => {
-                            location.reload();
-                        }, 600);
+                        setTimeout(function() {
+                            if ($.fn.DataTable.isDataTable('#convertedLeadsTable')) {
+                                $('#convertedLeadsTable').DataTable().ajax.reload(null, false);
+                            } else {
+                                location.reload();
+                            }
+                        }, 400);
                     } else {
                         show_alert('error', (res && res.message) ? res.message : 'Failed to update');
                     }
