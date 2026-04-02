@@ -751,6 +751,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
 
         // Converted Leads Routes
         Route::get('/converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'index'])->name('converted-leads.index');
+        Route::get('/converted-leads/data', [App\Http\Controllers\ConvertedLeadController::class, 'getConvertedLeadsData'])->name('converted-leads.data');
         Route::get('/converted-leads/export', [App\Http\Controllers\ConvertedLeadController::class, 'export'])->name('converted-leads.export');
         Route::get('/converted-leads/view/{id}', [App\Http\Controllers\ConvertedLeadController::class, 'show'])->name('converted-leads.show');
         Route::get('/converted-leads/{id}/id-card-pdf', [App\Http\Controllers\ConvertedLeadController::class, 'generateIdCardPdf'])->name('converted-leads.id-card-pdf');

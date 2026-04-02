@@ -1,6 +1,6 @@
-﻿@extends('layouts.mantis')
+@extends('layouts.mantis')
 
-@section('title', 'Diploma in Data Science Converted Leads')
+@section('title', 'Diploma in Machine Learning Converted Leads')
 
 @section('content')
 @include('admin.converted-leads.partials.programme-course-server-datatable')
@@ -41,14 +41,14 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Diploma in Data Science Converted Leads Management</h5>
+                    <h5 class="m-b-10">Diploma in Machine Learning Converted Leads Management</h5>
                 </div>
             </div>
             <div class="col-md-6">
                 <ul class="breadcrumb d-flex justify-content-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.converted-leads.index') }}">Converted Leads</a></li>
-                    <li class="breadcrumb-item">Diploma in Data Science</li>
+                    <li class="breadcrumb-item">Diploma in Machine Learning</li>
                 </ul>
             </div>
         </div>
@@ -88,7 +88,7 @@
                     <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
                     </a>
-                    <a href="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" class="btn btn-primary active">
+                    <a href="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-database"></i> Diploma in Data Science Converted Leads
                     </a>
                     <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
@@ -100,7 +100,7 @@
                     <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-palette"></i> Graphic Designing Converted Leads
                     </a>
-                    <a href="{{ route('admin.machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.machine-learning-converted-leads.index') }}" class="btn btn-primary active">
                         <i class="ti ti-brain"></i> Diploma in Machine Learning Converted Leads
                     </a>
                     <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-outline-primary">
@@ -193,6 +193,9 @@
                     <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> RPA Mentor List
                     </a>
+                    <a href="{{ route('admin.junior-vlogger-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List
+                    </a>
                 </div>
             </div>
         </div>
@@ -239,14 +242,8 @@
                     <a href="{{ route('admin.support-vibe-coding-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Vibe Coding Converted Support List
                     </a>
-                    <a href="{{ route('admin.support-graphic-designing-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Graphic Designing Converted Support List
-                    </a>
                     <a href="{{ route('admin.support-machine-learning-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Diploma in Machine Learning Converted Support List
-                    </a>
-                    <a href="{{ route('admin.support-flutter-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Flutter Converted Support List
                     </a>
                     <a href="{{ route('admin.support-eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Eduthanzeel Converted Support List
@@ -270,7 +267,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" id="filterForm" class="js-programme-scoped-dt-form">
+                <form method="GET" action="{{ route('admin.machine-learning-converted-leads.index') }}" id="filterForm" class="js-programme-scoped-dt-form">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
@@ -374,7 +371,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.machine-learning-converted-leads.index') }}" class="btn btn-secondary">
                                 <i class="ti ti-refresh"></i> Clear
                             </a>
                         </div>
@@ -391,7 +388,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5>Diploma in Data Science Converted Leads</h5>
+                <h5>Diploma in Machine Learning Converted Leads</h5>
             </div>
             <div class="card-body">
                 <p class="d-lg-none text-muted small mb-2">Tip: scroll sideways to see all columns.</p>
@@ -555,10 +552,6 @@
                 editForm = createTimeField(field, currentValue);
             } else if (field === 'batch_id') {
                 const courseId = container.data('course-id');
-                const currentId = container.data('current-id') !== undefined ? String(container.data('current-id')).trim() : '';
-                editForm = createBatchSelect(courseId, currentId);
-            } else if (field === 'batch_id') {
-                const courseId = container.data('course-id');
                 const currentId = container.data('current-id');
                 editForm = createBatchSelect(courseId, currentId);
             } else if (field === 'admission_batch_id') {
@@ -570,6 +563,10 @@
                 const programmeType = container.data('programme-type');
                 const currentId = container.data('current-id');
                 editForm = createClassTimeSelect(courseId, programmeType, currentId);
+            } else if (container.data('field-type') === 'select') {
+                // Handle fields with data-field-type="select" using data-options
+                const options = container.data('options');
+                editForm = createSelectFieldFromOptions(field, currentValue, options);
             } else {
                 editForm = createInputField(field, currentValue);
             }
@@ -650,13 +647,6 @@
                             // The response.value should contain the formatted time string
                             displayValue = response.value;
                         }
-                        // If programme_type changed, reload page to update location and class_time_id visibility
-                        if (field === 'programme_type') {
-                            setTimeout(() => {
-                                (typeof window.reloadProgrammeCourseDataTable === 'function' ? window.reloadProgrammeCourseDataTable() : location.reload());
-                            }, 500);
-                        }
-
                         // If batch_id changed, update admission_batch_id field's data-batch-id
                         if (field === 'batch_id') {
                             const row = container.closest('tr');
@@ -668,7 +658,12 @@
                                 admissionBatchContainer.find('.display-value').text('N/A');
                             }
                         }
-
+                        // If programme_type changed, reload page to update location and class_time_id visibility
+                        if (field === 'programme_type') {
+                            setTimeout(() => {
+                                (typeof window.reloadProgrammeCourseDataTable === 'function' ? window.reloadProgrammeCourseDataTable() : location.reload());
+                            }, 500);
+                        }
                         if (field === 'phone') {
                             const codeVal = extra.code || '';
                             container.siblings('.inline-code-value').data('current', codeVal);
@@ -751,20 +746,6 @@
                     <div class="btn-group mt-1">
                         <button class="btn btn-success btn-sm save-edit">Save</button>
                         <button class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function createBatchSelect(courseId, currentId) {
-            return `
-                <div class="edit-form">
-                    <select class="form-select form-select-sm">
-                        <option value="">Loading...</option>
-                    </select>
-                    <div class="btn-group mt-1">
-                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
                     </div>
                 </div>
             `;
@@ -887,29 +868,6 @@
                 .fail(function() {
                     $select.html('<option value="">Error loading class times</option>');
                 });
-        }
-
-        function createSelectFieldFromOptions(field, currentValue, options) {
-            let optionsHtml = '<option value="">Select ' + field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</option>';
-
-            if (options && typeof options === 'object') {
-                for (const [value, label] of Object.entries(options)) {
-                    const selected = (currentValue && String(currentValue).toLowerCase() === String(value).toLowerCase()) ? 'selected' : '';
-                    optionsHtml += `<option value="${value}" ${selected}>${label}</option>`;
-                }
-            }
-
-            return `
-                <div class="edit-form">
-                    <select class="form-select form-select-sm">
-                        ${optionsHtml}
-                    </select>
-                    <div class="btn-group mt-1">
-                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
-                    </div>
-                </div>
-            `;
         }
 
         function createPhoneField(currentCode, currentPhone) {

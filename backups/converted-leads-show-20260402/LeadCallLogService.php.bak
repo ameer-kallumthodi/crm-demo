@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\ConvertedLead;
-use App\Models\User;
 use App\Models\VoxbayCallLog;
 use Illuminate\Support\Collection;
 
@@ -33,52 +32,10 @@ class LeadCallLogService
             ->limit($limit)
             ->get();
 
-        self::hydrateTelecallerNames($callLogs);
-
-        return $callLogs;
-    }
-
-    /**
-     * Resolve telecaller display names with one (or few) queries instead of N queries per log.
-     */
-    protected static function hydrateTelecallerNames(Collection $logs): void
-    {
-        if ($logs->isEmpty()) {
-            return;
-        }
-
-        $extCandidates = [];
-        foreach ($logs as $log) {
-            foreach ([$log->extensionNumber ?? null, $log->AgentNumber ?? null] as $e) {
-                if ($e !== null && $e !== '') {
-                    $extCandidates[$e] = true;
-                }
-            }
-        }
-        $extList = array_keys($extCandidates);
-
-        $nameByExt = [];
-        if ($extList !== []) {
-            $users = User::query()
-                ->where('role_id', 3)
-                ->whereIn('ext_no', $extList)
-                ->get(['id', 'name', 'ext_no']);
-
-            foreach ($users as $user) {
-                if ($user->ext_no) {
-                    $nameByExt[$user->ext_no] = $user->name;
-                }
-            }
-        }
-
-        foreach ($logs as $log) {
-            $ext = $log->extensionNumber ?? $log->AgentNumber;
-            if ($ext && isset($nameByExt[$ext])) {
-                $log->telecaller_name = $nameByExt[$ext];
-            } else {
-                $log->telecaller_name = $log->getTelecallerName();
-            }
-        }
+        return $callLogs->map(function ($log) {
+            $log->telecaller_name = $log->getTelecallerName();
+            return $log;
+        });
     }
 
     /**

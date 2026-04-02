@@ -1,6 +1,6 @@
-﻿@extends('layouts.mantis')
+@extends('layouts.mantis')
 
-@section('title', 'Diploma in Data Science Converted Leads')
+@section('title', 'AI with Python Converted Leads')
 
 @section('content')
 @include('admin.converted-leads.partials.programme-course-server-datatable')
@@ -85,10 +85,13 @@
                     <a href="{{ route('admin.gmvss-converted-leads.index') }}" class="btn btn-outline-info">
                         <i class="ti ti-certificate"></i> GMVSS Converted Leads
                     </a>
+                    <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-primary active">
+                        <i class="ti ti-code"></i> AI with Python Converted Leads
+                    </a>
                     <a href="{{ route('admin.digital-marketing-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-marketing"></i> Digital Marketing Converted Leads
                     </a>
-                    <a href="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" class="btn btn-primary active">
+                    <a href="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-database"></i> Diploma in Data Science Converted Leads
                     </a>
                     <a href="{{ route('admin.web-development-converted-leads.index') }}" class="btn btn-outline-primary">
@@ -193,6 +196,9 @@
                     <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> RPA Mentor List
                     </a>
+                    <a href="{{ route('admin.junior-vlogger-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List
+                    </a>
                 </div>
             </div>
         </div>
@@ -270,7 +276,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" id="filterForm" class="js-programme-scoped-dt-form">
+                <form method="GET" action="{{ route('admin.ai-python-converted-leads.index') }}" id="filterForm" class="js-programme-scoped-dt-form">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
@@ -363,18 +369,10 @@
                             </select>
                         </div>
                         <div class="col-12 col-sm-6 col-md-2">
-                            <label for="programme_type" class="form-label">Course Type</label>
-                            <select class="form-select" id="programme_type" name="programme_type">
-                                <option value="">All</option>
-                                <option value="online" {{ request('programme_type')==='online' ? 'selected' : '' }}>Online</option>
-                                <option value="offline" {{ request('programme_type')==='offline' ? 'selected' : '' }}>Offline</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-sm-6 col-md-2">
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.diploma-in-data-science-converted-leads.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-secondary">
                                 <i class="ti ti-refresh"></i> Clear
                             </a>
                         </div>
@@ -391,7 +389,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5>Diploma in Data Science Converted Leads</h5>
+                <h5>AI with Python Converted Leads</h5>
             </div>
             <div class="card-body">
                 <p class="d-lg-none text-muted small mb-2">Tip: scroll sideways to see all columns.</p>
@@ -403,7 +401,7 @@
                                     <th>Academic</th>
                                     <th>Support</th>
                                     <th>Converted Date</th>
-                                    <th>Register Number</th>
+                                    <th>Registration Number</th>
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>Phone</th>
@@ -411,9 +409,6 @@
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
                                     <th>Parent Phone</th>
                                     @endif
-                                    <th>Course Type</th>
-                                    <th>Location</th>
-                                    <th>Class Time</th>
                                     <th>Batch</th>
                                     <th>Admission Batch</th>
                                     <th>Internship ID</th>
@@ -424,6 +419,7 @@
                                     <th>Class Starting Date</th>
                                     <th>Class Ending Date</th>
                                     <th>WhatsApp Group Status</th>
+                                    <th>Class Time</th>
                                     <th>Class Status</th>
                                     <th>Complete/Cancel Date</th>
                                     <th>Remarks</th>
@@ -444,7 +440,7 @@
 
 <script id="country-codes-json" type="application/json">
     {
-        {!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}
+        !!json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!
     }
 </script>
 
@@ -523,6 +519,43 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+        // DataTable is automatically initialized by layout for tables with 'data_table_basic' class
+
+        // Batch filter enhancement
+        $('#batch_id').on('change', function() {
+            // Auto-submit form when batch is changed for better UX
+            $('#filterForm').submit();
+        });
+
+        // Dependent filters: load admission batches by batch
+        function loadAdmissionBatchesByBatch(batchId, selectedId) {
+            const $admission = $('#admission_batch_id');
+            $admission.html('<option value="">Loading...</option>');
+            if (!batchId) {
+                $admission.html('<option value="">All Admission Batches</option>');
+                return;
+            }
+            $.get(`/api/admission-batches/by-batch/${batchId}`).done(function(list) {
+                let opts = '<option value="">All Admission Batches</option>';
+                list.forEach(function(i) {
+                    const sel = String(selectedId) === String(i.id) ? 'selected' : '';
+                    opts += `<option value="${i.id}" ${sel}>${i.title}</option>`;
+                });
+                $admission.html(opts);
+            }).fail(function() {
+                $admission.html('<option value="">All Admission Batches</option>');
+            });
+        }
+
+        // Initialize dependent dropdowns on load
+        loadAdmissionBatchesByBatch($('#batch_id').val(), $('#admission_batch_id').data('selected'));
+
+        // On batch change â†’ reload admission batches
+        $('#batch_id').on('change', function() {
+            const bid = $(this).val();
+            loadAdmissionBatchesByBatch(bid, '');
+        });
+
         // Inline editing functionality
         $(document).on('click', '.edit-btn', function(e) {
             e.preventDefault();
@@ -557,19 +590,9 @@
                 const courseId = container.data('course-id');
                 const currentId = container.data('current-id') !== undefined ? String(container.data('current-id')).trim() : '';
                 editForm = createBatchSelect(courseId, currentId);
-            } else if (field === 'batch_id') {
-                const courseId = container.data('course-id');
-                const currentId = container.data('current-id');
-                editForm = createBatchSelect(courseId, currentId);
             } else if (field === 'admission_batch_id') {
                 const batchId = container.data('batch-id');
-                const currentId = container.data('current-id');
-                editForm = createAdmissionBatchField(batchId, currentId);
-            } else if (field === 'class_time_id') {
-                const courseId = container.data('course-id');
-                const programmeType = container.data('programme-type');
-                const currentId = container.data('current-id');
-                editForm = createClassTimeSelect(courseId, programmeType, currentId);
+                editForm = createAdmissionBatchField(batchId, currentValue);
             } else {
                 editForm = createInputField(field, currentValue);
             }
@@ -580,20 +603,13 @@
             // Load options for select fields that need dynamic loading
             if (field === 'batch_id') {
                 const courseId = container.data('course-id');
-                const currentId = container.data('current-id');
+                const currentId = container.data('current-id') !== undefined ? String(container.data('current-id')).trim() : '';
                 const $select = container.find('select');
-                loadBatchesForEdit($select, courseId, currentId);
+                loadBatches(courseId, $select, currentId);
             } else if (field === 'admission_batch_id') {
                 const batchId = container.data('batch-id');
-                const currentId = container.data('current-id');
                 const $select = container.find('select');
-                loadAdmissionBatchesForEdit($select, batchId, currentId);
-            } else if (field === 'class_time_id') {
-                const courseId = container.data('course-id');
-                const programmeType = container.data('programme-type');
-                const currentId = container.data('current-id');
-                const $select = container.find('select');
-                loadClassTimesForEdit($select, courseId, programmeType, currentId);
+                loadAdmissionBatchesForEdit($select, batchId, currentValue);
             } else {
                 container.find('input, select').first().focus();
             }
@@ -642,30 +658,19 @@
                         // Update the data-current attribute with the new display value
                         container.data('current', displayValue);
                         // Update data-current-id for fields that use it (store the ID, not the display value)
-                        if (field === 'batch_id' || field === 'admission_batch_id' || field === 'class_time_id') {
+                        if (field === 'batch_id' || field === 'admission_batch_id') {
                             container.data('current-id', value || '');
                         }
-                        // Handle class_time_id display update
-                        if (field === 'class_time_id' && response.value) {
-                            // The response.value should contain the formatted time string
-                            displayValue = response.value;
-                        }
-                        // If programme_type changed, reload page to update location and class_time_id visibility
-                        if (field === 'programme_type') {
-                            setTimeout(() => {
-                                (typeof window.reloadProgrammeCourseDataTable === 'function' ? window.reloadProgrammeCourseDataTable() : location.reload());
-                            }, 500);
-                        }
 
-                        // If batch_id changed, update admission_batch_id field's data-batch-id
+                        // If batch_id changed, update the admission_batch_id container's data-batch-id
                         if (field === 'batch_id') {
                             const row = container.closest('tr');
-                            const admissionBatchContainer = row.find('[data-field="admission_batch_id"]');
+                            const admissionBatchContainer = row.find('.inline-edit[data-field="admission_batch_id"]');
                             if (admissionBatchContainer.length) {
                                 admissionBatchContainer.data('batch-id', value || '');
                                 // Clear admission batch if batch changed
-                                admissionBatchContainer.data('current-id', '');
                                 admissionBatchContainer.find('.display-value').text('N/A');
+                                admissionBatchContainer.data('current-id', '');
                             }
                         }
 
@@ -770,25 +775,11 @@
             `;
         }
 
-        function createBatchSelect(courseId, currentId) {
-            return `
-                <div class="edit-form">
-                    <select class="form-select form-select-sm">
-                        <option value="">Loading...</option>
-                    </select>
-                    <div class="btn-group mt-1">
-                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function createAdmissionBatchField(batchId, currentId) {
+        function createAdmissionBatchField(batchId, currentValue) {
             return `
                 <div class="edit-form">
                     <select class="form-select form-select-sm" data-batch-id="${batchId}">
-                        <option value="">Loading...</option>
+                        <option value="">Select Admission Batch</option>
                     </select>
                     <div class="btn-group mt-1">
                         <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
@@ -798,7 +789,7 @@
             `;
         }
 
-        function loadBatchesForEdit($select, courseId, currentId) {
+        function loadBatches(courseId, $select, currentId) {
             if (!courseId) {
                 $select.html('<option value="">No course selected</option>');
                 return;
@@ -809,6 +800,7 @@
                     let options = '<option value="">Select Batch</option>';
                     if (response.success && response.batches) {
                         response.batches.forEach(function(batch) {
+                            // Only select if currentId is not empty and matches
                             const isSelected = (currentId && String(currentId) === String(batch.id)) ? 'selected' : '';
                             options += `<option value="${batch.id}" ${isSelected}>${batch.title}</option>`;
                         });
@@ -821,95 +813,22 @@
                 });
         }
 
-        function loadAdmissionBatchesForEdit($select, batchId, currentId) {
+        function loadAdmissionBatchesForEdit($select, batchId, currentValue) {
             if (!batchId) {
                 $select.html('<option value="">No batch selected</option>');
                 return;
             }
 
-            $.get(`/api/admission-batches/by-batch/${batchId}`)
-                .done(function(list) {
-                    let options = '<option value="">Select Admission Batch</option>';
-                    list.forEach(function(item) {
-                        const isSelected = (currentId && String(currentId) === String(item.id)) ? 'selected' : '';
-                        options += `<option value="${item.id}" ${isSelected}>${item.title}</option>`;
-                    });
-                    $select.html(options);
-                    $select.focus();
-                })
-                .fail(function() {
-                    $select.html('<option value="">Error loading admission batches</option>');
+            $.get(`/api/admission-batches/by-batch/${batchId}`).done(function(list) {
+                let options = '<option value="">Select Admission Batch</option>';
+                list.forEach(function(item) {
+                    const selected = String(currentValue) === String(item.id) ? 'selected' : '';
+                    options += `<option value="${item.id}" ${selected}>${item.title}</option>`;
                 });
-        }
-
-        function createClassTimeSelect(courseId, programmeType, currentId) {
-            return `
-                <div class="edit-form">
-                    <select class="form-select form-select-sm" data-course-id="${courseId}" data-programme-type="${programmeType}">
-                        <option value="">Loading...</option>
-                    </select>
-                    <div class="btn-group mt-1">
-                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function loadClassTimesForEdit($select, courseId, programmeType, currentId) {
-            if (!courseId || !programmeType) {
-                $select.html('<option value="">No course or programme type selected</option>');
-                return;
-            }
-
-            $.get(`/api/class-times/by-course/${courseId}?class_type=${programmeType}`)
-                .done(function(list) {
-                    let options = '<option value="">Select Class Time</option>';
-                    if (list && list.length > 0) {
-                        list.forEach(function(classTime) {
-                            const fromTime = new Date('2000-01-01 ' + classTime.from_time).toLocaleTimeString('en-US', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: true
-                            });
-                            const toTime = new Date('2000-01-01 ' + classTime.to_time).toLocaleTimeString('en-US', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: true
-                            });
-                            const isSelected = (currentId && String(currentId) === String(classTime.id)) ? 'selected' : '';
-                            options += `<option value="${classTime.id}" ${isSelected}>${fromTime} - ${toTime}</option>`;
-                        });
-                    }
-                    $select.html(options);
-                    $select.focus();
-                })
-                .fail(function() {
-                    $select.html('<option value="">Error loading class times</option>');
-                });
-        }
-
-        function createSelectFieldFromOptions(field, currentValue, options) {
-            let optionsHtml = '<option value="">Select ' + field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</option>';
-
-            if (options && typeof options === 'object') {
-                for (const [value, label] of Object.entries(options)) {
-                    const selected = (currentValue && String(currentValue).toLowerCase() === String(value).toLowerCase()) ? 'selected' : '';
-                    optionsHtml += `<option value="${value}" ${selected}>${label}</option>`;
-                }
-            }
-
-            return `
-                <div class="edit-form">
-                    <select class="form-select form-select-sm">
-                        ${optionsHtml}
-                    </select>
-                    <div class="btn-group mt-1">
-                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
-                    </div>
-                </div>
-            `;
+                $select.html(options);
+            }).fail(function() {
+                $select.html('<option value="">Error loading admission batches</option>');
+            });
         }
 
         function createPhoneField(currentCode, currentPhone) {

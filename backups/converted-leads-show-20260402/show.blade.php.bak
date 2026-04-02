@@ -6,17 +6,6 @@
 @php
     $listRoute = $listRoute ?? route('admin.converted-leads.index');
     $pdfRoute = $pdfRoute ?? route('admin.converted-leads.details-pdf', $convertedLead->id);
-    $__fileMeta = $fileExistenceMeta ?? [];
-    $fileExistsOnDisk = function (?string $p) use ($__fileMeta) {
-        if (!$p) {
-            return false;
-        }
-        if (array_key_exists($p, $__fileMeta)) {
-            return (bool) $__fileMeta[$p];
-        }
-
-        return \Illuminate\Support\Facades\Storage::disk('public')->exists($p);
-    };
 @endphp
 <!-- [ breadcrumb ] start -->
 <div class="page-header">
@@ -188,7 +177,7 @@
                             @if($convertedLead->mentorDetails->placement_resume)
                             @php
                                 $resumePath = $convertedLead->mentorDetails->placement_resume;
-                                $resumeExists = $fileExistsOnDisk($resumePath);
+                                $resumeExists = $resumePath ? \Illuminate\Support\Facades\Storage::disk('public')->exists($resumePath) : false;
                                 $resumeUrl = $resumeExists ? asset('storage/' . $resumePath) : null;
                             @endphp
                             <div class="col-12">
@@ -513,7 +502,7 @@
                                     <label class="form-label text-muted">{{ $config['label'] }}</label>
                                     @php
                                         $path = $doc->$field ?? null;
-                                        $exists = $fileExistsOnDisk($path);
+                                        $exists = $path ? \Illuminate\Support\Facades\Storage::disk('public')->exists($path) : false;
                                         $fileUrl = $exists ? asset('storage/' . $path) : null;
                                         $isPdf = $exists ? \Illuminate\Support\Str::endsWith(strtolower($path), '.pdf') : false;
                                         $verificationStatus = $doc->{$config['status_field']} ?? 'pending';
@@ -583,7 +572,7 @@
                                     <label class="form-label text-muted">SSLC Certificate {{ $index + 1 }}</label>
                                     @php
                                         $certPath = $certificate->certificate_path ?? null;
-                                        $certExists = $fileExistsOnDisk($certPath);
+                                        $certExists = $certPath ? \Illuminate\Support\Facades\Storage::disk('public')->exists($certPath) : false;
                                         $certUrl = $certExists ? asset('storage/' . $certPath) : null;
                                         $certIsPdf = $certExists ? \Illuminate\Support\Str::endsWith(strtolower($certPath), '.pdf') : false;
                                     @endphp
@@ -650,7 +639,7 @@
                                     <label class="form-label text-muted">SSLC Certificate (Legacy)</label>
                                     @php
                                         $legacyPath = $doc->sslc_certificate ?? null;
-                                        $legacyExists = $fileExistsOnDisk($legacyPath);
+                                        $legacyExists = $legacyPath ? \Illuminate\Support\Facades\Storage::disk('public')->exists($legacyPath) : false;
                                         $legacyUrl = $legacyExists ? asset('storage/' . $legacyPath) : null;
                                         $legacyIsPdf = $legacyExists ? \Illuminate\Support\Str::endsWith(strtolower($legacyPath), '.pdf') : false;
                                     @endphp
@@ -798,12 +787,8 @@
     @if(isset($convertedStudentActivities) && $convertedStudentActivities->count() > 0)
     <div class="col-12 mt-4">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h5 class="mb-0">Student Activities History
-                    @if(!empty($convertedStudentActivitiesTruncated))
-                        <small class="text-muted fw-normal">(showing the {{ (int) ($convertedStudentActivitiesLimit ?? 150) }} most recent)</small>
-                    @endif
-                </h5>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Student Activities History</h5>
                 <span class="badge bg-light-primary text-primary">{{ $convertedStudentActivities->count() }} record(s)</span>
             </div>
             <div class="card-body">
@@ -897,11 +882,7 @@
     <div class="col-12 mt-4">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Lead Activities History
-                    @if(!empty($leadActivitiesTruncated))
-                        <small class="text-muted fw-normal">(showing the {{ (int) ($leadActivitiesLimit ?? 200) }} most recent)</small>
-                    @endif
-                </h5>
+                <h5 class="mb-0">Lead Activities History</h5>
             </div>
             <div class="card-body">
                 @if($leadActivities->count() > 0)
@@ -997,7 +978,7 @@
                                 <label class="form-label">{{ $fileConfig['label'] }}</label>
                                 @php
                                     $currentFile = $doc ? $doc->{$fileConfig['field']} : null;
-                                    $fileExists = $fileExistsOnDisk($currentFile);
+                                    $fileExists = $currentFile ? \Illuminate\Support\Facades\Storage::disk('public')->exists($currentFile) : false;
                                     $fileUrl = $fileExists ? asset('storage/' . $currentFile) : null;
                                 @endphp
                                 @if($fileExists)

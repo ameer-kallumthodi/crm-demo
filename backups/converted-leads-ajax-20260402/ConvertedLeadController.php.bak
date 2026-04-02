@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Database\Eloquent\Builder;
 use App\Models\ConvertedLead;
 use App\Models\ConvertedStudentMentorDetail;
 use App\Models\PlacementMockTestDetail;
@@ -29,7 +27,6 @@ use App\Models\LeadDetail;
 use App\Models\ConvertedStudentActivity;
 use App\Models\LeadActivity;
 use App\Services\LeadCallLogService;
-use App\Support\ConvertedLeadShowFileHelper;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ConvertedLeadsExport;
@@ -37,174 +34,94 @@ use App\Exports\ConvertedLeadsExport;
 class ConvertedLeadController extends Controller
 {
     /**
-     * Display a listing of converted leads (table rows load via AJAX).
+     * Display a listing of converted leads
      */
     public function index(Request $request)
     {
-        $courses = Course::where('is_active', 1)->orderBy('title')->get(['id', 'title']);
-        $country_codes = get_country_code();
+        $query = ConvertedLead::with([
+            'lead.createdBy', // Load the user who created the lead
+            'lead',
+            'lead.team',
+            'course',
+            'academicAssistant',
+            'createdBy',
+            'cancelledBy',
+            'subject',
+            'studentDetails',
+            'leadDetail', // For Academic Document Approved (leads_details.reviewed_at)
+            'invoices.payments', // For checking pending payments
+        ]);
 
-        return view('admin.converted-leads.index', compact('courses', 'country_codes'));
-    }
-
-    /**
-     * Server-side DataTables JSON for the converted leads index.
-     */
-    public function getConvertedLeadsData(Request $request): JsonResponse
-    {
-        try {
-            set_time_limit(config('timeout.max_execution_time', 300));
-
-            $recordsTotalQuery = ConvertedLead::query();
-            $this->applyConvertedLeadsRoleScope($recordsTotalQuery);
-            $recordsTotal = (clone $recordsTotalQuery)->count();
-
-            $filteredQuery = ConvertedLead::query();
-            $this->applyConvertedLeadsRoleScope($filteredQuery);
-            $this->applyConvertedLeadsListingFilters($filteredQuery, $request);
-            $recordsFiltered = (clone $filteredQuery)->count();
-
-            $length = (int) $request->input('length', 25);
-            if ($length < 1 || $length > 500) {
-                $length = 25;
-            }
-            $start = max(0, (int) $request->input('start', 0));
-
-            $convertedLeads = (clone $filteredQuery)->with([
-                'lead.createdBy',
-                'lead.team',
-                'course',
-                'cancelledBy',
-                'studentDetails',
-                'leadDetail',
-                'invoices.payments',
-                'batch',
-                'admissionBatch',
-            ])->orderBy('id', 'desc')
-                ->skip($start)
-                ->take($length)
-                ->get();
-
-            $leadIds = $convertedLeads->pluck('id');
-            $idCardLeadIds = ConvertedLeadIdCard::whereIn('converted_lead_id', $leadIds)
-                ->pluck('converted_lead_id')
-                ->unique()
-                ->flip();
-
-            $appTimezone = config('app.timezone');
-            $showParentPhone = RoleHelper::is_admin_or_super_admin() || RoleHelper::is_admission_counsellor();
-
-            $data = [];
-            foreach ($convertedLeads as $i => $convertedLead) {
-                $data[] = $this->formatConvertedLeadDataTableRow(
-                    $convertedLead,
-                    $start + $i + 1,
-                    $appTimezone,
-                    $idCardLeadIds,
-                    $showParentPhone
-                );
-            }
-
-            return response()->json([
-                'draw' => (int) $request->input('draw'),
-                'recordsTotal' => $recordsTotal,
-                'recordsFiltered' => $recordsFiltered,
-                'data' => $data,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('converted-leads.data: '.$e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'draw' => (int) $request->input('draw'),
-                'recordsTotal' => 0,
-                'recordsFiltered' => 0,
-                'data' => [],
-                'error' => 'Unable to load data.',
-            ], 500);
-        }
-    }
-
-    protected function resolvedConvertedLeadsSearchTerm(Request $request): ?string
-    {
-        $v = $request->input('filter_search');
-        if (is_string($v) && trim($v) !== '') {
-            return trim($v);
-        }
-        $search = $request->input('search');
-        if (is_array($search) && ! empty($search['value'])) {
-            $s = trim((string) $search['value']);
-
-            return $s !== '' ? $s : null;
-        }
-        if (is_string($search) && trim($search) !== '') {
-            return trim($search);
-        }
-
-        return null;
-    }
-
-    protected function applyConvertedLeadsRoleScope(Builder $query): void
-    {
+        // Apply role-based filtering
         $currentUser = AuthHelper::getCurrentUser();
-        if (! $currentUser) {
-            return;
-        }
-
-        if (RoleHelper::is_general_manager()) {
-            return;
-        }
-        if (RoleHelper::is_senior_manager()) {
-            return;
-        }
-        if (RoleHelper::is_team_lead()) {
-            $teamId = $currentUser->team_id;
-            if ($teamId) {
-                $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                $query->whereHas('lead', function ($q) use ($teamMemberIds) {
-                    $q->whereIn('telecaller_id', $teamMemberIds);
-                });
-            } else {
-                $query->whereHas('lead', function ($q) {
+        if ($currentUser) {
+            // General Manager: Can see ALL converted leads (no filter)
+            if (RoleHelper::is_general_manager()) {
+                // No filtering
+            // Senior Manager: Can see ALL converted leads (no filter)
+            } elseif (RoleHelper::is_senior_manager()) {
+                // No filtering - show all converted leads
+            // Check team lead next
+            } elseif (RoleHelper::is_team_lead()) {
+                // Team Lead: Can see converted leads from their team
+                $teamId = $currentUser->team_id;
+                if ($teamId) {
+                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
+                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
+                        $q->whereIn('telecaller_id', $teamMemberIds);
+                    });
+                } else {
+                    // If no team assigned, only show their own leads
+                    $query->whereHas('lead', function($q) {
+                        $q->where('telecaller_id', AuthHelper::getCurrentUserId());
+                    });
+                }
+            } elseif (RoleHelper::is_admission_counsellor()) {
+                // Admission Counsellor: Can see ALL converted leads
+                // No additional filtering needed - show all
+            } elseif (RoleHelper::is_academic_assistant()) {
+                // Academic Assistant: Can see ALL converted leads
+                // No additional filtering needed - show all
+            } elseif (RoleHelper::is_hod()) {
+                // HOD: Only see leads for courses where they are assigned as HOD
+                $hodCourseIds = Course::where('hod_id', AuthHelper::getCurrentUserId())
+                    ->pluck('id')
+                    ->toArray();
+                
+                if (!empty($hodCourseIds)) {
+                    $query->whereIn('course_id', $hodCourseIds);
+                } else {
+                    // If HOD has no assigned courses, return empty results
+                    $query->whereRaw('1 = 0');
+                }
+            } elseif (RoleHelper::is_telecaller()) {
+                // Telecaller: Can only see converted leads from leads assigned to them
+                $query->whereHas('lead', function($q) {
                     $q->where('telecaller_id', AuthHelper::getCurrentUserId());
                 });
+            } elseif (RoleHelper::is_support_team()) {
+                // Support Team: Only see academically verified leads
+                $query->where('is_academic_verified', 1);
+            } elseif (RoleHelper::is_mentor()) {
+                // Mentor: Filter by admission_batch_id where mentor_id matches
+                // Mentors should only see converted leads assigned to their admission batches
+                // $mentorAdmissionBatchIds = \App\Models\AdmissionBatch::where('mentor_id', AuthHelper::getCurrentUserId())
+                //     ->where('is_active', 1)
+                //     ->pluck('id')
+                //     ->toArray();
+                
+                // if (!empty($mentorAdmissionBatchIds)) {
+                //     $query->whereIn('admission_batch_id', $mentorAdmissionBatchIds);
+                // } else {
+                //     // If mentor has no admission batches, return empty result
+                //     $query->whereRaw('1 = 0');
+                // }
             }
+        }
 
-            return;
-        }
-        if (RoleHelper::is_admission_counsellor()) {
-            return;
-        }
-        if (RoleHelper::is_academic_assistant()) {
-            return;
-        }
-        if (RoleHelper::is_hod()) {
-            $hodCourseIds = Course::where('hod_id', AuthHelper::getCurrentUserId())->pluck('id')->toArray();
-            if (! empty($hodCourseIds)) {
-                $query->whereIn('course_id', $hodCourseIds);
-            } else {
-                $query->whereRaw('1 = 0');
-            }
-
-            return;
-        }
-        if (RoleHelper::is_telecaller()) {
-            $query->whereHas('lead', function ($q) {
-                $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-            });
-
-            return;
-        }
-        if (RoleHelper::is_support_team()) {
-            $query->where('is_academic_verified', 1);
-        }
-    }
-
-    protected function applyConvertedLeadsListingFilters(Builder $query, Request $request): void
-    {
-        $search = $this->resolvedConvertedLeadsSearchTerm($request);
-        if ($search !== null) {
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%")
@@ -230,40 +147,41 @@ class ConvertedLeadController extends Controller
         }
 
         if ($request->filled('reg_fee')) {
-            $query->whereHas('studentDetails', function ($q) use ($request) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
                 $q->where('reg_fee', $request->reg_fee);
             });
         }
 
         if ($request->filled('exam_fee')) {
-            $query->whereHas('studentDetails', function ($q) use ($request) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
                 $q->where('exam_fee', $request->exam_fee);
             });
         }
 
         if ($request->filled('id_card')) {
-            $query->whereHas('studentDetails', function ($q) use ($request) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
                 $q->where('id_card', $request->id_card);
             });
         }
 
         if ($request->filled('tma')) {
-            $query->whereHas('studentDetails', function ($q) use ($request) {
+            $query->whereHas('studentDetails', function($q) use ($request) {
                 $q->where('tma', $request->tma);
             });
         }
-
         if ($request->filled('is_b2b')) {
             $value = $request->is_b2b;
             if ($value === 'b2b') {
                 $query->where('is_b2b', 1);
             } elseif ($value === 'in_house') {
-                $query->where(function ($q) {
+                $query->where(function($q) {
                     $q->whereNull('is_b2b')->orWhere('is_b2b', 0);
                 });
             }
         }
 
+
+        // Apply date filtering only if dates are explicitly provided
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
@@ -271,140 +189,18 @@ class ConvertedLeadController extends Controller
         if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
-    }
 
-    protected function convertedLeadHasPendingPayment(ConvertedLead $convertedLead): bool
-    {
-        foreach ($convertedLead->invoices as $invoice) {
-            if ($invoice->payments->where('status', 'Pending Approval')->isNotEmpty()) {
-                return true;
-            }
-        }
+        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
 
-        return false;
-    }
+        // Get filter data
+        $courses = \App\Models\Course::where('is_active', 1)->get();
+        $batches = \App\Models\Batch::orderBy('is_active', 'desc')->orderBy('title')->get();
+        $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
 
-    protected function formatConvertedLeadDataTableRow(
-        ConvertedLead $convertedLead,
-        int $displayIndex,
-        string $appTimezone,
-        $idCardLeadIds,
-        bool $showParentPhone
-    ): array {
-        $hasIdCard = $idCardLeadIds->has($convertedLead->id);
+        // Country codes for inline phone editor
+        $country_codes = get_country_code();
 
-        $academicDocumentApprovedAt = $convertedLead->leadDetail?->reviewed_at
-            ? $convertedLead->leadDetail->reviewed_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-            : null;
-
-        $academicVerifiedAt = $convertedLead->academic_verified_at
-            ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-            : null;
-
-        $supportVerifiedAt = $convertedLead->support_verified_at
-            ? $convertedLead->support_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
-            : null;
-
-        $convertedDate = $convertedLead->studentDetails?->converted_date
-            ? Carbon::parse($convertedLead->studentDetails->converted_date)->format('d-m-Y')
-            : $convertedLead->created_at->format('d-m-Y');
-
-        $dobDisplay = $convertedLead->dob
-            ? (strtotime($convertedLead->dob) ? date('d-m-Y', strtotime($convertedLead->dob)) : $convertedLead->dob)
-            : 'N/A';
-
-        $typeLabel = $convertedLead->is_b2b == 1
-            ? ('B2B'.($convertedLead->lead?->team?->name ? ' ('.$convertedLead->lead->team->name.')' : ''))
-            : 'In house';
-
-        $regFeeValue = $convertedLead->studentDetails?->reg_fee;
-
-        $academicHtml = view('admin.converted-leads.partials.dt-cell-academic', [
-            'convertedLead' => $convertedLead,
-        ])->render();
-
-        $supportHtml = view('admin.converted-leads.partials.dt-cell-support', [
-            'convertedLead' => $convertedLead,
-        ])->render();
-
-        $nameHtml = view('admin.converted-leads.partials.dt-cell-name', [
-            'convertedLead' => $convertedLead,
-        ])->render();
-
-        $actionsHtml = view('admin.converted-leads.partials.dt-cell-actions', [
-            'convertedLead' => $convertedLead,
-            'hasIdCard' => $hasIdCard,
-        ])->render();
-
-        $cancelledByHtml = view('admin.converted-leads.partials.dt-cell-cancelled-by', [
-            'convertedLead' => $convertedLead,
-        ])->render();
-
-        $registerCell = $convertedLead->register_number
-            ? '<span class="badge bg-success">'.e($convertedLead->register_number).'</span>'
-            : '<span class="text-muted">Not Set</span>';
-
-        $whatsappCell = ($convertedLead->leadDetail && $convertedLead->leadDetail->whatsapp_number)
-            ? e(\App\Helpers\PhoneNumberHelper::display(
-                $convertedLead->leadDetail->whatsapp_code,
-                $convertedLead->leadDetail->whatsapp_number
-            ))
-            : '<span class="text-muted">N/A</span>';
-
-        $parentPhoneCell = ($convertedLead->leadDetail && $convertedLead->leadDetail->parents_number)
-            ? e(\App\Helpers\PhoneNumberHelper::display(
-                $convertedLead->leadDetail->parents_code,
-                $convertedLead->leadDetail->parents_number
-            ))
-            : '<span class="text-muted">N/A</span>';
-
-        $pendingPayment = $this->convertedLeadHasPendingPayment($convertedLead)
-            ? '<span class="badge bg-warning">Pending</span>'
-            : '<span class="text-muted">No</span>';
-
-        $leadCreatedBy = ($convertedLead->lead && $convertedLead->lead->createdBy)
-            ? e($convertedLead->lead->createdBy->name)
-            : '<span class="text-muted">N/A</span>';
-
-        $row = [
-            'DT_RowId' => 'converted_lead_'.$convertedLead->id,
-            'DT_RowClass' => $convertedLead->is_cancelled ? 'cancelled-row' : '',
-            'index' => (string) $displayIndex,
-            'academic' => $academicHtml,
-            'support' => $supportHtml,
-            'academic_doc_approved' => $academicDocumentApprovedAt
-                ? e($academicDocumentApprovedAt)
-                : '<span class="text-muted">N/A</span>',
-            'converted_date' => e($convertedDate),
-            'academic_verified_at' => $academicVerifiedAt
-                ? e($academicVerifiedAt)
-                : '<span class="text-muted">N/A</span>',
-            'support_verified_at' => $supportVerifiedAt
-                ? e($supportVerifiedAt)
-                : '<span class="text-muted">N/A</span>',
-            'register_number' => $registerCell,
-            'dob' => e($dobDisplay),
-            'type' => e($typeLabel),
-            'name' => $nameHtml,
-            'phone' => e(\App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone)),
-            'whatsapp' => $whatsappCell,
-            'course' => e($convertedLead->course ? $convertedLead->course->title : 'N/A'),
-            'batch' => e($convertedLead->batch ? $convertedLead->batch->title : 'N/A'),
-            'admission_batch' => e($convertedLead->admissionBatch ? $convertedLead->admissionBatch->title : 'N/A'),
-            'status' => e($convertedLead->status ?? 'N/A'),
-            'cancelled_by' => $cancelledByHtml,
-            'reg_fee' => e($regFeeValue ?? 'N/A'),
-            'email' => e($convertedLead->email ?? 'N/A'),
-            'lead_created_by' => $leadCreatedBy,
-            'pending_payment' => $pendingPayment,
-            'actions' => $actionsHtml,
-        ];
-
-        if ($showParentPhone) {
-            $row['parent_phone'] = $parentPhoneCell;
-        }
-
-        return $row;
+        return view('admin.converted-leads.index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
     }
 
     /**
@@ -2646,45 +2442,29 @@ class ConvertedLeadController extends Controller
      */
     public function show($id)
     {
-        $leadActivitiesLimit = 200;
-        $convertedStudentActivitiesLimit = 150;
-
         $convertedLead = ConvertedLead::with([
-            'lead' => function ($query) {
-                $query->with([
-                    'team',
-                    'leadSource:id,title',
-                    'leadStatus:id,title',
-                    'telecaller:id,name,code,phone',
-                ]);
-            },
-            'leadDetail' => function ($query) {
-                $query->with([
-                    'batch:id,title',
-                    'sslcCertificates' => function ($q) {
-                        $q->orderByDesc('id')->limit(30)->with(['verifiedBy:id,name']);
-                    },
-                    'sslcVerifiedBy:id,name',
-                    'plustwoVerifiedBy:id,name',
-                    'ugVerifiedBy:id,name',
-                    'passportPhotoVerifiedBy:id,name',
-                    'adharFrontVerifiedBy:id,name',
-                    'adharBackVerifiedBy:id,name',
-                    'signatureVerifiedBy:id,name',
-                    'birthCertificateVerifiedBy:id,name',
-                    'otherDocumentVerifiedBy:id,name',
-                ]);
-            },
-            'cancelledBy:id,name',
-            'course:id,title',
-            'batch:id,title',
-            'admissionBatch:id,title',
-            'subject:id,title',
-            'academicAssistant:id,name',
-            'createdBy:id,name',
+            'lead',
+            'lead.team',
+            'leadDetail.sslcCertificates.verifiedBy',
+            'leadDetail.sslcVerifiedBy',
+            'leadDetail.plustwoVerifiedBy',
+            'leadDetail.ugVerifiedBy',
+            'leadDetail.passportPhotoVerifiedBy',
+            'leadDetail.adharFrontVerifiedBy',
+            'leadDetail.adharBackVerifiedBy',
+            'leadDetail.signatureVerifiedBy',
+            'leadDetail.birthCertificateVerifiedBy',
+            'cancelledBy',
+            'leadDetail.otherDocumentVerifiedBy',
+            'course',
+            'batch',
+            'admissionBatch',
+            'subject',
+            'academicAssistant',
+            'createdBy',
             'studentDetails.registrationLink',
-            'mentorDetails.placementPassedBy:id,name',
-            'mentorDetails.resumeVerifiedBy:id,name',
+            'mentorDetails.placementPassedBy',
+            'mentorDetails.resumeVerifiedBy'
         ])->findOrFail($id);
 
         // Apply role-based access control
@@ -2722,53 +2502,28 @@ class ConvertedLeadController extends Controller
             }
         }
 
-        $leadActivityBase = LeadActivity::where('lead_id', $convertedLead->lead_id)
+        // Get lead activities for this converted lead (exclude pullbacked activities)
+        $leadActivities = \App\Models\LeadActivity::where('lead_id', $convertedLead->lead_id)
             ->where(function ($query) {
                 $query->whereNull('is_pullbacked')
-                    ->orWhere('is_pullbacked', 0);
-            });
-
-        $leadActivityTotal = (clone $leadActivityBase)->count();
-
-        $leadActivities = (clone $leadActivityBase)
+                      ->orWhere('is_pullbacked', 0);
+            })
             ->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id')
             ->with(['leadStatus:id,title', 'createdBy:id,name'])
             ->orderBy('created_at', 'desc')
-            ->limit($leadActivitiesLimit)
             ->get();
-
-        $convertedActivityBase = ConvertedStudentActivity::where('converted_lead_id', $convertedLead->id);
-        $convertedStudentActivityTotal = (clone $convertedActivityBase)->count();
-
-        $convertedStudentActivities = (clone $convertedActivityBase)
+        
+        $convertedStudentActivities = \App\Models\ConvertedStudentActivity::where('converted_lead_id', $convertedLead->id)
             ->with(['createdBy:id,name'])
             ->orderBy('activity_date', 'desc')
             ->orderBy('activity_time', 'desc')
-            ->limit($convertedStudentActivitiesLimit)
             ->get();
-
+        
         $callLogs = LeadCallLogService::forConvertedLead($convertedLead);
         $listRoute = route('admin.converted-leads.index');
         $pdfRoute = route('admin.converted-leads.details-pdf', $convertedLead->id);
 
-        $fileExistenceMeta = ConvertedLeadShowFileHelper::publicExistenceMap($convertedLead);
-
-        $leadActivitiesTruncated = $leadActivityTotal > $leadActivitiesLimit;
-        $convertedStudentActivitiesTruncated = $convertedStudentActivityTotal > $convertedStudentActivitiesLimit;
-
-        return view('admin.converted-leads.show', compact(
-            'convertedLead',
-            'leadActivities',
-            'convertedStudentActivities',
-            'callLogs',
-            'listRoute',
-            'pdfRoute',
-            'fileExistenceMeta',
-            'leadActivitiesTruncated',
-            'convertedStudentActivitiesTruncated',
-            'leadActivitiesLimit',
-            'convertedStudentActivitiesLimit'
-        ));
+        return view('admin.converted-leads.show', compact('convertedLead', 'leadActivities', 'convertedStudentActivities', 'callLogs', 'listRoute', 'pdfRoute'));
     }
 
 

@@ -29,7 +29,6 @@ use App\Models\LeadDetail;
 use App\Models\ConvertedStudentActivity;
 use App\Models\LeadActivity;
 use App\Services\LeadCallLogService;
-use App\Support\ConvertedLeadShowFileHelper;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ConvertedLeadsExport;
@@ -2646,45 +2645,29 @@ class ConvertedLeadController extends Controller
      */
     public function show($id)
     {
-        $leadActivitiesLimit = 200;
-        $convertedStudentActivitiesLimit = 150;
-
         $convertedLead = ConvertedLead::with([
-            'lead' => function ($query) {
-                $query->with([
-                    'team',
-                    'leadSource:id,title',
-                    'leadStatus:id,title',
-                    'telecaller:id,name,code,phone',
-                ]);
-            },
-            'leadDetail' => function ($query) {
-                $query->with([
-                    'batch:id,title',
-                    'sslcCertificates' => function ($q) {
-                        $q->orderByDesc('id')->limit(30)->with(['verifiedBy:id,name']);
-                    },
-                    'sslcVerifiedBy:id,name',
-                    'plustwoVerifiedBy:id,name',
-                    'ugVerifiedBy:id,name',
-                    'passportPhotoVerifiedBy:id,name',
-                    'adharFrontVerifiedBy:id,name',
-                    'adharBackVerifiedBy:id,name',
-                    'signatureVerifiedBy:id,name',
-                    'birthCertificateVerifiedBy:id,name',
-                    'otherDocumentVerifiedBy:id,name',
-                ]);
-            },
-            'cancelledBy:id,name',
-            'course:id,title',
-            'batch:id,title',
-            'admissionBatch:id,title',
-            'subject:id,title',
-            'academicAssistant:id,name',
-            'createdBy:id,name',
+            'lead',
+            'lead.team',
+            'leadDetail.sslcCertificates.verifiedBy',
+            'leadDetail.sslcVerifiedBy',
+            'leadDetail.plustwoVerifiedBy',
+            'leadDetail.ugVerifiedBy',
+            'leadDetail.passportPhotoVerifiedBy',
+            'leadDetail.adharFrontVerifiedBy',
+            'leadDetail.adharBackVerifiedBy',
+            'leadDetail.signatureVerifiedBy',
+            'leadDetail.birthCertificateVerifiedBy',
+            'cancelledBy',
+            'leadDetail.otherDocumentVerifiedBy',
+            'course',
+            'batch',
+            'admissionBatch',
+            'subject',
+            'academicAssistant',
+            'createdBy',
             'studentDetails.registrationLink',
-            'mentorDetails.placementPassedBy:id,name',
-            'mentorDetails.resumeVerifiedBy:id,name',
+            'mentorDetails.placementPassedBy',
+            'mentorDetails.resumeVerifiedBy'
         ])->findOrFail($id);
 
         // Apply role-based access control
@@ -2722,53 +2705,28 @@ class ConvertedLeadController extends Controller
             }
         }
 
-        $leadActivityBase = LeadActivity::where('lead_id', $convertedLead->lead_id)
+        // Get lead activities for this converted lead (exclude pullbacked activities)
+        $leadActivities = \App\Models\LeadActivity::where('lead_id', $convertedLead->lead_id)
             ->where(function ($query) {
                 $query->whereNull('is_pullbacked')
-                    ->orWhere('is_pullbacked', 0);
-            });
-
-        $leadActivityTotal = (clone $leadActivityBase)->count();
-
-        $leadActivities = (clone $leadActivityBase)
+                      ->orWhere('is_pullbacked', 0);
+            })
             ->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id')
             ->with(['leadStatus:id,title', 'createdBy:id,name'])
             ->orderBy('created_at', 'desc')
-            ->limit($leadActivitiesLimit)
             ->get();
-
-        $convertedActivityBase = ConvertedStudentActivity::where('converted_lead_id', $convertedLead->id);
-        $convertedStudentActivityTotal = (clone $convertedActivityBase)->count();
-
-        $convertedStudentActivities = (clone $convertedActivityBase)
+        
+        $convertedStudentActivities = \App\Models\ConvertedStudentActivity::where('converted_lead_id', $convertedLead->id)
             ->with(['createdBy:id,name'])
             ->orderBy('activity_date', 'desc')
             ->orderBy('activity_time', 'desc')
-            ->limit($convertedStudentActivitiesLimit)
             ->get();
-
+        
         $callLogs = LeadCallLogService::forConvertedLead($convertedLead);
         $listRoute = route('admin.converted-leads.index');
         $pdfRoute = route('admin.converted-leads.details-pdf', $convertedLead->id);
 
-        $fileExistenceMeta = ConvertedLeadShowFileHelper::publicExistenceMap($convertedLead);
-
-        $leadActivitiesTruncated = $leadActivityTotal > $leadActivitiesLimit;
-        $convertedStudentActivitiesTruncated = $convertedStudentActivityTotal > $convertedStudentActivitiesLimit;
-
-        return view('admin.converted-leads.show', compact(
-            'convertedLead',
-            'leadActivities',
-            'convertedStudentActivities',
-            'callLogs',
-            'listRoute',
-            'pdfRoute',
-            'fileExistenceMeta',
-            'leadActivitiesTruncated',
-            'convertedStudentActivitiesTruncated',
-            'leadActivitiesLimit',
-            'convertedStudentActivitiesLimit'
-        ));
+        return view('admin.converted-leads.show', compact('convertedLead', 'leadActivities', 'convertedStudentActivities', 'callLogs', 'listRoute', 'pdfRoute'));
     }
 
 

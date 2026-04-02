@@ -29,13 +29,13 @@ use App\Models\LeadDetail;
 use App\Models\ConvertedStudentActivity;
 use App\Models\LeadActivity;
 use App\Services\LeadCallLogService;
-use App\Support\ConvertedLeadShowFileHelper;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ConvertedLeadsExport;
 
 class ConvertedLeadController extends Controller
 {
+    use Concerns\ConvertedLeadScopedDataTables;
     /**
      * Display a listing of converted leads (table rows load via AJAX).
      */
@@ -54,6 +54,22 @@ class ConvertedLeadController extends Controller
     {
         try {
             set_time_limit(config('timeout.max_execution_time', 300));
+
+            $scopedRaw = $request->input('scoped_course_id');
+            if ($scopedRaw !== null && $scopedRaw !== '') {
+                $scopedCourseId = (int) $scopedRaw;
+                if (! $this->isAjaxScopedConvertedLeadCourse($scopedCourseId)) {
+                    return response()->json([
+                        'draw' => (int) $request->input('draw'),
+                        'recordsTotal' => 0,
+                        'recordsFiltered' => 0,
+                        'data' => [],
+                        'error' => 'Invalid scoped course.',
+                    ], 422);
+                }
+
+                return $this->getScopedConvertedLeadsDataResponse($request, $scopedCourseId);
+            }
 
             $recordsTotalQuery = ConvertedLead::query();
             $this->applyConvertedLeadsRoleScope($recordsTotalQuery);
@@ -1047,104 +1063,21 @@ class ConvertedLeadController extends Controller
      */
     public function aiPythonIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails'])
-            ->where('course_id', 10);
-
-        // Apply role-based filtering
-        $currentUser = AuthHelper::getCurrentUser();
-        if ($currentUser) {
-            if (RoleHelper::is_senior_manager()) {
-                // No filtering - show all converted leads
-            } elseif (RoleHelper::is_team_lead()) {
-                $teamId = $currentUser->team_id;
-                if ($teamId) {
-                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
-                        $q->whereIn('telecaller_id', $teamMemberIds);
-                    });
-                } else {
-                    $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-                }
-            } elseif (RoleHelper::is_admission_counsellor()) {
-                // Can see all
-            } elseif (RoleHelper::is_academic_assistant()) {
-                // Can see all
-            } elseif (RoleHelper::is_telecaller()) {
-                $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-            }
-        }
-
-        // Apply filters
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('register_number', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('call_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('call_status', $request->call_status);
-            });
-        }
-
-        if ($request->filled('class_information')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_information', $request->class_information);
-            });
-        }
-
-        if ($request->filled('orientation_class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('orientation_class_status', $request->orientation_class_status);
-            });
-        }
-
-        if ($request->filled('whatsapp_group_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('whatsapp_group_status', $request->whatsapp_group_status);
-            });
-        }
-
-        if ($request->filled('class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_status', $request->class_status);
-            });
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('batch_id')) {
-            $query->where('batch_id', $request->batch_id);
-        }
-
-        // Get all results for DataTable
-        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
+        $convertedLeads = collect();
 
         // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
         $batches = \App\Models\Batch::where('course_id', 10)->orderBy('is_active', 'desc')->orderBy('title')->get();
         $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
+        $scopedCourseId = 10;
+        $courseDataTableId = 'aiPythonTable';
+        $programmeDtLayout = 'ai_python';
 
-        return view('admin.converted-leads.ai-python-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
+        return view('admin.converted-leads.ai-python-index', compact(
+            'convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes',
+            'scopedCourseId', 'courseDataTableId', 'programmeDtLayout'
+        ));
     }
 
     /**
@@ -1152,120 +1085,29 @@ class ConvertedLeadController extends Controller
      */
     public function digitalMarketingIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'leadDetail'])
-            ->where('course_id', 11);
+        $convertedLeads = collect();
 
-        // Apply role-based filtering
-        $currentUser = AuthHelper::getCurrentUser();
-        if ($currentUser) {
-            if (RoleHelper::is_senior_manager()) {
-                // No filtering - show all converted leads
-            } elseif (RoleHelper::is_team_lead()) {
-                $teamId = $currentUser->team_id;
-                if ($teamId) {
-                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
-                        $q->whereIn('telecaller_id', $teamMemberIds);
-                    });
-                } else {
-                    $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-                }
-            } elseif (RoleHelper::is_admission_counsellor()) {
-                // Can see all
-            } elseif (RoleHelper::is_academic_assistant()) {
-                // Can see all
-            } elseif (RoleHelper::is_telecaller()) {
-                $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-            }
-        }
-
-        // Apply filters
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('register_number', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('call_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('call_status', $request->call_status);
-            });
-        }
-
-        if ($request->filled('class_information')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_information', $request->class_information);
-            });
-        }
-
-        if ($request->filled('orientation_class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('orientation_class_status', $request->orientation_class_status);
-            });
-        }
-
-        if ($request->filled('whatsapp_group_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('whatsapp_group_status', $request->whatsapp_group_status);
-            });
-        }
-
-        if ($request->filled('class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_status', $request->class_status);
-            });
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('batch_id')) {
-            $query->where('batch_id', $request->batch_id);
-        }
-
-        if ($request->filled('programme_type')) {
-            $query->whereHas('leadDetail', function($q) use ($request) {
-                $q->where('programme_type', $request->programme_type);
-            });
-        }
-
-        // Get all results for DataTable
-        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
-
-        // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
         $batches = \App\Models\Batch::where('course_id', 11)->orderBy('is_active', 'desc')->orderBy('title')->get();
         $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
-        
-        // Get offline places for location dropdown
+
         $offlinePlaces = \App\Models\OfflinePlace::active()->get();
-        
-        // Get class times for course_id = 11 (Digital Marketing)
+
         $classTimes = collect();
         $course = \App\Models\Course::find(11);
         if ($course && $course->needs_time) {
             $classTimes = \App\Models\ClassTime::where('course_id', 11)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.digital-marketing-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $scopedCourseId = 11;
+        $courseDataTableId = 'digitalMarketingTable';
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.digital-marketing-index', compact(
+            'convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course',
+            'scopedCourseId', 'courseDataTableId', 'programmeDtLayout'
+        ));
     }
 
     /**
@@ -1273,120 +1115,29 @@ class ConvertedLeadController extends Controller
      */
     public function aiAutomationIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'leadDetail'])
-            ->where('course_id', 12);
+        $convertedLeads = collect();
 
-        // Apply role-based filtering
-        $currentUser = AuthHelper::getCurrentUser();
-        if ($currentUser) {
-            if (RoleHelper::is_senior_manager()) {
-                // No filtering - show all converted leads
-            } elseif (RoleHelper::is_team_lead()) {
-                $teamId = $currentUser->team_id;
-                if ($teamId) {
-                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
-                        $q->whereIn('telecaller_id', $teamMemberIds);
-                    });
-                } else {
-                    $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-                }
-            } elseif (RoleHelper::is_admission_counsellor()) {
-                // Can see all
-            } elseif (RoleHelper::is_academic_assistant()) {
-                // Can see all
-            } elseif (RoleHelper::is_telecaller()) {
-                $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-            }
-        }
-
-        // Apply filters
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('register_number', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('call_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('call_status', $request->call_status);
-            });
-        }
-
-        if ($request->filled('class_information')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_information', $request->class_information);
-            });
-        }
-
-        if ($request->filled('orientation_class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('orientation_class_status', $request->orientation_class_status);
-            });
-        }
-
-        if ($request->filled('whatsapp_group_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('whatsapp_group_status', $request->whatsapp_group_status);
-            });
-        }
-
-        if ($request->filled('class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_status', $request->class_status);
-            });
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('batch_id')) {
-            $query->where('batch_id', $request->batch_id);
-        }
-
-        if ($request->filled('programme_type')) {
-            $query->whereHas('leadDetail', function($q) use ($request) {
-                $q->where('programme_type', $request->programme_type);
-            });
-        }
-
-        // Get all results for DataTable
-        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
-
-        // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
         $batches = \App\Models\Batch::where('course_id', 12)->orderBy('is_active', 'desc')->orderBy('title')->get();
         $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
-        
-        // Get offline places for location dropdown
+
         $offlinePlaces = \App\Models\OfflinePlace::active()->get();
-        
-        // Get class times for course_id = 12 (Diploma in Data Science)
+
         $classTimes = collect();
         $course = \App\Models\Course::find(12);
         if ($course && $course->needs_time) {
             $classTimes = \App\Models\ClassTime::where('course_id', 12)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.diploma-in-data-science-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $scopedCourseId = 12;
+        $courseDataTableId = 'aiAutomationTable';
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.diploma-in-data-science-index', compact(
+            'convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course',
+            'scopedCourseId', 'courseDataTableId', 'programmeDtLayout'
+        ));
     }
 
     /**
@@ -1394,124 +1145,29 @@ class ConvertedLeadController extends Controller
      */
     public function webDevIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails', 'leadDetail'])
-            ->where('course_id', 13);
+        $convertedLeads = collect();
 
-        // Apply role-based filtering
-        $currentUser = AuthHelper::getCurrentUser();
-        if ($currentUser) {
-            if (RoleHelper::is_senior_manager()) {
-                // No filtering - show all converted leads
-            } elseif (RoleHelper::is_team_lead()) {
-                $teamId = $currentUser->team_id;
-                if ($teamId) {
-                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
-                        $q->whereIn('telecaller_id', $teamMemberIds);
-                    });
-                } else {
-                    $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-                }
-            } elseif (RoleHelper::is_admission_counsellor()) {
-                // Can see all
-            } elseif (RoleHelper::is_academic_assistant()) {
-                // Can see all
-            } elseif (RoleHelper::is_telecaller()) {
-                $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-            }
-        }
-
-        // Apply filters
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('register_number', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('call_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('call_status', $request->call_status);
-            });
-        }
-
-        if ($request->filled('class_information')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_information', $request->class_information);
-            });
-        }
-
-        if ($request->filled('orientation_class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('orientation_class_status', $request->orientation_class_status);
-            });
-        }
-
-        if ($request->filled('whatsapp_group_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('whatsapp_group_status', $request->whatsapp_group_status);
-            });
-        }
-
-        if ($request->filled('class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_status', $request->class_status);
-            });
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('batch_id')) {
-            $query->where('batch_id', $request->batch_id);
-        }
-
-        if ($request->filled('admission_batch_id')) {
-            $query->where('admission_batch_id', $request->admission_batch_id);
-        }
-
-        if ($request->filled('programme_type')) {
-            $query->whereHas('leadDetail', function($q) use ($request) {
-                $q->where('programme_type', $request->programme_type);
-            });
-        }
-
-        // Get all results for DataTable
-        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
-
-        // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
         $batches = \App\Models\Batch::where('course_id', 13)->orderBy('is_active', 'desc')->orderBy('title')->get();
         $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
-        
-        // Get offline places for location dropdown
+
         $offlinePlaces = \App\Models\OfflinePlace::active()->get();
-        
-        // Get class times for course_id = 13 (Web Development)
+
         $classTimes = collect();
         $course = \App\Models\Course::find(13);
         if ($course && $course->needs_time) {
             $classTimes = \App\Models\ClassTime::where('course_id', 13)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.web-development-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $scopedCourseId = 13;
+        $courseDataTableId = 'webDevTable';
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.web-development-index', compact(
+            'convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course',
+            'scopedCourseId', 'courseDataTableId', 'programmeDtLayout'
+        ));
     }
 
     /**
@@ -1519,124 +1175,29 @@ class ConvertedLeadController extends Controller
      */
     public function vibeCodingIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'leadDetail'])
-            ->where('course_id', 14);
+        $convertedLeads = collect();
 
-        // Apply role-based filtering
-        $currentUser = AuthHelper::getCurrentUser();
-        if ($currentUser) {
-            if (RoleHelper::is_senior_manager()) {
-                // No filtering - show all converted leads
-            } elseif (RoleHelper::is_team_lead()) {
-                $teamId = $currentUser->team_id;
-                if ($teamId) {
-                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
-                        $q->whereIn('telecaller_id', $teamMemberIds);
-                    });
-                } else {
-                    $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-                }
-            } elseif (RoleHelper::is_admission_counsellor()) {
-                // Can see all
-            } elseif (RoleHelper::is_academic_assistant()) {
-                // Can see all
-            } elseif (RoleHelper::is_telecaller()) {
-                $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-            }
-        }
-
-        // Apply filters
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('register_number', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('call_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('call_status', $request->call_status);
-            });
-        }
-
-        if ($request->filled('class_information')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_information', $request->class_information);
-            });
-        }
-
-        if ($request->filled('orientation_class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('orientation_class_status', $request->orientation_class_status);
-            });
-        }
-
-        if ($request->filled('whatsapp_group_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('whatsapp_group_status', $request->whatsapp_group_status);
-            });
-        }
-
-        if ($request->filled('class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_status', $request->class_status);
-            });
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('batch_id')) {
-            $query->where('batch_id', $request->batch_id);
-        }
-
-        if ($request->filled('admission_batch_id')) {
-            $query->where('admission_batch_id', $request->admission_batch_id);
-        }
-
-        if ($request->filled('programme_type')) {
-            $query->whereHas('leadDetail', function($q) use ($request) {
-                $q->where('programme_type', $request->programme_type);
-            });
-        }
-
-        // Get all results for DataTable
-        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
-
-        // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
         $batches = \App\Models\Batch::where('course_id', 14)->orderBy('is_active', 'desc')->orderBy('title')->get();
         $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
-        
-        // Get offline places for location dropdown
+
         $offlinePlaces = \App\Models\OfflinePlace::active()->get();
-        
-        // Get class times for course_id = 14 (Vibe Coding)
+
         $classTimes = collect();
         $course = \App\Models\Course::find(14);
         if ($course && $course->needs_time) {
             $classTimes = \App\Models\ClassTime::where('course_id', 14)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.vibe-coding-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $scopedCourseId = 14;
+        $courseDataTableId = 'vibeCodingTable';
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.vibe-coding-index', compact(
+            'convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course',
+            'scopedCourseId', 'courseDataTableId', 'programmeDtLayout'
+        ));
     }
 
     /**
@@ -1750,124 +1311,29 @@ class ConvertedLeadController extends Controller
      */
     public function graphicDesigningIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'leadDetail'])
-            ->where('course_id', 15);
+        $convertedLeads = collect();
 
-        // Apply role-based filtering
-        $currentUser = AuthHelper::getCurrentUser();
-        if ($currentUser) {
-            if (RoleHelper::is_senior_manager()) {
-                // No filtering - show all converted leads
-            } elseif (RoleHelper::is_team_lead()) {
-                $teamId = $currentUser->team_id;
-                if ($teamId) {
-                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
-                        $q->whereIn('telecaller_id', $teamMemberIds);
-                    });
-                } else {
-                    $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-                }
-            } elseif (RoleHelper::is_admission_counsellor()) {
-                // Can see all
-            } elseif (RoleHelper::is_academic_assistant()) {
-                // Can see all
-            } elseif (RoleHelper::is_telecaller()) {
-                $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-            }
-        }
-
-        // Apply filters
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('register_number', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('call_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('call_status', $request->call_status);
-            });
-        }
-
-        if ($request->filled('class_information')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_information', $request->class_information);
-            });
-        }
-
-        if ($request->filled('orientation_class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('orientation_class_status', $request->orientation_class_status);
-            });
-        }
-
-        if ($request->filled('whatsapp_group_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('whatsapp_group_status', $request->whatsapp_group_status);
-            });
-        }
-
-        if ($request->filled('class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_status', $request->class_status);
-            });
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('batch_id')) {
-            $query->where('batch_id', $request->batch_id);
-        }
-
-        if ($request->filled('admission_batch_id')) {
-            $query->where('admission_batch_id', $request->admission_batch_id);
-        }
-
-        if ($request->filled('programme_type')) {
-            $query->whereHas('leadDetail', function($q) use ($request) {
-                $q->where('programme_type', $request->programme_type);
-            });
-        }
-
-        // Get all results for DataTable
-        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
-
-        // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
         $batches = \App\Models\Batch::where('course_id', 15)->orderBy('is_active', 'desc')->orderBy('title')->get();
         $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
-        
-        // Get offline places for location dropdown
+
         $offlinePlaces = \App\Models\OfflinePlace::active()->get();
-        
-        // Get class times for course_id = 15 (Graphic Designing)
+
         $classTimes = collect();
         $course = \App\Models\Course::find(15);
         if ($course && $course->needs_time) {
             $classTimes = \App\Models\ClassTime::where('course_id', 15)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.graphic-designing-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $scopedCourseId = 15;
+        $courseDataTableId = 'graphicDesigningTable';
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.graphic-designing-index', compact(
+            'convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course',
+            'scopedCourseId', 'courseDataTableId', 'programmeDtLayout'
+        ));
     }
 
     /**
@@ -1875,124 +1341,29 @@ class ConvertedLeadController extends Controller
      */
     public function machineLearningIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'course', 'academicAssistant', 'createdBy', 'subject', 'studentDetails', 'leadDetail'])
-            ->where('course_id', 20);
+        $convertedLeads = collect();
 
-        // Apply role-based filtering
-        $currentUser = AuthHelper::getCurrentUser();
-        if ($currentUser) {
-            if (RoleHelper::is_senior_manager()) {
-                // No filtering - show all converted leads
-            } elseif (RoleHelper::is_team_lead()) {
-                $teamId = $currentUser->team_id;
-                if ($teamId) {
-                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
-                        $q->whereIn('telecaller_id', $teamMemberIds);
-                    });
-                } else {
-                    $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-                }
-            } elseif (RoleHelper::is_admission_counsellor()) {
-                // Can see all
-            } elseif (RoleHelper::is_academic_assistant()) {
-                // Can see all
-            } elseif (RoleHelper::is_telecaller()) {
-                $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-            }
-        }
-
-        // Apply filters
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('register_number', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('call_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('call_status', $request->call_status);
-            });
-        }
-
-        if ($request->filled('class_information')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_information', $request->class_information);
-            });
-        }
-
-        if ($request->filled('orientation_class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('orientation_class_status', $request->orientation_class_status);
-            });
-        }
-
-        if ($request->filled('whatsapp_group_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('whatsapp_group_status', $request->whatsapp_group_status);
-            });
-        }
-
-        if ($request->filled('class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_status', $request->class_status);
-            });
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('batch_id')) {
-            $query->where('batch_id', $request->batch_id);
-        }
-
-        if ($request->filled('admission_batch_id')) {
-            $query->where('admission_batch_id', $request->admission_batch_id);
-        }
-
-        if ($request->filled('programme_type')) {
-            $query->whereHas('leadDetail', function($q) use ($request) {
-                $q->where('programme_type', $request->programme_type);
-            });
-        }
-
-        // Get all results for DataTable
-        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
-
-        // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
         $batches = \App\Models\Batch::where('course_id', 20)->orderBy('is_active', 'desc')->orderBy('title')->get();
         $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
-        
-        // Get offline places for location dropdown
+
         $offlinePlaces = \App\Models\OfflinePlace::active()->get();
-        
-        // Get class times for course_id = 20 (Machine Learning)
+
         $classTimes = collect();
         $course = \App\Models\Course::find(20);
         if ($course && $course->needs_time) {
             $classTimes = \App\Models\ClassTime::where('course_id', 20)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.machine-learning-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $scopedCourseId = 20;
+        $courseDataTableId = 'graphicDesigningTable';
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.machine-learning-index', compact(
+            'convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course',
+            'scopedCourseId', 'courseDataTableId', 'programmeDtLayout'
+        ));
     }
 
     /**
@@ -2000,124 +1371,33 @@ class ConvertedLeadController extends Controller
      */
     public function flutterIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'leadDetail'])
-            ->where('course_id', 21);
+        $convertedLeads = collect();
 
-        // Apply role-based filtering
-        $currentUser = AuthHelper::getCurrentUser();
-        if ($currentUser) {
-            if (RoleHelper::is_senior_manager()) {
-                // No filtering - show all converted leads
-            } elseif (RoleHelper::is_team_lead()) {
-                $teamId = $currentUser->team_id;
-                if ($teamId) {
-                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
-                        $q->whereIn('telecaller_id', $teamMemberIds);
-                    });
-                } else {
-                    $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-                }
-            } elseif (RoleHelper::is_admission_counsellor()) {
-                // Can see all
-            } elseif (RoleHelper::is_academic_assistant()) {
-                // Can see all
-            } elseif (RoleHelper::is_telecaller()) {
-                $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-            }
-        }
-
-        // Apply filters
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('register_number', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('call_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('call_status', $request->call_status);
-            });
-        }
-
-        if ($request->filled('class_information')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_information', $request->class_information);
-            });
-        }
-
-        if ($request->filled('orientation_class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('orientation_class_status', $request->orientation_class_status);
-            });
-        }
-
-        if ($request->filled('whatsapp_group_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('whatsapp_group_status', $request->whatsapp_group_status);
-            });
-        }
-
-        if ($request->filled('class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_status', $request->class_status);
-            });
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('batch_id')) {
-            $query->where('batch_id', $request->batch_id);
-        }
-
-        if ($request->filled('admission_batch_id')) {
-            $query->where('admission_batch_id', $request->admission_batch_id);
-        }
-
-        if ($request->filled('programme_type')) {
-            $query->whereHas('leadDetail', function($q) use ($request) {
-                $q->where('programme_type', $request->programme_type);
-            });
-        }
-
-        // Get all results for DataTable
-        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
-
-        // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
         $batches = \App\Models\Batch::where('course_id', 21)->orderBy('is_active', 'desc')->orderBy('title')->get();
         $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
-        
-        // Get offline places for location dropdown
+
         $offlinePlaces = \App\Models\OfflinePlace::active()->get();
-        
-        // Get class times for course_id = 21 (Flutter)
+
         $classTimes = collect();
         $course = \App\Models\Course::find(21);
         if ($course && $course->needs_time) {
             $classTimes = \App\Models\ClassTime::where('course_id', 21)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.flutter-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $pageCourseName = 'Flutter';
+        $pageCourseId = 21;
+        $pageRouteName = 'admin.flutter-converted-leads.index';
+        $scopedCourseId = 21;
+        $courseDataTableId = 'flutterConvertedLeadsTable';
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.flutter-index', compact(
+            'convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course',
+            'pageCourseName', 'pageCourseId', 'pageRouteName',
+            'scopedCourseId', 'courseDataTableId', 'programmeDtLayout'
+        ));
     }
 
     /**
@@ -2125,117 +1405,15 @@ class ConvertedLeadController extends Controller
      */
     public function rpaIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'leadDetail'])
-            ->where('course_id', 27);
+        $convertedLeads = collect();
 
-        // Apply role-based filtering
-        $currentUser = AuthHelper::getCurrentUser();
-        if ($currentUser) {
-            if (RoleHelper::is_senior_manager()) {
-                // No filtering - show all converted leads
-            } elseif (RoleHelper::is_team_lead()) {
-                $teamId = $currentUser->team_id;
-                if ($teamId) {
-                    $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    $query->whereHas('lead', function($q) use ($teamMemberIds) {
-                        $q->whereIn('telecaller_id', $teamMemberIds);
-                    });
-                } else {
-                    $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-                }
-            } elseif (RoleHelper::is_admission_counsellor()) {
-                // Can see all
-            } elseif (RoleHelper::is_academic_assistant()) {
-                // Can see all
-            } elseif (RoleHelper::is_telecaller()) {
-                $query->whereHas('lead', function($q) {
-                    $q->where('telecaller_id', AuthHelper::getCurrentUserId());
-                });
-            }
-        }
-
-        // Apply filters
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('register_number', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('call_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('call_status', $request->call_status);
-            });
-        }
-
-        if ($request->filled('class_information')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_information', $request->class_information);
-            });
-        }
-
-        if ($request->filled('orientation_class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('orientation_class_status', $request->orientation_class_status);
-            });
-        }
-
-        if ($request->filled('whatsapp_group_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('whatsapp_group_status', $request->whatsapp_group_status);
-            });
-        }
-
-        if ($request->filled('class_status')) {
-            $query->whereHas('studentDetails', function($q) use ($request) {
-                $q->where('class_status', $request->class_status);
-            });
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('batch_id')) {
-            $query->where('batch_id', $request->batch_id);
-        }
-
-        if ($request->filled('admission_batch_id')) {
-            $query->where('admission_batch_id', $request->admission_batch_id);
-        }
-
-        if ($request->filled('programme_type')) {
-            $query->whereHas('leadDetail', function($q) use ($request) {
-                $q->where('programme_type', $request->programme_type);
-            });
-        }
-
-        // Get all results for DataTable
-        $convertedLeads = $query->orderBy('created_at', 'desc')->get();
-
-        // Get filter data
         $courses = \App\Models\Course::where('is_active', 1)->get();
         $batches = \App\Models\Batch::where('course_id', 27)->orderBy('is_active', 'desc')->orderBy('title')->get();
         $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
 
-        // Get offline places for location dropdown
         $offlinePlaces = \App\Models\OfflinePlace::active()->get();
 
-        // Get class times for course_id = 27 (RPA)
         $classTimes = collect();
         $course = \App\Models\Course::find(27);
         if ($course && $course->needs_time) {
@@ -2245,6 +1423,9 @@ class ConvertedLeadController extends Controller
         $pageCourseName = 'RPA';
         $pageCourseId = 27;
         $pageRouteName = 'admin.rpa-converted-leads.index';
+        $scopedCourseId = 27;
+        $courseDataTableId = 'rpaConvertedLeadsTable';
+        $programmeDtLayout = 'digital_programme';
 
         return view('admin.converted-leads.flutter-index', compact(
             'convertedLeads',
@@ -2257,7 +1438,10 @@ class ConvertedLeadController extends Controller
             'course',
             'pageCourseName',
             'pageCourseId',
-            'pageRouteName'
+            'pageRouteName',
+            'scopedCourseId',
+            'courseDataTableId',
+            'programmeDtLayout'
         ));
     }
 
@@ -2642,39 +1826,81 @@ class ConvertedLeadController extends Controller
     }
 
     /**
+     * @return array{exists: bool, url: ?string, is_pdf: bool}
+     */
+    protected function publicDiskFileMeta(?string $path): array
+    {
+        if ($path === null || $path === '') {
+            return ['exists' => false, 'url' => null, 'is_pdf' => false];
+        }
+        $exists = Storage::disk('public')->exists($path);
+
+        return [
+            'exists' => $exists,
+            'url' => $exists ? asset('storage/'.$path) : null,
+            'is_pdf' => $exists && Str::endsWith(strtolower($path), '.pdf'),
+        ];
+    }
+
+    /**
+     * Precompute public-disk file existence for the converted lead show page (avoids many Storage::exists calls in Blade).
+     *
+     * @return array{leadDetailFileMeta: array<string, array>, sslcCertificateFileMeta: array<int, array>, placementResumeMeta: array}
+     */
+    protected function buildConvertedLeadShowStorageMeta(ConvertedLead $convertedLead): array
+    {
+        $leadDetailFileMeta = [];
+        $sslcCertificateFileMeta = [];
+        $placementResumeMeta = ['exists' => false, 'url' => null, 'is_pdf' => false];
+
+        $detailFields = [
+            'passport_photo', 'adhar_front', 'adhar_back', 'signature', 'birth_certificate',
+            'plustwo_certificate', 'ug_certificate', 'pg_certificate', 'other_document',
+        ];
+
+        $doc = $convertedLead->leadDetail;
+        if ($doc) {
+            foreach ($detailFields as $field) {
+                $leadDetailFileMeta[$field] = $this->publicDiskFileMeta($doc->{$field} ?? null);
+            }
+            $leadDetailFileMeta['sslc_certificate'] = $this->publicDiskFileMeta($doc->sslc_certificate ?? null);
+            foreach ($doc->sslcCertificates as $certificate) {
+                $sslcCertificateFileMeta[$certificate->id] = $this->publicDiskFileMeta($certificate->certificate_path ?? null);
+            }
+        }
+
+        if ($convertedLead->mentorDetails && $convertedLead->mentorDetails->placement_resume) {
+            $placementResumeMeta = $this->publicDiskFileMeta($convertedLead->mentorDetails->placement_resume);
+        }
+
+        return [
+            'leadDetailFileMeta' => $leadDetailFileMeta,
+            'sslcCertificateFileMeta' => $sslcCertificateFileMeta,
+            'placementResumeMeta' => $placementResumeMeta,
+        ];
+    }
+
+    /**
      * Display the specified converted lead
      */
     public function show($id)
     {
-        $leadActivitiesLimit = 200;
-        $convertedStudentActivitiesLimit = 150;
-
         $convertedLead = ConvertedLead::with([
-            'lead' => function ($query) {
-                $query->with([
-                    'team',
-                    'leadSource:id,title',
-                    'leadStatus:id,title',
-                    'telecaller:id,name,code,phone',
-                ]);
-            },
-            'leadDetail' => function ($query) {
-                $query->with([
-                    'batch:id,title',
-                    'sslcCertificates' => function ($q) {
-                        $q->orderByDesc('id')->limit(30)->with(['verifiedBy:id,name']);
-                    },
-                    'sslcVerifiedBy:id,name',
-                    'plustwoVerifiedBy:id,name',
-                    'ugVerifiedBy:id,name',
-                    'passportPhotoVerifiedBy:id,name',
-                    'adharFrontVerifiedBy:id,name',
-                    'adharBackVerifiedBy:id,name',
-                    'signatureVerifiedBy:id,name',
-                    'birthCertificateVerifiedBy:id,name',
-                    'otherDocumentVerifiedBy:id,name',
-                ]);
-            },
+            'lead.leadSource:id,title',
+            'lead.leadStatus:id,title',
+            'lead.telecaller:id,name',
+            'lead.team',
+            'leadDetail.sslcCertificates.verifiedBy',
+            'leadDetail.sslcVerifiedBy',
+            'leadDetail.plustwoVerifiedBy',
+            'leadDetail.ugVerifiedBy',
+            'leadDetail.passportPhotoVerifiedBy',
+            'leadDetail.adharFrontVerifiedBy',
+            'leadDetail.adharBackVerifiedBy',
+            'leadDetail.signatureVerifiedBy',
+            'leadDetail.birthCertificateVerifiedBy',
+            'leadDetail.otherDocumentVerifiedBy',
+            'leadDetail.batch:id,title',
             'cancelledBy:id,name',
             'course:id,title',
             'batch:id,title',
@@ -2683,8 +1909,8 @@ class ConvertedLeadController extends Controller
             'academicAssistant:id,name',
             'createdBy:id,name',
             'studentDetails.registrationLink',
-            'mentorDetails.placementPassedBy:id,name',
-            'mentorDetails.resumeVerifiedBy:id,name',
+            'mentorDetails.placementPassedBy',
+            'mentorDetails.resumeVerifiedBy',
         ])->findOrFail($id);
 
         // Apply role-based access control
@@ -2696,7 +1922,7 @@ class ConvertedLeadController extends Controller
                 $teamId = $currentUser->team_id;
                 if ($teamId) {
                     $teamMemberIds = \App\Models\User::where('team_id', $teamId)->pluck('id')->toArray();
-                    if (!in_array($convertedLead->lead->telecaller_id, $teamMemberIds)) {
+                    if (! in_array($convertedLead->lead->telecaller_id, $teamMemberIds)) {
                         return redirect()->route('admin.converted-leads.index')
                             ->with('message_danger', 'Access denied. You can only view converted leads from your team.');
                     }
@@ -2722,52 +1948,36 @@ class ConvertedLeadController extends Controller
             }
         }
 
-        $leadActivityBase = LeadActivity::where('lead_id', $convertedLead->lead_id)
+        $activityLimit = 100;
+
+        // Get lead activities for this converted lead (exclude pullbacked activities)
+        $leadActivities = LeadActivity::where('lead_id', $convertedLead->lead_id)
             ->where(function ($query) {
                 $query->whereNull('is_pullbacked')
                     ->orWhere('is_pullbacked', 0);
-            });
-
-        $leadActivityTotal = (clone $leadActivityBase)->count();
-
-        $leadActivities = (clone $leadActivityBase)
+            })
             ->select('id', 'lead_id', 'reason', 'created_at', 'activity_type', 'description', 'remarks', 'rating', 'followup_date', 'created_by', 'lead_status_id')
             ->with(['leadStatus:id,title', 'createdBy:id,name'])
             ->orderBy('created_at', 'desc')
-            ->limit($leadActivitiesLimit)
+            ->limit($activityLimit)
             ->get();
 
-        $convertedActivityBase = ConvertedStudentActivity::where('converted_lead_id', $convertedLead->id);
-        $convertedStudentActivityTotal = (clone $convertedActivityBase)->count();
-
-        $convertedStudentActivities = (clone $convertedActivityBase)
+        $convertedStudentActivities = ConvertedStudentActivity::where('converted_lead_id', $convertedLead->id)
             ->with(['createdBy:id,name'])
             ->orderBy('activity_date', 'desc')
             ->orderBy('activity_time', 'desc')
-            ->limit($convertedStudentActivitiesLimit)
+            ->limit($activityLimit)
             ->get();
 
         $callLogs = LeadCallLogService::forConvertedLead($convertedLead);
         $listRoute = route('admin.converted-leads.index');
         $pdfRoute = route('admin.converted-leads.details-pdf', $convertedLead->id);
 
-        $fileExistenceMeta = ConvertedLeadShowFileHelper::publicExistenceMap($convertedLead);
+        $storageMeta = $this->buildConvertedLeadShowStorageMeta($convertedLead);
 
-        $leadActivitiesTruncated = $leadActivityTotal > $leadActivitiesLimit;
-        $convertedStudentActivitiesTruncated = $convertedStudentActivityTotal > $convertedStudentActivitiesLimit;
-
-        return view('admin.converted-leads.show', compact(
-            'convertedLead',
-            'leadActivities',
-            'convertedStudentActivities',
-            'callLogs',
-            'listRoute',
-            'pdfRoute',
-            'fileExistenceMeta',
-            'leadActivitiesTruncated',
-            'convertedStudentActivitiesTruncated',
-            'leadActivitiesLimit',
-            'convertedStudentActivitiesLimit'
+        return view('admin.converted-leads.show', array_merge(
+            compact('convertedLead', 'leadActivities', 'convertedStudentActivities', 'callLogs', 'listRoute', 'pdfRoute'),
+            $storageMeta
         ));
     }
 
