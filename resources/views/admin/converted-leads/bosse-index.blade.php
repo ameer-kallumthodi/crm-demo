@@ -1172,7 +1172,6 @@
         function getBosseFilterParams() {
             return {
                 filter_search: ($('#search').val() || '').trim(),
-                search: ($('#search').val() || '').trim(),
                 batch_id: $('#batch_id').val() || '',
                 admission_batch_id: ($('#admission_batch_id').val() || $('#admission_batch_id').data('selected') || '') || '',
                 date_from: $('#date_from').val() || '',

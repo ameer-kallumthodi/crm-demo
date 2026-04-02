@@ -796,7 +796,6 @@
         function getEdumasterFilterParams() {
             return {
                 filter_search: ($('#search').val() || '').trim(),
-                search: ($('#search').val() || '').trim(),
                 university_id: $('#university_id').val() || '',
                 course_type: $('#course_type').val() || '',
                 date_from: $('#date_from').val() || '',

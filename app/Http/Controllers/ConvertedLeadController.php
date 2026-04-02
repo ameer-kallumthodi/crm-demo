@@ -132,15 +132,15 @@ class ConvertedLeadController extends Controller
 
     protected function resolvedConvertedLeadsSearchTerm(Request $request): ?string
     {
-        $v = $request->input('filter_search');
-        if (is_string($v) && trim($v) !== '') {
-            return trim($v);
-        }
         $search = $request->input('search');
         if (is_array($search) && ! empty($search['value'])) {
             $s = trim((string) $search['value']);
 
             return $s !== '' ? $s : null;
+        }
+        $v = $request->input('filter_search');
+        if (is_string($v) && trim($v) !== '') {
+            return trim($v);
         }
         if (is_string($search) && trim($search) !== '') {
             return trim($search);
