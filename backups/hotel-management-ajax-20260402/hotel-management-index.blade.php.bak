@@ -1,4 +1,4 @@
-@extends('layouts.mantis')
+﻿@extends('layouts.mantis')
 
 @section('title', 'Hotel Management Converted Leads')
 
@@ -361,7 +361,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-secondary" id="hotelClearFilters">
+                            <a href="{{ route('admin.hotel-management-converted-leads.index') }}" class="btn btn-secondary">
                                 <i class="ti ti-refresh"></i> Clear
                             </a>
                         </div>
@@ -429,7 +429,7 @@
                                 $canToggleAcademic = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_academic_assistant() || \App\Helpers\RoleHelper::is_admission_counsellor();
                                 $canToggleSupport = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_support_team();
                                 @endphp
-                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $convertedLeads->firstItem() + $index }}</td>
                                 <td>
                                     @include('admin.converted-leads.partials.status-badge', [
                                     'convertedLead' => $convertedLead,
@@ -653,7 +653,6 @@
                                             </button>
                                         </form>
                                         @endif
-                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -666,6 +665,10 @@
                     </table>
                 </div>
 
+                <!-- Pagination -->
+                <div class="d-flex justify-content-center mt-3">
+                    {{ $convertedLeads->links() }}
+                </div>
             </div>
         </div>
     </div>
@@ -674,135 +677,15 @@
 
 @endsection
 
-<script id="country-codes-json" type="application/json">
-    {!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}
-</script>
-
-@php
-    $hotelManagementColumns = [
-        ['data' => 'index', 'name' => 'index', 'orderable' => false, 'searchable' => false],
-        ['data' => 'academic', 'name' => 'academic', 'orderable' => false, 'searchable' => false],
-        ['data' => 'support', 'name' => 'support', 'orderable' => false, 'searchable' => false],
-        ['data' => 'registration_number', 'name' => 'registration_number', 'orderable' => false, 'searchable' => false],
-        ['data' => 'converted_date', 'name' => 'converted_date', 'orderable' => false, 'searchable' => false],
-        ['data' => 'dob', 'name' => 'dob', 'orderable' => false, 'searchable' => false],
-        ['data' => 'name_col', 'name' => 'name_col', 'orderable' => false, 'searchable' => false],
-        ['data' => 'type', 'name' => 'type', 'orderable' => false, 'searchable' => false],
-        ['data' => 'phone', 'name' => 'phone', 'orderable' => false, 'searchable' => false],
-        ['data' => 'whatsapp', 'name' => 'whatsapp', 'orderable' => false, 'searchable' => false],
-    ];
-
-    if (\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor()) {
-        $hotelManagementColumns[] = ['data' => 'parent_phone', 'name' => 'parent_phone', 'orderable' => false, 'searchable' => false];
-    }
-
-    $hotelManagementColumns = array_merge($hotelManagementColumns, [
-        ['data' => 'batch', 'name' => 'batch', 'orderable' => false, 'searchable' => false],
-        ['data' => 'admission_batch', 'name' => 'admission_batch', 'orderable' => false, 'searchable' => false],
-        ['data' => 'internship_id', 'name' => 'internship_id', 'orderable' => false, 'searchable' => false],
-        ['data' => 'app', 'name' => 'app', 'orderable' => false, 'searchable' => false],
-        ['data' => 'group', 'name' => 'group', 'orderable' => false, 'searchable' => false],
-        ['data' => 'interview', 'name' => 'interview', 'orderable' => false, 'searchable' => false],
-        ['data' => 'howmany_interview', 'name' => 'howmany_interview', 'orderable' => false, 'searchable' => false],
-        ['data' => 'remarks', 'name' => 'remarks', 'orderable' => false, 'searchable' => false],
-        ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
-    ]);
-@endphp
-
-<div id="hotelManagementConvertedLeadsConfig" data-data-url="{{ route('admin.hotel-management-converted-leads.data') }}" style="display:none"></div>
-<script type="application/json" id="hotelManagementConvertedLeadsColumnsData">{!! json_encode($hotelManagementColumns) !!}</script>
-
 @push('scripts')
 <script>
     $(document).ready(function() {
-        const configEl = document.getElementById('hotelManagementConvertedLeadsConfig');
-        const hotelDataUrl = configEl ? configEl.dataset.dataUrl : '';
-        const columnsEl = document.getElementById('hotelManagementConvertedLeadsColumnsData');
-        const hotelManagementColumns = columnsEl ? JSON.parse(columnsEl.textContent || '[]') : [];
-
-        function getHotelFilterParams() {
-            return {
-                filter_search: ($('#search').val() || '').trim(),
-                batch_id: $('#batch_id').val() || '',
-                admission_batch_id: ($('#admission_batch_id').val() || $('#admission_batch_id').data('selected') || '') || '',
-                date_from: $('#date_from').val() || '',
-                date_to: $('#date_to').val() || '',
-                status: $('#status').val() || '',
-                app: $('#app').val() || '',
-                group: $('#group').val() || '',
-                interview: $('#interview').val() || '',
-                howmany_interview: $('#howmany_interview').val() || ''
-            };
-        }
-
-        function updateHotelUrlWithFilters() {
-            const f = getHotelFilterParams();
-            const url = new URL(window.location.href);
-            url.searchParams.set('search', f.filter_search || '');
-            url.searchParams.set('batch_id', f.batch_id || '');
-            url.searchParams.set('admission_batch_id', f.admission_batch_id || '');
-            url.searchParams.set('date_from', f.date_from || '');
-            url.searchParams.set('date_to', f.date_to || '');
-            url.searchParams.set('status', f.status || '');
-            url.searchParams.set('app', f.app || '');
-            url.searchParams.set('group', f.group || '');
-            url.searchParams.set('interview', f.interview || '');
-            url.searchParams.set('howmany_interview', f.howmany_interview || '');
-            history.replaceState({}, '', url.toString());
-        }
-
-        window.reloadHotelManagementTable = function() {
-            if ($.fn.DataTable.isDataTable('#hotelManagementTable')) {
-                $('#hotelManagementTable').DataTable().ajax.reload(null, false);
-            }
-        };
-
-        if ($.fn.DataTable.isDataTable('#hotelManagementTable')) {
-            $('#hotelManagementTable').DataTable().destroy();
-        }
-
-        $('#hotelManagementTable').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: hotelDataUrl,
-                type: 'GET',
-                data: function(d) {
-                    $.extend(d, getHotelFilterParams());
-                },
-                dataSrc: function(json) {
-                    return (json && json.data) ? json.data : [];
-                }
-            },
-            pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-            order: [],
-            ordering: false,
-            dom: 'Bfrtip',
-            buttons: ['csv', 'excel', 'print', 'pdf'],
-            scrollX: true,
-            autoWidth: false,
-            columns: hotelManagementColumns
-        });
-
-        $('#filterForm').on('submit', function(e) {
-            e.preventDefault();
-            updateHotelUrlWithFilters();
-            window.reloadHotelManagementTable();
-        });
-
-        $('#hotelClearFilters').on('click', function(e) {
-            e.preventDefault();
-            $('#filterForm')[0].reset();
-            $('#admission_batch_id').val('');
-            updateHotelUrlWithFilters();
-            window.reloadHotelManagementTable();
-        });
+        // No DataTable initialization needed - using custom pagination
 
         // Batch filter enhancement
         $('#batch_id').on('change', function() {
-            updateHotelUrlWithFilters();
-            window.reloadHotelManagementTable();
+            // Auto-submit form when batch is changed for better UX
+            $('#filterForm').submit();
         });
 
         // Dependent filters: load admission batches by batch
@@ -1142,7 +1025,7 @@
                         show_alert('success', response.message || 'ID Card generated successfully!');
                         // Reload the page to show updated buttons
                         setTimeout(() => {
-                            window.reloadHotelManagementTable();
+                            location.reload();
                         }, 1000);
                     } else {
                         show_alert('error', response.message || 'Failed to generate ID Card');
@@ -1194,7 +1077,7 @@
                     show_alert('success', res.message || 'Updated');
                     $('#academicVerifyModal').modal('hide');
                     setTimeout(() => {
-                        window.reloadHotelManagementTable();
+                        location.reload();
                     }, 600);
                 } else {
                     show_alert('error', (res && res.message) ? res.message : 'Failed to update');
@@ -1245,7 +1128,7 @@
                     show_alert('success', res.message || 'Updated');
                     $('#supportVerifyModal').modal('hide');
                     setTimeout(() => {
-                        window.reloadHotelManagementTable();
+                        location.reload();
                     }, 600);
                 } else {
                     show_alert('error', (res && res.message) ? res.message : 'Failed to update');
@@ -1310,8 +1193,8 @@
                 } else {
                     alert(response.message);
                 }
-                if ($.fn.DataTable.isDataTable('#hotelManagementTable')) {
-                    const dt = $('#hotelManagementTable').DataTable();
+                if ($.fn.DataTable.isDataTable('#convertedLeadsTable')) {
+                    const dt = $('#convertedLeadsTable').DataTable();
                     if (dt.ajax && dt.ajax.url()) {
                         dt.ajax.reload();
                     } else {

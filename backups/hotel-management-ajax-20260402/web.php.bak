@@ -799,11 +799,9 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
 
         // Hotel Management Converted Leads Routes
         Route::get('/hotel-management-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'hotelManagementIndex'])->name('hotel-management-converted-leads.index');
-        Route::get('/hotel-management-converted-leads/data', [App\Http\Controllers\ConvertedLeadController::class, 'getHotelManagementConvertedLeadsData'])->name('hotel-management-converted-leads.data');
 
         // GMVSS Converted Leads Routes
         Route::get('/gmvss-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'gmvssIndex'])->name('gmvss-converted-leads.index');
-        Route::get('/gmvss-converted-leads/data', [App\Http\Controllers\ConvertedLeadController::class, 'getGmvssConvertedLeadsData'])->name('gmvss-converted-leads.data');
         Route::get('/gmvss-mentor-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'gmvssMentorIndex'])->name('gmvss-mentor-converted-leads.index');
         Route::get('/ai-python-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'aiPythonIndex'])->name('ai-python-converted-leads.index');
 
@@ -825,7 +823,6 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/post-sales-converted-students/{id}/assign', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'assignSubmit'])->name('post-sales.converted-leads.assign-submit');
         Route::get('/post-sales-converted-students/{id}/details-pdf', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'generateDetailsPdf'])->name('post-sales.converted-leads.details-pdf');
         Route::get('/digital-marketing-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'digitalMarketingIndex'])->name('digital-marketing-converted-leads.index');
-        Route::get('/digital-marketing-converted-leads/data', [App\Http\Controllers\ConvertedLeadController::class, 'getDigitalMarketingConvertedLeadsData'])->name('digital-marketing-converted-leads.data');
         Route::get('/diploma-in-data-science-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'aiAutomationIndex'])->name('diploma-in-data-science-converted-leads.index');
         Route::get('/web-development-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'webDevIndex'])->name('web-development-converted-leads.index');
         Route::get('/vibe-coding-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'vibeCodingIndex'])->name('vibe-coding-converted-leads.index');

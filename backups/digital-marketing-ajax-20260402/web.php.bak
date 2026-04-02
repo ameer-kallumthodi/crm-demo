@@ -825,7 +825,6 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/post-sales-converted-students/{id}/assign', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'assignSubmit'])->name('post-sales.converted-leads.assign-submit');
         Route::get('/post-sales-converted-students/{id}/details-pdf', [App\Http\Controllers\PostSalesConvertedLeadController::class, 'generateDetailsPdf'])->name('post-sales.converted-leads.details-pdf');
         Route::get('/digital-marketing-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'digitalMarketingIndex'])->name('digital-marketing-converted-leads.index');
-        Route::get('/digital-marketing-converted-leads/data', [App\Http\Controllers\ConvertedLeadController::class, 'getDigitalMarketingConvertedLeadsData'])->name('digital-marketing-converted-leads.data');
         Route::get('/diploma-in-data-science-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'aiAutomationIndex'])->name('diploma-in-data-science-converted-leads.index');
         Route::get('/web-development-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'webDevIndex'])->name('web-development-converted-leads.index');
         Route::get('/vibe-coding-converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'vibeCodingIndex'])->name('vibe-coding-converted-leads.index');

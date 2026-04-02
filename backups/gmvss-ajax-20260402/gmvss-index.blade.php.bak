@@ -1,4 +1,4 @@
-@extends('layouts.mantis')
+﻿@extends('layouts.mantis')
 
 @section('title', 'GMVSS Converted Leads')
 
@@ -371,7 +371,7 @@
                 <!-- Desktop Table View -->
                 <div class="d-none d-lg-block">
                     <div class="table-responsive">
-                        <table class="table table-hover" id="convertedLeadsTable">
+                        <table class="table table-hover data_table_basic" id="convertedLeadsTable">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -869,57 +869,24 @@
 @endsection
 
 <script id="country-codes-json" type="application/json">
-    {!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}
+    {
+        !!json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!
+    }
 </script>
 <script id="registration-links-json" type="application/json">
-    {!! json_encode(
-        ($registration_links ?? collect())->map(function ($link) {
-            return [
-                'id' => $link->id,
-                'title' => $link->title,
-                'color_code' => $link->color_code,
-            ];
-        })->values(),
-        JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
-    ) !!}
-</script>
-
-@php
-    $gmvssConvertedLeadsColumns = [
-        ['data' => 'index', 'name' => 'index', 'orderable' => false, 'searchable' => false],
-        ['data' => 'academic', 'name' => 'academic', 'orderable' => false, 'searchable' => false],
-        ['data' => 'support', 'name' => 'support', 'orderable' => false, 'searchable' => false],
-        ['data' => 'registration_number', 'name' => 'registration_number', 'orderable' => false, 'searchable' => false],
-        ['data' => 'converted_date', 'name' => 'converted_date', 'orderable' => false, 'searchable' => false],
-        ['data' => 'name_col', 'name' => 'name_col', 'orderable' => false, 'searchable' => false],
-        ['data' => 'type', 'name' => 'type', 'orderable' => false, 'searchable' => false],
-        ['data' => 'phone', 'name' => 'phone', 'orderable' => false, 'searchable' => false],
-        ['data' => 'whatsapp', 'name' => 'whatsapp', 'orderable' => false, 'searchable' => false],
-    ];
-
-    if (\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor()) {
-        $gmvssConvertedLeadsColumns[] = ['data' => 'parent_phone', 'name' => 'parent_phone', 'orderable' => false, 'searchable' => false];
+    {
+        !!json_encode(
+            ($registration_links ?? collect()) - > map(function($link) {
+                return [
+                    'id' => $link - > id,
+                    'title' => $link - > title,
+                    'color_code' => $link - > color_code,
+                ];
+            }) - > values(),
+            JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+        ) !!
     }
-
-    $gmvssConvertedLeadsColumns = array_merge($gmvssConvertedLeadsColumns, [
-        ['data' => 'batch', 'name' => 'batch', 'orderable' => false, 'searchable' => false],
-        ['data' => 'admission_batch', 'name' => 'admission_batch', 'orderable' => false, 'searchable' => false],
-        ['data' => 'class', 'name' => 'class', 'orderable' => false, 'searchable' => false],
-        ['data' => 'mail', 'name' => 'mail', 'orderable' => false, 'searchable' => false],
-        ['data' => 'course', 'name' => 'course', 'orderable' => false, 'searchable' => false],
-        ['data' => 'passed_year', 'name' => 'passed_year', 'orderable' => false, 'searchable' => false],
-        ['data' => 'enrollment_number', 'name' => 'enrollment_number', 'orderable' => false, 'searchable' => false],
-        ['data' => 'registration_link', 'name' => 'registration_link', 'orderable' => false, 'searchable' => false],
-        ['data' => 'certificate', 'name' => 'certificate', 'orderable' => false, 'searchable' => false],
-        ['data' => 'certificate_received_date', 'name' => 'certificate_received_date', 'orderable' => false, 'searchable' => false],
-        ['data' => 'certificate_issued_date', 'name' => 'certificate_issued_date', 'orderable' => false, 'searchable' => false],
-        ['data' => 'remarks', 'name' => 'remarks', 'orderable' => false, 'searchable' => false],
-        ['data' => 'actions', 'name' => 'actions', 'orderable' => false, 'searchable' => false],
-    ]);
-@endphp
-
-<div id="gmvssConvertedLeadsConfig" data-data-url="{{ route('admin.gmvss-converted-leads.data') }}" style="display:none"></div>
-<script type="application/json" id="gmvssConvertedLeadsColumnsData">{!! json_encode($gmvssConvertedLeadsColumns) !!}</script>
+</script>
 
 @push('styles')
 <style>
@@ -1130,11 +1097,6 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        const configEl = document.getElementById('gmvssConvertedLeadsConfig');
-        const gmvssDataUrl = configEl ? configEl.dataset.dataUrl : '';
-        const columnsEl = document.getElementById('gmvssConvertedLeadsColumnsData');
-        const gmvssColumns = columnsEl ? JSON.parse(columnsEl.textContent || '[]') : [];
-
         const registrationLinksEl = document.getElementById('registration-links-json');
         let registrationLinks = [];
         const registrationLinkMap = {};
@@ -1163,81 +1125,28 @@
                 });
             }
         }
-        function getGmvssFilterParams() {
-            return {
-                filter_search: ($('#search').val() || '').trim(),
-                batch_id: $('#batch_id').val() || '',
-                admission_batch_id: ($('#admission_batch_id').val() || $('#admission_batch_id').data('selected') || '') || '',
-                date_from: $('#date_from').val() || '',
-                date_to: $('#date_to').val() || '',
-                status: $('#status').val() || '',
-                registration_link_id: $('#registration_link_id').val() || '',
-                certificate_status: $('#certificate_status').val() || ''
-            };
-        }
-
-        function updateGmvssUrlWithFilters() {
-            const f = getGmvssFilterParams();
-            const url = new URL(window.location.href);
-            url.searchParams.set('search', f.filter_search || '');
-            url.searchParams.set('batch_id', f.batch_id || '');
-            url.searchParams.set('admission_batch_id', f.admission_batch_id || '');
-            url.searchParams.set('date_from', f.date_from || '');
-            url.searchParams.set('date_to', f.date_to || '');
-            url.searchParams.set('status', f.status || '');
-            url.searchParams.set('registration_link_id', f.registration_link_id || '');
-            url.searchParams.set('certificate_status', f.certificate_status || '');
-            history.replaceState({}, '', url.toString());
-        }
-
-        function initGmvssDataTable() {
-            if ($.fn.DataTable.isDataTable('#convertedLeadsTable')) {
-                $('#convertedLeadsTable').DataTable().destroy();
-            }
-
-            $('#convertedLeadsTable').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: gmvssDataUrl,
-                    type: 'GET',
-                    data: function(d) {
-                        $.extend(d, getGmvssFilterParams());
-                    }
-                },
-                pageLength: 25,
-                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-                order: [],
-                ordering: false,
-                dom: 'Bfrtip',
-                buttons: ['csv', 'excel', 'print', 'pdf'],
-                scrollX: true,
-                autoWidth: false,
-                columns: gmvssColumns
-            });
-        }
-
-        window.reloadGmvssTable = function() {
-            if ($.fn.DataTable.isDataTable('#convertedLeadsTable')) {
-                $('#convertedLeadsTable').DataTable().ajax.reload(null, false);
-            }
-        };
-
-        initGmvssDataTable();
         // Handle filter form submission
         $('#filterForm').on('submit', function(e) {
             e.preventDefault();
-            updateGmvssUrlWithFilters();
-            window.reloadGmvssTable();
+
+            const formData = new FormData(this);
+            const params = new URLSearchParams();
+
+            for (let [key, value] of formData.entries()) {
+                if (value.trim() !== '') {
+                    params.append(key, value);
+                }
+            }
+
+            const url = new URL(window.location.href);
+            url.search = params.toString();
+            window.location.href = url.toString();
         });
 
         // Handle clear button
         $('a[href="{{ route("admin.gmvss-converted-leads.index") }}"]').on('click', function(e) {
             e.preventDefault();
-            $('#filterForm')[0].reset();
-            $('#admission_batch_id').val('');
-            updateGmvssUrlWithFilters();
-            window.reloadGmvssTable();
+            window.location.href = '{{ route("admin.gmvss-converted-leads.index") }}';
         });
 
         // Dependent filters: load admission batches by batch
@@ -1305,7 +1214,7 @@
                     if (response.success) {
                         toast_success(response.message);
                         setTimeout(function() {
-                            window.reloadGmvssTable();
+                            location.reload();
                         }, 1000);
                     }
                 },
@@ -1633,7 +1542,7 @@
                         show_alert('success', res.message || 'Updated');
                         $('#academicVerifyModal').modal('hide');
                         setTimeout(() => {
-                            window.reloadGmvssTable();
+                            location.reload();
                         }, 600);
                     } else {
                         show_alert('error', (res && res.message) ? res.message : 'Failed to update');
@@ -1684,7 +1593,7 @@
                         show_alert('success', res.message || 'Updated');
                         $('#supportVerifyModal').modal('hide');
                         setTimeout(() => {
-                            window.reloadGmvssTable();
+                            location.reload();
                         }, 600);
                     } else {
                         show_alert('error', (res && res.message) ? res.message : 'Failed to update');
@@ -1755,10 +1664,10 @@
                             dt.ajax.reload();
                         } else {
                             dt.rows().invalidate().draw(false);
-                            window.reloadGmvssTable();
+                            location.reload();
                         }
                     } else {
-                        window.reloadGmvssTable();
+                        location.reload();
                     }
                 },
                 error: function (xhr) {
