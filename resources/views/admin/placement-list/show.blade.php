@@ -68,13 +68,13 @@
                         <p class="fw-bold mb-0">{{ $convertedLead->mentorDetails->specialization ?? '—' }}</p>
                     </div>
                     <div class="col-12">
-                        <div class="d-inline-flex flex-wrap align-items-center gap-2 mb-2">
-                            <label class="form-label text-muted mb-0">Remarks</label>
-                            <button type="button" class="btn btn-sm btn-outline-secondary placement-remarks-edit-btn flex-shrink-0" data-id="{{ $convertedLead->id }}">
-                                <i class="ti ti-refresh"></i> Update
-                            </button>
-                        </div>
                         <div class="placement-remarks-cell">
+                            <div class="d-inline-flex flex-wrap align-items-center gap-2 mb-2">
+                                <label class="form-label text-muted mb-0">Remarks</label>
+                                <button type="button" class="btn btn-sm btn-outline-secondary placement-remarks-edit-btn flex-shrink-0" data-id="{{ $convertedLead->id }}">
+                                    <i class="ti ti-refresh"></i> Update
+                                </button>
+                            </div>
                             <span class="placement-remarks-display fw-bold d-block" style="white-space: pre-wrap;">{{ $convertedLead->mentorDetails?->placement_remarks ?: '—' }}</span>
                             <div class="placement-remarks-edit-wrap d-none mt-2">
                                 <textarea class="form-control form-control-sm placement-remarks-input" rows="3" maxlength="2000" placeholder="Enter updated remarks"></textarea>
