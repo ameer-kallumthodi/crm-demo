@@ -304,7 +304,7 @@
                                     @if($convertedLead->mentorDetails?->is_placement_passed)
                                         <span class="badge bg-success">Placement Passed</span>
                                         @if($convertedLead->mentorDetails?->is_placement_passed_at)
-                                            <br><small class="text-muted">{{ $convertedLead->mentorDetails->is_placement_passed_at->format('d M Y') }}</small>
+                                            <br><small class="text-muted">{{ $convertedLead->mentorDetails->is_placement_passed_at->format('d-m-Y h:i A') }}</small>
                                         @endif
 
                                         @if($convertedLead->mentorDetails?->placement_resume)

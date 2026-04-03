@@ -1,4 +1,4 @@
-﻿@extends('layouts.mantis')
+@extends('layouts.mantis')
 
 @section('title', 'Junior Vlogger Converted Mentor List')
 
@@ -670,7 +670,7 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
                                     @if($lead->mentorDetails?->is_placement_passed)
                                         <span class="badge bg-success">Placement Passed</span>
                                         @if($lead->mentorDetails?->is_placement_passed_at)
-                                            <br><small class="text-muted">{{ $lead->mentorDetails->is_placement_passed_at->format('d M Y') }}</small>
+                                            <br><small class="text-muted">{{ $lead->mentorDetails->is_placement_passed_at->format('d-m-Y h:i A') }}</small>
                                         @endif
                                         @if($lead->mentorDetails?->placement_resume)
                                             <br><a href="{{ asset('storage/' . $lead->mentorDetails->placement_resume) }}" target="_blank" class="btn btn-sm btn-link p-0 small"><i class="ti ti-file-text"></i> View Resume</a>

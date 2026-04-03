@@ -175,7 +175,7 @@
                             @if($convertedLead->mentorDetails->is_placement_passed_at)
                             <div class="col-md-4">
                                 <label class="form-label text-muted">Passed At</label>
-                                <p class="fw-bold">{{ $convertedLead->mentorDetails->is_placement_passed_at->format('d M Y h:i A') }}</p>
+                                <p class="fw-bold">{{ $convertedLead->mentorDetails->is_placement_passed_at->format('d-m-Y h:i A') }}</p>
                             </div>
                             @endif
                             @if($convertedLead->mentorDetails->placementPassedBy)

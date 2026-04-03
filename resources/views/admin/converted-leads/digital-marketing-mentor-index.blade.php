@@ -1,4 +1,4 @@
-﻿@extends('layouts.mantis')
+@extends('layouts.mantis')
 
 @section('title', 'Digital Marketing Course Mentor List')
 
@@ -1088,7 +1088,7 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                                         @if($convertedLead->mentorDetails?->is_placement_passed)
                                             <span class="badge bg-success">Placement Passed</span>
                                             @if($convertedLead->mentorDetails?->is_placement_passed_at)
-                                                <br><small class="text-muted">{{ $convertedLead->mentorDetails->is_placement_passed_at->format('d M Y') }}</small>
+                                                <br><small class="text-muted">{{ $convertedLead->mentorDetails->is_placement_passed_at->format('d-m-Y h:i A') }}</small>
                                             @endif
                                             @if($convertedLead->mentorDetails?->placement_resume)
                                                 <br><a href="{{ asset('storage/' . $convertedLead->mentorDetails->placement_resume) }}" target="_blank" class="btn btn-sm btn-link p-0 small"><i class="ti ti-file-text"></i> View Resume</a>

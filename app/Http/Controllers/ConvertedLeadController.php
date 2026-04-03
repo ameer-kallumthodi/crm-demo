@@ -4074,7 +4074,7 @@ class ConvertedLeadController extends Controller
 
     /**
      * AJAX endpoint for DataTables: placement list data (is_placement_passed = 1).
-     * Columns: slno, name, phone, email, course, batch, specialization, resume, actions.
+     * Includes mock test count, scheduled interview count, and placement remarks (full text; list UI truncates).
      * Resume link is only shown if it is verified.
      */
     public function placementListData(Request $request)
@@ -4103,10 +4103,11 @@ class ConvertedLeadController extends Controller
         $filteredCount = $query->count();
 
         // Ordering: 0=index, 1=name, 2=phone, 3=email, 4=course, 5=batch, 6=admission batch,
-        // 7=starting date, 8=ending date, 9=specialization, 10=resume, 11=stage, 12=remark, 13=actions
+        // 7=starting date, 8=ending date, 9=specialization, 10=resume, 11=stage,
+        // 12=placement passed at, 13=mock tests, 14=interviews, 15=remark, 16=actions
         $orderCol = (int) $request->get('order.0.column', 0);
         $orderDir = $request->get('order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
-        $orderColumns = ['id', 'name', 'phone', 'email', null, null, null, null, null, null, null, null, null, null];
+        $orderColumns = ['id', 'name', 'phone', 'email', null, null, null, null, null, null, null, null, null, null, null, null, null];
         $orderBy = isset($orderColumns[$orderCol]) ? $orderColumns[$orderCol] : 'id';
         $query->orderBy($orderBy, $orderDir);
 
@@ -4133,6 +4134,14 @@ class ConvertedLeadController extends Controller
 
             $stage = $lead->getPlacementStage();
 
+            $mockTestCount = $lead->placementMockTestDetails->count();
+            $interviewsCount = $lead->placementScheduledInterviews->count();
+            $remarksRaw = $lead->mentorDetails?->placement_remarks;
+            $remarkForDisplay = ($remarksRaw !== null && trim((string) $remarksRaw) !== '') ? trim((string) $remarksRaw) : '';
+            $placementPassedAt = $lead->mentorDetails?->is_placement_passed_at
+                ? $lead->mentorDetails->is_placement_passed_at->format('d-m-Y h:i A')
+                : '—';
+
             $data[] = [
                 'id' => $lead->id,
                 'index' => $start + $index + 1,
@@ -4147,7 +4156,10 @@ class ConvertedLeadController extends Controller
                 'specialization' => $lead->mentorDetails?->specialization ?? '',
                 'resume' => $resumeHtml,
                 'stage' => $stage,
-                'remark' => $lead->mentorDetails?->placement_remarks ?? '—',
+                'placement_passed_at' => $placementPassedAt,
+                'mock_test_count' => $mockTestCount,
+                'interviews_count' => $interviewsCount,
+                'remark' => $remarkForDisplay !== '' ? $remarkForDisplay : '—',
                 'actions' => $actionsHtml,
             ];
         }

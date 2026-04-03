@@ -33,7 +33,7 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped" id="placementListTable" style="width:100%">
+                    <table class="table table-striped placement-list-dt" id="placementListTable" style="width:100%">
                         <thead>
                             <tr>
                                 <th>Sl No</th>
@@ -48,6 +48,10 @@
                                 <th>Specialization</th>
                                 <th>Resume</th>
                                 <th>Stage</th>
+                                <th>Placement passed</th>
+                                <th class="text-center">Mock Tests</th>
+                                <th class="text-center">Interviews</th>
+                                <th>Remarks</th>
                                 <th class="text-center">Action</th>
                             </tr>
                         </thead>
@@ -63,6 +67,35 @@
 <!-- [ Main Content ] end -->
 
 @endsection
+
+@push('styles')
+<style>
+    #placementListTable.placement-list-dt thead th {
+        white-space: nowrap;
+    }
+    #placementListTable.placement-list-dt tbody td:not(.placement-remark-cell) {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    #placementListTable.placement-list-dt tbody td.placement-remark-cell {
+        white-space: normal;
+        vertical-align: top;
+    }
+    #placementListTable.placement-list-dt .placement-remark-body {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        overflow: hidden;
+        white-space: pre-line;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        max-width: 22rem;
+        line-height: 1.45;
+        cursor: default;
+    }
+</style>
+@endpush
 
 @push('scripts')
 <div id="placementListConfig"
@@ -110,6 +143,10 @@ $(document).ready(function() {
             { data: 'specialization', name: 'specialization', orderable: false, searchable: false },
             { data: 'resume', name: 'resume', orderable: false, searchable: false },
             { data: 'stage', name: 'stage', orderable: false, searchable: false },
+            { data: 'placement_passed_at', name: 'placement_passed_at', orderable: false, searchable: false },
+            { data: 'mock_test_count', name: 'mock_test_count', orderable: false, searchable: false },
+            { data: 'interviews_count', name: 'interviews_count', orderable: false, searchable: false },
+            { data: 'remark', name: 'remark', orderable: false, searchable: false },
             { data: 'actions', name: 'actions', orderable: false, searchable: false }
         ],
         columnDefs: [
@@ -121,8 +158,8 @@ $(document).ready(function() {
                     var val = (data != null && data !== undefined) ? String(data) : '';
                     var id = row.id || '';
                     var esc = function(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
-                    return '<div class="placement-spec-cell">' +
-                        '<span class="placement-spec-display d-inline-block align-middle">' + (val ? esc(val) : '—') + '</span> ' +
+                    return '<div class="placement-spec-cell text-nowrap">' +
+                        '<span class="placement-spec-display d-inline-block align-middle text-nowrap">' + (val ? esc(val) : '—') + '</span> ' +
                         '<button type="button" class="btn btn-sm btn-outline-secondary placement-spec-edit-btn" data-id="' + esc(id) + '" title="Edit">' +
                         '<i class="ti ti-edit"></i> Edit</button>' +
                         '<span class="placement-spec-edit-wrap d-none">' +
@@ -153,7 +190,46 @@ $(document).ready(function() {
                 }
             },
             {
-                targets: 12,
+                targets: 13,
+                orderable: false,
+                searchable: false,
+                className: 'text-center',
+                render: function (data) {
+                    var n = parseInt(data, 10);
+                    return (!isNaN(n) && n >= 0) ? String(n) : '0';
+                }
+            },
+            {
+                targets: 14,
+                orderable: false,
+                searchable: false,
+                className: 'text-center',
+                render: function (data) {
+                    var n = parseInt(data, 10);
+                    return (!isNaN(n) && n >= 0) ? String(n) : '0';
+                }
+            },
+            {
+                targets: 15,
+                orderable: false,
+                searchable: false,
+                className: 'placement-remark-cell',
+                render: function (data) {
+                    var full = (data != null && data !== undefined && data !== '—') ? String(data) : '';
+                    if (!full) return '—';
+                    var esc = function (s) {
+                        return String(s)
+                            .replace(/&/g, '&amp;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;');
+                    };
+                    var escTitle = esc(full).replace(/'/g, '&#39;');
+                    return '<span class="placement-remark-body" title="' + escTitle + '">' + esc(full) + '</span>';
+                }
+            },
+            {
+                targets: 16,
                 orderable: false,
                 searchable: false,
                 render: function (data) {
