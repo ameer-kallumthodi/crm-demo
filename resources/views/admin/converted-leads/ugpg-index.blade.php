@@ -245,7 +245,7 @@
                         <i class="ti ti-headphones"></i> E-School Converted Support List
                     </a>
                     <a href="{{ route('admin.support-junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-headphones"></i> Junior Vlogger â€“ Course Support List
+                        <i class="ti ti-headphones"></i> Junior Vlogger - Course Support List
                     </a>
                 </div>
             </div>

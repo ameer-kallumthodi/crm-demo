@@ -261,7 +261,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.ai-python-converted-leads.index') }}" id="filterForm" class="js-programme-scoped-dt-form">
+                <form method="GET" action="{{ route('admin.graphic-designing-converted-leads.index') }}" id="filterForm" class="js-programme-scoped-dt-form">
                     <div class="row g-3 align-items-end">
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="search" class="form-label">Search</label>
@@ -365,7 +365,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.ai-python-converted-leads.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.graphic-designing-converted-leads.index') }}" class="btn btn-secondary">
                                 <i class="ti ti-refresh"></i> Clear
                             </a>
                         </div>
@@ -545,6 +545,7 @@
 @endpush
 
 @push('scripts')
+<script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 <script>
     $(document).ready(function() {
         // Inline editing functionality

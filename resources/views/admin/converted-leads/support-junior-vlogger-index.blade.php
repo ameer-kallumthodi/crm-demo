@@ -1,6 +1,6 @@
 ﻿@extends('layouts.mantis')
 
-@section('title', 'Junior Vlogger â€“ Course Support List')
+@section('title', 'Junior Vlogger - Course Support List')
 
 @section('content')
 @php $appTimezone = config('app.timezone'); @endphp
@@ -62,7 +62,7 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="page-header-title">
-                    <h5 class="m-b-10">Junior Vlogger â€“ Course Support List</h5>
+                    <h5 class="m-b-10">Junior Vlogger - Course Support List</h5>
                 </div>
             </div>
             <div class="col-md-6">
@@ -277,7 +277,7 @@
                         <i class="ti ti-headphones"></i> E-School Converted Support List
                     </a>
                     <a href="{{ route('admin.support-junior-vlogger-converted-leads.index') }}" class="btn btn-primary active">
-                        <i class="ti ti-headphones"></i> Junior Vlogger â€“ Course Support List
+                        <i class="ti ti-headphones"></i> Junior Vlogger - Course Support List
                     </a>
                 </div>
             </div>
@@ -338,7 +338,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Junior Vlogger â€“ Course Support List</h5>
+                <h5 class="mb-0">Junior Vlogger - Course Support List</h5>
             </div>
             <div class="card-body">
                 @php
