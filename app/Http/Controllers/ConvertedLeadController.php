@@ -41,9 +41,12 @@ use App\Support\EdumasterConvertedLeadsDataTableFormatter;
 use App\Support\HotelManagementConvertedLeadsDataTableFormatter;
 use App\Support\GmvssConvertedLeadsDataTableFormatter;
 use App\Support\DigitalMarketingConvertedLeadsDataTableFormatter;
+use App\Http\Controllers\Concerns\ConvertedLeadScopedDataTables;
 
 class ConvertedLeadController extends Controller
 {
+    use ConvertedLeadScopedDataTables;
+
     /**
      * Display a listing of converted leads (table rows load via AJAX).
      */
@@ -62,6 +65,22 @@ class ConvertedLeadController extends Controller
     {
         try {
             set_time_limit(config('timeout.max_execution_time', 300));
+
+            $scopedRaw = $request->input('scoped_course_id');
+            if ($scopedRaw !== null && $scopedRaw !== '') {
+                $scopedCourseId = (int) $scopedRaw;
+                if (! $this->isAjaxScopedConvertedLeadCourse($scopedCourseId)) {
+                    return response()->json([
+                        'draw' => (int) $request->input('draw'),
+                        'recordsTotal' => 0,
+                        'recordsFiltered' => 0,
+                        'data' => [],
+                        'error' => 'Invalid scoped course.',
+                    ], 422);
+                }
+
+                return $this->getScopedConvertedLeadsDataResponse($request, $scopedCourseId);
+            }
 
             $recordsTotalQuery = ConvertedLead::query();
             $this->applyConvertedLeadsRoleScope($recordsTotalQuery);
@@ -1802,7 +1821,11 @@ class ConvertedLeadController extends Controller
         $admission_batches = \App\Models\AdmissionBatch::orderBy('is_active', 'desc')->orderBy('title')->get();
         $country_codes = get_country_code();
 
-        return view('admin.converted-leads.ai-python-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes'));
+        $courseDataTableId = 'aiPythonConvertedLeadsTable';
+        $scopedCourseId = 10;
+        $programmeDtLayout = 'ai_python';
+
+        return view('admin.converted-leads.ai-python-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'courseDataTableId', 'scopedCourseId', 'programmeDtLayout'));
     }
 
     /**
@@ -2077,7 +2100,11 @@ class ConvertedLeadController extends Controller
             $classTimes = \App\Models\ClassTime::where('course_id', 12)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.diploma-in-data-science-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $courseDataTableId = 'diplomaInDataScienceConvertedLeadsTable';
+        $scopedCourseId = 12;
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.diploma-in-data-science-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course', 'courseDataTableId', 'scopedCourseId', 'programmeDtLayout'));
     }
 
     /**
@@ -2202,7 +2229,11 @@ class ConvertedLeadController extends Controller
             $classTimes = \App\Models\ClassTime::where('course_id', 13)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.web-development-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $courseDataTableId = 'webDevelopmentConvertedLeadsTable';
+        $scopedCourseId = 13;
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.web-development-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course', 'courseDataTableId', 'scopedCourseId', 'programmeDtLayout'));
     }
 
     /**
@@ -2327,7 +2358,11 @@ class ConvertedLeadController extends Controller
             $classTimes = \App\Models\ClassTime::where('course_id', 14)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.vibe-coding-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $courseDataTableId = 'vibeCodingConvertedLeadsTable';
+        $scopedCourseId = 14;
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.vibe-coding-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course', 'courseDataTableId', 'scopedCourseId', 'programmeDtLayout'));
     }
 
     /**
@@ -2558,7 +2593,11 @@ class ConvertedLeadController extends Controller
             $classTimes = \App\Models\ClassTime::where('course_id', 15)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.graphic-designing-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $courseDataTableId = 'graphicDesigningConvertedLeadsTable';
+        $scopedCourseId = 15;
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.graphic-designing-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course', 'courseDataTableId', 'scopedCourseId', 'programmeDtLayout'));
     }
 
     /**
@@ -2683,7 +2722,11 @@ class ConvertedLeadController extends Controller
             $classTimes = \App\Models\ClassTime::where('course_id', 20)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.machine-learning-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $courseDataTableId = 'machineLearningConvertedLeadsTable';
+        $scopedCourseId = 20;
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.machine-learning-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course', 'courseDataTableId', 'scopedCourseId', 'programmeDtLayout'));
     }
 
     /**
@@ -2808,7 +2851,11 @@ class ConvertedLeadController extends Controller
             $classTimes = \App\Models\ClassTime::where('course_id', 21)->where('is_active', true)->get();
         }
 
-        return view('admin.converted-leads.flutter-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course'));
+        $courseDataTableId = 'flutterConvertedLeadsTable';
+        $scopedCourseId = 21;
+        $programmeDtLayout = 'digital_programme';
+
+        return view('admin.converted-leads.flutter-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'offlinePlaces', 'classTimes', 'course', 'courseDataTableId', 'scopedCourseId', 'programmeDtLayout'));
     }
 
     /**
@@ -2936,6 +2983,9 @@ class ConvertedLeadController extends Controller
         $pageCourseName = 'RPA';
         $pageCourseId = 27;
         $pageRouteName = 'admin.rpa-converted-leads.index';
+        $courseDataTableId = 'rpaConvertedLeadsTable';
+        $scopedCourseId = 27;
+        $programmeDtLayout = 'digital_programme';
 
         return view('admin.converted-leads.flutter-index', compact(
             'convertedLeads',
@@ -2948,7 +2998,10 @@ class ConvertedLeadController extends Controller
             'course',
             'pageCourseName',
             'pageCourseId',
-            'pageRouteName'
+            'pageRouteName',
+            'courseDataTableId',
+            'scopedCourseId',
+            'programmeDtLayout'
         ));
     }
 
