@@ -51,7 +51,7 @@ class LeadJuniorVloggerRegistrationController extends Controller
             'technology_performance_category' => 'required|in:excellent,average,needs_support',
             'passport_photo' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             'adhar_front' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'sslc_certificate' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'sslc_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'message' => 'nullable|string',
         ], [
             'lead_id.required' => 'Lead ID is required.',
@@ -77,7 +77,6 @@ class LeadJuniorVloggerRegistrationController extends Controller
             'passport_photo.mimes' => 'Passport photo must be JPG or PNG. Max 2MB.',
             'adhar_front.required' => 'Aadhaar card is required.',
             'adhar_front.mimes' => 'Aadhaar must be PDF or image. Max 2MB.',
-            'sslc_certificate.required' => 'SSLC certificate is required.',
             'sslc_certificate.mimes' => 'SSLC certificate must be PDF or image. Max 2MB.',
         ]);
 

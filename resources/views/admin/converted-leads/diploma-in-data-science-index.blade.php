@@ -1,4 +1,4 @@
-﻿@extends('layouts.mantis')
+@extends('layouts.mantis')
 
 @section('title', 'Diploma in Data Science Converted Leads')
 
@@ -105,18 +105,6 @@
                     </a>
                     <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-device-mobile"></i> Flutter Converted Leads
-                    </a>
-                    <a href="{{ route('admin.medical-coding-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Medical Coding Mentor List
-                    </a>
-                    <a href="{{ route('admin.python-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Python Mentor List
-                    </a>
-                    <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Flutter Mentor List
-                    </a>
-                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> RPA Mentor List
                     </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
@@ -442,12 +430,6 @@
 
 @endsection
 
-<script id="country-codes-json" type="application/json">
-    {
-        {!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}
-    }
-</script>
-
 @push('styles')
 <style>
     .spin {
@@ -521,6 +503,7 @@
 @endpush
 
 @push('scripts')
+<script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 <script>
     $(document).ready(function() {
         // Inline editing functionality

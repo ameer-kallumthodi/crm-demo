@@ -180,6 +180,7 @@
         $(TABLE_SEL).DataTable({
             processing: true,
             serverSide: true,
+            deferRender: true,
             ajax: {
                 url: DATA_URL,
                 type: 'GET',

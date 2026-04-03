@@ -115,9 +115,6 @@
                     <a href="{{ route('admin.rpa-converted-leads.index') }}" class="btn {{ $pageCourseId === 27 ? 'btn-primary active' : 'btn-outline-primary' }}">
                         <i class="ti ti-cpu"></i> RPA Converted Leads
                     </a>
-                    <a href="{{ route('admin.medical-coding-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Medical Coding Mentor List
-                    </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
                     </a>

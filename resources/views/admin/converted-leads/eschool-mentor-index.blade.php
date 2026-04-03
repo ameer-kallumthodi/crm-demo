@@ -98,18 +98,6 @@
                     <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-device-mobile"></i> Flutter Converted Leads
                     </a>
-                    <a href="{{ route('admin.medical-coding-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Medical Coding Mentor List
-                    </a>
-                    <a href="{{ route('admin.python-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Python Mentor List
-                    </a>
-                    <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Flutter Mentor List
-                    </a>
-                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> RPA Mentor List
-                    </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
                     </a>
@@ -174,6 +162,21 @@
                     </a>
                     <a href="{{ route('admin.graphic-designing-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Graphic Designing Mentor List
+                    </a>
+                    <a href="{{ route('admin.machine-learning-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Machine Learning Mentor List
+                    </a>
+                    <a href="{{ route('admin.medical-coding-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Medical Coding Mentor List
+                    </a>
+                    <a href="{{ route('admin.python-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Python Mentor List
+                    </a>
+                    <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Flutter Mentor List
+                    </a>
+                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> RPA Mentor List
                     </a>
                     <a href="{{ route('admin.junior-vlogger-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List

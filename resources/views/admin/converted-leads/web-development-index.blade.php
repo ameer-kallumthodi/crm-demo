@@ -1,4 +1,4 @@
-﻿@extends('layouts.mantis')
+@extends('layouts.mantis')
 
 @section('title', 'Web Development & Designing Converted Leads')
 
@@ -105,18 +105,6 @@
                     </a>
                     <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-device-mobile"></i> Flutter Converted Leads
-                    </a>
-                    <a href="{{ route('admin.medical-coding-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Medical Coding Mentor List
-                    </a>
-                    <a href="{{ route('admin.python-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Python Mentor List
-                    </a>
-                    <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Flutter Mentor List
-                    </a>
-                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> RPA Mentor List
                     </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
@@ -438,46 +426,10 @@
 @endsection
 
 @push('scripts')
+<script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 <script>
     $(document).ready(function() {
-            // DataTable is automatically initialized by layout for tables with 'data_table_basic' class
-
-            // Dependent filters: load admission batches by batch
-            function loadAdmissionBatchesByBatch(batchId, selectedId) {
-                const $admission = $('#admission_batch_id');
-                $admission.html('<option value="">Loading...</option>');
-                if (!batchId) {
-                    $admission.html('<option value="">All Admission Batches</option>');
-                    return;
-                }
-                $.get(`/api/admission-batches/by-batch/${batchId}`).done(function(list) {
-                    let opts = '<option value="">All Admission Batches</option>';
-                    list.forEach(function(i) {
-                        const sel = String(selectedId) === String(i.id) ? 'selected' : '';
-                        opts += `<option value="${i.id}" ${sel}>${i.title}</option>`;
-                    });
-                    $admission.html(opts);
-                }).fail(function() {
-                    $admission.html('<option value="">All Admission Batches</option>');
-                });
-            }
-
-            // Initialize dependent dropdowns on load
-            const initialBatchId = $('#batch_id').val();
-            const initialAdmissionBatchId = $('#admission_batch_id').data('selected');
-            if (initialBatchId) {
-                loadAdmissionBatchesByBatch(initialBatchId, initialAdmissionBatchId);
-            }
-
-            // On batch change â†’ reload admission batches and optionally submit form
-            $('#batch_id').on('change', function() {
-                const bid = $(this).val();
-                loadAdmissionBatchesByBatch(bid, '');
-                // Auto-submit form when batch is changed for better UX
-                setTimeout(() => {
-                    $('#filterForm').submit();
-                }, 100);
-            });
+            // Admission batch dropdown + DataTable reload: programme-course-server-datatable partial
 
             // Inline editing functionality
             $(document).on('click', '.edit-btn', function(e) {

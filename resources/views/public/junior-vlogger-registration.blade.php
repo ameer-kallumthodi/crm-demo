@@ -316,13 +316,13 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label class="form-label">SSLC Certificate <span class="required">*</span></label>
+                                <label class="form-label">SSLC Certificate</label>
                                 <div class="file-upload-area" onclick="document.getElementById('sslc_certificate').click()">
                                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                     <p class="mb-0">Click or drag & drop</p>
                                     <small class="text-muted">PDF, JPG, PNG</small>
                                 </div>
-                                <input type="file" id="sslc_certificate" name="sslc_certificate" accept=".pdf,.jpg,.jpeg,.png" required style="display: none;">
+                                <input type="file" id="sslc_certificate" name="sslc_certificate" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
                                 <div class="file-preview" id="sslc_certificate_preview"></div>
                             </div>
                         </div>

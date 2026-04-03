@@ -1,4 +1,4 @@
-﻿@extends('layouts.mantis')
+@extends('layouts.mantis')
 
 @section('title', 'Diploma in Data Science Converted Support List')
 
@@ -108,18 +108,6 @@
                     <a href="{{ route('admin.flutter-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-device-mobile"></i> Flutter Converted Leads
                     </a>
-                    <a href="{{ route('admin.medical-coding-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Medical Coding Mentor List
-                    </a>
-                    <a href="{{ route('admin.python-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Python Mentor List
-                    </a>
-                    <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Flutter Mentor List
-                    </a>
-                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> RPA Mentor List
-                    </a>
                     <a href="{{ route('admin.eduthanzeel-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-school"></i> Eduthanzeel Converted Leads
                     </a>
@@ -128,9 +116,6 @@
                     </a>
                     <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-video"></i> Junior Vlogger Converted Leads
-                    </a>
-                    <a href="{{ route('admin.junior-vlogger-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
-                        <i class="ti ti-user-star"></i> Junior Vlogger Converted Mentor List
                     </a>
                     <a href="{{ route('admin.support-junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-headphones"></i> Junior Vlogger â€“ Course Support List
@@ -182,6 +167,18 @@
                     </a>
                     <a href="{{ route('admin.data-science-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-user-star"></i> Data Science Course Mentor List
+                    </a>
+                    <a href="{{ route('admin.medical-coding-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Medical Coding Mentor List
+                    </a>
+                    <a href="{{ route('admin.python-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Python Mentor List
+                    </a>
+                    <a href="{{ route('admin.flutter-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> Flutter Mentor List
+                    </a>
+                    <a href="{{ route('admin.rpa-mentor-converted-leads.index') }}" class="btn btn-outline-primary">
+                        <i class="ti ti-user-star"></i> RPA Mentor List
                     </a>
                     <a href="{{ route('admin.junior-vlogger-converted-leads.index') }}" class="btn btn-outline-primary">
                         <i class="ti ti-video"></i> Junior Vlogger Converted Leads
