@@ -237,6 +237,39 @@
             </table>
         @endif
     </div>
+
+    <div class="section">
+        <h3 class="section-title">Remarks history</h3>
+        @if($convertedLead->placementRemarkHistories->isEmpty())
+            <div class="empty">No remarks history recorded.</div>
+        @else
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:22%;">When</th>
+                        <th style="width:22%;">Updated by</th>
+                        <th style="width:56%;">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($convertedLead->placementRemarkHistories as $hist)
+                        <tr>
+                            <td>{{ $hist->created_at ? $hist->created_at->format('d-m-Y h:i A') : '—' }}</td>
+                            <td>{{ $hist->user?->name ?? '—' }}</td>
+                            <td>
+                                @if($hist->remarks !== null && $hist->remarks !== '')
+                                    {!! nl2br(e($hist->remarks)) !!}
+                                @else
+                                    —
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+    </div>
+
     <div class="footer-note">This is a system-generated placement report. Generated on {{ now()->format('d M Y h:i A') }}.</div>
 </body>
 </html>

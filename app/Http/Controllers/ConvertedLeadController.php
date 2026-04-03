@@ -9,6 +9,7 @@ use App\Models\ConvertedLead;
 use App\Models\ConvertedStudentMentorDetail;
 use App\Models\PlacementMockTestDetail;
 use App\Models\PlacementScheduledInterview;
+use App\Models\PlacementRemarkHistory;
 use App\Models\Lead;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
@@ -3893,7 +3894,14 @@ class ConvertedLeadController extends Controller
      */
     public function placementDetails($id)
     {
-        $convertedLead = ConvertedLead::with(['mentorDetails', 'course', 'batch', 'placementMockTestDetails', 'placementScheduledInterviews'])
+        $convertedLead = ConvertedLead::with([
+            'mentorDetails',
+            'course',
+            'batch',
+            'placementMockTestDetails',
+            'placementScheduledInterviews',
+            'placementRemarkHistories.user',
+        ])
             ->whereHas('mentorDetails', function ($q) {
                 $q->where('is_placement_passed', 1);
             })
@@ -3917,7 +3925,8 @@ class ConvertedLeadController extends Controller
             'batch',
             'admissionBatch',
             'placementMockTestDetails',
-            'placementScheduledInterviews'
+            'placementScheduledInterviews',
+            'placementRemarkHistories.user',
         ])->whereHas('mentorDetails', function ($q) {
             $q->where('is_placement_passed', 1);
         })->findOrFail($id);
@@ -4048,6 +4057,7 @@ class ConvertedLeadController extends Controller
 
     /**
      * Update placement remarks for a placement list entry (mentor details).
+     * Persists to mentor details and appends a row to placement_remark_histories (user + timestamp).
      */
     public function updatePlacementRemarks(Request $request, $id)
     {
@@ -4055,20 +4065,43 @@ class ConvertedLeadController extends Controller
             'remarks' => 'nullable|string|max:2000',
         ]);
 
-        $convertedLead = ConvertedLead::with('mentorDetails')->findOrFail($id);
+        $convertedLead = ConvertedLead::whereHas('mentorDetails', function ($q) {
+            $q->where('is_placement_passed', 1);
+        })->with('mentorDetails')->findOrFail($id);
+
         $mentorDetails = $convertedLead->mentorDetails;
         if (!$mentorDetails) {
             $mentorDetails = new ConvertedStudentMentorDetail();
-            $mentorDetails->converted_student_id = $id;
+            $mentorDetails->converted_student_id = $convertedLead->id;
             $mentorDetails->save();
+            $convertedLead->setRelation('mentorDetails', $mentorDetails);
         }
 
-        $mentorDetails->placement_remarks = $validated['remarks'] ?? null;
-        $mentorDetails->save();
+        $newRemarks = isset($validated['remarks']) ? trim((string) $validated['remarks']) : '';
+        $newRemarks = $newRemarks === '' ? null : $newRemarks;
+
+        $history = null;
+        DB::transaction(function () use ($convertedLead, $mentorDetails, $newRemarks, &$history) {
+            $mentorDetails->placement_remarks = $newRemarks;
+            $mentorDetails->save();
+
+            $history = PlacementRemarkHistory::create([
+                'converted_lead_id' => $convertedLead->id,
+                'remarks' => $newRemarks,
+                'user_id' => AuthHelper::getCurrentUserId(),
+            ]);
+            $history->load('user');
+        });
 
         return response()->json([
             'success' => true,
             'remarks' => $mentorDetails->placement_remarks ?? '',
+            'history' => [
+                'id' => $history->id,
+                'remarks' => $history->remarks ?? '',
+                'created_at' => $history->created_at->format('d-m-Y h:i A'),
+                'user_name' => $history->user?->name ?? '—',
+            ],
         ]);
     }
 

@@ -68,16 +68,18 @@
                         <p class="fw-bold mb-0">{{ $convertedLead->mentorDetails->specialization ?? '—' }}</p>
                     </div>
                     <div class="col-12">
-                        <label class="form-label text-muted">Remarks</label>
-                        <div class="placement-remarks-cell">
-                            <span class="placement-remarks-display fw-bold">{{ $convertedLead->mentorDetails?->placement_remarks ?: '—' }}</span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary placement-remarks-edit-btn ms-2" data-id="{{ $convertedLead->id }}">
-                                <i class="ti ti-edit"></i> Edit
+                        <div class="d-inline-flex flex-wrap align-items-center gap-2 mb-2">
+                            <label class="form-label text-muted mb-0">Remarks</label>
+                            <button type="button" class="btn btn-sm btn-outline-secondary placement-remarks-edit-btn flex-shrink-0" data-id="{{ $convertedLead->id }}">
+                                <i class="ti ti-refresh"></i> Update
                             </button>
+                        </div>
+                        <div class="placement-remarks-cell">
+                            <span class="placement-remarks-display fw-bold d-block" style="white-space: pre-wrap;">{{ $convertedLead->mentorDetails?->placement_remarks ?: '—' }}</span>
                             <div class="placement-remarks-edit-wrap d-none mt-2">
-                                <textarea class="form-control form-control-sm placement-remarks-input" rows="3" maxlength="2000" placeholder="Remarks">{{ $convertedLead->mentorDetails?->placement_remarks }}</textarea>
+                                <textarea class="form-control form-control-sm placement-remarks-input" rows="3" maxlength="2000" placeholder="Enter updated remarks"></textarea>
                                 <div class="mt-2">
-                                    <button type="button" class="btn btn-sm btn-primary placement-remarks-save-btn"><i class="ti ti-check"></i> Save</button>
+                                    <button type="button" class="btn btn-sm btn-primary placement-remarks-save-btn"><i class="ti ti-check"></i> Update</button>
                                     <button type="button" class="btn btn-sm btn-secondary placement-remarks-cancel-btn"><i class="ti ti-x"></i> Cancel</button>
                                 </div>
                             </div>
@@ -235,6 +237,64 @@
     </div>
 </div>
 
+@php
+    $remarksHistoryCount = $convertedLead->placementRemarkHistories->count();
+@endphp
+{{-- Remarks history --}}
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card placement-remarks-history-card" id="placementRemarksHistoryCard">
+            <div class="card-header d-flex flex-column flex-sm-row flex-wrap justify-content-between align-items-start align-items-sm-center gap-2">
+                <div>
+                    <h5 class="mb-0"><i class="ti ti-history text-primary"></i> Remarks history</h5>
+                    <small class="text-muted d-block mt-1">Each save is logged with date, time, and user.</small>
+                </div>
+                <span class="badge bg-light-primary text-primary rounded-pill px-3 py-2 flex-shrink-0" id="placement-remarks-history-count">{{ $remarksHistoryCount }} {{ $remarksHistoryCount === 1 ? 'entry' : 'entries' }}</span>
+            </div>
+            <div class="card-body placement-remarks-history-card-body">
+                <div class="table-responsive placement-remarks-history-table-wrap">
+                    <table class="table table-sm table-bordered table-hover mb-0 placement-remarks-history-table">
+                        <colgroup>
+                            <col class="placement-remarks-history-col-when">
+                            <col class="placement-remarks-history-col-user">
+                            <col>
+                        </colgroup>
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" class="placement-remarks-history-th">When</th>
+                                <th scope="col" class="placement-remarks-history-th">Updated by</th>
+                                <th scope="col" class="placement-remarks-history-th">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="placement-remarks-history-tbody">
+                            @forelse($convertedLead->placementRemarkHistories as $hist)
+                                <tr data-history-id="{{ $hist->id }}" class="placement-remarks-history-row">
+                                    <td class="placement-remarks-history-td align-top text-nowrap">
+                                        {{ $hist->created_at->format('d-m-Y h:i A') }}
+                                    </td>
+                                    <td class="placement-remarks-history-td align-top">
+                                        {{ $hist->user?->name ?? '—' }}
+                                    </td>
+                                    <td class="placement-remarks-history-td align-top placement-remarks-history-remark-cell text-break">{{ $hist->remarks !== null && $hist->remarks !== '' ? $hist->remarks : '—' }}</td>
+                                </tr>
+                            @empty
+                                <tr class="placement-remarks-history-empty">
+                                    <td colspan="3" class="text-center py-5 text-muted">
+                                        <i class="ti ti-notes-off d-block mb-2" style="font-size: 2rem; opacity: 0.5;"></i>
+                                        <span class="fw-medium text-body">No history yet</span>
+                                        <br>
+                                        <small>Save a remark update under <strong>Placement information</strong> to add the first entry.</small>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Modal: Schedule Interview --}}
 <div class="modal fade" id="scheduleInterviewModal" tabindex="-1" aria-labelledby="scheduleInterviewModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -323,6 +383,61 @@
 <!-- [ Main Content ] end -->
 @endsection
 
+@push('styles')
+<style>
+    .placement-remarks-history-card .placement-remarks-history-card-body {
+        padding: 1.25rem 1.5rem;
+    }
+    @media (max-width: 575.98px) {
+        .placement-remarks-history-card .placement-remarks-history-card-body {
+            padding: 1rem;
+        }
+    }
+    .placement-remarks-history-card .placement-remarks-history-table-wrap {
+        margin-bottom: 0;
+    }
+    .placement-remarks-history-card .placement-remarks-history-table {
+        table-layout: fixed;
+        width: 100%;
+    }
+    .placement-remarks-history-card .placement-remarks-history-col-when {
+        width: 11.5rem;
+    }
+    .placement-remarks-history-card .placement-remarks-history-col-user {
+        width: 12.5rem;
+    }
+    @media (max-width: 767.98px) {
+        .placement-remarks-history-card .placement-remarks-history-col-when {
+            width: 9.5rem;
+        }
+        .placement-remarks-history-card .placement-remarks-history-col-user {
+            width: 8.5rem;
+        }
+    }
+    .placement-remarks-history-card .placement-remarks-history-th {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #6c757d;
+        vertical-align: middle;
+        white-space: nowrap;
+        padding: 0.65rem 0.75rem;
+    }
+    .placement-remarks-history-card .placement-remarks-history-td {
+        vertical-align: top;
+        padding: 0.65rem 0.75rem;
+    }
+    .placement-remarks-history-card .placement-remarks-history-remark-cell {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+        line-height: 1.5;
+        min-width: 0;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <div id="placementRemarksConfig"
      data-remarks-update-url="{{ route('admin.placement-list.update-remarks', ['id' => $convertedLead->id]) }}"
@@ -348,26 +463,17 @@ $(document).ready(function() {
     var remarksConfigEl = document.getElementById('placementRemarksConfig');
     var remarksUpdateUrl = remarksConfigEl ? remarksConfigEl.getAttribute('data-remarks-update-url') : '';
 
-    var escapeHtml = function(s) {
-        return String(s)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    };
-
     $(document).on('click', '.placement-remarks-edit-btn', function() {
         var $cell = $(this).closest('.placement-remarks-cell');
         $cell.find('.placement-remarks-display').addClass('d-none');
         $cell.find('.placement-remarks-edit-btn').addClass('d-none');
         $cell.find('.placement-remarks-edit-wrap').removeClass('d-none');
-        $cell.find('.placement-remarks-input').focus();
+        $cell.find('.placement-remarks-input').val('').focus();
     });
 
     $(document).on('click', '.placement-remarks-cancel-btn', function() {
         var $cell = $(this).closest('.placement-remarks-cell');
-        var displayVal = $cell.find('.placement-remarks-display').text().trim();
-        $cell.find('.placement-remarks-input').val(displayVal === '—' ? '' : displayVal);
+        $cell.find('.placement-remarks-input').val('');
         $cell.find('.placement-remarks-edit-wrap').addClass('d-none');
         $cell.find('.placement-remarks-display').removeClass('d-none');
         $cell.find('.placement-remarks-edit-btn').removeClass('d-none');
@@ -388,11 +494,24 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(res) {
                 var newVal = (res.remarks != null && res.remarks !== undefined) ? String(res.remarks) : '';
-                $cell.find('.placement-remarks-display').html(newVal ? escapeHtml(newVal) : '—');
-                $cell.find('.placement-remarks-input').val(newVal);
+                $cell.find('.placement-remarks-display').text(newVal || '—');
+                $cell.find('.placement-remarks-input').val('');
                 $cell.find('.placement-remarks-edit-wrap').addClass('d-none');
                 $cell.find('.placement-remarks-display').removeClass('d-none');
                 $cell.find('.placement-remarks-edit-btn').removeClass('d-none');
+                if (res.history) {
+                    $('#placement-remarks-history-tbody .placement-remarks-history-empty').remove();
+                    var $tr = $('<tr>').addClass('placement-remarks-history-row').attr('data-history-id', res.history.id);
+                    var remarkText = res.history.remarks !== '' && res.history.remarks != null ? res.history.remarks : '—';
+                    $tr.append(
+                        $('<td>').addClass('placement-remarks-history-td align-top text-nowrap').text(res.history.created_at),
+                        $('<td>').addClass('placement-remarks-history-td align-top').text(res.history.user_name),
+                        $('<td>').addClass('placement-remarks-history-td align-top placement-remarks-history-remark-cell text-break').text(remarkText)
+                    );
+                    $('#placement-remarks-history-tbody').prepend($tr);
+                    var n = $('#placement-remarks-history-tbody tr.placement-remarks-history-row').length;
+                    $('#placement-remarks-history-count').text(n + ' ' + (n === 1 ? 'entry' : 'entries'));
+                }
             },
             complete: function() {
                 $saveBtn.prop('disabled', false);

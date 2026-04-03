@@ -204,6 +204,11 @@ class ConvertedLead extends Model
         return $this->hasMany(PlacementScheduledInterview::class, 'converted_lead_id')->orderByDesc('interview_date')->orderByDesc('created_at');
     }
 
+    public function placementRemarkHistories()
+    {
+        return $this->hasMany(PlacementRemarkHistory::class, 'converted_lead_id')->orderByDesc('created_at');
+    }
+
     /**
      * Placement stage: Placed if any interview is placed; else based on the latest (most recent) mock test only:
      * latest total >= 35 → Passed Mock Test, latest total < 35 → Need Mock Test; if no mock tests → Pending.
