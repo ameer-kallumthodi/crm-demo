@@ -684,8 +684,7 @@ $columns = array_merge($columns, [
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: '{{ route('
-                    leads.duplicate - data ') }}',
+                    url: '{{ route('leads.duplicate-data') }}',
                     type: 'GET',
                     data: function(d) {
                         // Merge DataTables parameters with filter parameters
@@ -879,8 +878,7 @@ $columns = array_merge($columns, [
 
                 // Make AJAX request to load all data
                 $.ajax({
-                    url: '{{ route('
-                    leads.duplicate - data ') }}',
+                    url: '{{ route('leads.duplicate-data') }}',
                     type: 'GET',
                     data: requestData,
                     success: function(response) {
