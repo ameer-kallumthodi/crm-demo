@@ -49,8 +49,8 @@ class LeadJuniorVloggerRegistrationController extends Controller
             'medium_of_study' => 'required|in:english,malayalam',
             'previous_qualification' => 'required|in:plus_two,sslc,other',
             'technology_performance_category' => 'required|in:excellent,average,needs_support',
-            'passport_photo' => 'required|file|mimes:jpg,jpeg,png|max:2048',
-            'adhar_front' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'passport_photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'adhar_front' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'sslc_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'message' => 'nullable|string',
         ], [
@@ -73,9 +73,7 @@ class LeadJuniorVloggerRegistrationController extends Controller
             'previous_qualification.in' => 'Please select a valid qualification.',
             'technology_performance_category.required' => 'Technology performance category is required.',
             'technology_performance_category.in' => 'Please select a valid category.',
-            'passport_photo.required' => 'Passport-size photo is required.',
             'passport_photo.mimes' => 'Passport photo must be JPG or PNG. Max 2MB.',
-            'adhar_front.required' => 'Aadhaar card is required.',
             'adhar_front.mimes' => 'Aadhaar must be PDF or image. Max 2MB.',
             'sslc_certificate.mimes' => 'SSLC certificate must be PDF or image. Max 2MB.',
         ]);

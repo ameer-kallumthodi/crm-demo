@@ -1,4 +1,4 @@
-                                <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
+﻿                                <tr class="{{ $convertedLead->is_cancelled ? 'cancelled-row' : '' }}">
                                     @php
                                     $academicVerifiedAt = $convertedLead->academic_verified_at
                                     ? $convertedLead->academic_verified_at->copy()->timezone($appTimezone)->format('d-m-Y h:i A')
