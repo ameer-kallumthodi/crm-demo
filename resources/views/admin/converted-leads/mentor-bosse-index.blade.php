@@ -424,14 +424,34 @@
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody></tbody>
+                            <tbody>
+                                @forelse($convertedLeads as $index => $convertedLead)
+                                    @include('admin.converted-leads.partials.mentor-bosse-dt-desktop-row')
+                                @empty
+                                <tr>
+                                    <td colspan="56" class="text-center">No converted leads found for BOSSE mentoring</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
                         </table>
                     </div>
                 </div>
 
 
                 <!-- Mobile Card View -->
-                <div class="d-lg-none" id="mentorBosseMobileCardsWrap"></div>
+                <div class="d-lg-none" id="mentorBosseMobileCardsWrap">
+                    @forelse($convertedLeads as $convertedLead)
+                    @include('admin.converted-leads.partials.mentor-bosse-mobile-card')
+                    @empty
+                    <div class="text-center py-3 text-muted">No converted leads found for BOSSE mentoring</div>
+                    @endforelse
+                </div>
+
+                @if(method_exists($convertedLeads, 'links'))
+                <div class="mt-3">
+                    {{ $convertedLeads->withQueryString()->links('pagination::bootstrap-5') }}
+                </div>
+                @endif
             </div>
         </div>
     </div>
