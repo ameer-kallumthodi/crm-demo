@@ -428,6 +428,136 @@ class RegistrationLeadsController extends Controller
     }
 
     /**
+     * Batches for the lead's course with per-batch amounts (B2B / course 16 rules match web convert).
+     */
+    public function batchesForLead(Request $request, Lead $lead)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        if (!$this->canViewLead($lead, $user)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied for this lead.',
+            ], 403);
+        }
+
+        if ($lead->is_converted) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lead already converted.',
+            ], 409);
+        }
+
+        $lead->loadMissing(['studentDetails.university', 'batch', 'course']);
+
+        if (!$lead->course_id) {
+            return response()->json([
+                'status' => true,
+                'data' => [
+                    'lead_id' => $lead->id,
+                    'course_id' => null,
+                    'is_b2b' => (int) ($lead->is_b2b ?? 0) === 1,
+                    'default_batch_id' => $lead->batch_id ?? $lead->studentDetails?->batch_id,
+                    'course' => null,
+                    'batches' => [],
+                    'amounts_context' => [
+                        'course' => 0.0,
+                        'extra' => 0.0,
+                        'university' => 0.0,
+                        'additional' => 0.0,
+                    ],
+                    'message' => 'Lead has no course assigned.',
+                ],
+            ]);
+        }
+
+        $course = $lead->course ?: Course::find($lead->course_id);
+        $isB2b = (int) ($lead->is_b2b ?? 0) === 1;
+
+        $batches = Batch::where('course_id', $lead->course_id)
+            ->select('id', 'title', 'amount', 'sslc_amount', 'plustwo_amount', 'b2b_amount', 'is_active')
+            ->orderBy('is_active', 'desc')
+            ->orderBy('title')
+            ->get();
+
+        $batchRows = $batches->map(function (Batch $batch) use ($lead) {
+            $display = $this->batchDisplayAmountForLead($lead, $batch);
+
+            return [
+                'id' => $batch->id,
+                'title' => $batch->title,
+                'is_active' => (bool) $batch->is_active,
+                'amount' => $batch->amount !== null ? (float) $batch->amount : null,
+                'sslc_amount' => $batch->sslc_amount !== null ? (float) $batch->sslc_amount : null,
+                'plustwo_amount' => $batch->plustwo_amount !== null ? (float) $batch->plustwo_amount : null,
+                'b2b_amount' => $batch->b2b_amount !== null ? (float) $batch->b2b_amount : null,
+                'display_amount' => $display['amount'],
+                'display_amount_label' => $display['label'],
+            ];
+        })->values();
+
+        $courseAmount = $course ? (float) ($course->amount ?? 0) : 0.0;
+        if ($isB2b) {
+            $courseAmount = 0.0;
+        }
+
+        $extraAmount = 0.0;
+        if (!$isB2b && (int) $lead->course_id === 16 && $lead->studentDetails && strtolower((string) $lead->studentDetails->class) === 'sslc') {
+            $extraAmount = 10000.0;
+        }
+
+        $universityAmount = 0.0;
+        $courseType = null;
+        if (!$isB2b && (int) $lead->course_id === 9 && $lead->studentDetails) {
+            $courseType = $lead->studentDetails->course_type;
+            $universityId = $lead->studentDetails->university_id;
+            if ($universityId) {
+                $universityModel = $lead->studentDetails->university ?: University::find($universityId);
+                if ($universityModel) {
+                    if ($courseType === 'UG') {
+                        $universityAmount = (float) ($universityModel->ug_amount ?? 0);
+                    } elseif ($courseType === 'PG') {
+                        $universityAmount = (float) ($universityModel->pg_amount ?? 0);
+                    }
+                }
+            }
+        }
+
+        $additionalAmount = $extraAmount + $universityAmount;
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'lead_id' => $lead->id,
+                'course_id' => (int) $lead->course_id,
+                'is_b2b' => $isB2b,
+                'student_class' => $lead->studentDetails?->class,
+                'course_type' => $courseType,
+                'default_batch_id' => $lead->batch_id ?? $lead->studentDetails?->batch_id,
+                'course' => $course ? [
+                    'id' => $course->id,
+                    'title' => $course->title,
+                    'amount' => $courseAmount,
+                ] : null,
+                'batches' => $batchRows,
+                'amounts_context' => [
+                    'course' => $courseAmount,
+                    'extra' => $isB2b ? 0.0 : $extraAmount,
+                    'university' => $isB2b ? 0.0 : $universityAmount,
+                    'additional' => $isB2b ? 0.0 : $additionalAmount,
+                ],
+            ],
+        ]);
+    }
+
+    /**
      * Convert a lead into a student (mirrors web convert submit).
      */
     public function convertSubmit(Request $request, Lead $lead)
@@ -1776,6 +1906,36 @@ class RegistrationLeadsController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * Batch fee for this lead context (matches LeadController::convert).
+     *
+     * @return array{amount: float, label: string}
+     */
+    private function batchDisplayAmountForLead(Lead $lead, Batch $batch): array
+    {
+        if ((int) ($lead->is_b2b ?? 0) === 1) {
+            $amount = $batch->b2b_amount !== null ? (float) $batch->b2b_amount : 0.0;
+            $label = $batch->b2b_amount !== null ? 'B2B Amount' : 'B2B Amount (not set)';
+
+            return ['amount' => $amount, 'label' => $label];
+        }
+
+        if ((int) $lead->course_id === 16) {
+            $studentClass = $lead->studentDetails?->class;
+            $normalizedClass = $studentClass ? strtolower((string) $studentClass) : null;
+            if ($normalizedClass === 'sslc' && !is_null($batch->sslc_amount)) {
+                return ['amount' => (float) $batch->sslc_amount, 'label' => 'SSLC Amount'];
+            }
+            if (!is_null($batch->plustwo_amount)) {
+                return ['amount' => (float) $batch->plustwo_amount, 'label' => 'Plus Two Amount'];
+            }
+
+            return ['amount' => (float) ($batch->amount ?? 0), 'label' => 'Amount'];
+        }
+
+        return ['amount' => (float) ($batch->amount ?? 0), 'label' => 'Amount'];
     }
 
     /**
