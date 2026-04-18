@@ -329,36 +329,25 @@ class RegistrationLeadsController extends Controller
         $countryCodes = get_country_code();
 
         $course = $lead->course;
-        $batch = $lead->batch ?: ($lead->studentDetails?->batch);
+        $isB2b = (int) ($lead->is_b2b ?? 0) === 1;
+        $currentBatch = $lead->batch ?: ($lead->studentDetails?->batch);
+        $selectedBatchId = $currentBatch?->id;
+
         $courseAmount = $course ? (float) ($course->amount ?? 0) : 0.0;
-        $batchAmount = 0.0;
         $extraAmount = 0.0;
         $universityAmount = 0.0;
         $courseType = null;
         $university = $lead->studentDetails?->university;
-        $studentClass = $lead->studentDetails?->class;
 
-        // Determine batch amount based on course rules
-        if ($batch) {
-            if ($lead->course_id == 16) {
-                $normalizedClass = $studentClass ? strtolower($studentClass) : null;
-                if ($normalizedClass === 'sslc' && !is_null($batch->sslc_amount)) {
-                    $batchAmount = (float) $batch->sslc_amount;
-                } elseif (!is_null($batch->plustwo_amount)) {
-                    $batchAmount = (float) $batch->plustwo_amount;
-                } else {
-                    $batchAmount = (float) ($batch->amount ?? 0);
-                }
-            } else {
-                $batchAmount = (float) ($batch->amount ?? 0);
-            }
+        if ($isB2b) {
+            $courseAmount = 0.0;
         }
- 
-        if ($lead->course_id == 16 && $lead->studentDetails && $lead->studentDetails->class === 'sslc') {
+
+        if (!$isB2b && $lead->course_id == 16 && $lead->studentDetails && $lead->studentDetails->class === 'sslc') {
             $extraAmount = 10000.0;
         }
 
-        if ($lead->course_id == 9 && $lead->studentDetails) {
+        if (!$isB2b && $lead->course_id == 9 && $lead->studentDetails) {
             $courseType = $lead->studentDetails->course_type;
             $universityId = $lead->studentDetails->university_id;
 
@@ -375,8 +364,42 @@ class RegistrationLeadsController extends Controller
             }
         }
 
+        if ($isB2b) {
+            $extraAmount = 0.0;
+            $universityAmount = 0.0;
+        }
+
         $additionalAmount = $extraAmount + $universityAmount;
-        $totalAmount = $courseAmount + $batchAmount + $additionalAmount;
+        // Summary totals exclude batch fee (each batch carries its own amount; client adds selection).
+        $totalAmount = $courseAmount + $additionalAmount;
+
+        $batchesPayload = collect();
+        if ($lead->course_id) {
+            $allBatches = Batch::where('course_id', $lead->course_id)
+                ->select('id', 'title', 'amount', 'sslc_amount', 'plustwo_amount', 'b2b_amount', 'is_active')
+                ->orderBy('is_active', 'desc')
+                ->orderBy('title')
+                ->get();
+
+            $batchesPayload = $allBatches->map(function (Batch $batch) use ($lead, $selectedBatchId) {
+                $display = $this->batchDisplayAmountForLead($lead, $batch);
+                $isSelected = $selectedBatchId !== null && (int) $selectedBatchId === (int) $batch->id;
+
+                return [
+                    'id' => $batch->id,
+                    'title' => $batch->title,
+                    'is_active' => (bool) $batch->is_active,
+                    'is_selected' => $isSelected ? 1 : 0,
+                    'amount' => $display['amount'],
+                    'amount_label' => $display['label'],
+                    'amount_base' => $batch->amount !== null ? (float) $batch->amount : null,
+                    'sslc_amount' => $batch->sslc_amount !== null ? (float) $batch->sslc_amount : null,
+                    'plustwo_amount' => $batch->plustwo_amount !== null ? (float) $batch->plustwo_amount : null,
+                    'b2b_amount' => $batch->b2b_amount !== null ? (float) $batch->b2b_amount : null,
+                ];
+            })->values();
+        }
+
         $dob = ($lead->studentDetails && $lead->studentDetails->date_of_birth)
             ? Carbon::parse($lead->studentDetails->date_of_birth)->format('Y-m-d')
             : null;
@@ -401,14 +424,14 @@ class RegistrationLeadsController extends Controller
                     'boards' => $boards,
                     'country_codes' => $countryCodes,
                     'payment_types' => ['Cash', 'Online', 'Bank', 'Cheque', 'Card', 'Other'],
+                    'is_b2b' => $isB2b,
                     'course' => $course ? [
                         'id' => $course->id,
                         'title' => $course->title,
+                        'amount' => $courseAmount,
                     ] : null,
-                    'batch' => $batch ? [
-                        'id' => $batch->id,
-                        'title' => $batch->title,
-                    ] : null,
+                    'selected_batch_id' => $selectedBatchId,
+                    'batches' => $batchesPayload,
                     'course_type' => $courseType,
                     'university' => $university ? [
                         'id' => $university->id,
@@ -416,7 +439,7 @@ class RegistrationLeadsController extends Controller
                     ] : null,
                     'amounts' => [
                         'course' => $courseAmount,
-                        'batch' => $batchAmount,
+                        'batch' => 0,
                         'extra' => $extraAmount,
                         'university' => $universityAmount,
                         'additional' => $additionalAmount,
@@ -455,7 +478,7 @@ class RegistrationLeadsController extends Controller
             ], 409);
         }
 
-        $lead->loadMissing(['studentDetails.university', 'batch', 'course']);
+        $lead->loadMissing(['studentDetails.university', 'studentDetails.batch', 'batch', 'course']);
 
         if (!$lead->course_id) {
             return response()->json([
@@ -464,6 +487,7 @@ class RegistrationLeadsController extends Controller
                     'lead_id' => $lead->id,
                     'course_id' => null,
                     'is_b2b' => (int) ($lead->is_b2b ?? 0) === 1,
+                    'selected_batch_id' => null,
                     'default_batch_id' => $lead->batch_id ?? $lead->studentDetails?->batch_id,
                     'course' => null,
                     'batches' => [],
@@ -487,19 +511,24 @@ class RegistrationLeadsController extends Controller
             ->orderBy('title')
             ->get();
 
-        $batchRows = $batches->map(function (Batch $batch) use ($lead) {
+        $currentBatch = $lead->batch ?: ($lead->studentDetails?->batch);
+        $selectedBatchId = $currentBatch?->id;
+
+        $batchRows = $batches->map(function (Batch $batch) use ($lead, $selectedBatchId) {
             $display = $this->batchDisplayAmountForLead($lead, $batch);
+            $isSelected = $selectedBatchId !== null && (int) $selectedBatchId === (int) $batch->id;
 
             return [
                 'id' => $batch->id,
                 'title' => $batch->title,
                 'is_active' => (bool) $batch->is_active,
-                'amount' => $batch->amount !== null ? (float) $batch->amount : null,
+                'is_selected' => $isSelected ? 1 : 0,
+                'amount' => $display['amount'],
+                'amount_label' => $display['label'],
+                'amount_base' => $batch->amount !== null ? (float) $batch->amount : null,
                 'sslc_amount' => $batch->sslc_amount !== null ? (float) $batch->sslc_amount : null,
                 'plustwo_amount' => $batch->plustwo_amount !== null ? (float) $batch->plustwo_amount : null,
                 'b2b_amount' => $batch->b2b_amount !== null ? (float) $batch->b2b_amount : null,
-                'display_amount' => $display['amount'],
-                'display_amount_label' => $display['label'],
             ];
         })->values();
 
@@ -540,6 +569,7 @@ class RegistrationLeadsController extends Controller
                 'is_b2b' => $isB2b,
                 'student_class' => $lead->studentDetails?->class,
                 'course_type' => $courseType,
+                'selected_batch_id' => $selectedBatchId,
                 'default_batch_id' => $lead->batch_id ?? $lead->studentDetails?->batch_id,
                 'course' => $course ? [
                     'id' => $course->id,
