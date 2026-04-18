@@ -284,7 +284,9 @@ class InvoiceController extends Controller
             $student = ConvertedLead::findOrFail($studentId);
             $course = Course::findOrFail($courseId);
             $actorId = $createdByUserId ?? AuthHelper::getCurrentUserId();
-            
+            $student->loadMissing('lead');
+            $isB2bForFees = (int) (optional($student->lead)->is_b2b ?? $student->is_b2b ?? 0) === 1;
+
             // Check if invoice already exists for this student and course
             $existingInvoice = Invoice::where('student_id', $studentId)
                 ->where('course_id', $courseId)
@@ -325,7 +327,7 @@ class InvoiceController extends Controller
                     $batch = Batch::find($batchId);
                     if ($batch) {
                         // B2B student: use only batch B2B amount (do not use in-house amount)
-                        if ((int) ($student->is_b2b ?? 0) === 1) {
+                        if ($isB2bForFees) {
                             $batchAmount = $batch->b2b_amount !== null ? (float) $batch->b2b_amount : 0.0;
                         } else {
                             if ($courseId == 16) {
@@ -347,7 +349,7 @@ class InvoiceController extends Controller
                 }
 
                 // B2B: total is only the batch B2B amount (no course amount)
-                if ((int) ($student->is_b2b ?? 0) === 1) {
+                if ($isB2bForFees) {
                     $totalAmount = $batchAmount;
                 } else {
                     $totalAmount = (float) ($course->amount ?? 0) + $batchAmount;
