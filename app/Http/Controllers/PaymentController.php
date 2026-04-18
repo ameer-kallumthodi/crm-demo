@@ -1142,11 +1142,12 @@ class PaymentController extends Controller
     /**
      * Auto-create payment during lead conversion
      */
-    public function autoCreate($invoiceId, $amount, $paymentType, $transactionId = null, $fileUpload = null, $paymentDate = null, $feeHead = null)
+    public function autoCreate($invoiceId, $amount, $paymentType, $transactionId = null, $fileUpload = null, $paymentDate = null, $feeHead = null, $createdByUserId = null)
     {
         try {
             $invoice = Invoice::findOrFail($invoiceId);
-            
+            $actorId = $createdByUserId ?? AuthHelper::getCurrentUserId();
+
             // Calculate previous balance (sum of all approved payments)
             $previousBalance = Payment::where('invoice_id', $invoiceId)
                 ->where('status', 'Approved')
@@ -1168,8 +1169,8 @@ class PaymentController extends Controller
                 'payment_date' => $paymentDate ?? now()->toDateString(),
                 'file_upload' => $filePath,
                 'status' => 'Pending Approval', // Keep as pending for manual approval
-                'created_by' => AuthHelper::getCurrentUserId(),
-                'collected_by' => AuthHelper::getCurrentUserId(),
+                'created_by' => $actorId,
+                'collected_by' => $actorId,
             ]);
 
             // Don't update invoice until payment is approved

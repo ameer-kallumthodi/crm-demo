@@ -13,8 +13,6 @@ use App\Models\Country;
 use App\Models\User;
 use App\Models\ConvertedLead;
 use App\Models\Board;
-use App\Models\Invoice;
-use App\Models\Payment;
 use App\Models\Batch;
 use App\Models\University;
 use App\Models\LeadActivity;
@@ -22,7 +20,6 @@ use App\Models\Subject;
 use App\Models\SubCourse;
 use App\Models\SSLCertificate;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
@@ -588,7 +585,7 @@ class RegistrationLeadsController extends Controller
     }
 
     /**
-     * Convert a lead into a student (mirrors web convert submit).
+     * Convert a lead into a student (mirrors admin LeadController::convertSubmit).
      */
     public function convertSubmit(Request $request, Lead $lead)
     {
@@ -615,13 +612,14 @@ class RegistrationLeadsController extends Controller
             ], 409);
         }
 
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
             'dob' => 'nullable|date|before_or_equal:today',
             'board_id' => 'nullable|exists:boards,id',
+            'batch_id' => 'nullable|exists:batches,id',
             'remarks' => 'nullable|string|max:1000',
             'payment_collected' => 'boolean',
             'payment_amount' => 'required_if:payment_collected,1|required_if:payment_collected,true|required_if:payment_collected,"1"|nullable|numeric|min:0.01',
@@ -629,7 +627,84 @@ class RegistrationLeadsController extends Controller
             'transaction_id' => 'nullable|string|max:255',
             'payment_date' => 'nullable|date',
             'payment_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        ]);
+            'custom_total_amount' => 'nullable|numeric|min:0',
+            'need_mobile' => 'nullable|boolean',
+            'asset_id' => 'nullable|string|max:255',
+        ];
+
+        if ((int) $lead->course_id === 23) {
+            $rules['fee_pg_amount'] = 'nullable|numeric|min:0';
+            $rules['fee_ug_amount'] = 'nullable|numeric|min:0';
+            $rules['fee_plustwo_amount'] = 'nullable|numeric|min:0';
+            $rules['fee_sslc_amount'] = 'nullable|numeric|min:0';
+            $rules['payment_pg_amount'] = 'nullable|numeric|min:0';
+            $rules['payment_ug_amount'] = 'nullable|numeric|min:0';
+            $rules['payment_plustwo_amount'] = 'nullable|numeric|min:0';
+            $rules['payment_sslc_amount'] = 'nullable|numeric|min:0';
+            $rules['payment_pg_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $rules['payment_ug_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $rules['payment_plustwo_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $rules['payment_sslc_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $rules['payment_amount'] = 'nullable|numeric|min:0';
+            $rules['payment_file'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+        }
+
+        if ($lead->course_id && (int) $lead->course_id !== 23) {
+            $rules['batch_id'] = 'required|exists:batches,id';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        $validator->after(function ($validator) use ($request, $lead) {
+            if ($request->boolean('need_mobile') && !$request->filled('asset_id')) {
+                $validator->errors()->add('asset_id', 'The asset id field is required when Need Mobile is checked.');
+            }
+
+            if ($request->filled('batch_id')) {
+                $batchBelongsToCourse = Batch::where('id', $request->batch_id)
+                    ->where('course_id', $lead->course_id)
+                    ->exists();
+                if (!$batchBelongsToCourse) {
+                    $validator->errors()->add('batch_id', 'Selected batch does not belong to this lead course.');
+                }
+            }
+
+            if (!$request->boolean('payment_collected')) {
+                return;
+            }
+
+            if ((int) $lead->course_id !== 23) {
+                return;
+            }
+
+            $pgPaid = (float) ($request->input('payment_pg_amount') ?: 0);
+            $ugPaid = (float) ($request->input('payment_ug_amount') ?: 0);
+            $plustwoPaid = (float) ($request->input('payment_plustwo_amount') ?: 0);
+            $sslcPaid = (float) ($request->input('payment_sslc_amount') ?: 0);
+            $totalPaid = $pgPaid + $ugPaid + $plustwoPaid + $sslcPaid;
+
+            if ($totalPaid <= 0) {
+                $validator->errors()->add('payment_pg_amount', 'At least one payment amount (PG/UG/Plus Two/SSLC) is required.');
+            }
+
+            $customTotal = $request->filled('custom_total_amount') ? (float) $request->input('custom_total_amount') : null;
+            if ($customTotal !== null && $totalPaid > $customTotal) {
+                $validator->errors()->add('custom_total_amount', 'Total paid amount cannot exceed the total amount.');
+            }
+
+            if ($pgPaid > 0 && !$request->hasFile('payment_pg_file')) {
+                $validator->errors()->add('payment_pg_file', 'PG payment proof file is required when PG paid amount is entered.');
+            }
+            if ($ugPaid > 0 && !$request->hasFile('payment_ug_file')) {
+                $validator->errors()->add('payment_ug_file', 'UG payment proof file is required when UG paid amount is entered.');
+            }
+            if ($plustwoPaid > 0 && !$request->hasFile('payment_plustwo_file')) {
+                $validator->errors()->add('payment_plustwo_file', 'Plus Two payment proof file is required when Plus Two paid amount is entered.');
+            }
+            if ($sslcPaid > 0 && !$request->hasFile('payment_sslc_file')) {
+                $validator->errors()->add('payment_sslc_file', 'SSLC payment proof file is required when SSLC paid amount is entered.');
+            }
+        });
 
         if ($validator->fails()) {
             return response()->json([
@@ -651,10 +726,13 @@ class RegistrationLeadsController extends Controller
                 $leadDetail->update(['date_of_birth' => $request->dob]);
             }
 
-            $dob = $request->dob ?? (($leadDetail && $leadDetail->date_of_birth)
-                ? Carbon::parse($leadDetail->date_of_birth)->format('Y-m-d')
-                : null);
-            $subjectId = $leadDetail ? $leadDetail->subject_id : null;
+            $selectedBatchId = $request->filled('batch_id') ? (int) $request->batch_id : null;
+            if (!is_null($selectedBatchId)) {
+                $leadDetail->update(['batch_id' => $selectedBatchId]);
+            }
+
+            $dob = $request->dob ?? ($leadDetail->date_of_birth ?? null);
+            $subjectId = $leadDetail->subject_id;
 
             $convertedLead = ConvertedLead::create([
                 'lead_id' => $lead->id,
@@ -664,35 +742,102 @@ class RegistrationLeadsController extends Controller
                 'email' => $request->email,
                 'dob' => $dob,
                 'course_id' => $lead->course_id,
-                'batch_id' => $lead->batch_id,
+                'batch_id' => $selectedBatchId,
                 'board_id' => $request->board_id,
                 'subject_id' => $subjectId,
+                'is_b2b' => $lead->is_b2b ?? 0,
                 'candidate_status_id' => 1,
                 'remarks' => $request->remarks,
+                'need_mobile' => $request->boolean('need_mobile'),
+                'asset_id' => $request->filled('asset_id') ? $request->input('asset_id') : null,
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
             ]);
 
-            $lead->update([
+            $leadUpdateData = [
                 'is_converted' => true,
                 'updated_by' => $user->id,
-            ]);
+            ];
+            if (!is_null($selectedBatchId)) {
+                $leadUpdateData['batch_id'] = $selectedBatchId;
+            }
+            $lead->update($leadUpdateData);
 
             $invoice = null;
             if ($lead->course_id) {
-                $invoice = $this->autoGenerateInvoice($convertedLead, $lead->course_id, $user->id);
+                $invoiceController = new \App\Http\Controllers\InvoiceController();
+                $customTotalAmount = null;
+                $feeBreakdown = null;
+
+                if ((int) $lead->course_id === 23) {
+                    $feeBreakdown = [
+                        'fee_pg_amount' => $request->filled('fee_pg_amount') ? (float) $request->input('fee_pg_amount') : null,
+                        'fee_ug_amount' => $request->filled('fee_ug_amount') ? (float) $request->input('fee_ug_amount') : null,
+                        'fee_plustwo_amount' => $request->filled('fee_plustwo_amount') ? (float) $request->input('fee_plustwo_amount') : null,
+                        'fee_sslc_amount' => $request->filled('fee_sslc_amount') ? (float) $request->input('fee_sslc_amount') : null,
+                    ];
+                    if ($request->filled('custom_total_amount')) {
+                        $customTotalAmount = (float) $request->input('custom_total_amount');
+                    } else {
+                        $customTotalAmount =
+                            (float) (($feeBreakdown['fee_pg_amount'] ?? 0)
+                                + ($feeBreakdown['fee_ug_amount'] ?? 0)
+                                + ($feeBreakdown['fee_plustwo_amount'] ?? 0)
+                                + ($feeBreakdown['fee_sslc_amount'] ?? 0));
+                    }
+                } elseif ($request->filled('custom_total_amount')) {
+                    $customTotalAmount = (float) $request->input('custom_total_amount');
+                }
+
+                $invoice = $invoiceController->autoGenerate(
+                    $convertedLead->id,
+                    (int) $lead->course_id,
+                    $customTotalAmount,
+                    $feeBreakdown,
+                    $user->id
+                );
             }
 
             if ($request->boolean('payment_collected') && $invoice) {
-                $this->autoCreatePayment(
-                    $invoice,
-                    (float) $request->payment_amount,
-                    $request->payment_type,
-                    $request->transaction_id,
-                    $request->file('payment_file'),
-                    $user->id,
-                    $request->payment_date
-                );
+                $paymentController = new \App\Http\Controllers\PaymentController();
+                if ((int) $lead->course_id === 23) {
+                    $paymentDate = $request->payment_date;
+                    $paymentType = $request->payment_type;
+                    $transactionId = $request->transaction_id;
+
+                    $splitPayments = [
+                        'PG' => ['amount' => (float) ($request->input('payment_pg_amount') ?: 0), 'file' => $request->file('payment_pg_file')],
+                        'UG' => ['amount' => (float) ($request->input('payment_ug_amount') ?: 0), 'file' => $request->file('payment_ug_file')],
+                        'PLUS_TWO' => ['amount' => (float) ($request->input('payment_plustwo_amount') ?: 0), 'file' => $request->file('payment_plustwo_file')],
+                        'SSLC' => ['amount' => (float) ($request->input('payment_sslc_amount') ?: 0), 'file' => $request->file('payment_sslc_file')],
+                    ];
+
+                    foreach ($splitPayments as $feeHead => $payload) {
+                        if (($payload['amount'] ?? 0) > 0) {
+                            $paymentController->autoCreate(
+                                $invoice->id,
+                                $payload['amount'],
+                                $paymentType,
+                                $transactionId,
+                                $payload['file'],
+                                $paymentDate,
+                                $feeHead,
+                                $user->id
+                            );
+                        }
+                    }
+                } else {
+                    $paymentController->autoCreate(
+                        $invoice->id,
+                        (float) $request->payment_amount,
+                        $request->payment_type,
+                        $request->transaction_id,
+                        $request->file('payment_file'),
+                        $request->payment_date,
+                        null,
+                        $user->id
+                    );
+                }
             }
 
             DB::commit();
@@ -703,10 +848,15 @@ class RegistrationLeadsController extends Controller
                 'data' => [
                     'converted_lead_id' => $convertedLead->id,
                     'invoice_id' => $invoice?->id,
+                    'batch_id' => $selectedBatchId,
                 ],
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
+            Log::error('[RegistrationLeadsController@convertSubmit] ' . $e->getMessage(), [
+                'lead_id' => $lead->id,
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return response()->json([
                 'status' => false,
@@ -1614,118 +1764,6 @@ class RegistrationLeadsController extends Controller
     /**
      * Build the base query with eager loaded relationships.
      */
-    private function autoGenerateInvoice(ConvertedLead $student, int $courseId, int $userId): ?Invoice
-    {
-        try {
-            $course = Course::find($courseId);
-            if (!$course) {
-                return null;
-            }
-
-            $existingInvoice = Invoice::where('student_id', $student->id)
-                ->where('course_id', $courseId)
-                ->first();
-
-            if ($existingInvoice) {
-                return $existingInvoice;
-            }
-
-            $totalAmount = (float) ($course->amount ?? 0);
-            $batchId = $student->batch_id ?? optional($student->leadDetail)->batch_id;
-
-            if ($batchId) {
-                $batch = Batch::find($batchId);
-                if ($batch && $batch->amount) {
-                    $totalAmount += (float) $batch->amount;
-                }
-            }
-
-            if ($courseId == 9 && $student->leadDetail) {
-                $courseType = $student->leadDetail->course_type;
-                $universityId = $student->leadDetail->university_id;
-
-                if ($courseType && $universityId) {
-                    $university = University::find($universityId);
-                    if ($university) {
-                        if ($courseType === 'UG') {
-                            $totalAmount += (float) ($university->ug_amount ?? 0);
-                        } elseif ($courseType === 'PG') {
-                            $totalAmount += (float) ($university->pg_amount ?? 0);
-                        }
-                    }
-                }
-            } elseif ($courseId == 16 && $student->leadDetail && $student->leadDetail->class === 'sslc') {
-                $totalAmount += 10000; // ₹10,000 extra for GMVSS SSLC class
-            }
-
-            return Invoice::create([
-                'invoice_number' => $this->generateInvoiceNumber(),
-                'invoice_type' => 'course',
-                'course_id' => $courseId,
-                'batch_id' => $batchId,
-                'student_id' => $student->id,
-                'total_amount' => $totalAmount,
-                'invoice_date' => now()->toDateString(),
-                'created_by' => $userId,
-                'updated_by' => $userId,
-            ]);
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    /**
-     * Auto-create payment linked to invoice (pending approval).
-     */
-    private function autoCreatePayment(Invoice $invoice, float $amount, string $paymentType, ?string $transactionId, ?UploadedFile $fileUpload, int $userId, ?string $paymentDate = null): ?Payment
-    {
-        try {
-            $previousBalance = Payment::where('invoice_id', $invoice->id)
-                ->where('status', 'Approved')
-                ->sum('amount_paid');
-
-            $filePath = null;
-            if ($fileUpload) {
-                $fileName = time() . '_' . $fileUpload->getClientOriginalName();
-                $filePath = $fileUpload->storeAs('payments', $fileName, 'public');
-            }
-
-            return Payment::create([
-                'invoice_id' => $invoice->id,
-                'amount_paid' => $amount,
-                'previous_balance' => $previousBalance,
-                'payment_type' => $paymentType,
-                'transaction_id' => $transactionId,
-                'payment_date' => $paymentDate ?? now()->toDateString(),
-                'file_upload' => $filePath,
-                'status' => 'Pending Approval',
-                'created_by' => $userId,
-            ]);
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    /**
-     * Generate invoice number similar to web counterpart.
-     */
-    private function generateInvoiceNumber(): string
-    {
-        $prefix = 'INV';
-        $year = now()->year;
-        $month = now()->format('m');
-
-        $lastInvoice = Invoice::where('invoice_number', 'like', $prefix . $year . $month . '%')
-            ->orderBy('invoice_number', 'desc')
-            ->first();
-
-        $newNumber = $lastInvoice
-            ? ((int) substr($lastInvoice->invoice_number, -4)) + 1
-            : 1;
-
-        return $prefix . $year . $month . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-    }
-
     private function buildBaseQuery()
     {
         return Lead::select([

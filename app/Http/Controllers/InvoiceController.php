@@ -278,11 +278,12 @@ class InvoiceController extends Controller
     /**
      * Auto-generate invoice when converting a lead
      */
-    public function autoGenerate($studentId, $courseId, $customTotalAmount = null, $feeBreakdown = null)
+    public function autoGenerate($studentId, $courseId, $customTotalAmount = null, $feeBreakdown = null, $createdByUserId = null)
     {
         try {
             $student = ConvertedLead::findOrFail($studentId);
             $course = Course::findOrFail($courseId);
+            $actorId = $createdByUserId ?? AuthHelper::getCurrentUserId();
             
             // Check if invoice already exists for this student and course
             $existingInvoice = Invoice::where('student_id', $studentId)
@@ -384,8 +385,8 @@ class InvoiceController extends Controller
                 'fee_plustwo_amount' => $feePlustwoAmount,
                 'fee_sslc_amount' => $feeSslcAmount,
                 'invoice_date' => now()->toDateString(),
-                'created_by' => AuthHelper::getCurrentUserId(),
-                'updated_by' => AuthHelper::getCurrentUserId(),
+                'created_by' => $actorId,
+                'updated_by' => $actorId,
             ]);
 
             return $invoice;
