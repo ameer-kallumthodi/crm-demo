@@ -1626,10 +1626,20 @@ class LeadController extends Controller
         // Fetch all matching leads ordered by creation date (newest first)
         $leads = $query->orderBy('created_at', 'desc')->get();
 
+        // Resolve source/course titles by id (includes soft-deleted rows) so Excel never shows raw ids
+        $sourceIds = $leads->pluck('lead_source_id')->filter()->unique()->values();
+        $courseIds = $leads->pluck('course_id')->filter()->unique()->values();
+        $sourceTitles = $sourceIds->isNotEmpty()
+            ? LeadSource::withTrashed()->whereIn('id', $sourceIds)->pluck('title', 'id')->all()
+            : [];
+        $courseTitles = $courseIds->isNotEmpty()
+            ? Course::withTrashed()->whereIn('id', $courseIds)->pluck('title', 'id')->all()
+            : [];
+
         // Generate filename with date range
         $filename = 'leads_export_' . ($fromDate ? $fromDate : 'all') . '_to_' . ($toDate ? $toDate : 'all') . '_' . date('Y-m-d_His') . '.xlsx';
 
-        return Excel::download(new LeadsExport($leads), $filename);
+        return Excel::download(new LeadsExport($leads, $sourceTitles, $courseTitles), $filename);
     }
 
     /**

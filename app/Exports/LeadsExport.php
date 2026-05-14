@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use App\Models\Lead;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -16,9 +15,38 @@ class LeadsExport implements FromCollection, WithHeadings, WithMapping, WithStyl
 {
     protected $leads;
 
-    public function __construct($leads)
+    /**
+     * @param  \Illuminate\Support\Collection|array<int, \App\Models\Lead>  $leads
+     * @param  array<int, string|null>  $sourceTitles  lead_source_id => title
+     * @param  array<int, string|null>  $courseTitles  course_id => title
+     */
+    public function __construct($leads, protected array $sourceTitles = [], protected array $courseTitles = [])
     {
         $this->leads = $leads;
+    }
+
+    private function titleFromMapOrRelation(?int $id, array $titles, $relation): string
+    {
+        if ($id !== null && array_key_exists($id, $titles)) {
+            $t = $titles[$id];
+            if ($t !== null && $t !== '') {
+                return (string) $t;
+            }
+        }
+        if ($relation && ($relation->title ?? '') !== '') {
+            return (string) $relation->title;
+        }
+
+        return '-';
+    }
+
+    private function nullableId(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (int) $value;
     }
 
     public function collection()
@@ -62,8 +90,16 @@ class LeadsExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             $lead->leadStatus ? ($lead->leadStatus->title ?? '-') : '-',
             $lead->interest_status ? ($lead->interest_status == 1 ? 'Hot' : ($lead->interest_status == 2 ? 'Warm' : 'Cold')) : 'Not Set',
             $lead->rating ? ($lead->rating . '/10') : 'Not Rated',
-            $lead->leadSource ? ($lead->leadSource->title ?? '-') : '-',
-            $lead->course ? ($lead->course->title ?? '-') : '-',
+            $this->titleFromMapOrRelation(
+                $this->nullableId($lead->lead_source_id),
+                $this->sourceTitles,
+                $lead->leadSource
+            ),
+            $this->titleFromMapOrRelation(
+                $this->nullableId($lead->course_id),
+                $this->courseTitles,
+                $lead->course
+            ),
             $lead->telecaller ? ($lead->telecaller->name ?? 'Unassigned') : 'Unassigned',
             $lead->place ?? '-',
             $lead->followup_date ? $lead->followup_date->format('M d, Y') : '-',
