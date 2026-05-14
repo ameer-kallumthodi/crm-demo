@@ -7,11 +7,13 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class LeadsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class LeadsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths, WithColumnFormatting
 {
     protected $leads;
 
@@ -27,17 +29,75 @@ class LeadsExport implements FromCollection, WithHeadings, WithMapping, WithStyl
 
     private function titleFromMapOrRelation(?int $id, array $titles, $relation): string
     {
-        if ($id !== null && array_key_exists($id, $titles)) {
-            $t = $titles[$id];
-            if ($t !== null && $t !== '') {
-                return (string) $t;
-            }
+        $fromMap = $this->lookupTitleMap($id, $titles);
+        if ($fromMap !== null && $fromMap !== '') {
+            return $this->excelText($fromMap);
         }
-        if ($relation && ($relation->title ?? '') !== '') {
-            return (string) $relation->title;
+
+        if ($relation) {
+            $label = trim((string) ($relation->title ?? ''));
+            if ($label === '' && isset($relation->description)) {
+                $label = trim((string) $relation->description);
+            }
+            if ($label === '' && isset($relation->code)) {
+                $label = trim((string) $relation->code);
+            }
+            if ($label !== '') {
+                return $this->excelText($label);
+            }
         }
 
         return '-';
+    }
+
+    /**
+     * @param  array<int|string, string|null>  $titles
+     */
+    private function lookupTitleMap(?int $id, array $titles): ?string
+    {
+        if ($id === null) {
+            return null;
+        }
+        foreach ([$id, (string) $id] as $key) {
+            if (! array_key_exists($key, $titles)) {
+                continue;
+            }
+            $t = $titles[$key];
+            if ($t === null) {
+                continue;
+            }
+            $t = trim((string) $t);
+            if ($t !== '') {
+                return $t;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Prefix so Excel / PhpSpreadsheet keeps purely numeric labels as text (not number cells).
+     */
+    private function excelText(string $value): string
+    {
+        if ($value === '') {
+            return '';
+        }
+        if (preg_match('/^\s*-?\d+(\.\d+)?\s*$/', $value)) {
+            return "\u{200B}".$value;
+        }
+
+        return $value;
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'B' => NumberFormat::FORMAT_TEXT,
+            'D' => NumberFormat::FORMAT_TEXT,
+            'I' => NumberFormat::FORMAT_TEXT,
+            'J' => NumberFormat::FORMAT_TEXT,
+        ];
     }
 
     private function nullableId(mixed $value): ?int
@@ -47,6 +107,15 @@ class LeadsExport implements FromCollection, WithHeadings, WithMapping, WithStyl
         }
 
         return (int) $value;
+    }
+
+    private function formatPhoneForExport(?string $code, ?string $phone): string
+    {
+        if ($phone === null || $phone === '') {
+            return '-';
+        }
+
+        return ($code !== null && $code !== '') ? ($code.$phone) : $phone;
     }
 
     public function collection()
@@ -85,7 +154,7 @@ class LeadsExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             $serialNumber,
             $lead->created_at ? $lead->created_at->format('d-m-Y h:i A') : '-',
             $lead->title ?? '-',
-            $lead->code && $lead->phone ? ($lead->code . $lead->phone) : ($lead->phone ?? '-'),
+            $this->formatPhoneForExport($lead->code ?? null, $lead->phone ?? null),
             $lead->email ?? '-',
             $lead->leadStatus ? ($lead->leadStatus->title ?? '-') : '-',
             $lead->interest_status ? ($lead->interest_status == 1 ? 'Hot' : ($lead->interest_status == 2 ? 'Warm' : 'Cold')) : 'Not Set',
