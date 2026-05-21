@@ -361,7 +361,8 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
                                 <th>Batch</th>
                                 <th>Time</th>
                                 <th>Reg. Number</th>
-                                <th>Full Name</th>
+                                <th>Flag</th>
+                                    <th>Full Name</th>
                                 <th>Age</th>
                                 <th>Primary Mobile</th>
                                 <th>WhatsApp Number</th>
@@ -457,6 +458,7 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
                                     {{ $lead->register_number ?? '-' }}
                                     @endif
                                 </td>
+                                @include('admin.converted-leads.partials.inline-flag-cell', ['convertedLead' => $lead])
                                 <td>
                                     @if($canEdit)
                                     <div class="inline-edit" data-field="name" data-id="{{ $lead->id }}" data-current="{{ $lead->name }}">
@@ -894,5 +896,5 @@ $(document).ready(function() {
     });
 });
 </script>
+@include('admin.converted-leads.partials.mentor-flag-inline-scripts')
 @endpush
-

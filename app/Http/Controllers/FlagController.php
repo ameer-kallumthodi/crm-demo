@@ -8,6 +8,13 @@ use App\Helpers\RoleHelper;
 
 class FlagController extends Controller
 {
+    public function listActive()
+    {
+        $flags = Flag::orderBy('title')->get(['id', 'title', 'description', 'color']);
+
+        return response()->json($flags);
+    }
+
     private function canManage(): bool
     {
         return RoleHelper::is_admin_or_super_admin() || RoleHelper::is_admission_counsellor();

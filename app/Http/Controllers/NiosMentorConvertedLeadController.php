@@ -30,6 +30,7 @@ class NiosMentorConvertedLeadController extends Controller
             'studentDetails',
             'mentorDetails',
             'subject',
+            'flag',
             'batch',
             'admissionBatch'
         ])->where('course_id', 1) // NIOS course
@@ -197,6 +198,10 @@ class NiosMentorConvertedLeadController extends Controller
                 }
             }
 
+            if ($field === 'flag_id') {
+                return response()->json(\App\Support\MentorFlagFieldSupport::updateOnConvertedLead($convertedLead, $value));
+            }
+
             // Handle status field - update in converted_leads table
             if ($field === 'status') {
                 $convertedLead->status = $value;
@@ -237,6 +242,7 @@ class NiosMentorConvertedLeadController extends Controller
     {
         $rules = [
             'subject_id' => 'nullable|exists:subjects,id',
+            'flag_id' => \App\Support\MentorFlagFieldSupport::validationRule(),
             'status' => 'nullable|in:Paid,Admission cancel,Active,Inactive',
             'registration_status' => 'nullable|in:Paid,Not Paid',
             'technology_side' => 'nullable|in:No Knowledge,Limited Knowledge,Moderate Knowledge,High Knowledge',

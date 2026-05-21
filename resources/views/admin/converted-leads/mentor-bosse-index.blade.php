@@ -351,7 +351,7 @@
 <!-- [ Main Content ] start -->
 <div class="row">
     <div class="col-12">
-        <div class="card">
+        <div class="card" data-mentor-update-url="{{ route('admin.mentor-bosse-converted-leads.update-mentor-details', ['id' => '__ID__']) }}">
             <div class="card-header">
                 <h5>Bosse Converted Mentor List</h5>
             </div>
@@ -367,6 +367,7 @@
                                     <th>Academic Verified At</th>
                                     <th>Support Verified At</th>
                                     <th>Registration Number</th>
+                                    <th>Flag</th>
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>DOB</th>
@@ -898,4 +899,5 @@
         }
     });
 </script>
+@include('admin.converted-leads.partials.mentor-flag-inline-scripts')
 @endpush

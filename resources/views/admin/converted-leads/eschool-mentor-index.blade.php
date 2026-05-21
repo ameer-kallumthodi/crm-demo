@@ -351,7 +351,8 @@
                                 <th>Academic Verified At</th>
                                 <th>Support Verified At</th>
                                 <th>Registration No</th>
-                                <th>Name</th>
+                                <th>Flag</th>
+                                    <th>Name</th>
                                     <th>Type</th>
                                 <th>Phone</th>
                                 <th>WhatsApp</th>
@@ -438,6 +439,7 @@
                                         @endif
                                     </div>
                                 </td>
+                                @include('admin.converted-leads.partials.inline-flag-cell', ['convertedLead' => $convertedLead])
                                 <td>
                                     {{ $convertedLead->name }}
                                     @if($convertedLead->is_cancelled)
@@ -1320,8 +1322,5 @@
         }
     });
 </script>
+@include('admin.converted-leads.partials.mentor-flag-inline-scripts')
 @endpush
-
-
-
-

@@ -26,4 +26,10 @@ class SubjectArea extends Model
     {
         return $query->where('is_active', true);
     }
+
+    public function convertedLeads()
+    {
+        return $this->belongsToMany(ConvertedLead::class, 'converted_lead_subject_area')
+            ->withTimestamps();
+    }
 }

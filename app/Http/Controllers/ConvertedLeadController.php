@@ -618,7 +618,7 @@ class ConvertedLeadController extends Controller
                 'batch',
                 'admissionBatch',
                 'subject',
-                'subjectArea',
+                'subjectAreas',
                 'academicAssistant',
                 'cancelledBy',
                 'studentDetails',
@@ -820,7 +820,7 @@ class ConvertedLeadController extends Controller
                 'batch',
                 'admissionBatch',
                 'subject',
-                'subjectArea',
+                'subjectAreas',
                 'studentDetails',
             ])->orderBy('created_at', 'desc')
                 ->skip($start)
@@ -1608,7 +1608,7 @@ class ConvertedLeadController extends Controller
      */
     public function gmvssMentorIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead.studentDetails', 'lead.team', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'studentDetails.registrationLink', 'mentorDetails'])
+        $query = ConvertedLead::with(['lead.studentDetails', 'lead.team', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'flag', 'studentDetails.registrationLink', 'mentorDetails'])
             ->where('course_id', 16);
 
         // Apply role-based filtering
@@ -3834,7 +3834,9 @@ class ConvertedLeadController extends Controller
             'register_number' => 'nullable|string|max:50',
             'sub_course_id' => 'nullable|exists:sub_courses,id',
             'subject_id' => 'nullable|exists:subjects,id',
-            'subject_area_id' => 'nullable|exists:subject_areas,id',
+            'subject_area_ids' => 'nullable|array',
+            'subject_area_ids.*' => 'integer|exists:subject_areas,id',
+            'flag_id' => 'nullable|exists:flags,id',
             'batch_id' => 'nullable|exists:batches,id',
             'admission_batch_id' => 'nullable|exists:admission_batches,id',
             'academic_assistant_id' => 'nullable|exists:users,id',
@@ -3917,6 +3919,26 @@ class ConvertedLeadController extends Controller
             return response()->json(['error' => 'Invalid field.'], 400);
         }
 
+        if ($field === 'subject_area_ids') {
+            $subjectAreaIds = \App\Support\ConvertedLeadSubjectAreaSupport::parseIds($request->input('value'));
+
+            $validator = Validator::make(
+                ['value' => $subjectAreaIds],
+                \App\Support\ConvertedLeadSubjectAreaSupport::validationRules()
+            );
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $validator->errors()->first(),
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            return response()->json(
+                \App\Support\ConvertedLeadSubjectAreaSupport::syncOnConvertedLead($convertedLead, $subjectAreaIds)
+            );
+        }
+
         // Special handling for register_number validation
         if ($field === 'register_number') {
             // If the value is empty or null, allow it
@@ -3972,6 +3994,10 @@ class ConvertedLeadController extends Controller
                     'error' => 'Invalid date format.'
                 ], 422);
             }
+        }
+
+        if ($field === 'flag_id') {
+            return response()->json(\App\Support\MentorFlagFieldSupport::updateOnConvertedLead($convertedLead, $value));
         }
 
         // Handle fields that are in LeadDetail (for UG/PG course and EduMaster)
@@ -4099,13 +4125,6 @@ class ConvertedLeadController extends Controller
         } elseif ($field === 'subject_id' && $updatedValue) {
             $subject = \App\Models\Subject::find($updatedValue);
             $updatedValue = $subject ? $subject->title : $updatedValue;
-        } elseif ($field === 'subject_area_id') {
-            if ($updatedValue) {
-                $subjectArea = \App\Models\SubjectArea::find($updatedValue);
-                $updatedValue = $subjectArea ? $subjectArea->title : $updatedValue;
-            } else {
-                $updatedValue = 'N/A';
-            }
         } elseif ($field === 'admission_batch_id' && $updatedValue) {
             $admissionBatch = \App\Models\AdmissionBatch::find($updatedValue);
             $updatedValue = $admissionBatch ? $admissionBatch->title : $updatedValue;

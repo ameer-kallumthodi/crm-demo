@@ -22,7 +22,8 @@ class EduMasterMentorConvertedLeadController extends Controller
     public function index(Request $request)
     {
         $query = ConvertedLead::with([
-            'lead', 
+            
+            'flag','lead', 
             'leadDetail.university',
             'leadDetail.universityCourse',
             'course', 
@@ -180,6 +181,10 @@ class EduMasterMentorConvertedLeadController extends Controller
                         'error' => $validator->errors()->first($field)
                     ], 422);
                 }
+            }
+
+            if ($field === 'flag_id') {
+                return response()->json(\App\Support\MentorFlagFieldSupport::updateOnConvertedLead($convertedLead, $value));
             }
 
             // Handle all fields - update in converted_student_mentor_details table

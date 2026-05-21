@@ -531,16 +531,7 @@
                                             @endif
                                         </div>
                                     </td>
-                                    <td>
-                                        <div class="inline-edit" data-field="subject_area_id" data-id="{{ $convertedLead->id }}" data-current-id="{{ $convertedLead->subject_area_id }}">
-                                            <span class="display-value">{{ $convertedLead->subjectArea?->title ?? 'N/A' }}</span>
-                                            @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor() || \App\Helpers\RoleHelper::is_academic_assistant())
-                                            <button class="btn btn-sm btn-outline-secondary ms-1 edit-btn" title="Edit">
-                                                <i class="ti ti-edit"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
+                                    @include('admin.converted-leads.partials.inline-subject-area-cell', ['convertedLead' => $convertedLead])
                                     <td>
                                         <div class="inline-edit" data-field="status" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->status }}">
                                             <span class="display-value">{{ $convertedLead->status ?? 'N/A' }}</span>
@@ -822,7 +813,7 @@
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Subject Area</small>
-                                    <span class="fw-medium">{{ $convertedLead->subjectArea?->title ?? 'N/A' }}</span>
+                                    <span class="fw-medium">@include('admin.converted-leads.partials.subject-area-display', ['convertedLead' => $convertedLead])</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Academic</small>
@@ -1380,8 +1371,6 @@
             if (field === 'subject_id') {
                 const courseId = container.data('course-id');
                 editForm = createSubjectSelect(courseId, currentId);
-            } else if (field === 'subject_area_id') {
-                editForm = createSubjectAreaSelect(currentId);
             } else if (field === 'batch_id') {
                 const courseId = container.data('course-id');
                 editForm = createBatchSelect(courseId, currentId);
@@ -1407,8 +1396,6 @@
                 const courseId = container.data('course-id');
                 const select = container.find('select');
                 loadSubjects(courseId, select, currentId);
-            } else if (field === 'subject_area_id') {
-                loadSubjectAreas(container.find('select'), currentId);
             } else if (field === 'batch_id') {
                 const courseId = container.data('course-id');
                 const select = container.find('select');
@@ -1468,7 +1455,7 @@
                         // Update the data-current attribute with the new display value
                         container.data('current', displayValue);
                         // Update data-current-id for fields that use it (store the ID, not the display value)
-                        if (field === 'batch_id' || field === 'subject_id' || field === 'subject_area_id' || field === 'admission_batch_id' || field === 'academic_assistant_id') {
+                        if (field === 'batch_id' || field === 'subject_id' || field === 'admission_batch_id' || field === 'academic_assistant_id') {
                             container.data('current-id', value || '');
                         }
 
@@ -1720,20 +1707,6 @@
             `;
         }
 
-        function createSubjectAreaSelect(currentId) {
-            return `
-                <div class="edit-form">
-                    <select class="form-select form-select-sm">
-                        <option value="">Loading...</option>
-                    </select>
-                    <div class="btn-group mt-1">
-                        <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
-                        <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>
-                    </div>
-                </div>
-            `;
-        }
-
         function createBatchSelect(courseId, currentId) {
             return `
                 <div class="edit-form">
@@ -1787,8 +1760,6 @@
             if (field === 'subject_id') {
                 const courseId = container.data('course-id');
                 loadSubjects(courseId, select, currentId);
-            } else if (field === 'subject_area_id') {
-                loadSubjectAreas(select, currentId);
             } else if (field === 'batch_id') {
                 const courseId = container.data('course-id');
                 loadBatches(courseId, select, currentId);
@@ -1799,22 +1770,6 @@
                 loadAcademicAssistants(select, currentId);
             }
         });
-
-        function loadSubjectAreas(select, currentId) {
-            $.get('/api/subject-areas')
-                .done(function(subjectAreas) {
-                    let options = '<option value="">Select Subject Area</option>';
-                    subjectAreas.forEach(function(subjectArea) {
-                        const isSelected = (currentId && String(currentId) === String(subjectArea.id)) ? 'selected' : '';
-                        options += `<option value="${subjectArea.id}" ${isSelected}>${subjectArea.title}</option>`;
-                    });
-                    select.html(options);
-                    select.focus();
-                })
-                .fail(function() {
-                    select.html('<option value="">Error loading subject areas</option>');
-                });
-        }
 
         function loadSubjects(courseId, select, currentId) {
             $.get(`/api/subjects/by-course/${courseId}`)
@@ -2075,6 +2030,7 @@
         });
     });
 </script>
+@include('admin.converted-leads.partials.converted-lead-subject-area-scripts')
 @endpush
 
 <!-- Support Verify Modal -->

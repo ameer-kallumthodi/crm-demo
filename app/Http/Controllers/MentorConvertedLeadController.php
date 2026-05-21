@@ -30,6 +30,7 @@ class MentorConvertedLeadController extends Controller
             'studentDetails',
             'mentorDetails',
             'subject',
+            'flag',
             'batch',
             'admissionBatch'
         ])->where('course_id', 2) // BOSSE course
@@ -224,7 +225,7 @@ class MentorConvertedLeadController extends Controller
                 'exam_subject_6',
             ];
 
-            $allowedTopLevelFields = ['status'];
+            $allowedTopLevelFields = ['status', 'flag_id'];
 
             if (!in_array($field, $allowedMentorFields, true) && !in_array($field, $allowedTopLevelFields, true)) {
                 return response()->json([
@@ -243,6 +244,10 @@ class MentorConvertedLeadController extends Controller
                         'error' => $validator->errors()->first($field)
                     ], 422);
                 }
+            }
+
+            if ($field === 'flag_id') {
+                return response()->json(\App\Support\MentorFlagFieldSupport::updateOnConvertedLead($convertedLead, $value));
             }
 
             // "status" is a ConvertedLead field (converted_leads table), not mentor_details.
@@ -291,6 +296,7 @@ class MentorConvertedLeadController extends Controller
     {
         $rules = [
             'subject_id' => 'nullable|exists:subjects,id',
+            'flag_id' => \App\Support\MentorFlagFieldSupport::validationRule(),
             'registration_status' => 'nullable|in:Paid,Not Paid',
             'technology_side' => 'nullable|in:No Knowledge,Limited Knowledge,Moderate Knowledge,High Knowledge',
             'student_status' => 'nullable|in:Low Level,Below Medium,Medium Level,Advanced Level',

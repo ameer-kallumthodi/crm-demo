@@ -94,6 +94,7 @@ Route::prefix('api/meta-leads')->group(function () {
 // Public API routes for subjects and courses (no authentication required)
 Route::get('/api/subjects/by-course/{courseId}', [App\Http\Controllers\SubjectController::class, 'getByCourse'])->name('api.subjects.by-course');
 Route::get('/api/subject-areas', [App\Http\Controllers\SubjectAreaController::class, 'listActive'])->name('api.subject-areas');
+Route::get('/api/flags', [App\Http\Controllers\FlagController::class, 'listActive'])->name('api.flags');
 Route::get('/api/batches/by-course/{courseId}', [App\Http\Controllers\BatchController::class, 'getByCourse'])->name('api.batches.by-course');
 Route::get('/api/sub-courses/by-course/{courseId}', [App\Http\Controllers\SubCourseController::class, 'getByCourse'])->name('api.sub-courses.by-course');
 Route::get('/api/admission-batches/by-batch/{batchId}', [App\Http\Controllers\AdmissionBatchController::class, 'getByBatch'])->name('api.admission-batches.by-batch');

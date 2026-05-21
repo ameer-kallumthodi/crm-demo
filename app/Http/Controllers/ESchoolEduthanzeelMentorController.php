@@ -45,7 +45,8 @@ class ESchoolEduthanzeelMentorController extends Controller
         }
 
         $query = ConvertedLead::with([
-            'lead',
+            
+            'flag','lead',
             'leadDetail',
             'course',
             'academicAssistant',
@@ -222,6 +223,10 @@ class ESchoolEduthanzeelMentorController extends Controller
                         'error' => $validator->errors()->first($field)
                     ], 422);
                 }
+            }
+
+            if ($field === 'flag_id') {
+                return response()->json(\App\Support\MentorFlagFieldSupport::updateOnConvertedLead($convertedLead, $value));
             }
 
             // Special handling for tutor_id (displayed as Tutor, but uses teacher_id in DB)

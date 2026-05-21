@@ -45,7 +45,7 @@ class ConvertedLead extends Model
         'batch_id',
         'board_id',
         'subject_id',
-        'subject_area_id',
+        'flag_id',
         'admission_batch_id',
         'is_postpond_batch',
         'remarks',
@@ -124,9 +124,15 @@ class ConvertedLead extends Model
         return $this->belongsTo(Subject::class);
     }
 
-    public function subjectArea()
+    public function subjectAreas()
     {
-        return $this->belongsTo(SubjectArea::class);
+        return $this->belongsToMany(SubjectArea::class, 'converted_lead_subject_area')
+            ->withTimestamps();
+    }
+
+    public function flag()
+    {
+        return $this->belongsTo(Flag::class);
     }
 
     public function academicAssistant()

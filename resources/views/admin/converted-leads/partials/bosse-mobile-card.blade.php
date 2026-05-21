@@ -132,7 +132,7 @@
 
             <div class="col-6">
                 <small class="text-muted d-block">Subject Area</small>
-                <span class="fw-medium">{{ $convertedLead->subjectArea?->title ?? 'N/A' }}</span>
+                <span class="fw-medium">@include('admin.converted-leads.partials.subject-area-display', ['convertedLead' => $convertedLead])</span>
             </div>
 
             <div class="col-6">

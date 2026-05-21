@@ -351,6 +351,7 @@
                                     <th>Academic Verified At</th>
                                     <th>Support Verified At</th>
                                     <th>Registration Number</th>
+                                    <th>Flag</th>
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>Phone</th>
@@ -417,6 +418,7 @@
                                             @endif
                                         </div>
                                     </td>
+                                    @include('admin.converted-leads.partials.inline-flag-cell', ['convertedLead' => $convertedLead])
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avtar avtar-s rounded-circle bg-light-success me-2 d-flex align-items-center justify-content-center">
@@ -1013,6 +1015,7 @@
         });
     });
 </script>
+@include('admin.converted-leads.partials.mentor-flag-inline-scripts')
 @endpush
 @endsection
 

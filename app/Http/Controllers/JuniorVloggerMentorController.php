@@ -28,7 +28,8 @@ class JuniorVloggerMentorController extends Controller
         }
 
         $query = ConvertedLead::with([
-            'lead',
+            
+            'flag','lead',
             'lead.team',
             'lead.team.detail',
             'lead.juniorVloggerStudentDetails.classTime',
@@ -151,6 +152,10 @@ class JuniorVloggerMentorController extends Controller
                         'error' => $validator->errors()->first($field),
                     ], 422);
                 }
+            }
+
+            if ($field === 'flag_id') {
+                return response()->json(\App\Support\MentorFlagFieldSupport::updateOnConvertedLead($convertedLead, $value));
             }
 
             $convertedLeadFields = ['register_number', 'name', 'phone', 'email', 'batch_id', 'admission_batch_id', 'dob'];

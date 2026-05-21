@@ -377,6 +377,7 @@
                                     <th>Academic Verified At</th>
                                     <th>Support Verified At</th>
                                     <th>Registration Number</th>
+                                    <th>Flag</th>
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>DOB</th>
@@ -461,6 +462,7 @@
                                         @endif
                                     </td>
                                     <td>{{ $convertedLead->register_number ?? '-' }}</td>
+                                    @include('admin.converted-leads.partials.inline-flag-cell', ['convertedLead' => $convertedLead])
                                     <td>
                                         {{ $convertedLead->name }}
                                         @if($convertedLead->is_cancelled)
@@ -1453,4 +1455,5 @@
         }
     });
 </script>
+@include('admin.converted-leads.partials.mentor-flag-inline-scripts')
 @endpush

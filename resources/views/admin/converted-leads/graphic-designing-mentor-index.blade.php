@@ -444,6 +444,7 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                                     <th>Support</th>
                                     <th>Converted Date</th>
                                     <th>Register Number</th>
+                                    <th>Flag</th>
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>Phone</th>
@@ -543,6 +544,7 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                                     </td>
                                     <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>{{ $convertedLead->register_number ?? '-' }}</td>
+                                    @include('admin.converted-leads.partials.inline-flag-cell', ['convertedLead' => $convertedLead])
                                     <td>
                                         {{ $convertedLead->name }}
                                         @if($convertedLead->is_cancelled)
@@ -2241,6 +2243,7 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
             });
     });
 </script>
+@include('admin.converted-leads.partials.mentor-flag-inline-scripts')
 @endpush
 
 <!-- Support Verify Modal -->

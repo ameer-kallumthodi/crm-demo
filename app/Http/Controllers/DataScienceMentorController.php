@@ -27,7 +27,8 @@ class DataScienceMentorController extends Controller
         }
 
         $query = ConvertedLead::with([
-            'lead', 
+            
+            'flag','lead', 
             'course', 
             'academicAssistant', 
             'createdBy',
@@ -213,6 +214,10 @@ class DataScienceMentorController extends Controller
                         'error' => $validator->errors()->first($field)
                     ], 422);
                 }
+            }
+
+            if ($field === 'flag_id') {
+                return response()->json(\App\Support\MentorFlagFieldSupport::updateOnConvertedLead($convertedLead, $value));
             }
 
             // Handle fields that belong to converted_leads or student_details

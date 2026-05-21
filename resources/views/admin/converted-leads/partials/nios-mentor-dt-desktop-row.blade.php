@@ -24,6 +24,7 @@
                                         @endif
                                     </td>
                                     <td>{{ $convertedLead->register_number ?? '-' }}</td>
+                                    @include('admin.converted-leads.partials.inline-flag-cell', ['convertedLead' => $convertedLead])
                                     <td>
                                         {{ $convertedLead->name }}
                                         @if($convertedLead->is_cancelled)

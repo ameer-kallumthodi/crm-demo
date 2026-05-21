@@ -50,6 +50,7 @@ class AdditionalMentorCourseController extends Controller
             'lead',
             'leadDetail',
             'course',
+            'flag',
             'mentorDetails',
         ])->where('course_id', $courseId)
             ->where('is_support_verified', 1);
