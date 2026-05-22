@@ -35,7 +35,7 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="content">Content <span class="text-danger">*</span></label>
-                    <textarea name="content" class="form-control" id="content" rows="8" placeholder="Enter mail content" required>{{ $edit_data->content }}</textarea>
+                    <textarea name="content" class="form-control" id="content" rows="8" placeholder="Enter mail content">{{ $edit_data->content }}</textarea>
                 </div>
             </div>
         </div>
@@ -56,9 +56,11 @@ $(document).ready(function() {
         batchId: '{{ $edit_data->batch_id }}',
         admissionBatchId: '{{ $edit_data->admission_batch_id ?? 'all' }}'
     });
+    initMailContentEditor();
 
     $('#mailEditForm').on('submit', function(e) {
         e.preventDefault();
+        saveMailContentEditor();
 
         const form = $(this);
         const formData = new FormData(this);

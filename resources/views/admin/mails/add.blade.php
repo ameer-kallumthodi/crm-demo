@@ -32,7 +32,7 @@
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label" for="content">Content <span class="text-danger">*</span></label>
-                    <textarea name="content" class="form-control" id="content" rows="8" placeholder="Enter mail content" required></textarea>
+                    <textarea name="content" class="form-control" id="content" rows="8" placeholder="Enter mail content"></textarea>
                 </div>
             </div>
         </div>
@@ -49,9 +49,11 @@
 <script>
 $(document).ready(function() {
     initMailCascadeForm();
+    initMailContentEditor();
 
     $('#mailAddForm').on('submit', function(e) {
         e.preventDefault();
+        saveMailContentEditor();
 
         const form = $(this);
         const formData = new FormData(this);

@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\ConvertedLead;
 use App\Models\Lead;
 use App\Models\StudentDetail;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class MailService
 {
@@ -54,6 +56,47 @@ class MailService
         send_email('cao@natdemy.com', 'CAO', $subject, $caoBody, $attachments, 'Support Team');
     }
     
+    /**
+     * Send support course mail to a converted lead (edited content; does not change course_mails template).
+     *
+     * @return array{success: bool, error: ?string}
+     */
+    public static function sendConvertedLeadSupportMail(ConvertedLead $convertedLead, string $subject, string $body): array
+    {
+        $email = $convertedLead->email;
+
+        if (empty($email) || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Log::error('Invalid converted lead email in MailService::sendConvertedLeadSupportMail', [
+                'converted_lead_id' => $convertedLead->id,
+                'email' => $email,
+            ]);
+
+            return [
+                'success' => false,
+                'error' => 'This converted lead does not have a valid email address.',
+            ];
+        }
+
+        if (! function_exists('send_email_detailed')) {
+            Log::error('send_email_detailed helper not available for converted lead support mail');
+
+            return [
+                'success' => false,
+                'error' => 'Mail helper is not available.',
+            ];
+        }
+
+        return send_email_detailed(
+            $email,
+            $convertedLead->name ?? 'Student',
+            $subject,
+            $body,
+            [],
+            config('mail.from.name'),
+            config('mail.from.address')
+        );
+    }
+
     public static function sendNiosStudentVerificationEmail($student, $verifier)
     {
         $subject = "🎓 NIOS Student Verified: " . ($student->student_name ?? 'Student');

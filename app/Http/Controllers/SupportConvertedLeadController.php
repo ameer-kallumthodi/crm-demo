@@ -14,8 +14,10 @@ use App\Models\LeadDetail;
 use App\Models\ClassTime;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
+use App\Services\MailService;
 use App\Services\WatiService;
 use App\Support\ConvertedLeadWhatsAppSupport;
+use App\Support\CourseMailResolver;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
@@ -123,6 +125,135 @@ class SupportConvertedLeadController extends Controller
             'subjects', 
             'country_codes'
         ));
+    }
+
+    private function canSendSupportCourseMail(): bool
+    {
+        if (! AuthHelper::isLoggedIn()) {
+            return false;
+        }
+
+        return RoleHelper::is_admin_or_super_admin()
+            || RoleHelper::is_super_admin()
+            || RoleHelper::is_academic_assistant()
+            || RoleHelper::is_admission_counsellor()
+            || RoleHelper::is_support_team()
+            || RoleHelper::is_team_lead()
+            || (function_exists('has_permission') && has_permission('admin/support-bosse-converted-leads/index'));
+    }
+
+    private function courseMailJsonResponse(array $data, int $status = 200)
+    {
+        return response()->json($data, $status)->header('Content-Type', 'application/json');
+    }
+
+    /**
+     * Load course mail template for a BOSSE support converted lead.
+     */
+    public function getBosseCourseMail($id)
+    {
+        if (! $this->canSendSupportCourseMail()) {
+            return $this->courseMailJsonResponse(['success' => false, 'error' => 'Access denied.']);
+        }
+
+        $convertedLead = ConvertedLead::with(['course', 'batch', 'admissionBatch'])->findOrFail($id);
+
+        if ((int) $convertedLead->course_id !== 2) {
+            return $this->courseMailJsonResponse(['success' => false, 'error' => 'Invalid lead for BOSSE support.']);
+        }
+
+        if (! filled($convertedLead->email)) {
+            return $this->courseMailJsonResponse([
+                'success' => false,
+                'error' => 'This converted lead does not have an email address.',
+            ]);
+        }
+
+        $courseMail = CourseMailResolver::resolveForConvertedLead($convertedLead);
+        if (! $courseMail) {
+            return $this->courseMailJsonResponse([
+                'success' => false,
+                'error' => 'No mail template found for this course, batch, and admission batch. Add one under Admin → Mail.',
+            ]);
+        }
+
+        $contextParts = array_filter([
+            $convertedLead->course?->title,
+            $convertedLead->batch?->title,
+            $convertedLead->admissionBatch?->title,
+        ]);
+
+        return $this->courseMailJsonResponse([
+            'success' => true,
+            'recipient_email' => $convertedLead->email,
+            'subject' => CourseMailResolver::defaultSubject($convertedLead),
+            'content' => $courseMail->content,
+            'context' => $contextParts ? implode(' · ', $contextParts) : null,
+        ]);
+    }
+
+    /**
+     * Send edited course mail to a BOSSE support converted lead (does not update course_mails).
+     */
+    public function sendBosseCourseMail(Request $request, $id)
+    {
+        if (! $this->canSendSupportCourseMail()) {
+            return $this->courseMailJsonResponse(['success' => false, 'error' => 'Access denied.']);
+        }
+
+        $request->validate([
+            'subject' => 'required|string|max:255',
+            'content' => 'required|string|max:50000',
+        ]);
+
+        $convertedLead = ConvertedLead::with(['course'])->findOrFail($id);
+
+        if ((int) $convertedLead->course_id !== 2) {
+            return $this->courseMailJsonResponse(['success' => false, 'error' => 'Invalid lead for BOSSE support.']);
+        }
+
+        if (! filled($convertedLead->email)) {
+            return $this->courseMailJsonResponse([
+                'success' => false,
+                'error' => 'This converted lead does not have an email address.',
+            ]);
+        }
+
+        try {
+            $sendResult = MailService::sendConvertedLeadSupportMail(
+                $convertedLead,
+                $request->subject,
+                $request->content
+            );
+
+            if (! $sendResult['success']) {
+                $error = $sendResult['error'] ?? 'Failed to send mail.';
+
+                Log::error('BOSSE support course mail send failed', [
+                    'converted_lead_id' => $id,
+                    'error' => $error,
+                ]);
+
+                return $this->courseMailJsonResponse([
+                    'success' => false,
+                    'error' => $error,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('BOSSE support course mail send failed: '.$e->getMessage(), [
+                'converted_lead_id' => $id,
+            ]);
+
+            return $this->courseMailJsonResponse([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $this->courseMailJsonResponse([
+            'success' => true,
+            'message' => 'Mail sent to '.$convertedLead->email.'.',
+        ]);
     }
 
     /**

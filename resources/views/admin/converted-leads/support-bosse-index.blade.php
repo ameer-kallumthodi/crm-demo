@@ -504,6 +504,7 @@
                                                 <i class="ti ti-receipt"></i>
                                             </a>
                                             @include('admin.converted-leads.partials.support-wati-whatsapp-button', ['convertedLead' => $convertedLead])
+                                            @include('admin.converted-leads.partials.support-course-mail-button', ['convertedLead' => $convertedLead])
                                             @php
                                             $canManageCancelFlag = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor();
                                             @endphp
@@ -621,6 +622,24 @@
                                                 disabled
                                                 @endif>
                                                 <i class="ti ti-brand-whatsapp me-2"></i>WhatsApp ({{ $watiTemplate }})
+                                            </button>
+                                        </li>
+                                        @php
+                                            $canSendCourseMail = filled($convertedLead->email)
+                                                && $convertedLead->course_id
+                                                && $convertedLead->batch_id;
+                                        @endphp
+                                        <li>
+                                            <button type="button"
+                                                class="dropdown-item js-send-support-course-mail {{ $canSendCourseMail ? '' : 'disabled' }}"
+                                                @if($canSendCourseMail)
+                                                data-lead-id="{{ $convertedLead->id }}"
+                                                data-name="{{ $convertedLead->name }}"
+                                                @else
+                                                disabled
+                                                title="{{ filled($convertedLead->email) ? 'Course and batch are required' : 'No email on file' }}"
+                                                @endif>
+                                                <i class="ti ti-mail me-2"></i>Mail
                                             </button>
                                         </li>
                                         @php
@@ -1197,9 +1216,11 @@
     });
 </script>
 @include('admin.converted-leads.partials.support-wati-whatsapp-scripts')
+@include('admin.converted-leads.partials.support-course-mail-scripts')
 @endpush
 
 @include('admin.converted-leads.partials.support-wati-whatsapp-modal')
+@include('admin.converted-leads.partials.support-course-mail-modal')
 
 <!-- Support Verify Modal -->
 <div class="modal fade" id="supportVerifyModal" tabindex="-1" aria-labelledby="supportVerifyModalLabel" aria-hidden="true">
