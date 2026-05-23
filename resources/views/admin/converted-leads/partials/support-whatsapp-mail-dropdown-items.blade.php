@@ -40,3 +40,4 @@
     </span>
     @endif
 </li>
+<li><hr class="dropdown-divider"></li>
