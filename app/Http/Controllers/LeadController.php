@@ -4287,6 +4287,15 @@ class LeadController extends Controller
      */
     public function convert(Lead $lead)
     {
+        if ($this->leadIsAlreadyConverted($lead)) {
+            if (request()->ajax() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->view('admin.leads.convert-already-converted', compact('lead'));
+            }
+
+            return redirect()->route('leads.index')
+                ->with('message_danger', 'This lead has already been converted.');
+        }
+
         $boards = \App\Models\Board::where('is_active', true)->get();
         $country_codes = get_country_code();
         
@@ -4513,7 +4522,15 @@ class LeadController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
+            $lead = Lead::where('id', $lead->id)->lockForUpdate()->firstOrFail();
+
+            if ($this->leadIsAlreadyConverted($lead)) {
+                DB::rollBack();
+
+                return $this->convertAlreadyConvertedJsonResponse();
+            }
+
             // Get or create lead detail record
             $leadDetail = \App\Models\LeadDetail::where('lead_id', $lead->id)->first();
             if (!$leadDetail) {
@@ -4666,6 +4683,28 @@ class LeadController extends Controller
                 ->with('message_danger', 'An error occurred while converting the lead. Please try again.')
                 ->withInput();
         }
+    }
+
+    private function leadIsAlreadyConverted(Lead $lead): bool
+    {
+        if ($lead->is_converted) {
+            return true;
+        }
+
+        return ConvertedLead::where('lead_id', $lead->id)->exists();
+    }
+
+    private function convertAlreadyConvertedJsonResponse()
+    {
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This lead has already been converted.',
+            ], 409);
+        }
+
+        return redirect()->route('leads.index')
+            ->with('message_danger', 'This lead has already been converted.');
     }
 
     /**

@@ -372,6 +372,14 @@
 
 <script>
     $(document).ready(function() {
+        const $form = $('#convertLeadForm');
+        if (!$form.length || $form.data('convert-init')) {
+            return;
+        }
+        $form.data('convert-init', true);
+
+        let convertSubmitting = false;
+
         // Cache jQuery objects
         const $paymentCheckbox = $('#modal_payment_collected');
         const $paymentFields = $('#payment_fields');
@@ -589,14 +597,18 @@
             updateTotalAmount();
         });
 
-        // AJAX form submission
-        $convertBtn.on('click', function() {
+        $(document).off('click.convertLead', '#convertLeadBtn');
+        $(document).on('click.convertLead', '#convertLeadBtn', function(e) {
+            e.preventDefault();
             submitConvertForm();
         });
 
         // Form submission function
         function submitConvertForm() {
-            const $form = $('#convertLeadForm');
+            if (convertSubmitting) {
+                return;
+            }
+
             const $btnText = $convertBtn.find('.btn-text');
             const $btnLoading = $convertBtn.find('.btn-loading');
 
@@ -607,6 +619,8 @@
             if (!validateForm()) {
                 return;
             }
+
+            convertSubmitting = true;
 
             // Show loading state
             $convertBtn.prop('disabled', true);
@@ -643,20 +657,22 @@
                         setTimeout(() => {
                             location.reload();
                         }, 1500);
-                    } else {
-                        // Handle validation errors
-                        if (data.errors) {
-                            displayFormErrors(data.errors);
-                            showNotification('error', 'Please correct the errors below.');
-                        } else {
-                            showNotification('error', data.message || 'Failed to convert lead. Please try again.');
-                        }
-
-                        // Reset button state
-                        $convertBtn.prop('disabled', false);
-                        $btnText.show();
-                        $btnLoading.hide();
+                        return;
                     }
+
+                    convertSubmitting = false;
+
+                    // Handle validation errors
+                    if (data.errors) {
+                        displayFormErrors(data.errors);
+                        showNotification('error', 'Please correct the errors below.');
+                    } else {
+                        showNotification('error', data.message || 'Failed to convert lead. Please try again.');
+                    }
+
+                    $convertBtn.prop('disabled', false);
+                    $btnText.show();
+                    $btnLoading.hide();
                 },
                 error: function(xhr, status, error) {
                     console.error('AJAX Error Details:');
@@ -665,6 +681,10 @@
                     console.error('Response Text:', xhr.responseText);
                     console.error('Error:', error);
 
+                    convertSubmitting = false;
+
+                    let errorMessage = 'An error occurred. Please try again.';
+
                     // Check if it's a validation error (422 status)
                     if (xhr.status === 422) {
                         try {
@@ -672,21 +692,25 @@
                             console.log('Parsed validation response:', data);
                             if (data.errors) {
                                 displayFormErrors(data.errors);
-                                showNotification('error', 'Please correct the errors below.');
+                                errorMessage = 'Please correct the errors below.';
                             } else {
-                                showNotification('error', data.message || 'Validation failed.');
+                                errorMessage = data.message || 'Validation failed.';
                             }
                         } catch (e) {
                             console.error('Error parsing validation response:', e);
-                            showNotification('error', 'Validation failed. Please check your input.');
+                            errorMessage = 'Validation failed. Please check your input.';
                         }
-                    } else {
-                        // Other errors
-                        console.error('Non-validation error occurred');
-                        showNotification('error', 'An error occurred. Please try again.');
+                    } else if (xhr.status === 409) {
+                        try {
+                            const data = JSON.parse(xhr.responseText);
+                            errorMessage = data.message || 'This lead has already been converted.';
+                        } catch (e) {
+                            errorMessage = 'This lead has already been converted.';
+                        }
                     }
 
-                    // Reset button state
+                    showNotification('error', errorMessage);
+
                     $convertBtn.prop('disabled', false);
                     $btnText.show();
                     $btnLoading.hide();
