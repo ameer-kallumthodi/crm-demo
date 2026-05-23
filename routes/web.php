@@ -776,6 +776,7 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/leads/get-pullbacked-assign-leads', [App\Http\Controllers\LeadController::class, 'getAssignablePullbackedLeads'])->name('leads.get-pullbacked-assign-leads');
 
         // Converted Leads Routes
+        Route::delete('/converted-leads/{id}', [App\Http\Controllers\ConvertedLeadController::class, 'destroy'])->name('converted-leads.destroy');
         Route::get('/converted-leads', [App\Http\Controllers\ConvertedLeadController::class, 'index'])->name('converted-leads.index');
         Route::get('/converted-leads/data', [App\Http\Controllers\ConvertedLeadController::class, 'getConvertedLeadsData'])->name('converted-leads.data');
         Route::get('/converted-leads/export', [App\Http\Controllers\ConvertedLeadController::class, 'export'])->name('converted-leads.export');

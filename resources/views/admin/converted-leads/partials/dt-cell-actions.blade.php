@@ -47,4 +47,10 @@
         @endif
     @endif
     @endif
+    @if(\App\Helpers\RoleHelper::is_super_admin())
+    <button type="button" class="btn btn-sm btn-outline-danger" title="Delete Converted Lead"
+        onclick="delete_modal({{ json_encode(route('admin.converted-leads.destroy', $convertedLead->id)) }}, {{ json_encode('Delete converted lead "'.$convertedLead->name.'"? All related invoices, payments, support, placement, and student records will be permanently removed. This cannot be undone.') }})">
+        <i class="ti ti-trash"></i>
+    </button>
+    @endif
 </div>

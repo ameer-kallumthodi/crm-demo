@@ -29,6 +29,7 @@ use App\Models\Payment;
 use App\Models\LeadDetail;
 use App\Models\ConvertedStudentActivity;
 use App\Models\LeadActivity;
+use App\Services\ConvertedLeadDeletionService;
 use App\Services\LeadCallLogService;
 use App\Support\ConvertedLeadShowFileHelper;
 use Illuminate\Support\Str;
@@ -4516,5 +4517,47 @@ class ConvertedLeadController extends Controller
     private function formatCurrency(float $value): string
     {
         return '₹' . number_format($value, 2);
+    }
+
+    /**
+     * Permanently delete a converted lead and all related records (Super Admin only).
+     */
+    public function destroy($id)
+    {
+        if (! RoleHelper::is_super_admin()) {
+            abort(403, 'Only Super Admin can delete converted leads.');
+        }
+
+        try {
+            $convertedLead = ConvertedLead::withTrashed()->findOrFail($id);
+            app(ConvertedLeadDeletionService::class)->deletePermanently($convertedLead);
+
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Converted lead and all related data deleted successfully.',
+                ]);
+            }
+
+            return redirect()
+                ->route('admin.converted-leads.index')
+                ->with('message_success', 'Converted lead deleted successfully.');
+        } catch (\Throwable $e) {
+            Log::error('Converted lead delete failed: '.$e->getMessage(), [
+                'converted_lead_id' => $id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete converted lead: '.$e->getMessage(),
+                ], 500);
+            }
+
+            return redirect()
+                ->route('admin.converted-leads.index')
+                ->with('message_danger', 'Failed to delete converted lead.');
+        }
     }
 }
