@@ -1,5 +1,6 @@
 <script>
 (function() {
+    const NS = '.supportCourseMail';
     const CONTENT_SELECTOR = '#support_course_mail_content';
     const courseMailTemplates = @json($templateOptions ?? []);
 
@@ -13,7 +14,8 @@
         $(CONTENT_SELECTOR).val(tpl.content || '');
     }
 
-    $('#support_course_mail_template').on('change', function() {
+    $(document).off('change' + NS, '#support_course_mail_template');
+    $(document).on('change' + NS, '#support_course_mail_template', function() {
         const templateId = $(this).val();
         if (!templateId) {
             $(CONTENT_SELECTOR).val('');
@@ -22,13 +24,19 @@
         applySelectedCourseMailTemplate(templateId);
     });
 
-    $('#supportCourseMailForm').on('submit', function(e) {
+    $(document).off('submit' + NS, '#supportCourseMailForm');
+    $(document).on('submit' + NS, '#supportCourseMailForm', function(e) {
         e.preventDefault();
 
         const $form = $(this);
+        if ($form.data('submitting')) {
+            return false;
+        }
+
         const $btn = $form.find('button[type="submit"]');
         const originalHtml = $btn.html();
 
+        $form.data('submitting', true);
         $btn.prop('disabled', true).html('<i class="ti ti-loader-2 spin"></i> Sending...');
 
         $.ajax({
@@ -50,7 +58,9 @@
                     if (typeof toast_success === 'function') {
                         toast_success(res.message || 'Mail sent successfully.');
                     }
-                } else if (typeof toast_danger === 'function') {
+                    return;
+                }
+                if (typeof toast_danger === 'function') {
                     toast_danger((res && res.error) ? res.error : 'Failed to send mail.');
                 }
             },
@@ -64,9 +74,12 @@
                 }
             },
             complete: function() {
+                $form.data('submitting', false);
                 $btn.prop('disabled', false).html(originalHtml);
             }
         });
+
+        return false;
     });
 })();
 </script>
