@@ -196,6 +196,7 @@ class MentorConvertedLeadController extends Controller
                 'app',
                 'whatsapp_group',
                 'call_1',
+                'call_time',
                 'call_2',
                 'call_3',
                 'call_4',
@@ -307,6 +308,7 @@ class MentorConvertedLeadController extends Controller
             'problems' => 'nullable|string|max:1000',
             'telegram_group' => 'nullable|in:Sent link,task complete',
             'status' => 'nullable|in:Paid,Received,Admission cancel,Active,Inactive',
+            'call_time' => 'nullable|date_format:H:i',
         ];
 
         // Add call status rules
@@ -338,6 +340,14 @@ class MentorConvertedLeadController extends Controller
         if ($field === 'subject_id' && $value) {
             $subject = Subject::find($value);
             return $subject ? $subject->title : $value;
+        }
+
+        if ($field === 'call_time' && $value) {
+            try {
+                return \Carbon\Carbon::createFromFormat('H:i', $value)->format('h:i A');
+            } catch (\Throwable $e) {
+                return $value;
+            }
         }
 
         return $value;

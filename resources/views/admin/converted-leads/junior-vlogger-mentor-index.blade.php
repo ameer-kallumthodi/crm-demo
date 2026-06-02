@@ -364,6 +364,7 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
                                 <th>Time</th>
                                 <th>Reg. Number</th>
                                 <th>Flag</th>
+                                    <th>Call Time</th>
                                     <th>Full Name</th>
                                 <th>Age</th>
                                 <th>Primary Mobile</th>
@@ -759,11 +760,12 @@ $(document).ready(function() {
     loadAdmissionBatches($('#batch_id').val(), $('#admission_batch_id').data('selected'));
     $('#batch_id').on('change', function() { loadAdmissionBatches($(this).val(), ''); });
 
-    function createInput(currentVal) {
+    function createInput(currentVal, field) {
         // jQuery .data() parses numeric data-current as a number; .replace() requires a string.
         var s = (currentVal === undefined || currentVal === null) ? '' : String(currentVal);
         var v = (s === '-' || s === '') ? '' : s;
-        return '<div class="edit-form"><input type="text" class="form-control form-control-sm" value="' + v.replace(/"/g, '&quot;') + '"><div class="btn-group mt-1"><button type="button" class="btn btn-success btn-sm save-edit">Save</button><button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button></div></div>';
+        var inputType = field === 'call_time' ? 'time' : 'text';
+        return '<div class="edit-form"><input type=\"' + inputType + '\" class="form-control form-control-sm" value="' + v.replace(/"/g, '&quot;') + '"><div class="btn-group mt-1"><button type="button" class="btn btn-success btn-sm save-edit">Save</button><button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button></div></div>';
     }
     function createDateInput(currentVal) {
         var s = (currentVal === undefined || currentVal === null) ? '' : String(currentVal);
@@ -847,7 +849,7 @@ $(document).ready(function() {
             $c.addClass('editing').append(html);
             $c.find('input').focus();
         } else {
-            html = createInput(current);
+            html = createInput(current, field);
             $c.addClass('editing').append(html);
             $c.find('input').focus();
         }

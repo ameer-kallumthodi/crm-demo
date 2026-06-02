@@ -451,6 +451,7 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                                     <th>Converted Date</th>
                                     <th>Register Number</th>
                                     <th>Flag</th>
+                                    <th>Call Time</th>
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>Phone</th>
@@ -1698,9 +1699,10 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
         // Helper functions for creating form elements
         function createInputField(field, currentValue) {
             const displayValue = currentValue === '-' ? '' : currentValue;
+            const inputType = field === 'call_time' ? 'time' : 'text';
             return `
                 <div class="edit-form">
-                    <input type="text" value="${displayValue}" class="form-control form-control-sm" autocomplete="off" autocapitalize="off" spellcheck="false">
+                    <input type="${inputType}" value="${displayValue}" class="form-control form-control-sm" autocomplete="off" autocapitalize="off" spellcheck="false">
                     <div class="btn-group mt-1">
                         <button type="button" class="btn btn-success btn-sm save-edit">Save</button>
                         <button type="button" class="btn btn-secondary btn-sm cancel-edit">Cancel</button>

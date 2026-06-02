@@ -257,6 +257,7 @@
                                 <th>Register Number</th>
                                 <th>Converted Date</th>
                                 <th>Flag</th>
+                                    <th>Call Time</th>
                                 <th>Name</th>
                                 <th>Date of Birth</th>
                                 <th>Type</th>

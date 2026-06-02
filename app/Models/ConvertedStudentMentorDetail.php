@@ -18,6 +18,7 @@ class ConvertedStudentMentorDetail extends Model
         'technology_side',
         'student_status',
         'call_1',
+        'call_time',
         'app',
         'whatsapp_group',
         'telegram_group',

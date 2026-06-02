@@ -354,6 +354,7 @@
                                     <th>Support Verified At</th>
                                     <th>Registration Number</th>
                                     <th>Flag</th>
+                                    <th>Call Time</th>
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>Phone</th>
@@ -876,7 +877,8 @@
 
         function createInputField(field, currentValue) {
             const value = currentValue === 'N/A' ? '' : currentValue;
-            return `<div class="edit-form"><div class="mb-2"><input type="text" class="form-control form-control-sm" value="${value}"></div><div class="btn-group"><button type="button" class="btn btn-sm btn-primary save-edit">Save</button><button type="button" class="btn btn-sm btn-secondary cancel-edit">Cancel</button></div></div>`;
+            const inputType = field === 'call_time' ? 'time' : 'text';
+            return `<div class="edit-form"><div class="mb-2"><input type="${inputType}" class="form-control form-control-sm" value="${value}"></div><div class="btn-group"><button type="button" class="btn btn-sm btn-primary save-edit">Save</button><button type="button" class="btn btn-sm btn-secondary cancel-edit">Cancel</button></div></div>`;
         }
 
         function createTextareaField(field, currentValue) {
