@@ -298,9 +298,11 @@ class SupportConvertedLeadController extends Controller
                 'template_name' => $templateName,
             ]);
 
+            $errorMessage = trim((string) $e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error' => $errorMessage !== '' ? $errorMessage : 'Unable to send WhatsApp message right now. Please try again shortly.',
             ], 500);
         }
 

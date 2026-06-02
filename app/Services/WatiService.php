@@ -59,8 +59,18 @@ class WatiService
             ]);
 
             $error = $body['message'] ?? $body['error'] ?? $response->body();
+            $errorMessage = is_string($error) ? trim($error) : '';
+            $statusCode = $response->status();
+
+            if ($errorMessage === '') {
+                $bodySnippet = trim((string) $response->body());
+                $errorMessage = $bodySnippet !== ''
+                    ? sprintf('Wati API request failed (HTTP %d): %s', $statusCode, $bodySnippet)
+                    : sprintf('Wati API request failed (HTTP %d). Check WATI_API_TOKEN, WATI_API_ENDPOINT, and WATI_CHANNEL_PHONE_NUMBER.', $statusCode);
+            }
+
             throw new RuntimeException(
-                is_string($error) ? $error : 'Failed to send WhatsApp template via Wati.'
+                $errorMessage
             );
         }
 
