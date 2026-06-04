@@ -632,6 +632,7 @@ class InvoiceController extends Controller
                 'university' => $university,
                 'batchAmountLabel' => null,
                 'isB2b' => $isB2b,
+                'useB2bBatchAmount' => false,
                 'usePlanLabelsForBatch' => false,
                 'isEdumasterCourse' => false,
             ];
@@ -651,7 +652,7 @@ class InvoiceController extends Controller
         $computed = $this->computeCourseInvoiceTotals($student, $courseId, $batchId);
 
         $batchAmountLabel = null;
-        if ($batch && $this->isB2bStudent($student)) {
+        if ($batch && $this->shouldUseB2bBatchAmount($courseId, $student)) {
             $batchAmountLabel = $batch->b2b_amount !== null ? 'B2B Amount' : 'B2B Amount (not set)';
         } elseif ($batch && $courseId === 16 && $studentClass) {
             $normalizedClass = strtolower($studentClass);
@@ -675,7 +676,8 @@ class InvoiceController extends Controller
             'university' => $university,
             'batchAmountLabel' => $batchAmountLabel,
             'isB2b' => $this->isB2bStudent($student),
-            'usePlanLabelsForBatch' => $courseId === 25 && $this->isB2bStudent($student),
+            'useB2bBatchAmount' => $this->shouldUseB2bBatchAmount($courseId, $student),
+            'usePlanLabelsForBatch' => $this->shouldUseB2bBatchAmount($courseId, $student),
             'isEdumasterCourse' => $courseId === 23,
         ];
     }
@@ -683,6 +685,14 @@ class InvoiceController extends Controller
     private function isB2bStudent(ConvertedLead $student): bool
     {
         return (int) (optional($student->lead)->is_b2b ?? $student->is_b2b ?? 0) === 1;
+    }
+
+    /**
+     * Junior Vlogger (course 25) B2B leads use plan b2b_amount only (same as convert modal).
+     */
+    private function shouldUseB2bBatchAmount(int $courseId, ConvertedLead $student): bool
+    {
+        return $courseId === 25 && $this->isB2bStudent($student);
     }
 
     /**
@@ -731,10 +741,10 @@ class InvoiceController extends Controller
         $courseAmount = $course ? (float) ($course->amount ?? 0) : 0.0;
         $batchAmount = 0.0;
         $universityAmount = 0.0;
-        $isB2b = $this->isB2bStudent($student);
+        $useB2bBatchAmount = $this->shouldUseB2bBatchAmount($courseId, $student);
 
         if ($batch) {
-            if ($isB2b) {
+            if ($useB2bBatchAmount) {
                 $batchAmount = $batch->b2b_amount !== null ? (float) $batch->b2b_amount : 0.0;
             } elseif ($courseId === 16 && $leadDetail) {
                 $studentClass = strtolower($leadDetail->class ?? '');
@@ -764,7 +774,7 @@ class InvoiceController extends Controller
             }
         }
 
-        if ($isB2b) {
+        if ($useB2bBatchAmount) {
             $totalAmount = $batchAmount;
             $courseAmount = 0.0;
             $universityAmount = 0.0;
@@ -843,6 +853,7 @@ class InvoiceController extends Controller
         );
 
         $course = Course::find((int) $request->course_id);
+        $useB2bBatchAmount = $this->shouldUseB2bBatchAmount($courseId, $student);
 
         return response()->json([
             'success' => true,
@@ -851,6 +862,8 @@ class InvoiceController extends Controller
             'batch_amount' => $computed['batch_amount'],
             'university_amount' => $computed['university_amount'],
             'course_title' => $course?->title,
+            'use_b2b_batch_amount' => $useB2bBatchAmount,
+            'batch_amount_label' => $useB2bBatchAmount ? 'B2B Amount' : null,
             'fee_pg_amount' => $computed['fee_pg_amount'],
             'fee_ug_amount' => $computed['fee_ug_amount'],
             'fee_plustwo_amount' => $computed['fee_plustwo_amount'],

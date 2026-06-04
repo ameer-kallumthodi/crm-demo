@@ -140,6 +140,7 @@
                                                     <p><strong>Name:</strong> {{ $student->name }}</p>
                                                     <p><strong>Phone:</strong> {{ $student->code }} {{ $student->phone }}</p>
                                                     <p><strong>Email:</strong> {{ $student->email ?? 'N/A' }}</p>
+                                                    <p><strong>Lead Type:</strong> {{ $courseFeeContext['isB2b'] ? 'B2B (Plan / B2B amount for Junior Vlogger)' : 'In House' }}</p>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <p><strong>Current Course:</strong> {{ $student->course->title ?? 'N/A' }}</p>
@@ -218,8 +219,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return meta ? meta.getAttribute('content') : '';
     }
 
+    function shouldUseB2bBatchAmount(courseId) {
+        return parseInt(courseId, 10) === 25 && studentData.isB2b;
+    }
+
     function getBatchLabel(courseId) {
-        return (parseInt(courseId, 10) === 25 && studentData.isB2b) ? 'Plan' : 'Batch';
+        return shouldUseB2bBatchAmount(courseId) ? 'Plan' : 'Batch';
     }
 
     function setCourseInvoiceCanSubmit(canSubmit) {
@@ -497,10 +502,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (titleEl && response.course_title) {
                 titleEl.textContent = response.course_title;
             }
-            if (amountLine && !studentData.isB2b && parseInt(courseId, 10) !== 23) {
-                amountLine.textContent = ' - ' + formatINR(response.course_amount);
-            } else if (amountLine && studentData.isB2b) {
+            if (amountLine && shouldUseB2bBatchAmount(courseId)) {
                 amountLine.textContent = '';
+            } else if (amountLine && parseInt(courseId, 10) !== 23) {
+                amountLine.textContent = ' - ' + formatINR(response.course_amount);
             }
 
             const uniBlock = document.getElementById('preview_university_block');
@@ -508,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 uniBlock.style.display = parseInt(courseId, 10) === 9 ? '' : 'none';
             }
 
-            updateBatchPreview(courseId, batchId);
+            updateBatchPreview(courseId, batchId, response);
         }).fail(function(xhr) {
             const data = xhr.responseJSON;
             if (data) {
@@ -517,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function updateBatchPreview(courseId, batchId) {
+    function updateBatchPreview(courseId, batchId, apiResponse) {
         const preview = document.getElementById('batch_amount_preview');
         if (!preview || !courseBatchSelect) return;
 
@@ -526,13 +531,19 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const title = selectedOption.text;
+        const title = selectedOption.text.trim();
+        const useB2b = apiResponse && apiResponse.use_b2b_batch_amount !== undefined
+            ? apiResponse.use_b2b_batch_amount
+            : shouldUseB2bBatchAmount(courseId);
         let shownAmount = toNumber(selectedOption.dataset.amount);
         let label = '';
 
-        if (studentData.isB2b) {
+        if (useB2b) {
             shownAmount = toNumber(selectedOption.dataset.b2bAmount);
-            label = 'B2B Amount';
+            label = apiResponse && apiResponse.batch_amount_label ? apiResponse.batch_amount_label : 'B2B Amount';
+            if (!shownAmount && apiResponse && apiResponse.batch_amount) {
+                shownAmount = parseFloat(apiResponse.batch_amount);
+            }
         } else if (parseInt(courseId, 10) === 16 && studentData.class) {
             if (studentData.class === 'sslc' && toNumber(selectedOption.dataset.sslcAmount) > 0) {
                 shownAmount = toNumber(selectedOption.dataset.sslcAmount);
@@ -642,8 +653,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (titleEl && selectedOption) {
                 titleEl.textContent = selectedOption.dataset.title || selectedOption.text;
             }
-            if (amountLine && selectedOption && !studentData.isB2b) {
+            if (amountLine && selectedOption && !shouldUseB2bBatchAmount(courseId)) {
                 amountLine.textContent = ' - ' + formatINR(selectedOption.dataset.amount);
+            } else if (amountLine && shouldUseB2bBatchAmount(courseId)) {
+                amountLine.textContent = '';
             }
         }
 
