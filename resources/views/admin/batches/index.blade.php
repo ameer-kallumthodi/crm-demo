@@ -38,6 +38,44 @@
                 </div>
             </div>
             <div class="card-body">
+                <form method="GET" action="{{ route('admin.batches.index') }}" class="mb-4">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-4 col-lg-3">
+                            <label for="filter_course_id" class="form-label">Course</label>
+                            <select class="form-select form-select-sm" name="course_id" id="filter_course_id">
+                                <option value="">All Courses</option>
+                                @foreach($courses as $course)
+                                    <option value="{{ $course->id }}" {{ (int) ($selectedCourseId ?? 0) === (int) $course->id ? 'selected' : '' }}>
+                                        {{ $course->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-auto">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="ti ti-filter me-1"></i> Filter
+                            </button>
+                        </div>
+                        @if($selectedCourseId)
+                        <div class="col-md-auto">
+                            <a href="{{ route('admin.batches.index') }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="ti ti-x me-1"></i> Clear
+                            </a>
+                        </div>
+                        @endif
+                    </div>
+                </form>
+
+                @if($selectedCourseId)
+                    @php
+                        $filteredCourse = $courses->firstWhere('id', $selectedCourseId);
+                    @endphp
+                    <p class="text-muted small mb-3">
+                        Showing batches for <strong>{{ $filteredCourse?->title ?? 'selected course' }}</strong>
+                        ({{ $batches->count() }} {{ $batches->count() === 1 ? 'batch' : 'batches' }})
+                    </p>
+                @endif
+
                 <div class="table-responsive">
                     <table class="table table-striped datatable">
                         <thead>
@@ -59,9 +97,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($batches as $index => $batch)
+                            @forelse($batches as $batch)
                             <tr>
-                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $batch->title }}</td>
                                 <td>{{ $batch->course->title ?? 'N/A' }}</td>
                                 <td>
@@ -154,7 +192,17 @@
                                     </div>
                                 </td>
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr>
+                                <td colspan="14" class="text-center text-muted py-4">
+                                    @if($selectedCourseId)
+                                        No batches found for this course.
+                                    @else
+                                        No batches found.
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

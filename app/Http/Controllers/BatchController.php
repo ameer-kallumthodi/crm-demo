@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Batch;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use App\Helpers\RoleHelper;
 use App\Helpers\AuthHelper;
@@ -10,14 +11,26 @@ use Illuminate\Support\Facades\Log;
 
 class BatchController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
-        $batches = Batch::with(['course', 'createdBy', 'updatedBy', 'postponeBatch'])->orderBy('created_at', 'desc')->get();
-        return view('admin.batches.index', compact('batches'));
+        $courses = Course::where('is_active', true)->orderBy('title')->get();
+
+        $query = Batch::with(['course', 'createdBy', 'updatedBy', 'postponeBatch'])
+            ->orderBy('created_at', 'desc');
+
+        $selectedCourseId = $request->filled('course_id') ? (int) $request->course_id : null;
+
+        if ($selectedCourseId) {
+            $query->where('course_id', $selectedCourseId);
+        }
+
+        $batches = $query->get();
+
+        return view('admin.batches.index', compact('batches', 'courses', 'selectedCourseId'));
     }
 
     public function store(Request $request)
