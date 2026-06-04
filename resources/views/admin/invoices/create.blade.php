@@ -140,7 +140,8 @@
                                                     <p><strong>Name:</strong> {{ $student->name }}</p>
                                                     <p><strong>Phone:</strong> {{ $student->code }} {{ $student->phone }}</p>
                                                     <p><strong>Email:</strong> {{ $student->email ?? 'N/A' }}</p>
-                                                    <p><strong>Lead Type:</strong> {{ $courseFeeContext['isB2b'] ? 'B2B (Plan / B2B amount for Junior Vlogger)' : 'In House' }}</p>
+                                                    <p><strong>Lead Type:</strong> {{ $courseFeeContext['isB2b'] ? 'B2B' : 'In House' }}</p>
+                                                    <p class="text-muted small mb-0">Junior Vlogger invoices always use the plan <strong>B2B Amount</strong> from the batch.</p>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <p><strong>Current Course:</strong> {{ $student->course->title ?? 'N/A' }}</p>
@@ -220,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function shouldUseB2bBatchAmount(courseId) {
-        return parseInt(courseId, 10) === 25 && !!studentData.isB2b;
+        return parseInt(courseId, 10) === 25;
     }
 
     function getBatchDataAmounts(option) {

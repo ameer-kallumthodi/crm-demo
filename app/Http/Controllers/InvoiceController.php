@@ -652,7 +652,7 @@ class InvoiceController extends Controller
         $computed = $this->computeCourseInvoiceTotals($student, $courseId, $batchId);
 
         $batchAmountLabel = null;
-        if ($batch && $this->shouldUseB2bBatchAmount($courseId, $student)) {
+        if ($batch && $courseId === 25) {
             $batchAmountLabel = $batch->b2b_amount !== null ? 'B2B Amount' : 'B2B Amount (not set)';
         } elseif ($batch && $courseId === 16 && $studentClass) {
             $normalizedClass = strtolower($studentClass);
@@ -676,8 +676,8 @@ class InvoiceController extends Controller
             'university' => $university,
             'batchAmountLabel' => $batchAmountLabel,
             'isB2b' => $this->isB2bStudent($student),
-            'useB2bBatchAmount' => $this->shouldUseB2bBatchAmount($courseId, $student),
-            'usePlanLabelsForBatch' => $this->shouldUseB2bBatchAmount($courseId, $student),
+            'useB2bBatchAmount' => $courseId === 25,
+            'usePlanLabelsForBatch' => $courseId === 25,
             'isEdumasterCourse' => $courseId === 23,
         ];
     }
@@ -691,11 +691,11 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Junior Vlogger (course 25) B2B leads use plan b2b_amount only (same as convert modal).
+     * Junior Vlogger (course 25) uses plan b2b_amount only — not the regular amount column.
      */
     private function shouldUseB2bBatchAmount(int $courseId, ConvertedLead $student): bool
     {
-        return $courseId === 25 && $this->isB2bStudent($student);
+        return $courseId === 25;
     }
 
     /**
@@ -749,6 +749,8 @@ class InvoiceController extends Controller
         if ($batch) {
             if ($useB2bBatchAmount) {
                 $batchAmount = $batch->b2b_amount !== null ? (float) $batch->b2b_amount : 0.0;
+            } elseif ($this->isB2bStudent($student)) {
+                $batchAmount = $batch->b2b_amount !== null ? (float) $batch->b2b_amount : 0.0;
             } elseif ($courseId === 16 && $leadDetail) {
                 $studentClass = strtolower($leadDetail->class ?? '');
                 if ($studentClass === 'sslc' && $batch->sslc_amount !== null) {
@@ -777,7 +779,7 @@ class InvoiceController extends Controller
             }
         }
 
-        if ($useB2bBatchAmount) {
+        if ($useB2bBatchAmount || $this->isB2bStudent($student)) {
             $totalAmount = $batchAmount;
             $courseAmount = 0.0;
             $universityAmount = 0.0;
@@ -924,6 +926,21 @@ class InvoiceController extends Controller
         if ($courseId === 23) {
             if ($batchId && ! $this->batchBelongsToCourse($batchId, $courseId)) {
                 return 'The selected batch does not belong to the selected course.';
+            }
+
+            return null;
+        }
+
+        if ($courseId === 25) {
+            if (! $batchId) {
+                return 'Please select a plan for Junior Vlogger.';
+            }
+            if (! $this->batchBelongsToCourse($batchId, $courseId)) {
+                return 'The selected plan does not belong to Junior Vlogger.';
+            }
+            $batch = Batch::find($batchId);
+            if ($batch && $batch->b2b_amount === null) {
+                return 'The selected plan has no B2B amount. Choose a plan with a B2B amount (e.g. Advance Settlement or Standard Installment).';
             }
 
             return null;
