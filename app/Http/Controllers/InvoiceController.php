@@ -67,15 +67,50 @@ class InvoiceController extends Controller
      */
     public function create($studentId)
     {
-        $student = ConvertedLead::with(['course', 'batch'])->findOrFail($studentId);
-        
-        // Check permissions
-        $this->checkStudentAccess($student);
-        
-        $courses = Course::where('is_active', true)->get();
-        $batches = Batch::where('is_active', true)->get();
+        $student = ConvertedLead::with(['course', 'batch', 'leadDetail.university', 'lead', 'academicAssistant'])
+            ->findOrFail($studentId);
 
-        return view('admin.invoices.create', compact('student', 'courses', 'batches'));
+        $this->checkStudentAccess($student);
+
+        $courses = Course::where('is_active', true)->orderBy('title')->get();
+
+        $selectedCourseId = old('course_id') !== null && old('course_id') !== ''
+            ? (int) old('course_id')
+            : null;
+        $selectedBatchId = old('batch_id') !== null && old('batch_id') !== ''
+            ? (int) old('batch_id')
+            : null;
+
+        $courseFeeContext = $this->buildCourseFeePresentationContext(
+            $student,
+            $selectedCourseId,
+            $selectedBatchId
+        );
+
+        $existingCourseInvoices = Invoice::with(['course:id,title', 'batch:id,title'])
+            ->where('student_id', $studentId)
+            ->where('invoice_type', 'course')
+            ->whereNotNull('course_id')
+            ->orderByDesc('created_at')
+            ->get()
+            ->mapWithKeys(fn (Invoice $invoice) => [
+                $this->courseBatchInvoiceKey((int) $invoice->course_id, $invoice->batch_id ? (int) $invoice->batch_id : null) => [
+                    'id' => $invoice->id,
+                    'invoice_number' => $invoice->invoice_number,
+                    'course_id' => (int) $invoice->course_id,
+                    'batch_id' => $invoice->batch_id ? (int) $invoice->batch_id : null,
+                    'course_title' => $invoice->course?->title,
+                    'batch_title' => $invoice->batch?->title,
+                    'show_url' => route('admin.invoices.show', $invoice->id),
+                ],
+            ]);
+
+        return view('admin.invoices.create', compact(
+            'student',
+            'courses',
+            'courseFeeContext',
+            'existingCourseInvoices'
+        ));
     }
 
     /**
@@ -97,16 +132,21 @@ class InvoiceController extends Controller
             // Keep total amount in sync with the fine amount
             $request->merge(['total_amount' => $request->fine_amount]);
         } elseif ($request->invoice_type === 'course') {
-            // Calculate total amount similar to lead convert form
-            $student = ConvertedLead::with('leadDetail')->findOrFail($studentId);
-            $calculatedAmount = $this->calculateCourseInvoiceAmount(
+            $student = ConvertedLead::with(['leadDetail', 'lead'])->findOrFail($studentId);
+            $computed = $this->computeCourseInvoiceTotals(
                 $student,
-                $request->course_id,
-                $request->batch_id
+                (int) $request->course_id,
+                $request->filled('batch_id') ? (int) $request->batch_id : null,
+                [
+                    'fee_pg_amount' => $request->input('fee_pg_amount'),
+                    'fee_ug_amount' => $request->input('fee_ug_amount'),
+                    'fee_plustwo_amount' => $request->input('fee_plustwo_amount'),
+                    'fee_sslc_amount' => $request->input('fee_sslc_amount'),
+                ],
+                $request->filled('custom_total_amount') ? (float) $request->custom_total_amount : null
             );
-            // Only override if not manually edited (user can still edit)
-            if (!$request->has('total_amount') || $request->total_amount == '') {
-                $request->merge(['total_amount' => $calculatedAmount]);
+            if (! $request->filled('total_amount')) {
+                $request->merge(['total_amount' => $computed['total_amount']]);
             }
         }
 
@@ -115,13 +155,40 @@ class InvoiceController extends Controller
             'course_id' => 'nullable|required_if:invoice_type,course|exists:courses,id',
             'batch_id' => [
                 'nullable',
-                function ($attribute, $value, $fail) use ($request) {
-                    // Batch is required for course type unless course_id is 23 (EduMaster)
-                    if ($request->invoice_type === 'course' && $request->course_id != 23 && empty($value)) {
-                        $fail('The batch field is required when course type is selected (except for EduMaster).');
+                function ($attribute, $value, $fail) use ($request, $studentId) {
+                    if ($request->invoice_type !== 'course' || ! $request->course_id) {
+                        return;
+                    }
+                    $courseId = (int) $request->course_id;
+                    if ($courseId === 23) {
+                        if ($value && ! $this->batchBelongsToCourse((int) $value, $courseId)) {
+                            $fail('The selected batch does not belong to the selected course.');
+                        }
+                        $existing = $this->findExistingCourseBatchInvoice(
+                            (int) $studentId,
+                            $courseId,
+                            $value ? (int) $value : null
+                        );
+                        if ($existing) {
+                            $fail($this->existingCourseBatchInvoiceMessage($existing));
+                        }
+
+                        return;
+                    }
+                    if (empty($value)) {
+                        $fail('The batch field is required for this course (except EduMaster).');
+
+                        return;
+                    }
+                    if (! $this->batchBelongsToCourse((int) $value, $courseId)) {
+                        $fail('The selected batch does not belong to the selected course.');
+                    }
+                    $existing = $this->findExistingCourseBatchInvoice((int) $studentId, $courseId, (int) $value);
+                    if ($existing) {
+                        $fail($this->existingCourseBatchInvoiceMessage($existing));
                     }
                 },
-                'exists:batches,id'
+                'exists:batches,id',
             ],
             'service_name' => 'nullable|required_if:invoice_type,e-service|string|max:255',
             'service_amount' => 'nullable|required_if:invoice_type,e-service|numeric|min:0',
@@ -141,8 +208,24 @@ class InvoiceController extends Controller
         }
 
         try {
-            $student = ConvertedLead::findOrFail($studentId);
-            
+            $student = ConvertedLead::with(['leadDetail', 'lead'])->findOrFail($studentId);
+
+            $courseComputed = null;
+            if ($request->invoice_type === 'course') {
+                $courseComputed = $this->computeCourseInvoiceTotals(
+                    $student,
+                    (int) $request->course_id,
+                    $request->filled('batch_id') ? (int) $request->batch_id : null,
+                    [
+                        'fee_pg_amount' => $request->input('fee_pg_amount'),
+                        'fee_ug_amount' => $request->input('fee_ug_amount'),
+                        'fee_plustwo_amount' => $request->input('fee_plustwo_amount'),
+                        'fee_sslc_amount' => $request->input('fee_sslc_amount'),
+                    ],
+                    $request->filled('custom_total_amount') ? (float) $request->custom_total_amount : null
+                );
+            }
+
             // Generate invoice number
             $invoiceNumber = $this->generateInvoiceNumber();
             
@@ -157,10 +240,17 @@ class InvoiceController extends Controller
             ];
 
             // Add type-specific fields
-            if ($request->invoice_type === 'course') {
+            if ($request->invoice_type === 'course' && $courseComputed) {
                 $invoiceData['course_id'] = $request->course_id;
+                $invoiceData['total_amount'] = $courseComputed['total_amount'];
                 if ($request->filled('batch_id')) {
                     $invoiceData['batch_id'] = $request->batch_id;
+                }
+                if ((int) $request->course_id === 23) {
+                    $invoiceData['fee_pg_amount'] = $courseComputed['fee_pg_amount'];
+                    $invoiceData['fee_ug_amount'] = $courseComputed['fee_ug_amount'];
+                    $invoiceData['fee_plustwo_amount'] = $courseComputed['fee_plustwo_amount'];
+                    $invoiceData['fee_sslc_amount'] = $courseComputed['fee_sslc_amount'];
                 }
             } elseif ($request->invoice_type === 'batch_change') {
                 $invoiceData['batch_id'] = $request->batch_id;
@@ -516,31 +606,141 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Calculate course invoice amount similar to lead convert form
+     * Presentation context for course invoice UI (aligned with lead convert modal).
+     *
+     * @return array<string, mixed>
      */
-    private function calculateCourseInvoiceAmount(ConvertedLead $student, ?int $courseId, ?int $batchId = null): float
+    private function buildCourseFeePresentationContext(ConvertedLead $student, ?int $courseId, ?int $batchId): array
     {
-        $course = $courseId ? Course::find($courseId) : null;
+        $leadDetail = $student->leadDetail;
+        $studentClass = $leadDetail?->class;
+        $courseType = $leadDetail?->course_type;
+        $university = $leadDetail?->university;
+        $isB2b = $this->isB2bStudent($student);
+
+        if (! $courseId) {
+            return [
+                'course' => null,
+                'batch' => null,
+                'batches' => collect(),
+                'courseAmount' => 0.0,
+                'batchAmount' => 0.0,
+                'universityAmount' => 0.0,
+                'totalAmount' => 0.0,
+                'studentClass' => $studentClass,
+                'courseType' => $courseType,
+                'university' => $university,
+                'batchAmountLabel' => null,
+                'isB2b' => $isB2b,
+                'usePlanLabelsForBatch' => false,
+                'isEdumasterCourse' => false,
+            ];
+        }
+
+        $course = Course::find($courseId);
         $batch = $batchId ? Batch::find($batchId) : null;
+
+        $batches = $courseId
+            ? Batch::where('course_id', $courseId)
+                ->select('id', 'title', 'amount', 'sslc_amount', 'plustwo_amount', 'b2b_amount', 'is_active')
+                ->orderBy('is_active', 'desc')
+                ->orderBy('title')
+                ->get()
+            : collect();
+
+        $computed = $this->computeCourseInvoiceTotals($student, $courseId, $batchId);
+
+        $batchAmountLabel = null;
+        if ($batch && $this->isB2bStudent($student)) {
+            $batchAmountLabel = $batch->b2b_amount !== null ? 'B2B Amount' : 'B2B Amount (not set)';
+        } elseif ($batch && $courseId === 16 && $studentClass) {
+            $normalizedClass = strtolower($studentClass);
+            if ($normalizedClass === 'sslc' && $batch->sslc_amount !== null) {
+                $batchAmountLabel = 'SSLC Amount';
+            } elseif ($batch->plustwo_amount !== null) {
+                $batchAmountLabel = 'Plus Two Amount';
+            }
+        }
+
+        return [
+            'course' => $course,
+            'batch' => $batch,
+            'batches' => $batches,
+            'courseAmount' => $computed['course_amount'],
+            'batchAmount' => $computed['batch_amount'],
+            'universityAmount' => $computed['university_amount'],
+            'totalAmount' => $computed['total_amount'],
+            'studentClass' => $studentClass,
+            'courseType' => $courseType,
+            'university' => $university,
+            'batchAmountLabel' => $batchAmountLabel,
+            'isB2b' => $this->isB2bStudent($student),
+            'usePlanLabelsForBatch' => $courseId === 25 && $this->isB2bStudent($student),
+            'isEdumasterCourse' => $courseId === 23,
+        ];
+    }
+
+    private function isB2bStudent(ConvertedLead $student): bool
+    {
+        return (int) (optional($student->lead)->is_b2b ?? $student->is_b2b ?? 0) === 1;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $feeBreakdown
+     * @return array{total_amount: float, course_amount: float, batch_amount: float, university_amount: float, fee_pg_amount: ?float, fee_ug_amount: ?float, fee_plustwo_amount: ?float, fee_sslc_amount: ?float}
+     */
+    private function computeCourseInvoiceTotals(
+        ConvertedLead $student,
+        int $courseId,
+        ?int $batchId = null,
+        ?array $feeBreakdown = null,
+        ?float $customTotalAmount = null
+    ): array {
+        $student->loadMissing(['leadDetail', 'lead']);
+
+        if ($courseId === 23) {
+            $feePg = isset($feeBreakdown['fee_pg_amount']) && $feeBreakdown['fee_pg_amount'] !== ''
+                ? (float) $feeBreakdown['fee_pg_amount'] : null;
+            $feeUg = isset($feeBreakdown['fee_ug_amount']) && $feeBreakdown['fee_ug_amount'] !== ''
+                ? (float) $feeBreakdown['fee_ug_amount'] : null;
+            $feePlustwo = isset($feeBreakdown['fee_plustwo_amount']) && $feeBreakdown['fee_plustwo_amount'] !== ''
+                ? (float) $feeBreakdown['fee_plustwo_amount'] : null;
+            $feeSslc = isset($feeBreakdown['fee_sslc_amount']) && $feeBreakdown['fee_sslc_amount'] !== ''
+                ? (float) $feeBreakdown['fee_sslc_amount'] : null;
+
+            $totalAmount = $customTotalAmount !== null
+                ? (float) $customTotalAmount
+                : (float) (($feePg ?? 0) + ($feeUg ?? 0) + ($feePlustwo ?? 0) + ($feeSslc ?? 0));
+
+            return [
+                'total_amount' => $totalAmount,
+                'course_amount' => 0.0,
+                'batch_amount' => 0.0,
+                'university_amount' => 0.0,
+                'fee_pg_amount' => $feePg,
+                'fee_ug_amount' => $feeUg,
+                'fee_plustwo_amount' => $feePlustwo,
+                'fee_sslc_amount' => $feeSslc,
+            ];
+        }
+
+        $course = Course::find($courseId);
+        $batch = $batchId ? Batch::find($batchId) : null;
+        $leadDetail = $student->leadDetail;
 
         $courseAmount = $course ? (float) ($course->amount ?? 0) : 0.0;
         $batchAmount = 0.0;
         $universityAmount = 0.0;
+        $isB2b = $this->isB2bStudent($student);
 
-        $leadDetail = $student->leadDetail;
-        if (!$leadDetail && $student->lead_id) {
-            $leadDetail = \App\Models\LeadDetail::where('lead_id', $student->lead_id)->first();
-        }
-
-        // B2B student: use only batch B2B amount; otherwise class-specific pricing for GMVSS (course 16)
         if ($batch) {
-            if ((int) ($student->is_b2b ?? 0) === 1) {
+            if ($isB2b) {
                 $batchAmount = $batch->b2b_amount !== null ? (float) $batch->b2b_amount : 0.0;
-            } elseif ($course && (int) $course->id === 16 && $leadDetail) {
+            } elseif ($courseId === 16 && $leadDetail) {
                 $studentClass = strtolower($leadDetail->class ?? '');
-                if ($studentClass === 'sslc' && !is_null($batch->sslc_amount)) {
+                if ($studentClass === 'sslc' && $batch->sslc_amount !== null) {
                     $batchAmount = (float) $batch->sslc_amount;
-                } elseif (!is_null($batch->plustwo_amount)) {
+                } elseif ($batch->plustwo_amount !== null) {
                     $batchAmount = (float) $batch->plustwo_amount;
                 } else {
                     $batchAmount = (float) ($batch->amount ?? 0);
@@ -550,30 +750,42 @@ class InvoiceController extends Controller
             }
         }
 
-        // Add university amount for UG/PG course (course_id = 9)
-        if ($course && (int) $course->id === 9 && $leadDetail) {
-            $courseType = $leadDetail->course_type;
+        if ($courseId === 9 && $leadDetail) {
             $universityId = $leadDetail->university_id;
             if ($universityId) {
                 $university = \App\Models\University::find($universityId);
                 if ($university) {
-                    if ($courseType === 'UG') {
-                        $universityAmount += (float) ($university->ug_amount ?? 0);
-                    } elseif ($courseType === 'PG') {
-                        $universityAmount += (float) ($university->pg_amount ?? 0);
+                    if ($leadDetail->course_type === 'UG') {
+                        $universityAmount = (float) ($university->ug_amount ?? 0);
+                    } elseif ($leadDetail->course_type === 'PG') {
+                        $universityAmount = (float) ($university->pg_amount ?? 0);
                     }
                 }
             }
         }
 
-        // B2B: total is only the batch B2B amount (no course or university amount)
-        if ((int) ($student->is_b2b ?? 0) === 1) {
+        if ($isB2b) {
             $totalAmount = $batchAmount;
+            $courseAmount = 0.0;
+            $universityAmount = 0.0;
         } else {
             $totalAmount = $courseAmount + $batchAmount + $universityAmount;
         }
 
-        return $totalAmount;
+        if ($customTotalAmount !== null) {
+            $totalAmount = (float) $customTotalAmount;
+        }
+
+        return [
+            'total_amount' => $totalAmount,
+            'course_amount' => $courseAmount,
+            'batch_amount' => $batchAmount,
+            'university_amount' => $universityAmount,
+            'fee_pg_amount' => null,
+            'fee_ug_amount' => null,
+            'fee_plustwo_amount' => null,
+            'fee_sslc_amount' => null,
+        ];
     }
 
     /**
@@ -584,18 +796,152 @@ class InvoiceController extends Controller
         $request->validate([
             'course_id' => 'required|exists:courses,id',
             'batch_id' => 'nullable|exists:batches,id',
+            'custom_total_amount' => 'nullable|numeric|min:0',
+            'fee_pg_amount' => 'nullable|numeric|min:0',
+            'fee_ug_amount' => 'nullable|numeric|min:0',
+            'fee_plustwo_amount' => 'nullable|numeric|min:0',
+            'fee_sslc_amount' => 'nullable|numeric|min:0',
         ]);
 
-        $student = ConvertedLead::with('leadDetail')->findOrFail($studentId);
-        $totalAmount = $this->calculateCourseInvoiceAmount(
+        $courseId = (int) $request->course_id;
+        $batchId = $request->filled('batch_id') ? (int) $request->batch_id : null;
+        $batchError = $this->resolveCourseBatchValidationError($courseId, $batchId);
+        if ($batchError) {
+            return response()->json([
+                'success' => false,
+                'message' => $batchError,
+                'batch_error' => $batchError,
+                'existing_invoice' => null,
+                'can_submit' => false,
+            ], 422);
+        }
+
+        $existingInvoice = $this->findExistingCourseBatchInvoice((int) $studentId, $courseId, $batchId);
+
+        if ($existingInvoice) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->existingCourseBatchInvoiceMessage($existingInvoice),
+                'batch_error' => null,
+                'existing_invoice' => $this->formatExistingCourseInvoicePayload($existingInvoice),
+                'can_submit' => false,
+            ], 422);
+        }
+
+        $student = ConvertedLead::with(['leadDetail', 'lead'])->findOrFail($studentId);
+        $computed = $this->computeCourseInvoiceTotals(
             $student,
-            $request->course_id,
-            $request->batch_id
+            (int) $request->course_id,
+            $request->filled('batch_id') ? (int) $request->batch_id : null,
+            [
+                'fee_pg_amount' => $request->input('fee_pg_amount'),
+                'fee_ug_amount' => $request->input('fee_ug_amount'),
+                'fee_plustwo_amount' => $request->input('fee_plustwo_amount'),
+                'fee_sslc_amount' => $request->input('fee_sslc_amount'),
+            ],
+            $request->filled('custom_total_amount') ? (float) $request->custom_total_amount : null
         );
+
+        $course = Course::find((int) $request->course_id);
 
         return response()->json([
             'success' => true,
-            'total_amount' => $totalAmount
+            'total_amount' => $computed['total_amount'],
+            'course_amount' => $computed['course_amount'],
+            'batch_amount' => $computed['batch_amount'],
+            'university_amount' => $computed['university_amount'],
+            'course_title' => $course?->title,
+            'fee_pg_amount' => $computed['fee_pg_amount'],
+            'fee_ug_amount' => $computed['fee_ug_amount'],
+            'fee_plustwo_amount' => $computed['fee_plustwo_amount'],
+            'fee_sslc_amount' => $computed['fee_sslc_amount'],
+            'existing_invoice' => null,
+            'batch_error' => null,
+            'can_submit' => true,
         ]);
+    }
+
+    private function courseBatchInvoiceKey(int $courseId, ?int $batchId): string
+    {
+        return $courseId . ':' . ($batchId ?? 'none');
+    }
+
+    private function findExistingCourseBatchInvoice(int $studentId, int $courseId, ?int $batchId): ?Invoice
+    {
+        $query = Invoice::with(['course:id,title', 'batch:id,title'])
+            ->where('student_id', $studentId)
+            ->where('invoice_type', 'course')
+            ->where('course_id', $courseId);
+
+        if ($batchId) {
+            $query->where('batch_id', $batchId);
+        } else {
+            $query->whereNull('batch_id');
+        }
+
+        return $query->first();
+    }
+
+    private function existingCourseBatchInvoiceMessage(Invoice $invoice): string
+    {
+        $invoice->loadMissing(['course', 'batch']);
+        $courseTitle = $invoice->course?->title ?? 'selected course';
+        $batchTitle = $invoice->batch?->title;
+
+        if ($batchTitle) {
+            return 'An invoice already exists for ' . $courseTitle . ' — ' . $batchTitle
+                . ' (Invoice #' . $invoice->invoice_number . ').';
+        }
+
+        return 'An invoice already exists for ' . $courseTitle
+            . ' (Invoice #' . $invoice->invoice_number . ').';
+    }
+
+    private function batchBelongsToCourse(int $batchId, int $courseId): bool
+    {
+        return Batch::where('id', $batchId)->where('course_id', $courseId)->exists();
+    }
+
+    private function resolveCourseBatchValidationError(int $courseId, ?int $batchId): ?string
+    {
+        if ($courseId === 23) {
+            if ($batchId && ! $this->batchBelongsToCourse($batchId, $courseId)) {
+                return 'The selected batch does not belong to the selected course.';
+            }
+
+            return null;
+        }
+
+        if (! $batchId) {
+            return 'Please select a batch for this course.';
+        }
+
+        if (! $this->batchBelongsToCourse($batchId, $courseId)) {
+            return 'The selected batch does not belong to the selected course.';
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function formatExistingCourseInvoicePayload(?Invoice $invoice): ?array
+    {
+        if (! $invoice) {
+            return null;
+        }
+
+        $invoice->loadMissing(['course', 'batch']);
+
+        return [
+            'id' => $invoice->id,
+            'invoice_number' => $invoice->invoice_number,
+            'course_id' => (int) $invoice->course_id,
+            'batch_id' => $invoice->batch_id ? (int) $invoice->batch_id : null,
+            'course_title' => $invoice->course?->title,
+            'batch_title' => $invoice->batch?->title,
+            'show_url' => route('admin.invoices.show', $invoice->id),
+        ];
     }
 }
