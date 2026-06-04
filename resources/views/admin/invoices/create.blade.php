@@ -112,8 +112,9 @@
                                     <input type="number" class="form-control @error('total_amount') is-invalid @enderror"
                                            name="total_amount" id="total_amount" step="0.01" min="0"
                                            value="{{ old('total_amount') }}" required>
+                                    <div class="invalid-feedback d-block" id="total_amount_client_error" style="display: none;"></div>
                                     @error('total_amount')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -141,7 +142,6 @@
                                                     <p><strong>Phone:</strong> {{ $student->code }} {{ $student->phone }}</p>
                                                     <p><strong>Email:</strong> {{ $student->email ?? 'N/A' }}</p>
                                                     <p><strong>Lead Type:</strong> {{ $courseFeeContext['isB2b'] ? 'B2B' : 'In House' }}</p>
-                                                    <p class="text-muted small mb-0">Junior Vlogger invoices always use the plan <strong>B2B Amount</strong> from the batch.</p>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <p><strong>Current Course:</strong> {{ $student->course->title ?? 'N/A' }}</p>
@@ -194,6 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const existingCourseInvoices = @json($existingCourseInvoices);
     let courseInvoiceCanSubmit = true;
+    let totalAmountIsValid = false;
 
     const studentData = {
         class: @json($courseFeeContext['studentClass'] ? strtolower($courseFeeContext['studentClass']) : null),
@@ -213,6 +214,38 @@ document.addEventListener('DOMContentLoaded', function() {
     function formatINR(amount) {
         const safe = Number.isFinite(amount) ? amount : 0;
         return '₹' + safe.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function setTotalAmountFromResponse(totalAmount) {
+        const value = totalAmount !== null && totalAmount !== '' && Number.isFinite(parseFloat(totalAmount))
+            ? parseFloat(totalAmount)
+            : 0;
+        totalAmountInput.value = value.toFixed(2);
+        validateTotalAmount();
+    }
+
+    function validateTotalAmount() {
+        const value = parseFloat(totalAmountInput.value);
+        totalAmountIsValid = Number.isFinite(value) && value > 0;
+        const feedback = document.getElementById('total_amount_client_error');
+        if (feedback) {
+            feedback.textContent = totalAmountIsValid ? '' : 'Total Amount must be greater than 0.';
+            feedback.style.display = totalAmountIsValid ? 'none' : 'block';
+        }
+        totalAmountInput.classList.toggle('is-invalid', !totalAmountIsValid);
+        updateSubmitButtonState();
+        return totalAmountIsValid;
+    }
+
+    function updateSubmitButtonState() {
+        const submitBtn = document.getElementById('invoiceSubmitBtn');
+        let canSubmit = totalAmountIsValid;
+        if (invoiceTypeSelect.value === 'course') {
+            canSubmit = canSubmit && courseInvoiceCanSubmit;
+        }
+        if (!submitting) {
+            submitBtn.disabled = !canSubmit;
+        }
     }
 
     function csrfToken() {
@@ -242,12 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function setCourseInvoiceCanSubmit(canSubmit) {
         courseInvoiceCanSubmit = canSubmit;
-        const submitBtn = document.getElementById('invoiceSubmitBtn');
-        if (invoiceTypeSelect.value === 'course') {
-            submitBtn.disabled = !canSubmit;
-        } else if (!submitting) {
-            submitBtn.disabled = false;
-        }
+        updateSubmitButtonState();
     }
 
     function showCourseValidationAlert(message, existingInvoice) {
@@ -388,6 +416,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loadBatchChangeBatches(studentData.oldBatchId);
             totalAmountInput.value = '2000';
             totalAmountInput.readOnly = true;
+            validateTotalAmount();
         } else if (invoiceType === 'e-service') {
             document.getElementById('service_name_field').style.display = 'block';
             document.getElementById('service_amount_field').style.display = 'block';
@@ -400,6 +429,9 @@ document.addEventListener('DOMContentLoaded', function() {
             setFieldEnabled(document.getElementById('fine_amount'), true, 'fine_amount');
             totalAmountInput.value = fineAmountInput.value || '';
             totalAmountInput.readOnly = true;
+            validateTotalAmount();
+        } else {
+            validateTotalAmount();
         }
     }
 
@@ -433,23 +465,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.success && response.batches) {
                 response.batches.forEach(function(batch) {
                     const selected = String(selectedBatchId) === String(batch.id) ? ' selected' : '';
-                    const amount = batch.amount != null ? batch.amount : '';
-                    const b2bAmount = batch.b2b_amount != null ? batch.b2b_amount : '';
-                    const useB2b = shouldUseB2bBatchAmount(courseId);
                     let optionLabel = batch.title;
-                    if (useB2b && b2bAmount !== '') {
-                        optionLabel += ' — ' + formatINR(b2bAmount) + ' (B2B)';
-                    } else if (amount !== '') {
-                        optionLabel += ' — ' + formatINR(amount);
-                    }
                     if (parseInt(batch.is_active, 10) === 0) {
                         optionLabel += ' (Inactive)';
                     }
                     options += '<option value="' + batch.id + '"' + selected +
-                        ' data-amount="' + (batch.amount ?? '') + '"' +
-                        ' data-sslc-amount="' + (batch.sslc_amount ?? '') + '"' +
-                        ' data-plustwo-amount="' + (batch.plustwo_amount ?? '') + '"' +
-                        ' data-b2b-amount="' + (batch.b2b_amount ?? '') + '">' +
+                        ' data-amount="' + (batch.amount != null ? batch.amount : 0) + '"' +
+                        ' data-sslc-amount="' + (batch.sslc_amount != null ? batch.sslc_amount : 0) + '"' +
+                        ' data-plustwo-amount="' + (batch.plustwo_amount != null ? batch.plustwo_amount : 0) + '"' +
+                        ' data-b2b-amount="' + (batch.b2b_amount != null ? batch.b2b_amount : 0) + '">' +
                         optionLabel +
                         '</option>';
                 });
@@ -512,12 +536,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (standardPreview && parseInt(courseId, 10) !== 23) {
                 standardPreview.style.display = 'block';
             }
-            totalAmountInput.value = parseFloat(response.total_amount).toFixed(2);
+            setTotalAmountFromResponse(response.total_amount);
 
             const preview = document.getElementById('course_total_preview');
             if (preview) {
                 preview.style.display = '';
-                preview.textContent = 'Total: ' + formatINR(response.total_amount);
+                preview.textContent = 'Total: ' + formatINR(response.total_amount ?? 0);
             }
             const batchPreview = document.getElementById('batch_amount_preview');
             if (batchPreview) batchPreview.style.display = '';
@@ -557,7 +581,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const amounts = getBatchDataAmounts(selectedOption);
-        const title = selectedOption.text.split('—')[0].trim();
+        const title = selectedOption.text.replace(/\s*\(Inactive\)\s*$/i, '').trim();
         const useB2b = apiResponse && apiResponse.use_b2b_batch_amount !== undefined
             ? !!apiResponse.use_b2b_batch_amount
             : shouldUseB2bBatchAmount(courseId);
@@ -565,11 +589,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let label = '';
 
         if (useB2b) {
-            shownAmount = amounts.b2bAmount;
+            shownAmount = apiResponse && apiResponse.batch_amount !== undefined
+                ? parseFloat(apiResponse.batch_amount)
+                : amounts.b2bAmount;
             label = apiResponse && apiResponse.batch_amount_label ? apiResponse.batch_amount_label : 'B2B Amount';
-            if ((!shownAmount || shownAmount <= 0) && apiResponse && apiResponse.batch_amount) {
-                shownAmount = parseFloat(apiResponse.batch_amount);
-            }
         } else if (parseInt(courseId, 10) === 16 && studentData.class) {
             if (studentData.class === 'sslc' && amounts.sslcAmount > 0) {
                 shownAmount = amounts.sslcAmount;
@@ -696,6 +719,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const courseId = courseSelect.value;
         const batchId = this.value || null;
         resetCourseInvoiceAmounts();
+        if (batchId && shouldUseB2bBatchAmount(courseId)) {
+            const amounts = getBatchDataAmounts(this.options[this.selectedIndex]);
+            setTotalAmountFromResponse(amounts.b2bAmount);
+        }
         if (!batchId) {
             resetFeePreview();
             clearCourseValidationAlert();
@@ -721,24 +748,34 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#custom_total_amount').on('input', function() {
         if (parseInt(courseSelect.value, 10) === 23) {
             totalAmountInput.value = toNumber(this.value).toFixed(2);
+            validateTotalAmount();
         }
     });
+
+    totalAmountInput.addEventListener('input', validateTotalAmount);
 
     serviceAmountInput.addEventListener('input', function() {
         if (invoiceTypeSelect.value === 'e-service') {
             totalAmountInput.value = this.value;
+            validateTotalAmount();
         }
     });
 
     fineAmountInput.addEventListener('input', function() {
         if (invoiceTypeSelect.value === 'fine') {
             totalAmountInput.value = this.value;
+            validateTotalAmount();
         }
     });
 
     form.addEventListener('submit', function(e) {
         if (submitting) {
             e.preventDefault();
+            return;
+        }
+        if (!validateTotalAmount()) {
+            e.preventDefault();
+            totalAmountInput.focus();
             return;
         }
         if (invoiceTypeSelect.value === 'course' && !courseInvoiceCanSubmit) {
@@ -767,6 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     toggleFields();
+    validateTotalAmount();
 });
 </script>
 @endpush

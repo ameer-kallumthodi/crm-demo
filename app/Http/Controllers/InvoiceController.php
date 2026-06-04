@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Models\ConvertedLead;
+use App\Models\ConvertedStudentActivity;
 use App\Models\Course;
 use App\Models\Batch;
 use App\Helpers\AuthHelper;
@@ -194,8 +195,10 @@ class InvoiceController extends Controller
             'service_amount' => 'nullable|required_if:invoice_type,e-service|numeric|min:0',
             'fine_type' => 'nullable|required_if:invoice_type,fine|string|max:255',
             'fine_amount' => 'nullable|required_if:invoice_type,fine|numeric|min:0',
-            'total_amount' => 'required|numeric|min:0',
+            'total_amount' => 'required|numeric|gt:0',
             'invoice_date' => 'required|date',
+        ], [
+            'total_amount.gt' => 'Total Amount must be greater than 0.',
         ]);
 
         if ($validator->fails()) {
@@ -295,10 +298,13 @@ class InvoiceController extends Controller
      */
     public function editAmount($invoiceId)
     {
-        $invoice = Invoice::with(['student', 'batch', 'course'])->findOrFail($invoiceId);
+        $invoice = Invoice::with(['student', 'batch', 'course', 'payments'])->findOrFail($invoiceId);
         $this->checkStudentAccess($invoice->student);
+        $this->assertCanEditInvoiceAmount($invoice);
 
-        return view('admin.invoices.edit-amount-modal', compact('invoice'));
+        $minTotal = $this->minimumEditableInvoiceTotal($invoice);
+
+        return view('admin.invoices.edit-amount-modal', compact('invoice', 'minTotal'));
     }
 
     /**
@@ -306,21 +312,44 @@ class InvoiceController extends Controller
      */
     public function updateAmount(Request $request, $invoiceId)
     {
-        $invoice = Invoice::with('student')->findOrFail($invoiceId);
+        $invoice = Invoice::with(['student', 'payments'])->findOrFail($invoiceId);
         $this->checkStudentAccess($invoice->student);
+        $this->assertCanEditInvoiceAmount($invoice);
 
-        $minTotal = (float) $invoice->paid_amount + (float) $invoice->discount_amount;
+        $minTotal = $this->minimumEditableInvoiceTotal($invoice);
         $request->validate([
             'total_amount' => 'required|numeric|min:' . $minTotal,
         ], [
-            'total_amount.min' => 'Invoice amount cannot be less than paid plus discount (minimum ₹' . number_format($minTotal, 2) . ').',
+            'total_amount.min' => 'Invoice amount cannot be less than the amount already paid'
+                . ' (minimum ₹' . number_format($minTotal, 2) . ').',
         ]);
 
-        $invoice->total_amount = $request->total_amount;
+        $fromAmount = (float) $invoice->total_amount;
+        $toAmount = (float) $request->total_amount;
+
+        $invoice->total_amount = $toAmount;
         $invoice->updated_by = AuthHelper::getCurrentUserId();
         $invoice->save();
         $invoice->recalculatePaidAmount();
         $invoice->updateStatus();
+
+        if ($fromAmount !== $toAmount) {
+            ConvertedStudentActivity::create([
+                'converted_lead_id' => $invoice->student_id,
+                'activity_type' => 'invoice_amount_update',
+                'description' => sprintf(
+                    'Invoice %s amount updated from ₹%s to ₹%s (status: %s).',
+                    $invoice->invoice_number,
+                    number_format($fromAmount, 2),
+                    number_format($toAmount, 2),
+                    $invoice->status
+                ),
+                'activity_date' => now()->toDateString(),
+                'activity_time' => now()->format('H:i:s'),
+                'created_by' => AuthHelper::getCurrentUserId(),
+                'updated_by' => AuthHelper::getCurrentUserId(),
+            ]);
+        }
 
         return redirect()
             ->route('admin.invoices.index', $invoice->student_id)
@@ -748,7 +777,7 @@ class InvoiceController extends Controller
 
         if ($batch) {
             if ($useB2bBatchAmount) {
-                $batchAmount = $batch->b2b_amount !== null ? (float) $batch->b2b_amount : 0.0;
+                $batchAmount = (float) ($batch->b2b_amount ?? 0);
             } elseif ($this->isB2bStudent($student)) {
                 $batchAmount = $batch->b2b_amount !== null ? (float) $batch->b2b_amount : 0.0;
             } elseif ($courseId === 16 && $leadDetail) {
@@ -938,11 +967,6 @@ class InvoiceController extends Controller
             if (! $this->batchBelongsToCourse($batchId, $courseId)) {
                 return 'The selected plan does not belong to Junior Vlogger.';
             }
-            $batch = Batch::find($batchId);
-            if ($batch && $batch->b2b_amount === null) {
-                return 'The selected plan has no B2B amount. Choose a plan with a B2B amount (e.g. Advance Settlement or Standard Installment).';
-            }
-
             return null;
         }
 
@@ -977,5 +1001,43 @@ class InvoiceController extends Controller
             'batch_title' => $invoice->batch?->title,
             'show_url' => route('admin.invoices.show', $invoice->id),
         ];
+    }
+
+    /**
+     * Minimum gross total when editing (net payable must stay >= paid amount).
+     */
+    private function minimumEditableInvoiceTotal(Invoice $invoice): float
+    {
+        return (float) $invoice->paid_amount + (float) ($invoice->discount_amount ?? 0);
+    }
+
+    /**
+     * Super admin or finance after payments; admin/finance only before approved payments.
+     */
+    private function assertCanEditInvoiceAmount(Invoice $invoice): void
+    {
+        $paid = (float) $invoice->paid_amount;
+
+        if ($paid > 0) {
+            if (! \App\Helpers\RoleHelper::is_super_admin()
+                && ! \App\Helpers\RoleHelper::is_finance()) {
+                abort(403, 'Only super admin or finance can edit invoice amount after payments have been recorded.');
+            }
+
+            return;
+        }
+
+        if (! \App\Helpers\RoleHelper::is_admin_or_super_admin()
+            && ! \App\Helpers\RoleHelper::is_finance()) {
+            abort(403, 'Unauthorized to edit invoice amount.');
+        }
+
+        $hasApprovedPayments = $invoice->relationLoaded('payments')
+            ? $invoice->payments->where('status', 'Approved')->isNotEmpty()
+            : $invoice->payments()->where('status', 'Approved')->exists();
+
+        if ($hasApprovedPayments) {
+            abort(403, 'Invoice amount cannot be edited after approved payments.');
+        }
     }
 }

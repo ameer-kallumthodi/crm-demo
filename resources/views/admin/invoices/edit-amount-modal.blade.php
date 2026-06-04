@@ -19,9 +19,18 @@
             <label for="total_amount" class="form-label">Invoice Amount <span class="text-danger">*</span></label>
             <div class="input-group">
                 <span class="input-group-text">₹</span>
-                <input type="number" name="total_amount" id="total_amount" class="form-control" step="0.01" min="0" value="{{ old('total_amount', $invoice->total_amount) }}" required>
+                <input type="number" name="total_amount" id="total_amount" class="form-control" step="0.01"
+                    min="{{ $minTotal ?? 0 }}" value="{{ old('total_amount', $invoice->total_amount) }}" required>
             </div>
+            @if((float) $invoice->paid_amount > 0)
+            <small class="text-muted">
+                Minimum gross amount: ₹ {{ number_format($minTotal ?? $invoice->paid_amount, 2) }}
+                (cannot be below paid amount of ₹ {{ number_format(round($invoice->paid_amount)) }}).
+                If you increase the total above what has been paid, status will change to Partially Paid.
+            </small>
+            @else
             <small class="text-muted">Paid amount will remain ₹ {{ number_format(round($invoice->paid_amount)) }}. Status will auto-adjust.</small>
+            @endif
         </div>
 
         <div class="col-12">

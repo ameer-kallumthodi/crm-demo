@@ -181,8 +181,12 @@
                                         @php
                                             $canEditInvoice = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_finance();
                                             $hasApprovedPayments = $invoice->payments->where('status', 'Approved')->count() > 0;
+                                            $hasPaidAmount = (float) $invoice->paid_amount > 0;
+                                            $canEditPaidInvoiceAmount = (\App\Helpers\RoleHelper::is_super_admin() || \App\Helpers\RoleHelper::is_finance()) && $hasPaidAmount;
+                                            $canEditInvoiceAmount = $canEditPaidInvoiceAmount
+                                                || ($canEditInvoice && ! $hasApprovedPayments);
                                         @endphp
-                                        @if($canEditInvoice && !$hasApprovedPayments)
+                                        @if($canEditInvoiceAmount)
                                         <button type="button" class="btn btn-sm btn-outline-warning" title="Edit Amount"
                                             onclick="show_small_modal('{{ route('admin.invoices.edit-amount', $invoice->id) }}', 'Edit Invoice Amount')">
                                             <i class="fas fa-edit"></i>
