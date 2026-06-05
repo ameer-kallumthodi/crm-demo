@@ -184,6 +184,24 @@ class MentorConvertedLeadController extends Controller
             $field = $request->field;
             $value = $request->value;
 
+            if (RoleHelper::is_mentor()) {
+                $mentorDeniedFields = ['subject_id', 'registration_status', 'status'];
+
+                if (in_array($field, $mentorDeniedFields, true)) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'You do not have permission to edit this field.',
+                    ], 403);
+                }
+
+                if (!\App\Support\MentorFlagFieldSupport::mentorCanUpdateLead($convertedLead)) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'You do not have permission to update this lead.',
+                    ], 403);
+                }
+            }
+
             // Allow only known fields to prevent SQL errors / mass assignment of unknown columns.
             // Note: "status" belongs to converted_leads, not converted_student_mentor_details.
             $allowedMentorFields = [
@@ -252,7 +270,12 @@ class MentorConvertedLeadController extends Controller
             }
 
             if ($field === 'flag_id') {
-                return response()->json(\App\Support\MentorFlagFieldSupport::updateOnConvertedLead($convertedLead, $value));
+                $flagResult = \App\Support\MentorFlagFieldSupport::updateOnConvertedLead($convertedLead, $value);
+
+                return response()->json(
+                    $flagResult,
+                    !empty($flagResult['success']) ? 200 : 403
+                );
             }
 
             // "status" is a ConvertedLead field (converted_leads table), not mentor_details.

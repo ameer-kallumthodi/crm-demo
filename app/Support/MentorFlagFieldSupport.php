@@ -2,6 +2,9 @@
 
 namespace App\Support;
 
+use App\Helpers\AuthHelper;
+use App\Helpers\RoleHelper;
+use App\Models\AdmissionBatch;
 use App\Models\ConvertedLead;
 use App\Models\Flag;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,6 +13,46 @@ use Illuminate\Support\Collection;
 
 class MentorFlagFieldSupport
 {
+    public static function canUserUpdateFlag(): bool
+    {
+        return RoleHelper::is_admin_or_super_admin()
+            || RoleHelper::is_admission_counsellor()
+            || RoleHelper::is_academic_assistant()
+            || RoleHelper::is_mentor()
+            || RoleHelper::is_mentor_head()
+            || RoleHelper::is_hod();
+    }
+
+    public static function mentorCanUpdateLead(ConvertedLead $convertedLead): bool
+    {
+        if (!RoleHelper::is_mentor()) {
+            return true;
+        }
+
+        if (empty($convertedLead->admission_batch_id)) {
+            return false;
+        }
+
+        return AdmissionBatch::where('mentor_id', AuthHelper::getCurrentUserId())
+            ->where('id', $convertedLead->admission_batch_id)
+            ->exists();
+    }
+
+    public static function flagUpdateDeniedResponse(): array
+    {
+        return [
+            'success' => false,
+            'error' => 'You do not have permission to update the flag.',
+        ];
+    }
+
+    public static function leadUpdateDeniedResponse(): array
+    {
+        return [
+            'success' => false,
+            'error' => 'You do not have permission to update this lead.',
+        ];
+    }
     public static function forFilterSelect(): Collection
     {
         return Flag::orderBy('title')->get(['id', 'title']);
@@ -39,6 +82,14 @@ class MentorFlagFieldSupport
 
     public static function updateOnConvertedLead(ConvertedLead $convertedLead, $value): array
     {
+        if (!self::canUserUpdateFlag()) {
+            return self::flagUpdateDeniedResponse();
+        }
+
+        if (!self::mentorCanUpdateLead($convertedLead)) {
+            return self::leadUpdateDeniedResponse();
+        }
+
         $convertedLead->flag_id = $value ?: null;
         $convertedLead->save();
 
