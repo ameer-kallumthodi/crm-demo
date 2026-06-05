@@ -285,29 +285,33 @@ class LeadsController extends Controller
         }
 
         $destination = $leadCode . $leadPhone;
+        $voxbayQuery = [
+            'id_dept' => 0,
+            'uid' => $uidNumber,
+            'upin' => $upin,
+            'user_no' => $extension,
+            'destination' => $destination,
+            'source' => $userPhone,
+        ];
+        $voxbayUrl = 'https://x.voxbay.com/api/click_to_call?' . http_build_query($voxbayQuery);
 
-        Log::info('Call API: Initiating Voxbay call', [
+        Log::info('Call API: Calling Voxbay URL', [
             'user_id' => $user->id,
             'user_name' => $user->name,
+            'lead_id' => $lead->id,
             'extension' => $extension,
             'source' => $userPhone,
             'destination' => $destination,
-            'lead_id' => $lead->id
+            'url' => $voxbayUrl,
         ]);
 
         try {
-            $response = Http::timeout(30)->get('https://x.voxbay.com/api/click_to_call', [
-                'id_dept' => 0,
-                'uid' => $uidNumber,
-                'upin' => $upin,
-                'user_no' => $extension,
-                'destination' => $destination,
-                'source' => $userPhone,
-            ]);
+            $response = Http::timeout(30)->get('https://x.voxbay.com/api/click_to_call', $voxbayQuery);
 
             Log::info('Call API: Voxbay API response received', [
                 'user_id' => $user->id,
                 'lead_id' => $lead->id,
+                'url' => $voxbayUrl,
                 'status_code' => $response->status(),
                 'response_body' => $response->body()
             ]);
@@ -315,6 +319,7 @@ class LeadsController extends Controller
             Log::error('Call API: Voxbay service exception', [
                 'user_id' => $user->id,
                 'lead_id' => $lead->id,
+                'url' => $voxbayUrl,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -329,6 +334,7 @@ class LeadsController extends Controller
             Log::error('Call API: Voxbay call request failed', [
                 'user_id' => $user->id,
                 'lead_id' => $lead->id,
+                'url' => $voxbayUrl,
                 'status_code' => $response->status(),
                 'response_body' => $response->body()
             ]);
@@ -345,7 +351,8 @@ class LeadsController extends Controller
             'lead_id' => $lead->id,
             'destination' => $destination,
             'extension' => $extension,
-            'source' => $userPhone
+            'source' => $userPhone,
+            'url' => $voxbayUrl,
         ]);
 
         return response()->json([
