@@ -82,10 +82,12 @@
                                         title="Edit">
                                         <i class="ti ti-edit"></i> Edit
                                     </a>
-                                    <!-- <a href="javascript:void(0);" class="btn btn-danger btn-sm shadow-sm px-3"
+                                    @if(is_super_admin())
+                                    <a href="javascript:void(0);" class="btn btn-danger btn-sm shadow-sm px-3"
                                         onclick="delete_modal('{{ route('admin.courses.delete', $course->id) }}')" title="Delete">
                                         <i class="ti ti-trash"></i> Delete
-                                    </a> -->
+                                    </a>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach

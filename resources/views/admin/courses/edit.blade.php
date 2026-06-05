@@ -18,7 +18,9 @@
                     <label class="form-label" for="title">Title <span class="text-danger">*</span></label>
                     <input type="text" name="title" class="form-control" 
                            id="title" value="{{ $edit_data->title }}" 
-                           placeholder="Enter Course Title" readonly required>
+                           placeholder="Enter Course Title"
+                           @unless(is_super_admin()) readonly @endunless
+                           required>
                     <div class="invalid-feedback" id="title-error"></div>
                 </div>
             </div>

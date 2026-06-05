@@ -67,7 +67,7 @@ class CourseController extends Controller
 
     public function destroy(Course $course)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
+        if (!RoleHelper::is_super_admin()) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
@@ -199,7 +199,7 @@ class CourseController extends Controller
 
             $course = Course::findOrFail($id);
             $course->update([
-                'title' => $request->title,
+                'title' => RoleHelper::is_super_admin() ? $request->title : $course->title,
                 'code' => $request->code,
                 'amount' => $request->amount,
                 'hod_id' => $request->hod_id,
@@ -260,7 +260,7 @@ class CourseController extends Controller
 
     public function delete($id)
     {
-        if (!RoleHelper::is_admin_or_super_admin() && !RoleHelper::is_admission_counsellor() && !RoleHelper::is_finance()) {
+        if (!RoleHelper::is_super_admin()) {
             return redirect()->route('dashboard')->with('message_danger', 'Access denied.');
         }
 
