@@ -11,6 +11,7 @@ use App\Http\Controllers\LeadSourceController;
 use App\Http\Controllers\SubjectAreaController;
 use App\Http\Controllers\CourseMailController;
 use App\Http\Controllers\FlagController;
+use App\Http\Controllers\SupportFlagController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\UniversityCourseController;
 use App\Http\Controllers\CountryController;
@@ -95,6 +96,7 @@ Route::prefix('api/meta-leads')->group(function () {
 Route::get('/api/subjects/by-course/{courseId}', [App\Http\Controllers\SubjectController::class, 'getByCourse'])->name('api.subjects.by-course');
 Route::get('/api/subject-areas', [App\Http\Controllers\SubjectAreaController::class, 'listActive'])->name('api.subject-areas');
 Route::get('/api/flags', [App\Http\Controllers\FlagController::class, 'listActive'])->name('api.flags');
+Route::get('/api/support-flags', [App\Http\Controllers\SupportFlagController::class, 'listActive'])->name('api.support-flags');
 Route::get('/api/batches/by-course/{courseId}', [App\Http\Controllers\BatchController::class, 'getByCourse'])->name('api.batches.by-course');
 Route::get('/api/sub-courses/by-course/{courseId}', [App\Http\Controllers\SubCourseController::class, 'getByCourse'])->name('api.sub-courses.by-course');
 Route::get('/api/admission-batches/by-batch/{batchId}', [App\Http\Controllers\AdmissionBatchController::class, 'getByBatch'])->name('api.admission-batches.by-batch');
@@ -370,6 +372,13 @@ Route::middleware(['custom.auth', 'telecaller.tracking'])->group(function () {
         Route::post('/flags-submit', [FlagController::class, 'submit'])->name('flags.submit');
         Route::put('/flags-update/{id}', [FlagController::class, 'update'])->name('flags.update');
         Route::delete('/flags-delete/{id}', [FlagController::class, 'delete'])->name('flags.delete');
+
+        Route::get('/support-flags', [SupportFlagController::class, 'index'])->name('support-flags.index');
+        Route::get('/support-flags-add', [SupportFlagController::class, 'ajax_add'])->name('support-flags.add');
+        Route::get('/support-flags-edit/{id}', [SupportFlagController::class, 'ajax_edit'])->name('support-flags.edit');
+        Route::post('/support-flags-submit', [SupportFlagController::class, 'submit'])->name('support-flags.submit');
+        Route::put('/support-flags-update/{id}', [SupportFlagController::class, 'update'])->name('support-flags.update');
+        Route::delete('/support-flags-delete/{id}', [SupportFlagController::class, 'delete'])->name('support-flags.delete');
 
         Route::resource('universities', UniversityController::class)->except(['create', 'edit']);
         Route::get('/universities-add', [UniversityController::class, 'ajax_add'])->name('universities.add');

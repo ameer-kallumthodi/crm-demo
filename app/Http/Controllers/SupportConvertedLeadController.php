@@ -19,6 +19,7 @@ use App\Services\MailService;
 use App\Services\WatiService;
 use App\Support\ConvertedLeadWhatsAppSupport;
 use App\Support\CourseMailResolver;
+use App\Support\SupportFlagFieldSupport;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
@@ -38,6 +39,7 @@ class SupportConvertedLeadController extends Controller
             'cancelledBy',
             'studentDetails',
             'supportDetails',
+            'supportFlag',
             'subject',
             'batch',
             'admissionBatch'
@@ -115,16 +117,20 @@ class SupportConvertedLeadController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
+        SupportFlagFieldSupport::applyListingFilter($query, $request);
+
         $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(50);
         $batches = Batch::where('course_id', 2)->orderBy('title')->get();
         $subjects = Subject::where('course_id', 2)->orderBy('title')->get();
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
+        $supportFlags = SupportFlagFieldSupport::forFilterSelect();
 
         return view('admin.converted-leads.support-bosse-index', compact(
             'convertedLeads', 
             'batches', 
             'subjects', 
-            'country_codes'
+            'country_codes',
+            'supportFlags'
         ));
     }
 
@@ -426,6 +432,7 @@ class SupportConvertedLeadController extends Controller
             'cancelledBy',
             'studentDetails',
             'supportDetails',
+            'supportFlag',
             'subject',
             'batch',
             'admissionBatch'
@@ -503,16 +510,20 @@ class SupportConvertedLeadController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
+        SupportFlagFieldSupport::applyListingFilter($query, $request);
+
         $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(50);
         $batches = Batch::where('course_id', 1)->orderBy('title')->get();
         $subjects = Subject::where('course_id', 1)->orderBy('title')->get();
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
+        $supportFlags = SupportFlagFieldSupport::forFilterSelect();
 
         return view('admin.converted-leads.support-nios-index', compact(
             'convertedLeads', 
             'batches', 
             'subjects', 
-            'country_codes'
+            'country_codes',
+            'supportFlags'
         ));
     }
 
@@ -531,6 +542,7 @@ class SupportConvertedLeadController extends Controller
             'cancelledBy',
             'studentDetails',
             'supportDetails',
+            'supportFlag',
             'batch',
             'admissionBatch'
         ])->where('course_id', 9) // UG/PG course
@@ -604,16 +616,20 @@ class SupportConvertedLeadController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
+        SupportFlagFieldSupport::applyListingFilter($query, $request);
+
         $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(50);
         $batches = Batch::where('course_id', 9)->orderBy('title')->get();
         $universities = \App\Models\University::where('is_active', 1)->orderBy('title')->get();
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
+        $supportFlags = SupportFlagFieldSupport::forFilterSelect();
 
         return view('admin.converted-leads.support-ugpg-index', compact(
             'convertedLeads', 
             'batches', 
             'universities', 
-            'country_codes'
+            'country_codes',
+            'supportFlags'
         ));
     }
 
@@ -631,6 +647,7 @@ class SupportConvertedLeadController extends Controller
             'cancelledBy',
             'studentDetails',
             'supportDetails',
+            'supportFlag',
             'batch',
             'admissionBatch'
         ])->where('course_id', 23) // EduMaster course
@@ -704,16 +721,20 @@ class SupportConvertedLeadController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
+        SupportFlagFieldSupport::applyListingFilter($query, $request);
+
         $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(50);
         $batches = Batch::where('course_id', 23)->orderBy('title')->get();
         $universities = \App\Models\University::where('is_active', 1)->orderBy('title')->get();
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
+        $supportFlags = SupportFlagFieldSupport::forFilterSelect();
 
         return view('admin.converted-leads.support-edumaster-index', compact(
             'convertedLeads', 
             'batches', 
             'universities', 
-            'country_codes'
+            'country_codes',
+            'supportFlags'
         ));
     }
 
@@ -726,6 +747,10 @@ class SupportConvertedLeadController extends Controller
             $convertedLead = ConvertedLead::findOrFail($id);
             $field = $request->field;
             $value = $request->value;
+
+            if ($field === 'support_flag_id') {
+                return SupportFlagFieldSupport::supportFlagUpdateJsonResponse($convertedLead, $value);
+            }
 
             // Validate the field and value
             $validationRules = $this->getValidationRules($field, $convertedLead->course_id);
@@ -846,6 +871,7 @@ class SupportConvertedLeadController extends Controller
             'whatsapp_number' => 'nullable|string|max:50',
             'class_time_id' => 'nullable|exists:class_times,id',
             'parents_number' => 'nullable|string|max:50',
+            'support_flag_id' => SupportFlagFieldSupport::validationRule(),
         ];
 
         return $rules[$field] ?? null;
@@ -1103,6 +1129,7 @@ class SupportConvertedLeadController extends Controller
             'cancelledBy',
             'studentDetails',
             'supportDetails',
+            'supportFlag',
             'subject',
             'batch',
             'admissionBatch'
@@ -1181,17 +1208,21 @@ class SupportConvertedLeadController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
+        SupportFlagFieldSupport::applyListingFilter($query, $request);
+
         $convertedLeads = $query->orderBy('created_at', 'desc')->paginate(50);
         $batches = Batch::where('course_id', $courseId)->orderBy('title')->get();
         $subjects = Subject::where('course_id', $courseId)->orderBy('title')->get();
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
+        $supportFlags = SupportFlagFieldSupport::forFilterSelect();
 
         return view($viewName, compact(
             'convertedLeads', 
             'batches', 
             'subjects', 
             'country_codes',
-            'pageTitle'
+            'pageTitle',
+            'supportFlags'
         ));
     }
 

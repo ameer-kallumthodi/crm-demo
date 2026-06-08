@@ -313,6 +313,7 @@
                                 <option value="">All</option>
                             </select>
                         </div>
+                        @include('admin.converted-leads.partials.support-flag-filter-field')
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}">
@@ -355,6 +356,7 @@
                                 <th>Academic</th>
                                 <th>Support</th>
                                 <th>Registration Number</th>
+                                <th>Support Flag</th>
                                 <th>Conversion Date</th>
                                 <th>B2B Team</th>
                                 <th>Full Name</th>
@@ -411,6 +413,7 @@
                                     {{ $lead->register_number ?? '-' }}
                                     @endif
                                 </td>
+                                @include('admin.converted-leads.partials.inline-support-flag-cell', ['convertedLead' => $lead])
                                 <td>{{ $lead->created_at ? $lead->created_at->format('d-m-Y') : '-' }}</td>
                                 <td>{{ $lead->is_b2b == 1 && $lead->lead && $lead->lead->team ? $lead->lead->team->name : ($lead->is_b2b == 1 ? 'B2B' : 'In House') }}</td>
                                 <td>
@@ -575,6 +578,8 @@
 <!-- [ Main Content ] end -->
 
 @include('admin.converted-leads.partials.support-whatsapp-mail-layout-includes')
+
+@include('admin.converted-leads.partials.support-flag-inline-scripts', ['supportUpdateUrl' => route('admin.support-junior-vlogger-converted-leads.update-support-details', ['id' => '__ID__'])])
 
 @endsection
 

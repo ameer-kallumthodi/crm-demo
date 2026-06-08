@@ -317,6 +317,7 @@
                                 <option value="PG" {{ request('course_type')==='PG' ? 'selected' : '' }}>PG</option>
                             </select>
                         </div>
+                        @include('admin.converted-leads.partials.support-flag-filter-field')
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from"
@@ -362,6 +363,7 @@
                                     <th>Academic Verified At</th>
                                     <th>Converted Date</th>
                                     <th>Registration Number</th>
+                                    <th>Support Flag</th>
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>DOB</th>
@@ -412,6 +414,7 @@
                                     </td>
                                     <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>{{ $convertedLead->register_number ?? '-' }}</td>
+                                    @include('admin.converted-leads.partials.inline-support-flag-cell', ['convertedLead' => $convertedLead])
                                     <td>
                                         {{ $convertedLead->name }}
                                         @if($convertedLead->is_cancelled)
@@ -715,6 +718,7 @@
 
 @include('admin.converted-leads.partials.support-whatsapp-mail-layout-includes')
 
+@include('admin.converted-leads.partials.support-flag-inline-scripts', ['supportUpdateUrl' => route('admin.support-ugpg-converted-leads.update-support-details', ['id' => '__ID__'])])
 @endsection
 
 <!-- Support Verify Modal -->
