@@ -7,7 +7,7 @@
         overflow: visible;
     }
 
-    td .support-flag-field.editing > .edit-btn {
+    td .support-flag-field.editing > .support-flag-edit-btn {
         display: none !important;
     }
 
@@ -255,7 +255,7 @@
         container.find('.edit-form').remove();
     }
 
-    $(document).on('click', '.support-flag-field .edit-btn', function(e) {
+    $(document).on('click', '.support-flag-field .support-flag-edit-btn', function(e) {
         e.preventDefault();
         e.stopImmediatePropagation();
 
