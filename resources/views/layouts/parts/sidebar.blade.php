@@ -540,7 +540,7 @@
                 @endif
                 
                 {{-- Master Data Section --}}
-                @if(has_permission('admin/courses/index') || has_permission('admin/countries/index') || has_permission('admin/teams/index') || has_permission('admin/subjects/index') || has_permission('admin/subject-areas/index') || has_permission('admin/mails/index') || has_permission('admin/flags/index') || has_permission('admin/support-flags/index') || has_permission('admin/class-times/index') || has_permission('admin/offline-places/index') || has_permission('admin/course-documents/index') || has_permission('admin/universities/index') || has_permission('admin/university-courses/index') || has_permission('admin/registration-links/index'))
+                @if(has_permission('admin/courses/index') || has_permission('admin/countries/index') || has_permission('admin/teams/index') || has_permission('admin/subjects/index') || has_permission('admin/subject-areas/index') || has_permission('admin/mails/index') || has_permission('admin/flags/index') || has_permission('admin/support-flags/index') || has_permission('admin/course-flags/index') || has_permission('admin/class-times/index') || has_permission('admin/offline-places/index') || has_permission('admin/course-documents/index') || has_permission('admin/universities/index') || has_permission('admin/university-courses/index') || has_permission('admin/registration-links/index'))
                 <li class="pc-item pc-caption">
                     <label>Master Data</label>
                 </li>
@@ -601,6 +601,16 @@
                             <i class="ti ti-flag-2"></i>
                         </span>
                         <span class="pc-mtext">Support Flag</span>
+                    </a>
+                </li>
+                @endif
+                @if(has_permission('admin/course-flags/index'))
+                <li class="pc-item {{ request()->routeIs('admin.course-flags.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.course-flags.index') }}" class="pc-link">
+                        <span class="pc-micon">
+                            <i class="ti ti-flag-3"></i>
+                        </span>
+                        <span class="pc-mtext">Course Flag</span>
                     </a>
                 </li>
                 @endif

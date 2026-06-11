@@ -30,7 +30,7 @@ class NiosMentorConvertedLeadController extends Controller
             'studentDetails',
             'mentorDetails',
             'subject',
-            'flag',
+            'flag', 'courseFlag',
             'batch',
             'admissionBatch'
         ])->where('course_id', 1) // NIOS course
@@ -154,6 +154,7 @@ class NiosMentorConvertedLeadController extends Controller
         }
 
         \App\Support\MentorFlagFieldSupport::applyListingFilter($query, $request);
+        \App\Support\CourseFlagFieldSupport::applyListingFilter($query, $request);
 
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
@@ -214,6 +215,10 @@ class NiosMentorConvertedLeadController extends Controller
                 return \App\Support\MentorFlagFieldSupport::flagUpdateJsonResponse($convertedLead, $value);
             }
 
+            if ($field === 'course_flag_id') {
+                return \App\Support\CourseFlagFieldSupport::courseFlagUpdateJsonResponse($convertedLead, $value);
+            }
+
             // Handle status field - update in converted_leads table
             if ($field === 'status') {
                 $convertedLead->status = $value;
@@ -255,6 +260,7 @@ class NiosMentorConvertedLeadController extends Controller
         $rules = [
             'subject_id' => 'nullable|exists:subjects,id',
             'flag_id' => \App\Support\MentorFlagFieldSupport::validationRule(),
+            'course_flag_id' => \App\Support\CourseFlagFieldSupport::validationRule(),
             'status' => 'nullable|in:Paid,Admission cancel,Active,Inactive',
             'registration_status' => 'nullable|in:Paid,Not Paid',
             'technology_side' => 'nullable|in:No Knowledge,Limited Knowledge,Moderate Knowledge,High Knowledge',

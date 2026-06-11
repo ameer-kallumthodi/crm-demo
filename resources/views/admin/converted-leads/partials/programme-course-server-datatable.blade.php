@@ -20,8 +20,10 @@
 
     if ($programmeDtLayout === 'ai_python') {
         $cols[] = $dtCol('registration_number');
+        $cols[] = $dtCol('course_flag');
     } else {
         $cols[] = $dtCol('register_number');
+        $cols[] = $dtCol('course_flag');
     }
 
     $cols = array_merge($cols, [
@@ -122,6 +124,7 @@
             orientation_class_status: $f.find('#orientation_class_status').val() || '',
             whatsapp_group_status: $f.find('#whatsapp_group_status').val() || '',
             class_status: $f.find('#class_status').val() || '',
+            course_flag_id: $f.find('#course_flag_id').val() || '',
             date_from: $f.find('#date_from').val() || '',
             date_to: $f.find('#date_to').val() || '',
             batch_id: $f.find('#batch_id').val() || '',

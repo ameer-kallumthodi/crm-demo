@@ -155,6 +155,8 @@ trait ConvertedLeadScopedDataTables
         if ($this->programmeCourseUsesAdmissionBatchFilter($courseId) && $request->filled('admission_batch_id')) {
             $query->where('admission_batch_id', $request->admission_batch_id);
         }
+
+        \App\Support\CourseFlagFieldSupport::applyListingFilter($query, $request);
     }
 
     /**
@@ -200,6 +202,7 @@ trait ConvertedLeadScopedDataTables
             'leadDetail.classTime',
             'batch',
             'admissionBatch',
+            'courseFlag',
         ];
 
         $convertedLeads = (clone $filteredQuery)->with($with)
@@ -293,6 +296,8 @@ trait ConvertedLeadScopedDataTables
         $registerCell = '<div class="inline-edit" data-field="register_number" data-id="'.$cl->id.'" data-current="'.e($regCurrent).'">'
             .'<span class="display-value">'.e($regCurrent !== '' ? $regCurrent : '-').'</span>'.$editBtn.'</div>';
 
+        $courseFlagCell = view('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $cl])->render();
+
         $nameHtml = view('admin.converted-leads.partials.dt-programme-name', ['convertedLead' => $cl])->render();
 
         $typeLabel = $cl->is_b2b == 1
@@ -374,6 +379,7 @@ trait ConvertedLeadScopedDataTables
             'support' => $supportHtml,
             'converted_date' => e($cl->created_at->format('d-m-Y')),
             'register_number' => $registerCell,
+            'course_flag' => $courseFlagCell,
             'name' => $nameHtml,
             'type' => e($typeLabel),
             'phone' => $phoneCell,
@@ -439,6 +445,8 @@ trait ConvertedLeadScopedDataTables
         $regNum = $cl->studentDetails?->registration_number ?? '';
         $registrationCell = '<div class="inline-edit" data-field="registration_number" data-id="'.$cl->id.'" data-current="'.e($regNum).'">'
             .'<span class="display-value">'.e($regNum !== '' ? $regNum : '-').'</span>'.$editBtn.'</div>';
+
+        $courseFlagCell = view('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $cl])->render();
 
         $nameHtml = view('admin.converted-leads.partials.dt-programme-name', ['convertedLead' => $cl])->render();
 
@@ -507,6 +515,7 @@ trait ConvertedLeadScopedDataTables
             'support' => $supportHtml,
             'converted_date' => e($cl->created_at->format('d-m-Y')),
             'registration_number' => $registrationCell,
+            'course_flag' => $courseFlagCell,
             'name' => $nameHtml,
             'type' => e($typeLabel),
             'phone' => $phoneCell,

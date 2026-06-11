@@ -53,6 +53,7 @@
             @endif
         </div>
     </td>
+    @include('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $convertedLead])
     <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
     <td>
         <div class="inline-edit" data-field="dob" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->dob }}">

@@ -312,7 +312,7 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
                                 <option value="">All</option>
                             </select>
                         </div>
-                        @include('admin.converted-leads.partials.mentor-flag-filter-field')
+                        @include('admin.converted-leads.partials.course-flag-filter-field')
                         
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
@@ -363,7 +363,7 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
                                 <th>Batch</th>
                                 <th>Time</th>
                                 <th>Reg. Number</th>
-                                <th>Flag</th>
+                                <th>Course Flag</th>
                                     <th>Call Time</th>
                                     <th>Full Name</th>
                                 <th>Age</th>
@@ -461,7 +461,8 @@ $canEdit = \App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\Ro
                                     {{ $lead->register_number ?? '-' }}
                                     @endif
                                 </td>
-                                @include('admin.converted-leads.partials.inline-flag-cell', ['convertedLead' => $lead])
+                                @include('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $lead])
+                                @include('admin.converted-leads.partials.inline-call-time-cell', ['convertedLead' => $lead])
                                 <td>
                                     @if($canEdit)
                                     <div class="inline-edit" data-field="name" data-id="{{ $lead->id }}" data-current="{{ $lead->name }}">
@@ -900,5 +901,5 @@ $(document).ready(function() {
     });
 });
 </script>
-@include('admin.converted-leads.partials.mentor-flag-inline-scripts')
+@include('admin.converted-leads.partials.course-flag-inline-scripts', ['courseUpdateUrl' => route('admin.junior-vlogger-mentor-converted-leads.update-mentor-details', ['id' => '__ID__'])])
 @endpush

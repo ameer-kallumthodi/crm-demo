@@ -46,7 +46,7 @@ class ESchoolEduthanzeelMentorController extends Controller
 
         $query = ConvertedLead::with([
             
-            'flag','lead',
+            'flag', 'courseFlag','lead',
             'leadDetail',
             'course',
             'academicAssistant',
@@ -162,6 +162,7 @@ class ESchoolEduthanzeelMentorController extends Controller
         }
 
         \App\Support\MentorFlagFieldSupport::applyListingFilter($query, $request);
+        \App\Support\CourseFlagFieldSupport::applyListingFilter($query, $request);
 
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
@@ -236,6 +237,10 @@ class ESchoolEduthanzeelMentorController extends Controller
 
             if ($field === 'flag_id') {
                 return \App\Support\MentorFlagFieldSupport::flagUpdateJsonResponse($convertedLead, $value);
+            }
+
+            if ($field === 'course_flag_id') {
+                return \App\Support\CourseFlagFieldSupport::courseFlagUpdateJsonResponse($convertedLead, $value);
             }
 
             // Special handling for tutor_id (displayed as Tutor, but uses teacher_id in DB)

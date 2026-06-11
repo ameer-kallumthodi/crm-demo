@@ -284,6 +284,8 @@
                                 <option value="">All Admission Batches</option>
                             </select>
                         </div>
+                        @include('admin.converted-leads.partials.course-flag-filter-field')
+
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from"
@@ -395,6 +397,7 @@
                                     <th>Support</th>
                                     <th>Converted Date</th>
                                     <th>Register Number</th>
+                                    <th>Course Flag</th>
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>Phone</th>
@@ -605,6 +608,7 @@ $digitalMarketingConvertedLeadsColumns = [
     ['data' => 'support', 'name' => 'support', 'orderable' => false, 'searchable' => false],
     ['data' => 'converted_date', 'name' => 'converted_date', 'orderable' => false, 'searchable' => false],
     ['data' => 'register_number', 'name' => 'register_number', 'orderable' => false, 'searchable' => false],
+    ['data' => 'course_flag', 'name' => 'course_flag', 'orderable' => false, 'searchable' => false],
     ['data' => 'name_col', 'name' => 'name_col', 'orderable' => false, 'searchable' => false],
     ['data' => 'type', 'name' => 'type', 'orderable' => false, 'searchable' => false],
     ['data' => 'phone', 'name' => 'phone', 'orderable' => false, 'searchable' => false],
@@ -635,6 +639,7 @@ $digitalMarketingConvertedLeadsColumns = array_merge($digitalMarketingConvertedL
 @endphp
 <div id="digitalMarketingConvertedLeadsConfig" data-url="{{ route('admin.digital-marketing-converted-leads.data') }}" class="d-none"></div>
 <script id="digitalMarketingConvertedLeadsColumnsData" type="application/json">{!! json_encode($digitalMarketingConvertedLeadsColumns, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+@include('admin.converted-leads.partials.course-flag-inline-scripts')
 @endsection
 
 <script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
@@ -752,6 +757,8 @@ $digitalMarketingConvertedLeadsColumns = array_merge($digitalMarketingConvertedL
                 filter_search: ($('#search').val() || '').trim(),
                 batch_id: $('#batch_id').val() || '',
                 admission_batch_id: $('#admission_batch_id').val() || '',
+                course_flag_id: $('#course_flag_id').val() || '',
+
                 date_from: $('#date_from').val() || '',
                 date_to: $('#date_to').val() || '',
                 status: $('#status').val() || '',

@@ -275,6 +275,8 @@
                                 <option value="">All Admission Batches</option>
                             </select>
                         </div>
+                        @include('admin.converted-leads.partials.course-flag-filter-field')
+
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from"
@@ -350,6 +352,7 @@
                                     <th>Support</th>
                                     <th>Converted Date</th>
                                     <th>Registration Number</th>
+                                    <th>Course Flag</th>
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>Phone</th>
@@ -409,6 +412,7 @@
                                             @endif
                                         </div>
                                     </td>
+    @include('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $convertedLead])
                                     <td>
                                         <div>
                                             {{ $convertedLead->name }}
@@ -777,6 +781,7 @@
 </div>
 <!-- [ Main Content ] end -->
 
+@include('admin.converted-leads.partials.course-flag-inline-scripts')
 @endsection
 
 <script id="country-codes-json" type="application/json">

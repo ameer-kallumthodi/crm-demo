@@ -309,7 +309,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        @include('admin.converted-leads.partials.mentor-flag-filter-field')
+                        @include('admin.converted-leads.partials.course-flag-filter-field')
                         
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
@@ -359,7 +359,7 @@
                                     <th>Academic Verified At</th>
                                     <th>Support Verified At</th>
                                     <th>Registration No</th>
-                                    <th>Flag</th>
+                                    <th>Course Flag</th>
                                     <th>Call Time</th>
                                     <th>Name</th>
                                     <th>Type</th>
@@ -448,7 +448,8 @@
                                             @endif
                                         </div>
                                     </td>
-                                    @include('admin.converted-leads.partials.inline-flag-cell', ['convertedLead' => $convertedLead])
+                                    @include('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $convertedLead])
+                                    @include('admin.converted-leads.partials.inline-call-time-cell', ['convertedLead' => $convertedLead])
                                     <td>
                                         {{ $convertedLead->name }}
                                         @if($convertedLead->is_cancelled)
@@ -1337,5 +1338,5 @@ return ['id' => $teacher->id, 'name' => $teacher->name];
         }
     });
 </script>
-@include('admin.converted-leads.partials.mentor-flag-inline-scripts')
+@include('admin.converted-leads.partials.course-flag-inline-scripts', ['courseUpdateUrl' => route('admin.eduthanzeel-mentor-converted-leads.update-mentor-details', ['id' => '__ID__'])])
 @endpush

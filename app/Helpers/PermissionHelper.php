@@ -148,6 +148,7 @@ class PermissionHelper
             'admin/mails/index',
             'admin/flags/index',
             'admin/support-flags/index',
+            'admin/course-flags/index',
             'admin/class-times/index',
             'admin/offline-places/index',
             'admin/hod/index',

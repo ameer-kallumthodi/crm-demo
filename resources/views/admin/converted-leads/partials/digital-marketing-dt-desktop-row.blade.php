@@ -8,6 +8,7 @@
     <td>@include('admin.converted-leads.partials.status-badge', ['convertedLead' => $convertedLead, 'type' => 'support', 'showToggle' => $canToggleSupport, 'toggleUrl' => $canToggleSupport ? route('admin.support-converted-leads.toggle-support-verify', $convertedLead->id) : null, 'title' => 'support', 'useModal' => true])</td>
     <td>{{ optional($convertedLead->created_at)->format('d-m-Y') }}</td>
     <td>{{ $convertedLead->register_number ?? '-' }}</td>
+    @include('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $convertedLead])
     <td>
         {{ $convertedLead->name }}
         @if($convertedLead->is_cancelled)

@@ -47,6 +47,7 @@ class ConvertedLead extends Model
         'subject_id',
         'flag_id',
         'support_flag_id',
+        'course_flag_id',
         'admission_batch_id',
         'is_postpond_batch',
         'remarks',
@@ -139,6 +140,11 @@ class ConvertedLead extends Model
     public function supportFlag()
     {
         return $this->belongsTo(SupportFlag::class);
+    }
+
+    public function courseFlag()
+    {
+        return $this->belongsTo(CourseFlag::class);
     }
 
     public function academicAssistant()

@@ -317,6 +317,8 @@
                                 <option value="dropout" {{ request('class_status') == 'dropout' ? 'selected' : '' }}>Dropout</option>
                             </select>
                         </div>
+                        @include('admin.converted-leads.partials.course-flag-filter-field')
+
                         <div class="col-md-3">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}">
@@ -361,6 +363,7 @@
                                     <th>Support</th>
                                     <th>Converted Date</th>
                                     <th>Registration Number</th>
+                                    <th>Course Flag</th>
                                     <th>Phone</th>
                                     <th>WhatsApp</th>
                                     @if(\App\Helpers\RoleHelper::is_admin_or_super_admin() || \App\Helpers\RoleHelper::is_admission_counsellor())
@@ -419,6 +422,7 @@
                                             @endif
                                         </div>
                                     </td>
+                                    @include('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $convertedLead])
                                     <td>
                                         <div class="inline-edit" data-field="phone" data-id="{{ $convertedLead->id }}" data-current="{{ $convertedLead->phone }}">
                                             <span class="display-value">{{ \App\Helpers\PhoneNumberHelper::display($convertedLead->code, $convertedLead->phone) ?: '-' }}</span>
@@ -753,7 +757,8 @@
 
     <!-- Country Codes JSON for JavaScript -->
     <script id="country-codes-json" type="application/json">{!! json_encode($country_codes ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
-    @endsection
+    @include('admin.converted-leads.partials.course-flag-inline-scripts')
+@endsection
 
     @push('styles')
     <style>

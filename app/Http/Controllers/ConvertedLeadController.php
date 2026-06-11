@@ -299,6 +299,8 @@ class ConvertedLeadController extends Controller
         if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
+
+        \App\Support\CourseFlagFieldSupport::applyListingFilter($query, $request);
     }
 
     protected function convertedLeadHasPendingPayment(ConvertedLead $convertedLead): bool
@@ -623,6 +625,7 @@ class ConvertedLeadController extends Controller
                 'academicAssistant',
                 'cancelledBy',
                 'studentDetails',
+                'courseFlag',
             ])->orderBy('created_at', 'desc')
                 ->skip($start)
                 ->take($length)
@@ -772,6 +775,9 @@ class ConvertedLeadController extends Controller
         if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
+   
+
+        \App\Support\CourseFlagFieldSupport::applyListingFilter($query, $request);
     }
 
     /**
@@ -823,6 +829,7 @@ class ConvertedLeadController extends Controller
                 'subject',
                 'subjectAreas',
                 'studentDetails',
+                'courseFlag',
             ])->orderBy('created_at', 'desc')
                 ->skip($start)
                 ->take($length)
@@ -945,6 +952,9 @@ class ConvertedLeadController extends Controller
         if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
+   
+
+        \App\Support\CourseFlagFieldSupport::applyListingFilter($query, $request);
     }
 
     /**
@@ -1103,6 +1113,9 @@ class ConvertedLeadController extends Controller
         if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
+   
+
+        \App\Support\CourseFlagFieldSupport::applyListingFilter($query, $request);
     }
 
     /**
@@ -1252,6 +1265,9 @@ class ConvertedLeadController extends Controller
         if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
+   
+
+        \App\Support\CourseFlagFieldSupport::applyListingFilter($query, $request);
     }
 
     /**
@@ -1284,6 +1300,7 @@ class ConvertedLeadController extends Controller
                 'batch',
                 'admissionBatch',
                 'studentDetails',
+                'courseFlag',
             ])->orderBy('created_at', 'desc')
                 ->skip($start)
                 ->take($length)
@@ -1414,6 +1431,9 @@ class ConvertedLeadController extends Controller
         if ($request->filled('admission_batch_id')) {
             $query->where('admission_batch_id', $request->admission_batch_id);
         }
+   
+
+        \App\Support\CourseFlagFieldSupport::applyListingFilter($query, $request);
     }
 
     /**
@@ -1568,6 +1588,9 @@ class ConvertedLeadController extends Controller
         if ($request->filled('admission_batch_id')) {
             $query->where('admission_batch_id', $request->admission_batch_id);
         }
+   
+
+        \App\Support\CourseFlagFieldSupport::applyListingFilter($query, $request);
     }
 
     /**
@@ -1609,7 +1632,7 @@ class ConvertedLeadController extends Controller
      */
     public function gmvssMentorIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead.studentDetails', 'lead.team', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'flag', 'studentDetails.registrationLink', 'mentorDetails'])
+        $query = ConvertedLead::with(['lead.studentDetails', 'lead.team', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'batch', 'admissionBatch', 'subject', 'flag', 'courseFlag', 'studentDetails.registrationLink', 'mentorDetails'])
             ->where('course_id', 16);
 
         // Apply role-based filtering
@@ -1730,7 +1753,7 @@ class ConvertedLeadController extends Controller
      */
     public function aiPythonIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails'])
+        $query = ConvertedLead::with(['lead', 'lead.team', 'leadDetail', 'course', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'courseFlag'])
             ->where('course_id', 10);
 
         // Apply role-based filtering
@@ -1986,6 +2009,9 @@ class ConvertedLeadController extends Controller
                 $q->where('programme_type', $request->programme_type);
             });
         }
+   
+
+        \App\Support\CourseFlagFieldSupport::applyListingFilter($query, $request);
     }
 
     /**
@@ -2176,7 +2202,7 @@ class ConvertedLeadController extends Controller
 
     public function eduthanzeelIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'leadDetail', 'course', 'subCourse', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'teacher'])
+        $query = ConvertedLead::with(['lead', 'lead.team', 'leadDetail', 'course', 'subCourse', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'teacher', 'courseFlag'])
             ->where('course_id', 6);
 
         // Apply role-based filtering
@@ -2263,7 +2289,7 @@ class ConvertedLeadController extends Controller
      */
     public function eschoolIndex(Request $request)
     {
-        $query = ConvertedLead::with(['lead', 'lead.team', 'leadDetail', 'course', 'subCourse', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'teacher'])
+        $query = ConvertedLead::with(['lead', 'lead.team', 'leadDetail', 'course', 'subCourse', 'academicAssistant', 'createdBy', 'cancelledBy', 'subject', 'studentDetails', 'teacher', 'courseFlag'])
             ->where('course_id', 5);
 
         // Apply role-based filtering
@@ -3845,6 +3871,7 @@ class ConvertedLeadController extends Controller
             'subject_area_ids' => 'nullable|array',
             'subject_area_ids.*' => 'integer|exists:subject_areas,id',
             'flag_id' => 'nullable|exists:flags,id',
+            'course_flag_id' => \App\Support\CourseFlagFieldSupport::validationRule(),
             'batch_id' => 'nullable|exists:batches,id',
             'admission_batch_id' => 'nullable|exists:admission_batches,id',
             'academic_assistant_id' => 'nullable|exists:users,id',
@@ -4006,6 +4033,10 @@ class ConvertedLeadController extends Controller
 
         if ($field === 'flag_id') {
             return \App\Support\MentorFlagFieldSupport::flagUpdateJsonResponse($convertedLead, $value);
+        }
+
+        if ($field === 'course_flag_id') {
+            return \App\Support\CourseFlagFieldSupport::courseFlagUpdateJsonResponse($convertedLead, $value);
         }
 
         // Handle fields that are in LeadDetail (for UG/PG course and EduMaster)

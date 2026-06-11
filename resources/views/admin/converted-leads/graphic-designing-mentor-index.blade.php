@@ -333,7 +333,7 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                                 <option value="">All Admission Batches</option>
                             </select>
                         </div>
-                        @include('admin.converted-leads.partials.mentor-flag-filter-field')
+                        @include('admin.converted-leads.partials.course-flag-filter-field')
                         
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
@@ -446,7 +446,7 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                                     <th>Support</th>
                                     <th>Converted Date</th>
                                     <th>Register Number</th>
-                                    <th>Flag</th>
+                                    <th>Course Flag</th>
                                     <th>Call Time</th>
                                     <th>Name</th>
                                     <th>Type</th>
@@ -547,7 +547,8 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
                                     </td>
                                     <td>{{ $convertedLead->created_at->format('d-m-Y') }}</td>
                                     <td>{{ $convertedLead->register_number ?? '-' }}</td>
-                                    @include('admin.converted-leads.partials.inline-flag-cell', ['convertedLead' => $convertedLead])
+                                    @include('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $convertedLead])
+                                    @include('admin.converted-leads.partials.inline-call-time-cell', ['convertedLead' => $convertedLead])
                                     <td>
                                         {{ $convertedLead->name }}
                                         @if($convertedLead->is_cancelled)
@@ -2247,7 +2248,7 @@ return ".inline-edit[data-field='{$field}'] .edit-btn";
             });
     });
 </script>
-@include('admin.converted-leads.partials.mentor-flag-inline-scripts')
+@include('admin.converted-leads.partials.course-flag-inline-scripts', ['courseUpdateUrl' => route('admin.graphic-designing-mentor-converted-leads.update-mentor-details', ['id' => '__ID__'])])
 @endpush
 
 <!-- Support Verify Modal -->

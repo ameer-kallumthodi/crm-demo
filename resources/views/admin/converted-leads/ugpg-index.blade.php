@@ -303,6 +303,8 @@
                                 <option value="">All Admission Batches</option>
                             </select>
                         </div>
+                        @include('admin.converted-leads.partials.course-flag-filter-field')
+
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from"
@@ -350,6 +352,7 @@
                                     <th>Support</th>
                                     <th>Converted Date</th>
                                     <th>Register Number</th>
+                                    <th>Course Flag</th>
                                     <th>Name</th>
                                     <th>Type</th>
                                     <th>DOB</th>
@@ -617,6 +620,7 @@
     </div>
 </div>
 <!-- [ Main Content ] end -->
+@include('admin.converted-leads.partials.course-flag-inline-scripts')
 @endsection
 
 <script id="country-codes-json" type="application/json">
@@ -634,6 +638,7 @@
         ['data' => 'support', 'name' => 'support', 'orderable' => false, 'searchable' => false],
         ['data' => 'converted_date', 'name' => 'converted_date', 'orderable' => false, 'searchable' => false],
         ['data' => 'register_number', 'name' => 'register_number', 'orderable' => false, 'searchable' => false],
+    ['data' => 'course_flag', 'name' => 'course_flag', 'orderable' => false, 'searchable' => false],
         ['data' => 'name_col', 'name' => 'name_col', 'orderable' => false, 'searchable' => false],
         ['data' => 'type', 'name' => 'type', 'orderable' => false, 'searchable' => false],
         ['data' => 'dob', 'name' => 'dob', 'orderable' => false, 'searchable' => false],
@@ -777,6 +782,8 @@
                 course_type: $('#course_type').val() || '',
                 batch_id: $('#batch_id').val() || '',
                 admission_batch_id: ($('#admission_batch_id').val() || $('#admission_batch_id').data('selected') || '') || '',
+                course_flag_id: $('#course_flag_id').val() || '',
+
                 date_from: $('#date_from').val() || '',
                 date_to: $('#date_to').val() || ''
             };

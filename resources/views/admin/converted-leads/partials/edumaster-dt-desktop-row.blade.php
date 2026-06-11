@@ -62,6 +62,7 @@
             @endif
         </div>
     </td>
+    @include('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $convertedLead])
 
     <td>
         <div class="d-flex align-items-center">

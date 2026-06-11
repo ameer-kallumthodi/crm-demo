@@ -284,6 +284,8 @@
                                 <option value="">All Admission Batches</option>
                             </select>
                         </div>
+                        @include('admin.converted-leads.partials.course-flag-filter-field')
+
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from"
@@ -398,6 +400,7 @@
                                     <th>Academic</th>
                                     <th>Support</th>
                                     <th>Register Number</th>
+                                    <th>Course Flag</th>
                                     <th>Converted Date</th>
                                     <th>DOB</th>
                                     <th>Type</th>
@@ -503,6 +506,7 @@ $niosConvertedLeadsColumns = array_merge($niosConvertedLeadsColumns, [
     ['data' => 'academic', 'name' => 'academic', 'orderable' => false, 'searchable' => false],
     ['data' => 'support', 'name' => 'support', 'orderable' => false, 'searchable' => false],
     ['data' => 'register_number', 'name' => 'register_number', 'orderable' => false, 'searchable' => false],
+    ['data' => 'course_flag', 'name' => 'course_flag', 'orderable' => false, 'searchable' => false],
     ['data' => 'converted_date', 'name' => 'converted_date', 'orderable' => false, 'searchable' => false],
     ['data' => 'dob', 'name' => 'dob', 'orderable' => false, 'searchable' => false],
     ['data' => 'type', 'name' => 'type', 'orderable' => false, 'searchable' => false],
@@ -537,6 +541,7 @@ $niosConvertedLeadsColumns = array_merge($niosConvertedLeadsColumns, [
 <div id="niosConvertedLeadsConfig" data-data-url="{{ route('admin.nios-converted-leads.data') }}" style="display:none"></div>
 <script type="application/json" id="niosConvertedLeadsColumnsData">{!! json_encode($niosConvertedLeadsColumns) !!}</script>
 
+@include('admin.converted-leads.partials.course-flag-inline-scripts')
 @endsection
 
 @push('styles')
@@ -765,6 +770,8 @@ $niosConvertedLeadsColumns = array_merge($niosConvertedLeadsColumns, [
                 filter_search: ($('#search').val() || '').trim(),
                 batch_id: $('#batch_id').val() || '',
                 admission_batch_id: $('#admission_batch_id').val() || '',
+                course_flag_id: $('#course_flag_id').val() || '',
+
                 date_from: $('#date_from').val() || '',
                 date_to: $('#date_to').val() || '',
                 status: $('#status').val() || '',
@@ -781,6 +788,7 @@ $niosConvertedLeadsColumns = array_merge($niosConvertedLeadsColumns, [
             if (f.search) params.append('search', f.search);
             if (f.batch_id) params.append('batch_id', f.batch_id);
             if (f.admission_batch_id) params.append('admission_batch_id', f.admission_batch_id);
+            if (f.course_flag_id) params.append('course_flag_id', f.course_flag_id);
             if (f.date_from) params.append('date_from', f.date_from);
             if (f.date_to) params.append('date_to', f.date_to);
             if (f.status) params.append('status', f.status);
@@ -800,6 +808,7 @@ $niosConvertedLeadsColumns = array_merge($niosConvertedLeadsColumns, [
                 $('#batch_id').data('selected', p.get('batch_id'));
             }
             if (p.get('admission_batch_id')) $('#admission_batch_id').data('selected', p.get('admission_batch_id'));
+            if (p.get('course_flag_id')) $('#course_flag_id').val(p.get('course_flag_id'));
             if (p.get('date_from')) $('#date_from').val(p.get('date_from'));
             if (p.get('date_to')) $('#date_to').val(p.get('date_to'));
             if (p.get('status')) $('#status').val(p.get('status'));

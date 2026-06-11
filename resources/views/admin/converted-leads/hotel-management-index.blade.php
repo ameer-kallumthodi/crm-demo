@@ -284,6 +284,8 @@
                                 <option value="">All Admission Batches</option>
                             </select>
                         </div>
+                        @include('admin.converted-leads.partials.course-flag-filter-field')
+
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from"
@@ -390,6 +392,7 @@
                                 <th>Academic</th>
                                 <th>Support</th>
                                 <th>Registration Number</th>
+                                <th>Course Flag</th>
                                 <th>Converted Date</th>
                                 <th>DOB</th>
                                 <th>Name</th>
@@ -660,6 +663,7 @@
 </div>
 <!-- [ Main Content ] end -->
 
+@include('admin.converted-leads.partials.course-flag-inline-scripts')
 @endsection
 
 <script id="country-codes-json" type="application/json">
@@ -672,6 +676,7 @@
         ['data' => 'academic', 'name' => 'academic', 'orderable' => false, 'searchable' => false],
         ['data' => 'support', 'name' => 'support', 'orderable' => false, 'searchable' => false],
         ['data' => 'registration_number', 'name' => 'registration_number', 'orderable' => false, 'searchable' => false],
+        ['data' => 'course_flag', 'name' => 'course_flag', 'orderable' => false, 'searchable' => false],
         ['data' => 'converted_date', 'name' => 'converted_date', 'orderable' => false, 'searchable' => false],
         ['data' => 'dob', 'name' => 'dob', 'orderable' => false, 'searchable' => false],
         ['data' => 'name_col', 'name' => 'name_col', 'orderable' => false, 'searchable' => false],
@@ -713,6 +718,8 @@
                 filter_search: ($('#search').val() || '').trim(),
                 batch_id: $('#batch_id').val() || '',
                 admission_batch_id: ($('#admission_batch_id').val() || $('#admission_batch_id').data('selected') || '') || '',
+                course_flag_id: $('#course_flag_id').val() || '',
+
                 date_from: $('#date_from').val() || '',
                 date_to: $('#date_to').val() || '',
                 status: $('#status').val() || '',
@@ -729,6 +736,7 @@
             url.searchParams.set('search', f.filter_search || '');
             url.searchParams.set('batch_id', f.batch_id || '');
             url.searchParams.set('admission_batch_id', f.admission_batch_id || '');
+            url.searchParams.set('course_flag_id', f.course_flag_id || '');
             url.searchParams.set('date_from', f.date_from || '');
             url.searchParams.set('date_to', f.date_to || '');
             url.searchParams.set('status', f.status || '');

@@ -17,7 +17,7 @@ class UgpgConvertedLeadsDataTableFormatter
             'academic',
             'support',
             'converted_date',
-            'register_number',
+            'register_number', 'course_flag',
             'name_col',
             'type',
             'dob',

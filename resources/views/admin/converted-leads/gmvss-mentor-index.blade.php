@@ -290,7 +290,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        @include('admin.converted-leads.partials.mentor-flag-filter-field')
+                        @include('admin.converted-leads.partials.course-flag-filter-field')
                         
 
                         <div class="col-12 col-sm-6 col-md-2">
@@ -353,7 +353,7 @@
                                     <th>Academic Verified At</th>
                                     <th>Support Verified At</th>
                                     <th>Registration Number</th>
-                                    <th>Flag</th>
+                                    <th>Course Flag</th>
                                     <th>Call Time</th>
                                     <th>Name</th>
                                     <th>Type</th>
@@ -421,7 +421,8 @@
                                             @endif
                                         </div>
                                     </td>
-                                    @include('admin.converted-leads.partials.inline-flag-cell', ['convertedLead' => $convertedLead])
+                                    @include('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $convertedLead])
+                                    @include('admin.converted-leads.partials.inline-call-time-cell', ['convertedLead' => $convertedLead])
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avtar avtar-s rounded-circle bg-light-success me-2 d-flex align-items-center justify-content-center">
@@ -1019,7 +1020,7 @@
         });
     });
 </script>
-@include('admin.converted-leads.partials.mentor-flag-inline-scripts')
+@include('admin.converted-leads.partials.course-flag-inline-scripts', ['courseUpdateUrl' => route('admin.mentor-gmvss-converted-leads.update-mentor-details', ['id' => '__ID__'])])
 @endpush
 @endsection
 

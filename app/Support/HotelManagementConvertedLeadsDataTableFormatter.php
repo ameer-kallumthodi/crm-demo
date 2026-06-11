@@ -16,7 +16,7 @@ class HotelManagementConvertedLeadsDataTableFormatter
             'index',
             'academic',
             'support',
-            'registration_number',
+            'registration_number', 'course_flag',
             'converted_date',
             'dob',
             'name_col',

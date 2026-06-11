@@ -17,7 +17,7 @@ class NiosConvertedLeadsDataTableFormatter
             $keys[] = 'batch_cb';
         }
         $keys = array_merge($keys, [
-            'index', 'academic', 'support', 'register_number', 'converted_date', 'dob', 'type', 'name_col',
+            'index', 'academic', 'support', 'register_number', 'course_flag', 'converted_date', 'dob', 'type', 'name_col',
             'subject', 'subject_area', 'mobile', 'whatsapp',
         ]);
         if ($showParentPhone) {

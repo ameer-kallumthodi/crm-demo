@@ -272,6 +272,8 @@
                                 <option value="">All Admission Batches</option>
                             </select>
                         </div>
+                        @include('admin.converted-leads.partials.course-flag-filter-field')
+
                         <div class="col-12 col-sm-6 col-md-2">
                             <label for="date_from" class="form-label">From Date</label>
                             <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}">
@@ -327,6 +329,7 @@
                                     <th>Academic</th>
                                     <th>Support</th>
                                     <th>Registration Number</th>
+                                    <th>Course Flag</th>
                                     <th>Conversion Date</th>
                                     <th>B2B Team</th>
                                     <th>Batch</th>
@@ -385,6 +388,7 @@
                                             @endif
                                         </div>
                                     </td>
+    @include('admin.converted-leads.partials.inline-course-flag-cell', ['convertedLead' => $convertedLead])
                                     <td>{{ $convertedLead->created_at ? $convertedLead->created_at->format('d-m-Y') : '-' }}</td>
                                     <td>{{ $convertedLead->is_b2b == 1 && $convertedLead->lead && $convertedLead->lead->team ? $convertedLead->lead->team->name : ($convertedLead->is_b2b == 1 ? 'B2B' : 'In House') }}</td>
                                     <td>
@@ -556,6 +560,7 @@
 <!-- [ Main Content ] end -->
 
 <script type="application/json" id="country-codes-json">@json($country_codes)</script>
+@include('admin.converted-leads.partials.course-flag-inline-scripts')
 @endsection
 
 @push('scripts')
