@@ -152,8 +152,10 @@ class DataScienceFacultyController extends Controller
         $offlinePlaces = OfflinePlace::active()->get();
         $flags = \App\Support\MentorFlagFieldSupport::forFilterSelect();
 
+        $activeFacultyRoute = 'admin.data-science-faculty-converted-leads.index';
+
         return view('admin.converted-leads.data-science-faculty-index', compact(
-            'convertedLeads', 
+            'activeFacultyRoute', 'convertedLeads', 
             'batches', 
             'country_codes',
             'course',

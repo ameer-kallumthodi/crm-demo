@@ -126,7 +126,8 @@ class AdditionalFacultyCourseController extends Controller
             'routeName',
             'courseId',
             'batches',
-            'flags'
+            'flags',
+            'activeFacultyRoute' => $routeName,
         ));
     }
 }

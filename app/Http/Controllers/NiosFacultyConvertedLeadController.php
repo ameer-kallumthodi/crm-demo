@@ -172,8 +172,10 @@ class NiosFacultyConvertedLeadController extends Controller
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
         $flags = \App\Support\MentorFlagFieldSupport::forFilterSelect();
 
+        $activeFacultyRoute = 'admin.faculty-nios-converted-leads.index';
+
         return view('admin.converted-leads.nios-faculty-index', compact(
-            'convertedLeads',
+            'activeFacultyRoute', 'convertedLeads',
             'batches',
             'subjects',
             'country_codes',

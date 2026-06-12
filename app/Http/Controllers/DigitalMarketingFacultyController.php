@@ -152,8 +152,10 @@ class DigitalMarketingFacultyController extends Controller
         $offlinePlaces = OfflinePlace::active()->get();
         $flags = \App\Support\MentorFlagFieldSupport::forFilterSelect();
 
+        $activeFacultyRoute = 'admin.digital-marketing-faculty-converted-leads.index';
+
         return view('admin.converted-leads.digital-marketing-faculty-index', compact(
-            'convertedLeads', 
+            'activeFacultyRoute', 'convertedLeads', 
             'batches', 
             'country_codes',
             'course',

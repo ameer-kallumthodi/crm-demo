@@ -156,8 +156,10 @@ class EduMasterFacultyConvertedLeadController extends Controller
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
         $flags = \App\Support\MentorFlagFieldSupport::forFilterSelect();
 
+        $activeFacultyRoute = 'admin.faculty-edumaster-converted-leads.index';
+
         return view('admin.converted-leads.faculty-edumaster-index', compact(
-            'convertedLeads', 
+            'activeFacultyRoute', 'convertedLeads', 
             'batches',
             'admissionBatches',
             'registrationLinks',

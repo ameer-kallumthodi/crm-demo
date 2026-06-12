@@ -166,8 +166,10 @@ class UGPGFacultyConvertedLeadController extends Controller
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
         $flags = \App\Support\MentorFlagFieldSupport::forFilterSelect();
 
+        $activeFacultyRoute = 'admin.faculty-ugpg-converted-leads.index';
+
         return view('admin.converted-leads.faculty-ugpg-index', compact(
-            'convertedLeads', 
+            'activeFacultyRoute', 'convertedLeads', 
             'universities', 
             'country_codes',
             'flags'

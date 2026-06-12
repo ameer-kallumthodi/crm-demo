@@ -153,8 +153,10 @@ class MachineLearningFacultyController extends Controller
         $offlinePlaces = OfflinePlace::active()->get();
         $flags = \App\Support\MentorFlagFieldSupport::forFilterSelect();
 
+        $activeFacultyRoute = 'admin.machine-learning-faculty-converted-leads.index';
+
         return view('admin.converted-leads.machine-learning-faculty-index', compact(
-            'convertedLeads', 
+            'activeFacultyRoute', 'convertedLeads', 
             'batches', 
             'country_codes',
             'course',

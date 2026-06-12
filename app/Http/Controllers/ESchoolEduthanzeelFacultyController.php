@@ -188,6 +188,8 @@ class ESchoolEduthanzeelFacultyController extends Controller
 
         $flags = \App\Support\MentorFlagFieldSupport::forFilterSelect();
 
+        $activeFacultyRoute = $routeName;
+
         return view($viewName, compact(
             'convertedLeads', 
             'batches',
@@ -197,7 +199,8 @@ class ESchoolEduthanzeelFacultyController extends Controller
             'country_codes',
             'courseName',
             'routeName',
-            'flags'
+            'flags',
+            'activeFacultyRoute'
         ));
     }
 

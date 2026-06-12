@@ -166,8 +166,10 @@ class FacultyConvertedLeadController extends Controller
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
         $flags = \App\Support\MentorFlagFieldSupport::forFilterSelect();
 
+        $activeFacultyRoute = 'admin.faculty-bosse-converted-leads.index';
+
         return view('admin.converted-leads.faculty-bosse-index', compact(
-            'convertedLeads', 
+            'activeFacultyRoute', 'convertedLeads', 
             'batches', 
             'subjects', 
             'country_codes',

@@ -124,8 +124,10 @@ class JuniorVloggerFacultyController extends Controller
         $country_codes = \App\Helpers\CountriesHelper::get_country_code();
         $flags = \App\Support\MentorFlagFieldSupport::forFilterSelect();
 
+        $activeFacultyRoute = 'admin.junior-vlogger-faculty-converted-leads.index';
+
         return view('admin.converted-leads.junior-vlogger-faculty-index', compact(
-            'convertedLeads',
+            'activeFacultyRoute', 'convertedLeads',
             'batches',
             'course',
             'classTimes',

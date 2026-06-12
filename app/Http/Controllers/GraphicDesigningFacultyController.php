@@ -152,8 +152,10 @@ class GraphicDesigningFacultyController extends Controller
         $offlinePlaces = OfflinePlace::active()->get();
         $flags = \App\Support\MentorFlagFieldSupport::forFilterSelect();
 
+        $activeFacultyRoute = 'admin.graphic-designing-faculty-converted-leads.index';
+
         return view('admin.converted-leads.graphic-designing-faculty-index', compact(
-            'convertedLeads', 
+            'activeFacultyRoute', 'convertedLeads', 
             'batches', 
             'country_codes',
             'course',

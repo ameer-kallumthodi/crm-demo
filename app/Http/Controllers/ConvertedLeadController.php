@@ -1856,7 +1856,9 @@ class ConvertedLeadController extends Controller
         $registration_links = \App\Models\RegistrationLink::all();
         $flags = \App\Support\MentorFlagFieldSupport::forFilterSelect();
 
-        return view('admin.converted-leads.gmvss-faculty-index', compact('convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'registration_links', 'flags'));
+        $activeFacultyRoute = 'admin.gmvss-faculty-converted-leads.index';
+
+        return view('admin.converted-leads.gmvss-faculty-index', compact('activeFacultyRoute', 'convertedLeads', 'courses', 'batches', 'admission_batches', 'country_codes', 'registration_links', 'flags'));
     }
 
     /**
